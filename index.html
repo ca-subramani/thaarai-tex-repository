@@ -3,25 +3,35 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Thaarai Tex | Cash on Delivery Store</title>
+  <title>Thaarai Tex | Pure Sarees & Textiles</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="bg-gray-50 text-gray-800">
 
-  <!-- Header -->
+  <!-- Header / Navbar -->
   <header class="bg-white border-b sticky top-0 z-40 px-4 py-3 shadow-sm">
     <div class="max-w-5xl mx-auto flex justify-between items-center">
       <div>
         <h1 class="text-xl font-bold tracking-tight text-gray-900">Thaarai Tex</h1>
         <p class="text-xs text-gray-500">Pure Quality Sarees & Textiles</p>
       </div>
+
       <div class="flex items-center gap-2">
-        <button onclick="toggleTrackModal()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium transition">
-          🔍 Track Order
+        <!-- Account / Login Button -->
+        <button onclick="openUserModal()" id="user-btn" class="bg-gray-100 hover:bg-gray-200 text-gray-800 px-3 py-2 rounded-xl text-sm font-medium flex items-center gap-1.5 transition">
+          <span id="user-btn-text">👤 Login</span>
         </button>
-        <button onclick="toggleCart()" class="relative bg-black text-white hover:bg-gray-800 px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-1.5 transition">
-          <span>🛒 Bag</span>
+
+        <!-- Wishlist Button -->
+        <button onclick="openWishlistModal()" class="relative bg-rose-50 hover:bg-rose-100 text-rose-700 px-3 py-2 rounded-xl text-sm font-medium flex items-center gap-1 transition">
+          <span>❤️</span>
+          <span id="wishlist-count" class="font-bold text-xs">0</span>
+        </button>
+
+        <!-- Shopping Cart Button -->
+        <button onclick="toggleCart()" class="relative bg-black text-white hover:bg-gray-800 px-3 py-2 rounded-xl text-sm font-medium flex items-center gap-1.5 transition">
+          <span>🛒</span>
           <span id="cart-count" class="bg-emerald-500 text-white text-xs px-2 py-0.5 rounded-full font-bold">0</span>
         </button>
       </div>
@@ -40,29 +50,59 @@
     </div>
   </main>
 
-  <!-- Track Order Modal -->
-  <div id="track-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4">
+  <!-- User Account & Orders Modal -->
+  <div id="user-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center border-b pb-3">
-        <div>
-          <h3 class="text-lg font-bold text-gray-900">📦 Track Your Order</h3>
-          <p class="text-xs text-gray-500">ஆர்டரின் தற்போதைய நிலையை அறியவும்</p>
-        </div>
-        <button onclick="toggleTrackModal()" class="text-gray-400 hover:text-black text-2xl font-bold">&times;</button>
+        <h3 class="text-lg font-bold text-gray-900" id="user-modal-title">👤 வாடிக்கையாளர் கணக்கு</h3>
+        <button onclick="closeUserModal()" class="text-gray-400 hover:text-black text-2xl font-bold">&times;</button>
       </div>
 
-      <div class="space-y-3">
-        <label class="block text-xs font-medium text-gray-700">ஆர்டர் செய்யும்போது கொடுத்த மொபைல் எண்</label>
-        <div class="flex gap-2">
-          <input type="tel" id="track-phone" maxlength="10" placeholder="10 இலக்க மொபைல் எண்" class="flex-1 border rounded-xl p-2.5 text-sm outline-none focus:border-black" />
-          <button onclick="trackOrder()" id="track-btn" class="bg-black hover:bg-gray-800 text-white px-4 py-2.5 rounded-xl font-medium text-sm transition">
-            Search
+      <!-- Login View -->
+      <div id="login-view" class="space-y-4">
+        <p class="text-xs text-gray-600">உங்கள் 10 இலக்க மொபைல் எண்ணை உள்ளிட்டு உங்கள் ஆர்டர்கள் மற்றும் விஷ்லிஸ்ட்டைப் பார்க்கலாம்.</p>
+        <div>
+          <label class="block text-xs font-medium text-gray-700 mb-1">மொபைல் எண்</label>
+          <input type="tel" id="login-phone" maxlength="10" placeholder="எ.கா: 9876543210" class="w-full border rounded-xl p-2.5 text-sm outline-none focus:border-black" />
+        </div>
+        <button onclick="handlePhoneLogin()" class="w-full bg-black text-white hover:bg-gray-800 py-3 rounded-xl font-bold text-sm shadow">
+          உள்நுழைக (Login)
+        </button>
+      </div>
+
+      <!-- Logged In / Orders View -->
+      <div id="orders-view" class="space-y-4 hidden">
+        <div class="flex justify-between items-center bg-gray-50 p-3 rounded-xl border">
+          <div>
+            <p class="text-xs text-gray-500">உள்நுழைந்துள்ள எண்:</p>
+            <p id="logged-phone-display" class="font-bold text-sm text-gray-900"></p>
+          </div>
+          <button onclick="handleLogout()" class="text-xs text-red-600 font-semibold hover:underline">
+            Logout
           </button>
         </div>
+
+        <div>
+          <h4 class="text-sm font-bold text-gray-800 mb-2">📦 என் ஆர்டர்கள் (My Orders)</h4>
+          <div id="my-orders-list" class="space-y-3">
+            <p class="text-xs text-gray-500 text-center py-4">ஆர்டர்கள் ஏற்றப்படுகின்றன...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Wishlist Modal -->
+  <div id="wishlist-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center border-b pb-3">
+        <h3 class="text-lg font-bold text-gray-900">❤️ என் விருப்பப்பட்டியல் (Wishlist)</h3>
+        <button onclick="closeWishlistModal()" class="text-gray-400 hover:text-black text-2xl font-bold">&times;</button>
       </div>
 
-      <!-- Result Container -->
-      <div id="track-result" class="space-y-4 pt-2"></div>
+      <div id="wishlist-items-container" class="space-y-3">
+        <p class="text-xs text-gray-500 text-center py-4">விருப்பப்பட்டியல் காலியாக உள்ளது.</p>
+      </div>
     </div>
   </div>
 
@@ -85,28 +125,21 @@
         <form id="cod-form" onsubmit="openConfirmationModal(event)" class="space-y-3">
           <div>
             <label class="block text-xs font-medium text-gray-700 mb-1">முழு பெயர்</label>
-            <input type="text" id="cust-name" placeholder="உங்கள் பெயர்" required 
-                   oninvalid="this.setCustomValidity('தயவுசெய்து உங்கள் முழு பெயரை உள்ளிடவும்')" 
-                   oninput="this.setCustomValidity('')"
-                   class="w-full border rounded-lg p-2.5 text-sm outline-none focus:border-black" />
+            <input type="text" id="cust-name" placeholder="உங்கள் பெயர்" required class="w-full border rounded-lg p-2.5 text-sm outline-none focus:border-black" />
           </div>
 
           <div>
             <label class="block text-xs font-medium text-gray-700 mb-1">மொபைல் எண் (10 இலக்கம்)</label>
             <input type="tel" id="cust-phone" maxlength="10" placeholder="எ.கா: 9876543210" required 
                    pattern="[6-9][0-9]{9}"
-                   oninvalid="this.setCustomValidity('சரியான 10 இலக்க மொபைல் எண்ணை உள்ளிடவும்')"
-                   oninput="this.setCustomValidity(''); validatePhoneUI();"
                    class="w-full border rounded-lg p-2.5 text-sm outline-none focus:border-black" />
-            <p id="phone-msg" class="text-xs mt-1 hidden"></p>
           </div>
 
           <div>
             <label class="block text-xs font-medium text-gray-700 mb-1">பின்கோடு (Pincode)</label>
             <input type="text" id="cust-pincode" maxlength="6" placeholder="6 இலக்க பின்கோடு" required 
                    pattern="[1-9][0-9]{5}"
-                   oninvalid="this.setCustomValidity('சரியான 6 இலக்க பின்கோடை உள்ளிடவும்')"
-                   oninput="this.setCustomValidity(''); handlePincodeLookup(this.value);"
+                   oninput="handlePincodeLookup(this.value);"
                    class="w-full border rounded-lg p-2.5 text-sm outline-none focus:border-black" />
             <p id="pincode-msg" class="text-xs mt-1 text-gray-500">6 இலக்க பின்கோடை உள்ளிடவும்</p>
           </div>
@@ -114,22 +147,17 @@
           <div class="grid grid-cols-2 gap-2">
             <div>
               <label class="block text-xs font-medium text-gray-700 mb-1">ஊர் / மாவட்டம்</label>
-              <input type="text" id="cust-city" placeholder="ஊர் / மாவட்டம்" required 
-                     class="w-full border rounded-lg p-2.5 text-sm outline-none focus:border-black bg-white" />
+              <input type="text" id="cust-city" placeholder="ஊர் / மாவட்டம்" required class="w-full border rounded-lg p-2.5 text-sm outline-none focus:border-black bg-white" />
             </div>
             <div>
               <label class="block text-xs font-medium text-gray-700 mb-1">மாநிலம்</label>
-              <input type="text" id="cust-state" placeholder="State" value="Tamil Nadu" required 
-                     class="w-full border rounded-lg p-2.5 text-sm outline-none focus:border-black bg-white" />
+              <input type="text" id="cust-state" placeholder="State" value="Tamil Nadu" required class="w-full border rounded-lg p-2.5 text-sm outline-none focus:border-black bg-white" />
             </div>
           </div>
 
           <div>
             <label class="block text-xs font-medium text-gray-700 mb-1">வீட்டு முகவரி & தெரு பெயர் (Door No, Street)</label>
-            <textarea id="cust-address" placeholder="கதவு எண், தெரு மற்றும் அடையாளப் பகுதி" required 
-                      oninvalid="this.setCustomValidity('டெலிவரி முகவரியை தெளிவாக உள்ளிடவும்')"
-                      oninput="this.setCustomValidity('')"
-                      class="w-full border rounded-lg p-2.5 text-sm outline-none focus:border-black" rows="2"></textarea>
+            <textarea id="cust-address" placeholder="கதவு எண், தெரு மற்றும் பகுதி" required class="w-full border rounded-lg p-2.5 text-sm outline-none focus:border-black" rows="2"></textarea>
           </div>
 
           <div class="p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-800">
@@ -149,7 +177,7 @@
     <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
       <div class="border-b pb-3">
         <h3 class="text-lg font-bold text-gray-900">📦 உங்கள் ஆர்டரை உறுதிப்படுத்தவும்</h3>
-        <p class="text-xs text-gray-500">விவரங்கள் சரியாக உள்ளதா என்பதை தயவுசெய்து சரிபார்க்கவும்</p>
+        <p class="text-xs text-gray-500">விவரங்கள் சரியாக உள்ளதா என்பதை சரிபார்க்கவும்</p>
       </div>
 
       <div class="space-y-3 text-sm bg-gray-50 p-4 rounded-xl border border-gray-200">
@@ -169,12 +197,8 @@
           <span class="text-gray-500">பின்கோடு & ஊர்:</span>
           <span id="conf-area" class="font-bold text-gray-900"></span>
         </div>
-        <div class="flex justify-between border-b pb-2">
-          <span class="text-gray-500">பணம் செலுத்தும் முறை:</span>
-          <span class="font-bold text-amber-700">Cash on Delivery (COD)</span>
-        </div>
         <div class="flex justify-between pt-1 text-base font-bold text-gray-900">
-          <span>செலுத்த வேண்டிய தொகை:</span>
+          <span>மொத்தத் தொகை (COD):</span>
           <span class="text-emerald-700">₹<span id="conf-amount">0</span></span>
         </div>
       </div>
@@ -196,124 +220,237 @@
 
     const sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     let cart = [];
+    let allProducts = [];
+    let wishlistIds = new Set();
+    let currentUserPhone = localStorage.getItem('thaarai_user_phone') || null;
     let pendingOrderData = null;
 
-    function isValidIndianPhone(phone) {
-      if (!/^[6-9]\d{9}$/.test(phone)) return { valid: false, msg: "சரியான 10 இலக்க மொபைல் எண்ணை உள்ளிடவும் (6-9ல் தொடங்க வேண்டும்)." };
-      if (/^(\d)\1{9}$/.test(phone)) return { valid: false, msg: "சரியான மொபைல் எண்ணை உள்ளிடவும்." };
-      return { valid: true, msg: "✓ எண் சரியானது" };
+    // 초기화
+    function initUser() {
+      if (currentUserPhone) {
+        document.getElementById('user-btn-text').innerText = "📱 " + currentUserPhone.slice(-4);
+        document.getElementById('cust-phone').value = currentUserPhone;
+        loadWishlist();
+      }
     }
 
-    function validatePhoneUI() {
-      const phoneInput = document.getElementById('cust-phone');
-      const msg = document.getElementById('phone-msg');
-      const phone = phoneInput.value.trim();
-
-      if (phone.length < 10) {
-        msg.classList.add('hidden');
-        return;
-      }
-
-      const result = isValidIndianPhone(phone);
-      msg.classList.remove('hidden');
-      if (result.valid) {
-        msg.innerText = result.msg;
-        msg.className = "text-xs mt-1 text-emerald-600 font-medium";
+    // Login & Profile Functions
+    function openUserModal() {
+      document.getElementById('user-modal').classList.remove('hidden');
+      if (currentUserPhone) {
+        document.getElementById('login-view').classList.add('hidden');
+        document.getElementById('orders-view').classList.remove('hidden');
+        document.getElementById('logged-phone-display').innerText = "+91 " + currentUserPhone;
+        loadUserOrders();
       } else {
-        msg.innerText = result.msg;
-        msg.className = "text-xs mt-1 text-red-500 font-medium";
+        document.getElementById('login-view').classList.remove('hidden');
+        document.getElementById('orders-view').classList.add('hidden');
       }
     }
 
-    async function handlePincodeLookup(pincode) {
-      const msg = document.getElementById('pincode-msg');
-      const cityInput = document.getElementById('cust-city');
-      const stateInput = document.getElementById('cust-state');
+    function closeUserModal() {
+      document.getElementById('user-modal').classList.add('hidden');
+    }
 
-      if (!/^[1-9][0-9]{5}$/.test(pincode)) {
-        msg.innerText = pincode.length === 6 ? "தவறான பின்கோடு." : "6 இலக்க பின்கோடை உள்ளிடவும்";
-        msg.className = "text-xs mt-1 text-gray-500";
+    function handlePhoneLogin() {
+      const phone = document.getElementById('login-phone').value.trim();
+      if (!/^[6-9]\d{9}$/.test(phone)) {
+        alert('சரியான 10 இலக்க மொபைல் எண்ணை உள்ளிடவும்.');
         return;
       }
+      currentUserPhone = phone;
+      localStorage.setItem('thaarai_user_phone', phone);
+      initUser();
+      openUserModal();
+    }
 
-      msg.innerText = "பின்கோடு சரிபார்க்கப்படுகிறது...";
-      msg.className = "text-xs mt-1 text-blue-600";
+    function handleLogout() {
+      localStorage.removeItem('thaarai_user_phone');
+      currentUserPhone = null;
+      wishlistIds.clear();
+      updateWishlistBadge();
+      document.getElementById('user-btn-text').innerText = "👤 Login";
+      document.getElementById('cust-phone').value = "";
+      renderProducts();
+      closeUserModal();
+    }
 
-      try {
-        const res = await fetch(`https://api.zippopotam.us/in/${pincode}`);
-        if (res.ok) {
-          const data = await res.json();
-          if (data.places && data.places.length > 0) {
-            cityInput.value = data.places[0]['place name'] || data.places[0]['state'];
-            stateInput.value = data.places[0]['state'] || 'Tamil Nadu';
-            msg.innerText = `✓ கண்டறியப்பட்டது: ${cityInput.value}, ${stateInput.value}`;
-            msg.className = "text-xs mt-1 text-emerald-600 font-semibold";
-            return;
-          }
-        }
-        msg.innerText = "✓ பின்கோடு ஏற்கப்பட்டது. உங்கள் ஊர் பெயரை சரிபார்க்கவும்.";
-        msg.className = "text-xs mt-1 text-emerald-600";
-      } catch (err) {
-        msg.innerText = "✓ பின்கோடு ஏற்கப்பட்டது. உங்கள் ஊர் பெயரை சரிபார்க்கவும்.";
-        msg.className = "text-xs mt-1 text-emerald-600";
+    // Wishlist Functions
+    async function loadWishlist() {
+      if (!currentUserPhone) return;
+      const { data, error } = await sbClient.from('wishlist').select('product_id').eq('phone', currentUserPhone);
+      if (!error && data) {
+        wishlistIds = new Set(data.map(w => w.product_id));
+        updateWishlistBadge();
+        renderProducts();
       }
     }
 
-    async function loadProducts() {
-      const grid = document.getElementById('products-grid');
-      const { data: products, error } = await sbClient.from('products').select('*');
+    function updateWishlistBadge() {
+      document.getElementById('wishlist-count').innerText = wishlistIds.size;
+    }
 
-      if (error) {
-        grid.innerHTML = `<p class="text-red-500">பிழை: ${error.message}</p>`;
+    async function toggleWishlist(productId) {
+      if (!currentUserPhone) {
+        alert('விருப்பப்பட்டியலில் சேர்க்க முதலில் மொபைல் எண்ணை உள்ளிட்டு உள்நுழையவும்.');
+        openUserModal();
         return;
       }
 
-      if (!products || products.length === 0) {
-        grid.innerHTML = '<p class="text-gray-500 col-span-3 py-8 text-center">தயாரிப்புகள் எதுவும் இல்லை.</p>';
+      if (wishlistIds.has(productId)) {
+        wishlistIds.delete(productId);
+        await sbClient.from('wishlist').delete().match({ phone: currentUserPhone, product_id: productId });
+      } else {
+        wishlistIds.add(productId);
+        await sbClient.from('wishlist').insert([{ phone: currentUserPhone, product_id: productId }]);
+      }
+
+      updateWishlistBadge();
+      renderProducts();
+    }
+
+    function openWishlistModal() {
+      document.getElementById('wishlist-modal').classList.remove('hidden');
+      renderWishlistDrawer();
+    }
+
+    function closeWishlistModal() {
+      document.getElementById('wishlist-modal').classList.add('hidden');
+    }
+
+    function renderWishlistDrawer() {
+      const container = document.getElementById('wishlist-items-container');
+      const items = allProducts.filter(p => wishlistIds.has(p.id));
+
+      if (items.length === 0) {
+        container.innerHTML = '<p class="text-sm text-gray-500 text-center py-6">உங்கள் விருப்பப்பட்டியல் காலியாக உள்ளது.</p>';
         return;
       }
 
-      grid.innerHTML = products.map(p => `
-        <div class="bg-white border rounded-xl overflow-hidden shadow-sm flex flex-col justify-between">
-          <img src="${(p.images && p.images[0]) ? p.images[0] : 'https://placehold.co/400x300?text=Thaarai+Tex'}" alt="${p.name}" class="w-full h-60 object-cover bg-gray-100" />
-          <div class="p-4 flex flex-col flex-1 justify-between">
-            <div>
-              <h3 class="font-bold text-gray-900 text-base">${p.name}</h3>
-              <p class="text-xs text-gray-500 mt-1 line-clamp-2">${p.description || ''}</p>
-              <div class="flex items-center justify-between mt-3">
-                <span class="text-lg font-bold text-gray-900">₹${p.price}</span>
-                <span class="text-xs px-2 py-0.5 rounded ${p.stock > 0 ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-red-50 text-red-700'}">
-                  ${p.stock > 0 ? `Stock: ${p.stock}` : 'Out of Stock'}
-                </span>
-              </div>
-            </div>
-            <div class="mt-4">
-              ${p.stock > 0 
-                ? `<button onclick='addToCart(${JSON.stringify(p)})' class="w-full bg-black hover:bg-gray-800 text-white py-2 rounded-lg text-sm font-medium">Add to Bag</button>`
-                : `<button disabled class="w-full bg-gray-200 text-gray-400 py-2 rounded-lg text-sm font-medium cursor-not-allowed">Out of Stock</button>`}
-            </div>
+      container.innerHTML = items.map(p => `
+        <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl border">
+          <img src="${(p.images && p.images[0]) ? p.images[0] : 'https://placehold.co/100x100'}" class="w-16 h-16 object-cover rounded-lg" />
+          <div class="flex-1">
+            <h4 class="font-bold text-gray-900 text-sm">${p.name}</h4>
+            <p class="text-sm font-semibold text-gray-800">₹${p.price}</p>
           </div>
+          <button onclick='addToCart(${JSON.stringify(p)}); closeWishlistModal();' class="bg-black text-white px-3 py-1.5 rounded-lg text-xs font-semibold">
+            Add to Bag
+          </button>
         </div>
       `).join('');
     }
 
-    function toggleCart() {
-      document.getElementById('cart-modal').classList.toggle('hidden');
+    // Load & Render Products
+    async function loadProducts() {
+      const grid = document.getElementById('products-grid');
+      const { data, error } = await sbClient.from('products').select('*');
+      if (error || !data) {
+        grid.innerHTML = '<p class="text-red-500">தயாரிப்புகளை ஏற்றுவதில் பிழை.</p>';
+        return;
+      }
+      allProducts = data;
+      renderProducts();
+      initUser();
     }
 
-    function toggleTrackModal() {
-      document.getElementById('track-modal').classList.toggle('hidden');
+    function renderProducts() {
+      const grid = document.getElementById('products-grid');
+      if (allProducts.length === 0) {
+        grid.innerHTML = '<p class="text-gray-500 col-span-3 py-8 text-center">தயாரிப்புகள் எதுவும் இல்லை.</p>';
+        return;
+      }
+
+      grid.innerHTML = allProducts.map(p => {
+        const isFav = wishlistIds.has(p.id);
+        return `
+          <div class="bg-white border rounded-xl overflow-hidden shadow-sm flex flex-col justify-between relative">
+            <button onclick="toggleWishlist('${p.id}')" class="absolute top-3 right-3 bg-white/90 backdrop-blur p-2 rounded-full shadow hover:scale-110 transition">
+              ${isFav ? '❤️' : '🤍'}
+            </button>
+            <img src="${(p.images && p.images[0]) ? p.images[0] : 'https://placehold.co/400x300'}" alt="${p.name}" class="w-full h-60 object-cover bg-gray-100" />
+            <div class="p-4 flex flex-col flex-1 justify-between">
+              <div>
+                <h3 class="font-bold text-gray-900 text-base">${p.name}</h3>
+                <p class="text-xs text-gray-500 mt-1 line-clamp-2">${p.description || ''}</p>
+                <div class="flex items-center justify-between mt-3">
+                  <span class="text-lg font-bold text-gray-900">₹${p.price}</span>
+                  <span class="text-xs px-2 py-0.5 rounded ${p.stock > 0 ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-red-50 text-red-700'}">
+                    ${p.stock > 0 ? `Stock: ${p.stock}` : 'Out of Stock'}
+                  </span>
+                </div>
+              </div>
+              <div class="mt-4">
+                ${p.stock > 0 
+                  ? `<button onclick='addToCart(${JSON.stringify(p)})' class="w-full bg-black hover:bg-gray-800 text-white py-2 rounded-lg text-sm font-medium">Add to Bag</button>`
+                  : `<button disabled class="w-full bg-gray-200 text-gray-400 py-2 rounded-lg text-sm font-medium cursor-not-allowed">Out of Stock</button>`}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Orders Tracking inside Account Modal
+    async function loadUserOrders() {
+      const container = document.getElementById('my-orders-list');
+      container.innerHTML = '<p class="text-xs text-gray-500 text-center py-4">ஆர்டர்கள் எடுக்கப்படுகின்றன...</p>';
+
+      const { data: orders, error } = await sbClient
+        .from('orders')
+        .select('*')
+        .eq('phone', currentUserPhone)
+        .order('created_at', { ascending: false });
+
+      if (error || !orders || orders.length === 0) {
+        container.innerHTML = '<div class="p-4 bg-gray-50 border rounded-xl text-center text-xs text-gray-500">நீங்கள் இதுவரை எந்த ஆர்டரும் செய்யவில்லை.</div>';
+        return;
+      }
+
+      const statusMap = {
+        'pending': { text: 'ஆர்டர் பெறப்பட்டது (Pending)', color: 'bg-amber-100 text-amber-800' },
+        'verified': { text: 'உறுதி செய்யப்பட்டது (Verified)', color: 'bg-blue-100 text-blue-800' },
+        'dispatched': { text: 'பார்சல் அனுப்பப்பட்டது (Dispatched)', color: 'bg-purple-100 text-purple-800' },
+        'delivered': { text: 'டெலிவரி செய்யப்பட்டது (Delivered)', color: 'bg-emerald-100 text-emerald-800' },
+        'cancelled': { text: 'ரத்து செய்யப்பட்டது', color: 'bg-red-100 text-red-800' }
+      };
+
+      container.innerHTML = orders.map(ord => {
+        const badge = statusMap[ord.order_status] || { text: ord.order_status, color: 'bg-gray-100' };
+        const items = ord.items || [];
+        const date = new Date(ord.created_at).toLocaleDateString('ta-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+
+        return `
+          <div class="bg-gray-50 border rounded-xl p-3 text-xs space-y-2">
+            <div class="flex justify-between items-start">
+              <div>
+                <span class="text-gray-400 font-mono">#${ord.id.slice(0, 8).toUpperCase()}</span>
+                <p class="text-gray-500">${date}</p>
+              </div>
+              <span class="px-2 py-0.5 rounded-full font-bold text-xs ${badge.color}">${badge.text}</span>
+            </div>
+            <div class="border-t pt-2 text-gray-700">
+              ${items.map(i => `<div class="flex justify-between"><span>${i.name} × ${i.quantity}</span><span class="font-semibold">₹${i.price * i.quantity}</span></div>`).join('')}
+            </div>
+            <div class="border-t pt-2 flex justify-between font-bold text-gray-900">
+              <span>மொத்தம் (COD):</span>
+              <span class="text-emerald-700">₹${ord.total_amount}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Cart and Checkout Handlers
+    function toggleCart() {
+      document.getElementById('cart-modal').classList.toggle('hidden');
     }
 
     function addToCart(product) {
       const existing = cart.find(i => i.id === product.id);
       if (existing) {
-        if (existing.quantity < product.stock) {
-          existing.quantity++;
-        } else {
-          alert('இருப்பில் உள்ள அதிகபட்ச அளவு சேர்க்கப்பட்டுவிட்டது.');
-          return;
-        }
+        if (existing.quantity < product.stock) existing.quantity++;
+        else return alert('இருப்பில் உள்ள அதிகபட்ச அளவு சேர்க்கப்பட்டுவிட்டது.');
       } else {
         cart.push({ id: product.id, name: product.name, price: product.price, quantity: 1 });
       }
@@ -347,43 +484,47 @@
       renderCart();
     }
 
+    async function handlePincodeLookup(pincode) {
+      const msg = document.getElementById('pincode-msg');
+      const cityInput = document.getElementById('cust-city');
+      const stateInput = document.getElementById('cust-state');
+
+      if (/^[1-9][0-9]{5}$/.test(pincode)) {
+        try {
+          const res = await fetch(`https://api.zippopotam.us/in/${pincode}`);
+          if (res.ok) {
+            const data = await res.json();
+            if (data.places && data.places.length > 0) {
+              cityInput.value = data.places[0]['place name'] || data.places[0]['state'];
+              stateInput.value = data.places[0]['state'] || 'Tamil Nadu';
+              msg.innerText = `✓ கண்டறியப்பட்டது: ${cityInput.value}`;
+              msg.className = "text-xs mt-1 text-emerald-600 font-semibold";
+              return;
+            }
+          }
+        } catch (e) {}
+        msg.innerText = "✓ பின்கோடு ஏற்கப்பட்டது.";
+        msg.className = "text-xs mt-1 text-emerald-600";
+      }
+    }
+
     function openConfirmationModal(e) {
       e.preventDefault();
       if (cart.length === 0) return alert('முதலில் ஒரு பொருளை பையில் சேர்க்கவும்!');
 
       const phone = document.getElementById('cust-phone').value.trim();
-      const phoneValidation = isValidIndianPhone(phone);
-      if (!phoneValidation.valid) {
-        alert(phoneValidation.msg);
-        document.getElementById('cust-phone').focus();
-        return;
-      }
-
       const pincode = document.getElementById('cust-pincode').value.trim();
-      if (!/^[1-9][0-9]{5}$/.test(pincode)) {
-        alert('தயவுசெய்து சரியான 6 இலக்க இந்திய பின்கோடை உள்ளிடவும்.');
-        document.getElementById('cust-pincode').focus();
-        return;
-      }
-
       const city = document.getElementById('cust-city').value.trim();
-      if (!city) {
-        alert('தயவுசெய்து உங்கள் ஊர் பெயரை உள்ளிடவும்.');
-        document.getElementById('cust-city').focus();
-        return;
-      }
-
-      const totalAmount = cart.reduce((sum, i) => sum + i.price * i.quantity, 0);
       const name = document.getElementById('cust-name').value.trim();
       const address = document.getElementById('cust-address').value.trim();
-      const state = document.getElementById('cust-state').value.trim() || 'Tamil Nadu';
+      const totalAmount = cart.reduce((sum, i) => sum + i.price * i.quantity, 0);
 
       pendingOrderData = {
         customer_name: name,
         phone: phone,
         shipping_address: address,
         city: city,
-        state: state,
+        state: 'Tamil Nadu',
         pincode: pincode,
         total_amount: totalAmount,
         payment_method: 'COD',
@@ -394,7 +535,7 @@
       document.getElementById('conf-name').innerText = name;
       document.getElementById('conf-phone').innerText = "+91 " + phone;
       document.getElementById('conf-address').innerText = address;
-      document.getElementById('conf-area').innerText = `${city}, ${state} - ${pincode}`;
+      document.getElementById('conf-area').innerText = `${city} - ${pincode}`;
       document.getElementById('conf-amount').innerText = totalAmount;
 
       document.getElementById('confirm-modal').classList.remove('hidden');
@@ -406,7 +547,6 @@
 
     async function executeFinalOrder() {
       if (!pendingOrderData) return;
-
       const btn = document.getElementById('final-confirm-btn');
       btn.innerText = 'பதிவாகிறது...';
       btn.disabled = true;
@@ -418,95 +558,22 @@
         btn.disabled = false;
         btn.innerText = '✓ Confirm & Order';
       } else {
-        const orderId = data && data[0] ? data[0].id.slice(0, 8).toUpperCase() : 'NEW';
-        alert(`🎉 உங்கள் ஆர்டர் வெற்றிகரமாகப் பதிவானது!\n\nOrder Tracking ID: ${orderId}\n\nஉங்கள் மொபைல் எண்ணைப் பயன்படுத்தி "Track Order" பட்டனில் ஆர்டர் நிலையைத் தெரிந்துகொள்ளலாம்.`);
+        // ஆர்டர் போட்ட மொபைல் எண்ணை தானாக லாகின் செய்து வைத்தல்
+        currentUserPhone = pendingOrderData.phone;
+        localStorage.setItem('thaarai_user_phone', currentUserPhone);
+        initUser();
+
+        alert('🎉 உங்கள் ஆர்டர் வெற்றிகரமாகப் பதிவானது!\n\n"Login / Profile" பட்டனை அழுத்தி எந்த நேரத்திலும் உங்கள் ஆர்டரின் நிலையைக் கண்காணிக்கலாம்.');
         closeConfirmationModal();
         cart = [];
         pendingOrderData = null;
         renderCart();
         toggleCart();
         document.getElementById('cod-form').reset();
-        document.getElementById('pincode-msg').innerText = "6 இலக்க பின்கோடை உள்ளிடவும்";
-        document.getElementById('pincode-msg').className = "text-xs mt-1 text-gray-500";
-        document.getElementById('phone-msg').classList.add('hidden');
         loadProducts();
         btn.disabled = false;
         btn.innerText = '✓ Confirm & Order';
       }
-    }
-
-    // 3. வாடிக்கையாளர் ஆர்டர் ட்ராக்கிங் ஃபங்ஷன்
-    async function trackOrder() {
-      const phone = document.getElementById('track-phone').value.trim();
-      const resultBox = document.getElementById('track-result');
-      const btn = document.getElementById('track-btn');
-
-      if (!/^[6-9]\d{9}$/.test(phone)) {
-        alert('சரியான 10 இலக்க மொபைல் எண்ணை உள்ளிடவும்.');
-        return;
-      }
-
-      btn.innerText = 'தேடுகிறது...';
-      btn.disabled = true;
-      resultBox.innerHTML = '<p class="text-sm text-gray-500 text-center py-2">ஆர்டர் விவரங்கள் எடுக்கப்படுகின்றன...</p>';
-
-      const { data: orders, error } = await sbClient
-        .from('orders')
-        .select('*')
-        .eq('phone', phone)
-        .order('created_at', { ascending: false });
-
-      btn.innerText = 'Search';
-      btn.disabled = false;
-
-      if (error) {
-        resultBox.innerHTML = `<p class="text-sm text-red-500 text-center">பிழை: ${error.message}</p>`;
-        return;
-      }
-
-      if (!orders || orders.length === 0) {
-        resultBox.innerHTML = '<div class="p-4 bg-gray-50 border rounded-xl text-center text-sm text-gray-500">இந்த மொபைல் எண்ணில் எந்த ஆர்டரும் காணப்படவில்லை.</div>';
-        return;
-      }
-
-      const statusMap = {
-        'pending': { text: 'ஆர்டர் பெறப்பட்டது (Pending)', color: 'bg-amber-100 text-amber-800 border-amber-300' },
-        'verified': { text: 'உறுதி செய்யப்பட்டது (Verified)', color: 'bg-blue-100 text-blue-800 border-blue-300' },
-        'dispatched': { text: 'பார்சல் அனுப்பப்பட்டது (Dispatched)', color: 'bg-purple-100 text-purple-800 border-purple-300' },
-        'delivered': { text: 'டெலிவரி செய்யப்பட்டது (Delivered)', color: 'bg-emerald-100 text-emerald-800 border-emerald-300' },
-        'cancelled': { text: 'ரத்து செய்யப்பட்டது (Cancelled)', color: 'bg-red-100 text-red-800 border-red-300' }
-      };
-
-      resultBox.innerHTML = orders.map(ord => {
-        const badge = statusMap[ord.order_status] || { text: ord.order_status, color: 'bg-gray-100 text-gray-800 border-gray-300' };
-        const items = ord.items || [];
-        const date = new Date(ord.created_at).toLocaleDateString('ta-IN', { day: 'numeric', month: 'short', year: 'numeric' });
-
-        return `
-          <div class="bg-gray-50 border border-gray-200 rounded-xl p-4 text-xs space-y-2">
-            <div class="flex justify-between items-start">
-              <div>
-                <span class="text-gray-400 font-mono">#${ord.id.slice(0, 8).toUpperCase()}</span>
-                <p class="font-bold text-gray-900 text-sm mt-0.5">${ord.customer_name}</p>
-                <p class="text-gray-500">${date}</p>
-              </div>
-              <span class="px-2.5 py-1 rounded-full font-bold border text-xs ${badge.color}">${badge.text}</span>
-            </div>
-
-            <div class="border-t border-gray-200 pt-2 text-gray-700">
-              <span class="font-semibold block mb-1">பொருட்கள்:</span>
-              <ul class="list-disc list-inside space-y-0.5">
-                ${items.map(i => `<li>${i.name} × ${i.quantity} (₹${i.price * i.quantity})</li>`).join('')}
-              </ul>
-            </div>
-
-            <div class="border-t border-gray-200 pt-2 flex justify-between font-bold text-gray-900 text-sm">
-              <span>மொத்தத் தொகை (COD):</span>
-              <span class="text-emerald-700">₹${ord.total_amount}</span>
-            </div>
-          </div>
-        `;
-      }).join('');
     }
 
     loadProducts();
