@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Thaarai Tex | Cash on Delivery Store</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+  <!-- Header -->
+  <header class="bg-white border-b sticky top-0 z-40 px-4 py-3 shadow-sm">
+    <div class="max-w-5xl mx-auto flex justify-between items-center">
+      <div>
+        <h1 class="text-xl font-bold tracking-tight text-gray-900">Thaarai Tex</h1>
+        <p class="text-xs text-gray-500">Pure Quality Sarees & Textiles</p>
+      </div>
+      <button onclick="toggleCart()" class="relative bg-black text-white hover:bg-gray-800 px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2">
+        <span>🛒 Bag</span>
+        <span id="cart-count" class="bg-emerald-500 text-white text-xs px-2 py-0.5 rounded-full font-bold">0</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Product Catalog -->
+  <main class="max-w-5xl mx-auto p-4 sm:p-6">
+    <div class="flex justify-between items-center mb-6">
+      <h2 class="text-lg font-bold text-gray-800">Latest Collections</h2>
+      <span class="text-xs font-semibold bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-full">Cash on Delivery Available</span>
+    </div>
+    
+    <div id="products-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <p class="text-gray-500">தயாரிப்புகள் ஏற்றப்படுகின்றன...</p>
+    </div>
+  </main>
+
+  <!-- Cart / Checkout Drawer -->
+  <div id="cart-modal" class="fixed inset-0 bg-black/50 z-50 hidden flex justify-end">
+    <div class="bg-white w-full max-w-md h-full flex flex-col p-6 overflow-y-auto">
+      <div class="flex justify-between items-center border-b pb-3 mb-4">
+        <h3 class="text-lg font-bold">Shopping Bag</h3>
+        <button onclick="toggleCart()" class="text-gray-400 hover:text-black text-2xl font-bold">&times;</button>
+      </div>
+
+      <div id="cart-items" class="flex-1 space-y-3"></div>
+
+      <div class="border-t pt-4 mt-4">
+        <div class="flex justify-between font-bold text-base mb-4 text-gray-900">
+          <span>மொத்தத் தொகை:</span>
+          <span>₹<span id="cart-total">0</span></span>
+        </div>
+
+        <form id="cod-form" onsubmit="handleOrder(event)" class="space-y-3">
+          <div>
+            <label class="block text-xs font-medium text-gray-700 mb-1">முழு பெயர்</label>
+            <input type="text" id="cust-name" placeholder="உங்கள் பெயர்" required class="w-full border rounded-lg p-2.5 text-sm outline-none focus:border-black" />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-700 mb-1">மொபைல் எண்</label>
+            <input type="tel" id="cust-phone" placeholder="10 இலக்க மொபைல் எண்" pattern="[6-9][0-9]{9}" required class="w-full border rounded-lg p-2.5 text-sm outline-none focus:border-black" />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-700 mb-1">முழு முகவரி (Door No, Street)</label>
+            <textarea id="cust-address" placeholder="டெலிவரி முகவரி" required class="w-full border rounded-lg p-2.5 text-sm outline-none focus:border-black" rows="2"></textarea>
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-xs font-medium text-gray-700 mb-1">ஊர் / நகரம்</label>
+              <input type="text" id="cust-city" placeholder="City" required class="w-full border rounded-lg p-2.5 text-sm outline-none focus:border-black" />
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-gray-700 mb-1">பின்கோடு</label>
+              <input type="text" id="cust-pincode" placeholder="6-digit Pincode" pattern="[0-9]{6}" required class="w-full border rounded-lg p-2.5 text-sm outline-none focus:border-black" />
+            </div>
+          </div>
+
+          <div class="p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-800">
+            💵 <b>Cash on Delivery:</b> பொருள் உங்கள் கைக்கு வந்தவுடன் பணம் கொடுத்தால் போதும்.
+          </div>
+
+          <button type="submit" id="submit-btn" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-lg shadow transition">
+            Confirm Cash on Delivery Order
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // வழங்கப்பட்ட Supabase நேரடி இணைப்புகள்
+    const SUPABASE_URL = "https://hjogdvqwwbgzgwtdlrak.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_gURnxsEPWoxUqqAqnEtJ_g_EmUlUgUZ";
+
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    let cart = [];
+
+    async function loadProducts() {
+      const grid = document.getElementById('products-grid');
+      const { data: products, error } = await supabase.from('products').select('*');
+
+      if (error) {
+        grid.innerHTML = `<p class="text-red-500">பிழை ஏற்பட்டது: ${error.message}</p>`;
+        return;
+      }
+
+      if (!products || products.length === 0) {
+        grid.innerHTML = '<p class="text-gray-500 col-span-3 py-8 text-center">தயாரிப்புகள் எதுவும் இல்லை. Supabase Table Editor-ல் பொருட்களைச் சேர்க்கவும்.</p>';
+        return;
+      }
+
+      grid.innerHTML = products.map(p => `
+        <div class="bg-white border rounded-xl overflow-hidden shadow-sm flex flex-col justify-between">
+          <img src="${(p.images && p.images[0]) ? p.images[0] : 'https://placehold.co/400x300?text=Thaarai+Tex'}" alt="${p.name}" class="w-full h-60 object-cover bg-gray-100" />
+          <div class="p-4 flex flex-col flex-1 justify-between">
+            <div>
+              <h3 class="font-bold text-gray-900 text-base">${p.name}</h3>
+              <p class="text-xs text-gray-500 mt-1 line-clamp-2">${p.description || ''}</p>
+              <div class="flex items-center justify-between mt-3">
+                <span class="text-lg font-bold text-gray-900">₹${p.price}</span>
+                <span class="text-xs px-2 py-0.5 rounded ${p.stock > 0 ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-red-50 text-red-700'}">
+                  ${p.stock > 0 ? `Stock: ${p.stock}` : 'Out of Stock'}
+                </span>
+              </div>
+            </div>
+            <div class="mt-4">
+              ${p.stock > 0 
+                ? `<button onclick='addToCart(${JSON.stringify(p)})' class="w-full bg-black hover:bg-gray-800 text-white py-2 rounded-lg text-sm font-medium">Add to Bag</button>`
+                : `<button disabled class="w-full bg-gray-200 text-gray-400 py-2 rounded-lg text-sm font-medium cursor-not-allowed">Out of Stock</button>`}
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function toggleCart() {
+      document.getElementById('cart-modal').classList.toggle('hidden');
+    }
+
+    function addToCart(product) {
+      const existing = cart.find(i => i.id === product.id);
+      if (existing) {
+        if (existing.quantity < product.stock) {
+          existing.quantity++;
+        } else {
+          alert('இருப்பில் உள்ள அதிகபட்ச அளவு சேர்க்கப்பட்டுவிட்டது.');
+          return;
+        }
+      } else {
+        cart.push({ id: product.id, name: product.name, price: product.price, quantity: 1 });
+      }
+      renderCart();
+      toggleCart();
+    }
+
+    function renderCart() {
+      const itemsContainer = document.getElementById('cart-items');
+      document.getElementById('cart-count').innerText = cart.reduce((sum, i) => sum + i.quantity, 0);
+      document.getElementById('cart-total').innerText = cart.reduce((sum, i) => sum + i.price * i.quantity, 0);
+
+      if (cart.length === 0) {
+        itemsContainer.innerHTML = '<p class="text-sm text-gray-500 text-center py-6">உங்கள் பை காலியாக உள்ளது.</p>';
+        return;
+      }
+
+      itemsContainer.innerHTML = cart.map(i => `
+        <div class="flex justify-between items-center text-sm border-b pb-2">
+          <div>
+            <div class="font-medium text-gray-900">${i.name}</div>
+            <div class="text-xs text-gray-500">₹${i.price} × ${i.quantity}</div>
+          </div>
+          <button onclick="removeFromCart('${i.id}')" class="text-red-500 text-xs font-semibold hover:underline">Remove</button>
+        </div>
+      `).join('');
+    }
+
+    function removeFromCart(id) {
+      cart = cart.filter(i => i.id !== id);
+      renderCart();
+    }
+
+    async function handleOrder(e) {
+      e.preventDefault();
+      if (cart.length === 0) return alert('முதலில் ஒரு பொருளை பையில் சேர்க்கவும்!');
+
+      const btn = document.getElementById('submit-btn');
+      btn.innerText = 'ஆர்டர் பதிவாகிறது...';
+      btn.disabled = true;
+
+      const orderData = {
+        customer_name: document.getElementById('cust-name').value,
+        phone: document.getElementById('cust-phone').value,
+        shipping_address: document.getElementById('cust-address').value,
+        city: document.getElementById('cust-city').value,
+        state: 'Tamil Nadu',
+        pincode: document.getElementById('cust-pincode').value,
+        total_amount: cart.reduce((sum, i) => sum + i.price * i.quantity, 0),
+        payment_method: 'COD',
+        order_status: 'pending',
+        items: cart
+      };
+
+      const { error } = await supabase.from('orders').insert([orderData]);
+
+      if (error) {
+        alert('ஆர்டர் பதிவு தோல்வியடைந்தது: ' + error.message);
+        btn.disabled = false;
+        btn.innerText = 'Confirm Cash on Delivery Order';
+      } else {
+        alert('🎉 உங்கள் Cash on Delivery ஆர்டர் வெற்றிகரமாகப் பதிவானது!');
+        cart = [];
+        renderCart();
+        toggleCart();
+        document.getElementById('cod-form').reset();
+        loadProducts(); // ஸ்டாக் தானாக குறைந்திருப்பதை புதுப்பிக்கும்
+        btn.disabled = false;
+        btn.innerText = 'Confirm Cash on Delivery Order';
+      }
+    }
+
+    loadProducts();
+  </script>
+</body>
+</html>
