@@ -250,19 +250,51 @@ async function checkout(){
   };
 }
 
+const mEmail=n=>`91${n}@phone.thaaraitex.com`;
 function loginView(){
-  app.innerHTML=`<div class="max-w-sm mx-auto bg-white border rounded-2xl p-6 space-y-3"><h2 class="font-bold">Login with email OTP</h2>
-   <div id="s1">${input('lp','Email address','type="email" placeholder="you@example.com"')}<button id="so" class="${btn} w-full mt-3">Send OTP</button></div>
-   <div id="s2" class="hidden">${input('lo','OTP code from email','maxlength="8" inputmode="numeric"')}${input('ln','Your name (new users)')}<button id="vo" class="${btn} w-full mt-3">Verify &amp; Login</button></div></div>`;
-  let email='';
-  $('#so').onclick=async()=>{email=$('#lp').value.trim().toLowerCase();
+  let method='mobile', mode='login', email='';
+  app.innerHTML=`<div class="max-w-sm mx-auto bg-white border rounded-2xl p-6 space-y-4">
+   <div class="grid grid-cols-2 gap-2 text-xs font-semibold"><button id="m1">📱 Mobile + Password</button><button id="m2">✉️ Email + OTP</button></div>
+   <div id="pm" class="space-y-3">
+    <div class="grid grid-cols-2 gap-2 text-sm"><button id="tl">Login</button><button id="tr">Register</button></div>
+    <div id="nm" class="hidden">${input('ln','Your name')}</div>
+    ${input('lp','Mobile number','maxlength="10" inputmode="numeric" placeholder="9876543210"')}
+    ${input('lw','Password (min 6 characters)','type="password"')}
+    <button id="go" class="${btn} w-full"></button></div>
+   <div id="em" class="hidden space-y-3">
+    <div id="e1" class="space-y-3">${input('le','Email address','type="email" placeholder="you@example.com"')}<button id="so" class="${btn} w-full">Send OTP</button></div>
+    <div id="e2" class="hidden space-y-3">${input('lo','OTP from your email','maxlength="8" inputmode="numeric"')}${input('ln2','Your name (new users)')}<button id="vo" class="${btn} w-full">Verify &amp; Login</button></div></div></div>`;
+  const tog=(id,on,r)=>$(id).className=`py-2 ${r||'rounded-lg'} `+(on?'bg-slate-900 text-white':'bg-gray-100');
+  const setMethod=m=>{method=m;$('#pm').classList.toggle('hidden',m!=='mobile');$('#em').classList.toggle('hidden',m!=='email');tog('#m1',m==='mobile');tog('#m2',m==='email')};
+  const setMode=m=>{mode=m;$('#nm').classList.toggle('hidden',m==='login');tog('#tl',m==='login');tog('#tr',m==='register');$('#go').textContent=m==='login'?'Login':'Create account'};
+  $('#m1').onclick=()=>setMethod('mobile');$('#m2').onclick=()=>setMethod('email');
+  $('#tl').onclick=()=>setMode('login');$('#tr').onclick=()=>setMode('register');setMethod('mobile');setMode('login');
+  $('#go').onclick=async()=>{
+    const n=$('#lp').value.trim(), pw=$('#lw').value, em=mEmail(n);
+    if(!/^[6-9]\d{9}$/.test(n))return toast('Enter a valid 10-digit mobile number');
+    if(pw.length<6)return toast('Password must be at least 6 characters');
+    if(mode==='login'){
+      const {error}=await sb.auth.signInWithPassword({email:em,password:pw});
+      if(error)return toast('Wrong mobile number or password');
+    }else{
+      const name=$('#ln').value.trim(); if(!name)return toast('Enter your name');
+      const {data,error}=await sb.auth.signUp({email:em,password:pw});
+      if(error)return toast(/registered/i.test(error.message)?'This number is already registered. Please login.':error.message);
+      if(!data.session)return toast('Admin: turn OFF "Confirm email" in Supabase Auth settings');
+      await sb.from('profiles').upsert({id:data.user.id,name});
+      store.set('addr',{...(store.get('addr')||{}),name,phone:n});
+    }
+    toast('Welcome!');route();
+  };
+  $('#so').onclick=async()=>{email=$('#le').value.trim().toLowerCase();
     if(!/^\S+@\S+\.\S+$/.test(email))return toast('Enter a valid email');
     const {error}=await sb.auth.signInWithOtp({email});
-    if(error)return toast(error.message);$('#s1').classList.add('hidden');$('#s2').classList.remove('hidden');toast('OTP sent to your email')};
+    if(error)return toast(error.message);
+    $('#e1').classList.add('hidden');$('#e2').classList.remove('hidden');toast('OTP sent to your email')};
   $('#vo').onclick=async()=>{
     const {data,error}=await sb.auth.verifyOtp({email,token:$('#lo').value.trim(),type:'email'});
     if(error)return toast('Invalid or expired OTP');
-    const nm=$('#ln').value.trim();
+    const nm=$('#ln2').value.trim();
     if(nm)await sb.from('profiles').upsert({id:data.user.id,name:nm});
     toast('Welcome!');route()};
 }
