@@ -56,27 +56,41 @@
             <label class="block text-xs font-medium text-gray-700 mb-1">முழு பெயர்</label>
             <input type="text" id="cust-name" placeholder="உங்கள் பெயர்" required class="w-full border rounded-lg p-2.5 text-sm outline-none focus:border-black" />
           </div>
+
           <div>
-            <label class="block text-xs font-medium text-gray-700 mb-1">மொபைல் எண்</label>
-            <input type="tel" id="cust-phone" placeholder="10 இலக்க மொபைல் எண்" pattern="[6-9][0-9]{9}" required class="w-full border rounded-lg p-2.5 text-sm outline-none focus:border-black" />
+            <label class="block text-xs font-medium text-gray-700 mb-1">மொபைல் எண் (10 இலக்கம்)</label>
+            <input type="tel" id="cust-phone" maxlength="10" placeholder="எ.கா: 9876543210" required 
+                   oninput="validatePhoneUI()"
+                   class="w-full border rounded-lg p-2.5 text-sm outline-none focus:border-black" />
+            <p id="phone-msg" class="text-xs mt-1 hidden"></p>
           </div>
+
           <div>
-            <label class="block text-xs font-medium text-gray-700 mb-1">முழு முகவரி (Door No, Street)</label>
-            <textarea id="cust-address" placeholder="டெலிவரி முகவரி" required class="w-full border rounded-lg p-2.5 text-sm outline-none focus:border-black" rows="2"></textarea>
+            <label class="block text-xs font-medium text-gray-700 mb-1">பின்கோடு (Pincode)</label>
+            <input type="text" id="cust-pincode" maxlength="6" placeholder="6 இலக்க பின்கோடு" required 
+                   oninput="handlePincodeLookup(this.value)"
+                   class="w-full border rounded-lg p-2.5 text-sm outline-none focus:border-black" />
+            <p id="pincode-msg" class="text-xs mt-1 text-gray-500">பின்கோடு கொடுத்ததும் ஊர் தானாக நிரப்பப்படும்</p>
           </div>
+
           <div class="grid grid-cols-2 gap-2">
             <div>
               <label class="block text-xs font-medium text-gray-700 mb-1">ஊர் / நகரம்</label>
-              <input type="text" id="cust-city" placeholder="City" required class="w-full border rounded-lg p-2.5 text-sm outline-none focus:border-black" />
+              <input type="text" id="cust-city" placeholder="City" required readonly class="w-full bg-gray-100 border rounded-lg p-2.5 text-sm outline-none text-gray-600 cursor-not-allowed" />
             </div>
             <div>
-              <label class="block text-xs font-medium text-gray-700 mb-1">பின்கோடு</label>
-              <input type="text" id="cust-pincode" placeholder="6-digit Pincode" pattern="[0-9]{6}" required class="w-full border rounded-lg p-2.5 text-sm outline-none focus:border-black" />
+              <label class="block text-xs font-medium text-gray-700 mb-1">மாநிலம்</label>
+              <input type="text" id="cust-state" placeholder="State" required readonly class="w-full bg-gray-100 border rounded-lg p-2.5 text-sm outline-none text-gray-600 cursor-not-allowed" />
             </div>
           </div>
 
+          <div>
+            <label class="block text-xs font-medium text-gray-700 mb-1">வீட்டு முகவரி & தெரு பெயர் (Door No, Street)</label>
+            <textarea id="cust-address" placeholder="கதவு எண், தெரு மற்றும் அடையாளப் பகுதி" required class="w-full border rounded-lg p-2.5 text-sm outline-none focus:border-black" rows="2"></textarea>
+          </div>
+
           <div class="p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-800">
-            💵 <b>Cash on Delivery:</b> பொருள் உங்கள் கைக்கு வந்தவுடன் பணம் கொடுத்தால் போதும்.
+            💵 <b>Cash on Delivery:</b> பார்சல் கைக்கு வந்தவுடன் பணம் கொடுத்தால் போதும்.
           </div>
 
           <button type="submit" id="submit-btn" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-lg shadow transition">
@@ -88,19 +102,112 @@
   </div>
 
   <script>
-    // மாறி பெயரை 'sbClient' என மாற்றி Conflict சரிசெய்யப்பட்டுள்ளது
     const SUPABASE_URL = "https://hjogdvqwwbgzgwtdlrak.supabase.co";
     const SUPABASE_ANON_KEY = "sb_publishable_gURnxsEPWoxUqqAqnEtJ_g_EmUlUgUZ";
 
     const sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     let cart = [];
+    let isPincodeValid = false;
+
+    // 1. மொபைல் எண் சரிபார்ப்பு & Cardinality Check
+    function isValidIndianPhone(phone) {
+      if (!/^[6-9]\d{9}$/.test(phone)) return { valid: false, msg: "சரியான 10 இலக்க இந்திய எண்ணை உள்ளிடவும் (6-9ல் தொடங்க வேண்டும்)." };
+
+      // Cardinality / Entropy: ஒரே எண்ணை மீண்டும் மீண்டும் அடிப்பதைத் தடுப்பது (எ.கா: 9999999999, 8888888888)
+      const uniqueDigits = new Set(phone.split('')).size;
+      if (uniqueDigits <= 3) {
+        return { valid: false, msg: "போலியான எண் போல உள்ளது. உண்மையான எண்ணை உள்ளிடவும்." };
+      }
+
+      // வரிசை எண்கள் தவிர்த்தல் (எ.கா: 9876543210 அல்லது 6789012345 போன்ற எளிய தொடர்கள்)
+      if (phone === "9876543210" || phone === "1234567890") {
+        return { valid: false, msg: "டெஸ்ட் எண்களைப் பயன்படுத்தக் கூடாது." };
+      }
+
+      return { valid: true, msg: "சரியான எண்" };
+    }
+
+    function validatePhoneUI() {
+      const phoneInput = document.getElementById('cust-phone');
+      const msg = document.getElementById('phone-msg');
+      const phone = phoneInput.value.trim();
+
+      if (phone.length < 10) {
+        msg.classList.add('hidden');
+        return;
+      }
+
+      const result = isValidIndianPhone(phone);
+      msg.classList.remove('hidden');
+      if (result.valid) {
+        msg.innerText = "✓ எண் சரியானது";
+        msg.className = "text-xs mt-1 text-emerald-600 font-medium";
+      } else {
+        msg.innerText = result.msg;
+        msg.className = "text-xs mt-1 text-red-500 font-medium";
+      }
+    }
+
+    // 2. இந்திய அஞ்சல் துறை API மூலம் பின்கோடு சரிபார்த்தல்
+    async function handlePincodeLookup(pincode) {
+      const msg = document.getElementById('pincode-msg');
+      const cityInput = document.getElementById('cust-city');
+      const stateInput = document.getElementById('cust-state');
+
+      // பின்கோடு கார்டினாலிட்டியை சரிபார்த்தல் (ஒரே எண் 6 முறை அடித்தால் எ.கா: 000000, 111111)
+      if (new Set(pincode.split('')).size <= 1) {
+        isPincodeValid = false;
+        msg.innerText = "தவறான பின்கோடு.";
+        msg.className = "text-xs mt-1 text-red-500";
+        cityInput.value = "";
+        stateInput.value = "";
+        return;
+      }
+
+      if (pincode.length === 6 && /^[1-9][0-9]{5}$/.test(pincode)) {
+        msg.innerText = "பின்கோடு சரிபார்க்கப்படுகிறது...";
+        msg.className = "text-xs mt-1 text-blue-600";
+
+        try {
+          const res = await fetch(`https://api.postalpincode.in/pincode/${pincode}`);
+          const data = await res.json();
+
+          if (data && data[0].Status === "Success") {
+            const postOffice = data[0].PostOffice[0];
+            cityInput.value = postOffice.District || postOffice.Name;
+            stateInput.value = postOffice.State;
+            isPincodeValid = true;
+
+            msg.innerText = `✓ கண்டறியப்பட்டது: ${postOffice.District}, ${postOffice.State}`;
+            msg.className = "text-xs mt-1 text-emerald-600 font-semibold";
+          } else {
+            isPincodeValid = false;
+            cityInput.value = "";
+            stateInput.value = "";
+            msg.innerText = "❌ தவறான பின்கோடு! இந்தியாவில் இப்படி ஒரு பகுதி இல்லை.";
+            msg.className = "text-xs mt-1 text-red-500 font-semibold";
+          }
+        } catch (err) {
+          // ஆஃப்லைனில் இருந்தால் 기본 அனுமதி
+          isPincodeValid = true;
+          msg.innerText = "சரிபார்க்க முடியவில்லை. முகவரியை தெளிவாக உள்ளிடவும்.";
+          msg.className = "text-xs mt-1 text-amber-600";
+        }
+      } else {
+        isPincodeValid = false;
+        cityInput.value = "";
+        stateInput.value = "";
+        msg.innerText = pincode.length > 0 ? "6 இலக்க பின்கோடு உள்ளிடவும்" : "பின்கோடு கொடுத்ததும் ஊர் தானாக நிரப்பப்படும்";
+        msg.className = "text-xs mt-1 text-gray-500";
+      }
+    }
 
     async function loadProducts() {
       const grid = document.getElementById('products-grid');
       const { data: products, error } = await sbClient.from('products').select('*');
 
       if (error) {
-        grid.innerHTML = `<p class="text-red-500">பிழை ஏற்பட்டது: ${error.message}</p>`;
+        grid.innerHTML = `<p class="text-red-500">பிழை: ${error.message}</p>`;
         return;
       }
 
@@ -183,17 +290,31 @@
       e.preventDefault();
       if (cart.length === 0) return alert('முதலில் ஒரு பொருளை பையில் சேர்க்கவும்!');
 
+      const phone = document.getElementById('cust-phone').value.trim();
+      const phoneValidation = isValidIndianPhone(phone);
+      if (!phoneValidation.valid) {
+        alert(phoneValidation.msg);
+        document.getElementById('cust-phone').focus();
+        return;
+      }
+
+      if (!isPincodeValid) {
+        alert('தயவுசெய்து சரியான 6 இலக்க இந்திய பின்கோடை உள்ளிடவும்.');
+        document.getElementById('cust-pincode').focus();
+        return;
+      }
+
       const btn = document.getElementById('submit-btn');
       btn.innerText = 'ஆர்டர் பதிவாகிறது...';
       btn.disabled = true;
 
       const orderData = {
-        customer_name: document.getElementById('cust-name').value,
-        phone: document.getElementById('cust-phone').value,
-        shipping_address: document.getElementById('cust-address').value,
+        customer_name: document.getElementById('cust-name').value.trim(),
+        phone: phone,
+        shipping_address: document.getElementById('cust-address').value.trim(),
         city: document.getElementById('cust-city').value,
-        state: 'Tamil Nadu',
-        pincode: document.getElementById('cust-pincode').value,
+        state: document.getElementById('cust-state').value,
+        pincode: document.getElementById('cust-pincode').value.trim(),
         total_amount: cart.reduce((sum, i) => sum + i.price * i.quantity, 0),
         payment_method: 'COD',
         order_status: 'pending',
@@ -212,6 +333,9 @@
         renderCart();
         toggleCart();
         document.getElementById('cod-form').reset();
+        document.getElementById('pincode-msg').innerText = "பின்கோடு கொடுத்ததும் ஊர் தானாக நிரப்பப்படும்";
+        document.getElementById('pincode-msg').className = "text-xs mt-1 text-gray-500";
+        document.getElementById('phone-msg').classList.add('hidden');
         loadProducts();
         btn.disabled = false;
         btn.innerText = 'Confirm Cash on Delivery Order';
