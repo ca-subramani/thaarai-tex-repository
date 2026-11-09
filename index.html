@@ -88,16 +88,16 @@
   </div>
 
   <script>
-    // வழங்கப்பட்ட Supabase நேரடி இணைப்புகள்
+    // மாறி பெயரை 'sbClient' என மாற்றி Conflict சரிசெய்யப்பட்டுள்ளது
     const SUPABASE_URL = "https://hjogdvqwwbgzgwtdlrak.supabase.co";
     const SUPABASE_ANON_KEY = "sb_publishable_gURnxsEPWoxUqqAqnEtJ_g_EmUlUgUZ";
 
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     let cart = [];
 
     async function loadProducts() {
       const grid = document.getElementById('products-grid');
-      const { data: products, error } = await supabase.from('products').select('*');
+      const { data: products, error } = await sbClient.from('products').select('*');
 
       if (error) {
         grid.innerHTML = `<p class="text-red-500">பிழை ஏற்பட்டது: ${error.message}</p>`;
@@ -105,7 +105,7 @@
       }
 
       if (!products || products.length === 0) {
-        grid.innerHTML = '<p class="text-gray-500 col-span-3 py-8 text-center">தயாரிப்புகள் எதுவும் இல்லை. Supabase Table Editor-ல் பொருட்களைச் சேர்க்கவும்.</p>';
+        grid.innerHTML = '<p class="text-gray-500 col-span-3 py-8 text-center">தயாரிப்புகள் எதுவும் இல்லை.</p>';
         return;
       }
 
@@ -200,7 +200,7 @@
         items: cart
       };
 
-      const { error } = await supabase.from('orders').insert([orderData]);
+      const { error } = await sbClient.from('orders').insert([orderData]);
 
       if (error) {
         alert('ஆர்டர் பதிவு தோல்வியடைந்தது: ' + error.message);
@@ -212,7 +212,7 @@
         renderCart();
         toggleCart();
         document.getElementById('cod-form').reset();
-        loadProducts(); // ஸ்டாக் தானாக குறைந்திருப்பதை புதுப்பிக்கும்
+        loadProducts();
         btn.disabled = false;
         btn.innerText = 'Confirm Cash on Delivery Order';
       }
