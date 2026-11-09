@@ -54,13 +54,18 @@
         <form id="cod-form" onsubmit="handleOrder(event)" class="space-y-3">
           <div>
             <label class="block text-xs font-medium text-gray-700 mb-1">முழு பெயர்</label>
-            <input type="text" id="cust-name" placeholder="உங்கள் பெயர்" required class="w-full border rounded-lg p-2.5 text-sm outline-none focus:border-black" />
+            <input type="text" id="cust-name" placeholder="உங்கள் பெயர்" required 
+                   oninvalid="this.setCustomValidity('தயவுசெய்து உங்கள் முழு பெயரை உள்ளிடவும்')" 
+                   oninput="this.setCustomValidity('')"
+                   class="w-full border rounded-lg p-2.5 text-sm outline-none focus:border-black" />
           </div>
 
           <div>
             <label class="block text-xs font-medium text-gray-700 mb-1">மொபைல் எண் (10 இலக்கம்)</label>
             <input type="tel" id="cust-phone" maxlength="10" placeholder="எ.கா: 9876543210" required 
-                   oninput="validatePhoneUI()"
+                   pattern="[6-9][0-9]{9}"
+                   oninvalid="this.setCustomValidity('சரியான 10 இலக்க மொபைல் எண்ணை உள்ளிடவும் (6-9ல் தொடங்க வேண்டும்)')"
+                   oninput="this.setCustomValidity(''); validatePhoneUI();"
                    class="w-full border rounded-lg p-2.5 text-sm outline-none focus:border-black" />
             <p id="phone-msg" class="text-xs mt-1 hidden"></p>
           </div>
@@ -68,7 +73,9 @@
           <div>
             <label class="block text-xs font-medium text-gray-700 mb-1">பின்கோடு (Pincode)</label>
             <input type="text" id="cust-pincode" maxlength="6" placeholder="6 இலக்க பின்கோடு" required 
-                   oninput="handlePincodeLookup(this.value)"
+                   pattern="[1-9][0-9]{5}"
+                   oninvalid="this.setCustomValidity('சரியான 6 இலக்க பின்கோடை உள்ளிடவும்')"
+                   oninput="this.setCustomValidity(''); handlePincodeLookup(this.value);"
                    class="w-full border rounded-lg p-2.5 text-sm outline-none focus:border-black" />
             <p id="pincode-msg" class="text-xs mt-1 text-gray-500">பின்கோடு கொடுத்ததும் ஊர் தானாக நிரப்பப்படும்</p>
           </div>
@@ -86,7 +93,10 @@
 
           <div>
             <label class="block text-xs font-medium text-gray-700 mb-1">வீட்டு முகவரி & தெரு பெயர் (Door No, Street)</label>
-            <textarea id="cust-address" placeholder="கதவு எண், தெரு மற்றும் அடையாளப் பகுதி" required class="w-full border rounded-lg p-2.5 text-sm outline-none focus:border-black" rows="2"></textarea>
+            <textarea id="cust-address" placeholder="கதவு எண், தெரு மற்றும் அடையாளப் பகுதி" required 
+                      oninvalid="this.setCustomValidity('டெலிவரி முகவரியை தெளிவாக உள்ளிடவும்')"
+                      oninput="this.setCustomValidity('')"
+                      class="w-full border rounded-lg p-2.5 text-sm outline-none focus:border-black" rows="2"></textarea>
           </div>
 
           <div class="p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-800">
@@ -109,17 +119,17 @@
     let cart = [];
     let isPincodeValid = false;
 
-    // 1. மொபைல் எண் சரிபார்ப்பு & Cardinality Check
     function isValidIndianPhone(phone) {
-      if (!/^[6-9]\d{9}$/.test(phone)) return { valid: false, msg: "சரியான 10 இலக்க இந்திய எண்ணை உள்ளிடவும் (6-9ல் தொடங்க வேண்டும்)." };
-
-      // Cardinality / Entropy: ஒரே எண்ணை மீண்டும் மீண்டும் அடிப்பதைத் தடுப்பது (எ.கா: 9999999999, 8888888888)
-      const uniqueDigits = new Set(phone.split('')).size;
-      if (uniqueDigits <= 3) {
-        return { valid: false, msg: "போலியான எண் போல உள்ளது. உண்மையான எண்ணை உள்ளிடவும்." };
+      if (!/^[6-9]\d{9}$/.test(phone)) {
+        return { valid: false, msg: "சரியான 10 இலக்க மொபைல் எண்ணை உள்ளிடவும் (6-9ல் தொடங்க வேண்டும்)." };
       }
 
-      // வரிசை எண்கள் தவிர்த்தல் (எ.கா: 9876543210 அல்லது 6789012345 போன்ற எளிய தொடர்கள்)
+      // ஒரே எண் திரும்பத் திரும்ப வருவதைத் தடுத்தல் (Repeat checks)
+      const uniqueDigits = new Set(phone.split('')).size;
+      if (uniqueDigits <= 3) {
+        return { valid: false, msg: "போலியான எண் போல உள்ளது. சரியான 10 இலக்க எண்ணை உள்ளிடவும்." };
+      }
+
       if (phone === "9876543210" || phone === "1234567890") {
         return { valid: false, msg: "டெஸ்ட் எண்களைப் பயன்படுத்தக் கூடாது." };
       }
@@ -148,16 +158,14 @@
       }
     }
 
-    // 2. இந்திய அஞ்சல் துறை API மூலம் பின்கோடு சரிபார்த்தல்
     async function handlePincodeLookup(pincode) {
       const msg = document.getElementById('pincode-msg');
       const cityInput = document.getElementById('cust-city');
       const stateInput = document.getElementById('cust-state');
 
-      // பின்கோடு கார்டினாலிட்டியை சரிபார்த்தல் (ஒரே எண் 6 முறை அடித்தால் எ.கா: 000000, 111111)
       if (new Set(pincode.split('')).size <= 1) {
         isPincodeValid = false;
-        msg.innerText = "தவறான பின்கோடு.";
+        msg.innerText = "தவறான பின்கோடு. சரியான 6 இலக்க பின்கோடை உள்ளிடவும்.";
         msg.className = "text-xs mt-1 text-red-500";
         cityInput.value = "";
         stateInput.value = "";
@@ -184,11 +192,10 @@
             isPincodeValid = false;
             cityInput.value = "";
             stateInput.value = "";
-            msg.innerText = "❌ தவறான பின்கோடு! இந்தியாவில் இப்படி ஒரு பகுதி இல்லை.";
+            msg.innerText = "❌ தவறான பின்கோடு! சரியான 6 இலக்க பின்கோடை உள்ளிடவும்.";
             msg.className = "text-xs mt-1 text-red-500 font-semibold";
           }
         } catch (err) {
-          // ஆஃப்லைனில் இருந்தால் 기본 அனுமதி
           isPincodeValid = true;
           msg.innerText = "சரிபார்க்க முடியவில்லை. முகவரியை தெளிவாக உள்ளிடவும்.";
           msg.className = "text-xs mt-1 text-amber-600";
@@ -197,7 +204,7 @@
         isPincodeValid = false;
         cityInput.value = "";
         stateInput.value = "";
-        msg.innerText = pincode.length > 0 ? "6 இலக்க பின்கோடு உள்ளிடவும்" : "பின்கோடு கொடுத்ததும் ஊர் தானாக நிரப்பப்படும்";
+        msg.innerText = pincode.length > 0 ? "சரியான 6 இலக்க பின்கோடை உள்ளிடவும்" : "பின்கோடு கொடுத்ததும் ஊர் தானாக நிரப்பப்படும்";
         msg.className = "text-xs mt-1 text-gray-500";
       }
     }
@@ -299,50 +306,10 @@
       }
 
       if (!isPincodeValid) {
-        alert('தயவுசெய்து சரியான 6 இலக்க இந்திய பின்கோடை உள்ளிடவும்.');
+        alert('தயவுசெய்து சரியான 6 இலக்க பின்கோடை உள்ளிடவும்.');
         document.getElementById('cust-pincode').focus();
         return;
       }
 
       const btn = document.getElementById('submit-btn');
-      btn.innerText = 'ஆர்டர் பதிவாகிறது...';
-      btn.disabled = true;
-
-      const orderData = {
-        customer_name: document.getElementById('cust-name').value.trim(),
-        phone: phone,
-        shipping_address: document.getElementById('cust-address').value.trim(),
-        city: document.getElementById('cust-city').value,
-        state: document.getElementById('cust-state').value,
-        pincode: document.getElementById('cust-pincode').value.trim(),
-        total_amount: cart.reduce((sum, i) => sum + i.price * i.quantity, 0),
-        payment_method: 'COD',
-        order_status: 'pending',
-        items: cart
-      };
-
-      const { error } = await sbClient.from('orders').insert([orderData]);
-
-      if (error) {
-        alert('ஆர்டர் பதிவு தோல்வியடைந்தது: ' + error.message);
-        btn.disabled = false;
-        btn.innerText = 'Confirm Cash on Delivery Order';
-      } else {
-        alert('🎉 உங்கள் Cash on Delivery ஆர்டர் வெற்றிகரமாகப் பதிவானது!');
-        cart = [];
-        renderCart();
-        toggleCart();
-        document.getElementById('cod-form').reset();
-        document.getElementById('pincode-msg').innerText = "பின்கோடு கொடுத்ததும் ஊர் தானாக நிரப்பப்படும்";
-        document.getElementById('pincode-msg').className = "text-xs mt-1 text-gray-500";
-        document.getElementById('phone-msg').classList.add('hidden');
-        loadProducts();
-        btn.disabled = false;
-        btn.innerText = 'Confirm Cash on Delivery Order';
-      }
-    }
-
-    loadProducts();
-  </script>
-</body>
-</html>
+      btn.innerText = 'ஆ
