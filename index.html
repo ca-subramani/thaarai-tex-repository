@@ -6,7 +6,7 @@
 <title>Thaarai Tex | Pure Sarees & Handloom</title>
 <meta name="description" content="Handloom silk and cotton sarees direct from weavers. Free delivery, Cash on Delivery.">
 <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.0/dist/umd/supabase.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="bg-gray-100 text-gray-800 antialiased">
 <div class="bg-slate-900 text-white text-xs py-1.5 text-center">✨ இலவச டெலிவரி (₹999+) &amp; Cash on Delivery</div>
@@ -101,10 +101,11 @@ const btn='bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 px-5 rounde
 
 /* ===== VIEWS ===== */
 async function home(){
-  const [{data:cats},{data:neu},{data:deals}]=await Promise.all([
+  const [{data:cats},{data:neu,error:e2},{data:deals}]=await Promise.all([
     sb.from('categories').select('*'),
     sb.from('products').select('*').eq('active',true).order('created_at',{ascending:false}).limit(8),
     sb.from('products').select('*').eq('active',true).gt('stock',0).order('price').limit(4)]);
+  if(e2)throw e2;
   app.innerHTML=`
   <section class="bg-gradient-to-r from-amber-700 via-rose-700 to-slate-900 rounded-2xl p-6 sm:p-10 text-white">
     <p class="text-xs uppercase tracking-widest text-amber-200 font-bold">நேரடி நெசவாளர் விலை</p>
@@ -126,7 +127,7 @@ async function shop(params){
   if(f.max)q=q.lte('price',+f.max);
   if(f.stock)q=q.gt('stock',0);
   q=f.sort==='low'?q.order('price'):f.sort==='high'?q.order('price',{ascending:false}):q.order('created_at',{ascending:false});
-  const {data}=await q;
+  const {data,error}=await q; if(error)throw error;
   const sel=(n,opts)=>`<select id="f-${n}" class="w-full border rounded-lg p-2 text-sm">${opts.map(([v,l])=>`<option value="${v}" ${f[n]===v?'selected':''}>${l}</option>`).join('')}</select>`;
   app.innerHTML=`<div class="grid md:grid-cols-[220px_1fr] gap-6">
    <aside class="bg-white border rounded-xl p-4 space-y-3 h-fit text-xs">
@@ -250,17 +251,17 @@ async function checkout(){
 }
 
 function loginView(){
-  app.innerHTML=`<div class="max-w-sm mx-auto bg-white border rounded-2xl p-6 space-y-3"><h2 class="font-bold">Login with mobile OTP</h2>
-   <div id="s1">${input('lp','Mobile number','maxlength="10" inputmode="numeric" placeholder="9876543210"')}<button id="so" class="${btn} w-full mt-3">Send OTP</button></div>
-   <div id="s2" class="hidden">${input('lo','6-digit OTP','maxlength="6" inputmode="numeric"')}${input('ln','Your name (new users)')}<button id="vo" class="${btn} w-full mt-3">Verify &amp; Login</button></div></div>`;
-  let phone='';
-  $('#so').onclick=async()=>{phone='+91'+$('#lp').value.trim();
-    if(!/^\+91[6-9]\d{9}$/.test(phone))return toast('Enter a valid mobile number');
-    const {error}=await sb.auth.signInWithOtp({phone});
-    if(error)return toast(error.message);$('#s1').classList.add('hidden');$('#s2').classList.remove('hidden');toast('OTP sent')};
+  app.innerHTML=`<div class="max-w-sm mx-auto bg-white border rounded-2xl p-6 space-y-3"><h2 class="font-bold">Login with email OTP</h2>
+   <div id="s1">${input('lp','Email address','type="email" placeholder="you@example.com"')}<button id="so" class="${btn} w-full mt-3">Send OTP</button></div>
+   <div id="s2" class="hidden">${input('lo','OTP code from email','maxlength="8" inputmode="numeric"')}${input('ln','Your name (new users)')}<button id="vo" class="${btn} w-full mt-3">Verify &amp; Login</button></div></div>`;
+  let email='';
+  $('#so').onclick=async()=>{email=$('#lp').value.trim().toLowerCase();
+    if(!/^\S+@\S+\.\S+$/.test(email))return toast('Enter a valid email');
+    const {error}=await sb.auth.signInWithOtp({email});
+    if(error)return toast(error.message);$('#s1').classList.add('hidden');$('#s2').classList.remove('hidden');toast('OTP sent to your email')};
   $('#vo').onclick=async()=>{
-    const {data,error}=await sb.auth.verifyOtp({phone,token:$('#lo').value.trim(),type:'sms'});
-    if(error)return toast('Invalid OTP');
+    const {data,error}=await sb.auth.verifyOtp({email,token:$('#lo').value.trim(),type:'email'});
+    if(error)return toast('Invalid or expired OTP');
     const nm=$('#ln').value.trim();
     if(nm)await sb.from('profiles').upsert({id:data.user.id,name:nm});
     toast('Welcome!');route()};
@@ -300,7 +301,7 @@ async function route(){
     else if(path==='/checkout')await checkout();
     else if(path==='/account')await account();
     else app.innerHTML='<p class="text-center py-20">Page not found.</p>';
-  }catch(err){console.error(err);app.innerHTML='<p class="text-center text-red-600 py-20">Something went wrong. Please refresh.</p>'}
+  }catch(err){console.error(err);app.innerHTML='<p class="text-center text-red-600 py-20">Error: '+esc(err.message||err)+'</p>'}
   window.scrollTo(0,0);
 }
 document.addEventListener('click',e=>{const b=e.target.closest('[data-w]');if(b){e.preventDefault();e.stopPropagation();toggleWish(b.dataset.w)}},true);
