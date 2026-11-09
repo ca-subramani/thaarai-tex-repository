@@ -16,10 +16,15 @@
         <h1 class="text-xl font-bold tracking-tight text-gray-900">Thaarai Tex</h1>
         <p class="text-xs text-gray-500">Pure Quality Sarees & Textiles</p>
       </div>
-      <button onclick="toggleCart()" class="relative bg-black text-white hover:bg-gray-800 px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2">
-        <span>🛒 Bag</span>
-        <span id="cart-count" class="bg-emerald-500 text-white text-xs px-2 py-0.5 rounded-full font-bold">0</span>
-      </button>
+      <div class="flex items-center gap-2">
+        <button onclick="toggleTrackModal()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium transition">
+          🔍 Track Order
+        </button>
+        <button onclick="toggleCart()" class="relative bg-black text-white hover:bg-gray-800 px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-1.5 transition">
+          <span>🛒 Bag</span>
+          <span id="cart-count" class="bg-emerald-500 text-white text-xs px-2 py-0.5 rounded-full font-bold">0</span>
+        </button>
+      </div>
     </div>
   </header>
 
@@ -34,6 +39,32 @@
       <p class="text-gray-500">தயாரிப்புகள் ஏற்றப்படுகின்றன...</p>
     </div>
   </main>
+
+  <!-- Track Order Modal -->
+  <div id="track-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center border-b pb-3">
+        <div>
+          <h3 class="text-lg font-bold text-gray-900">📦 Track Your Order</h3>
+          <p class="text-xs text-gray-500">ஆர்டரின் தற்போதைய நிலையை அறியவும்</p>
+        </div>
+        <button onclick="toggleTrackModal()" class="text-gray-400 hover:text-black text-2xl font-bold">&times;</button>
+      </div>
+
+      <div class="space-y-3">
+        <label class="block text-xs font-medium text-gray-700">ஆர்டர் செய்யும்போது கொடுத்த மொபைல் எண்</label>
+        <div class="flex gap-2">
+          <input type="tel" id="track-phone" maxlength="10" placeholder="10 இலக்க மொபைல் எண்" class="flex-1 border rounded-xl p-2.5 text-sm outline-none focus:border-black" />
+          <button onclick="trackOrder()" id="track-btn" class="bg-black hover:bg-gray-800 text-white px-4 py-2.5 rounded-xl font-medium text-sm transition">
+            Search
+          </button>
+        </div>
+      </div>
+
+      <!-- Result Container -->
+      <div id="track-result" class="space-y-4 pt-2"></div>
+    </div>
+  </div>
 
   <!-- Cart / Checkout Drawer -->
   <div id="cart-modal" class="fixed inset-0 bg-black/50 z-50 hidden flex justify-end">
@@ -113,7 +144,7 @@
     </div>
   </div>
 
-  <!-- Order Confirmation & Verification Modal -->
+  <!-- Order Confirmation Modal -->
   <div id="confirm-modal" class="fixed inset-0 bg-black/70 z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
       <div class="border-b pb-3">
@@ -168,12 +199,8 @@
     let pendingOrderData = null;
 
     function isValidIndianPhone(phone) {
-      if (!/^[6-9]\d{9}$/.test(phone)) {
-        return { valid: false, msg: "சரியான 10 இலக்க மொபைல் எண்ணை உள்ளிடவும் (6-9ல் தொடங்க வேண்டும்)." };
-      }
-      if (/^(\d)\1{9}$/.test(phone)) {
-        return { valid: false, msg: "சரியான மொபைல் எண்ணை உள்ளிடவும்." };
-      }
+      if (!/^[6-9]\d{9}$/.test(phone)) return { valid: false, msg: "சரியான 10 இலக்க மொபைல் எண்ணை உள்ளிடவும் (6-9ல் தொடங்க வேண்டும்)." };
+      if (/^(\d)\1{9}$/.test(phone)) return { valid: false, msg: "சரியான மொபைல் எண்ணை உள்ளிடவும்." };
       return { valid: true, msg: "✓ எண் சரியானது" };
     }
 
@@ -274,6 +301,10 @@
       document.getElementById('cart-modal').classList.toggle('hidden');
     }
 
+    function toggleTrackModal() {
+      document.getElementById('track-modal').classList.toggle('hidden');
+    }
+
     function addToCart(product) {
       const existing = cart.find(i => i.id === product.id);
       if (existing) {
@@ -316,7 +347,6 @@
       renderCart();
     }
 
-    // 1. விவரங்களைச் சரிபார்த்து உறுதிப்படுத்தல் விண்டோவை திறத்தல்
     function openConfirmationModal(e) {
       e.preventDefault();
       if (cart.length === 0) return alert('முதலில் ஒரு பொருளை பையில் சேர்க்கவும்!');
@@ -361,14 +391,12 @@
         items: cart
       };
 
-      // மாடலில் விவரங்களை நிரப்புதல்
       document.getElementById('conf-name').innerText = name;
       document.getElementById('conf-phone').innerText = "+91 " + phone;
       document.getElementById('conf-address').innerText = address;
       document.getElementById('conf-area').innerText = `${city}, ${state} - ${pincode}`;
       document.getElementById('conf-amount').innerText = totalAmount;
 
-      // மாடலை காட்டுதல்
       document.getElementById('confirm-modal').classList.remove('hidden');
     }
 
@@ -376,7 +404,6 @@
       document.getElementById('confirm-modal').classList.add('hidden');
     }
 
-    // 2. வாடிக்கையாளர் உறுதிசெய்த பிறகு Supabase-ல் பதிவு செய்தல்
     async function executeFinalOrder() {
       if (!pendingOrderData) return;
 
@@ -384,14 +411,15 @@
       btn.innerText = 'பதிவாகிறது...';
       btn.disabled = true;
 
-      const { error } = await sbClient.from('orders').insert([pendingOrderData]);
+      const { data, error } = await sbClient.from('orders').insert([pendingOrderData]).select();
 
       if (error) {
         alert('ஆர்டர் தோல்வியடைந்தது: ' + error.message);
         btn.disabled = false;
         btn.innerText = '✓ Confirm & Order';
       } else {
-        alert('🎉 உங்கள் Cash on Delivery ஆர்டர் வெற்றிகரமாகப் பதிவானது!');
+        const orderId = data && data[0] ? data[0].id.slice(0, 8).toUpperCase() : 'NEW';
+        alert(`🎉 உங்கள் ஆர்டர் வெற்றிகரமாகப் பதிவானது!\n\nOrder Tracking ID: ${orderId}\n\nஉங்கள் மொபைல் எண்ணைப் பயன்படுத்தி "Track Order" பட்டனில் ஆர்டர் நிலையைத் தெரிந்துகொள்ளலாம்.`);
         closeConfirmationModal();
         cart = [];
         pendingOrderData = null;
@@ -405,6 +433,80 @@
         btn.disabled = false;
         btn.innerText = '✓ Confirm & Order';
       }
+    }
+
+    // 3. வாடிக்கையாளர் ஆர்டர் ட்ராக்கிங் ஃபங்ஷன்
+    async function trackOrder() {
+      const phone = document.getElementById('track-phone').value.trim();
+      const resultBox = document.getElementById('track-result');
+      const btn = document.getElementById('track-btn');
+
+      if (!/^[6-9]\d{9}$/.test(phone)) {
+        alert('சரியான 10 இலக்க மொபைல் எண்ணை உள்ளிடவும்.');
+        return;
+      }
+
+      btn.innerText = 'தேடுகிறது...';
+      btn.disabled = true;
+      resultBox.innerHTML = '<p class="text-sm text-gray-500 text-center py-2">ஆர்டர் விவரங்கள் எடுக்கப்படுகின்றன...</p>';
+
+      const { data: orders, error } = await sbClient
+        .from('orders')
+        .select('*')
+        .eq('phone', phone)
+        .order('created_at', { ascending: false });
+
+      btn.innerText = 'Search';
+      btn.disabled = false;
+
+      if (error) {
+        resultBox.innerHTML = `<p class="text-sm text-red-500 text-center">பிழை: ${error.message}</p>`;
+        return;
+      }
+
+      if (!orders || orders.length === 0) {
+        resultBox.innerHTML = '<div class="p-4 bg-gray-50 border rounded-xl text-center text-sm text-gray-500">இந்த மொபைல் எண்ணில் எந்த ஆர்டரும் காணப்படவில்லை.</div>';
+        return;
+      }
+
+      const statusMap = {
+        'pending': { text: 'ஆர்டர் பெறப்பட்டது (Pending)', color: 'bg-amber-100 text-amber-800 border-amber-300' },
+        'verified': { text: 'உறுதி செய்யப்பட்டது (Verified)', color: 'bg-blue-100 text-blue-800 border-blue-300' },
+        'dispatched': { text: 'பார்சல் அனுப்பப்பட்டது (Dispatched)', color: 'bg-purple-100 text-purple-800 border-purple-300' },
+        'delivered': { text: 'டெலிவரி செய்யப்பட்டது (Delivered)', color: 'bg-emerald-100 text-emerald-800 border-emerald-300' },
+        'cancelled': { text: 'ரத்து செய்யப்பட்டது (Cancelled)', color: 'bg-red-100 text-red-800 border-red-300' }
+      };
+
+      resultBox.innerHTML = orders.map(ord => {
+        const badge = statusMap[ord.order_status] || { text: ord.order_status, color: 'bg-gray-100 text-gray-800 border-gray-300' };
+        const items = ord.items || [];
+        const date = new Date(ord.created_at).toLocaleDateString('ta-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+
+        return `
+          <div class="bg-gray-50 border border-gray-200 rounded-xl p-4 text-xs space-y-2">
+            <div class="flex justify-between items-start">
+              <div>
+                <span class="text-gray-400 font-mono">#${ord.id.slice(0, 8).toUpperCase()}</span>
+                <p class="font-bold text-gray-900 text-sm mt-0.5">${ord.customer_name}</p>
+                <p class="text-gray-500">${date}</p>
+              </div>
+              <span class="px-2.5 py-1 rounded-full font-bold border text-xs ${badge.color}">${badge.text}</span>
+            </div>
+
+            <div class="border-t border-gray-200 pt-2 text-gray-700">
+              <span class="font-semibold block mb-1">பொருட்கள்:</span>
+              <ul class="list-disc list-inside space-y-0.5">
+                ${items.map(i => `<li>${i.name} × ${i.quantity} (₹${i.price * i.quantity})</li>`).join('')}
+              </ul>
+            </div>
+
+            <div class="border-t border-gray-200 pt-2 flex justify-between font-bold text-gray-900 text-sm">
+              <span>மொத்தத் தொகை (COD):</span>
+              <span class="text-emerald-700">₹${ord.total_amount}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
     }
 
     loadProducts();
