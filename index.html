@@ -39,30 +39,18 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const inr=n=>'₹'+Number(n).toLocaleString('en-IN');
 const img=p=>esc(p.images?.[0]||'https://placehold.co/400x500?text=Thaarai+Tex');
 const store={get:k=>{try{return JSON.parse(localStorage.getItem(k))}catch{return null}},set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}}};
-let cart=store.get('cart')||[], user=null, wish=new Set(), coupon='';
+let cart=store.get('cart')||[], user=null, coupon='';
 const off=p=>p.mrp>p.price?Math.round((p.mrp-p.price)/p.mrp*100):0;
 function toast(m){const t=$('#toast');t.textContent=m;t.classList.remove('hidden');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.add('hidden'),2200)}
 function saveCart(){store.set('cart',cart);$('#cc').textContent=cart.reduce((s,i)=>s+i.qty,0)}
 const stars=n=>'★'.repeat(Math.round(n))+'☆'.repeat(5-Math.round(n));
 $('#wa').href=`https://wa.me/${WHATSAPP}`;
 
-/* ===== AUTH ===== */
-async function initAuth(){
-  const {data}=await sb.auth.getSession(); user=data.session?.user||null;
-  sb.auth.onAuthStateChange((_e,s)=>{user=s?.user||null;setNav();loadWish()});
-  setNav(); await loadWish();
-}
-function setNav(){$('#acc').textContent=user?'👤 Account':'👤 Login'}
-async function loadWish(){
-  wish=new Set();
-  if(user){const {data}=await sb.from('wishlist').select('product_id');(data||[]).forEach(w=>wish.add(w.product_id))}
-}
-async function toggleWish(id){
-  if(!user){toast('Please login first');location.hash='#/account';return}
-  if(wish.has(id)){wish.delete(id);await sb.from('wishlist').delete().match({user_id:user.id,product_id:id})}
-  else{wish.add(id);await sb.from('wishlist').insert({user_id:user.id,product_id:id})}
-  route();
-}
+/* ===== WISHLIST (kept on this device) ===== */
+let wish=new Set(store.get('wish')||[]);
+function setNav(){$('#acc').textContent='📦 Track Order'}
+async function initAuth(){setNav()}
+function toggleWish(id){wish.has(id)?wish.delete(id):wish.add(id);store.set('wish',[...wish]);route()}
 
 /* ===== CART ===== */
 function addCart(id,qty=1,max=10){
@@ -179,7 +167,7 @@ async function product(id){
    </div></div>
    <section class="bg-white rounded-2xl border p-5 mt-6"><h2 class="font-bold mb-3">Ratings &amp; Reviews</h2>
     ${user?`<div class="border rounded-xl p-3 mb-4 text-sm space-y-2"><select id="rr" class="border rounded p-1">${[5,4,3,2,1].map(n=>`<option>${n}</option>`)}</select> ★
-     <textarea id="rb" maxlength="500" rows="2" placeholder="Write your review" class="w-full border rounded-lg p-2"></textarea><button id="rs" class="${btn} !py-2">Submit</button></div>`:'<p class="text-xs text-gray-500 mb-3">Login to write a review.</p>'}
+     <textarea id="rb" maxlength="500" rows="2" placeholder="Write your review" class="w-full border rounded-lg p-2"></textarea><button id="rs" class="${btn} !py-2">Submit</button></div>`:''}
     ${(rv||[]).map(r=>`<div class="border-t py-3 text-sm"><span class="text-amber-600">${stars(r.rating)}</span> <b>${esc(r.author||'Customer')}</b><p class="text-gray-600">${esc(r.body)}</p></div>`).join('')||'<p class="text-sm text-gray-500">No reviews yet.</p>'}</section>
    ${sim?.length?`<h2 class="font-bold text-lg mt-8 mb-3">Similar Products</h2>${grid(sim)}`:''}`;
   const main=$('#main');
@@ -220,7 +208,6 @@ async function cartView(){
 }
 
 async function checkout(){
-  if(!user){toast('Login to continue');location.hash='#/account';return}
   const L=await cartLines(); if(!L.length){location.hash='#/cart';return}
   const sub=L.reduce((s,l)=>s+l.p.price*l.qty,0), d=await couponDiscount(sub), ship=sub-d<999?60:0, total=sub-d+ship;
   const saved=store.get('addr')||{};
@@ -242,11 +229,11 @@ async function checkout(){
   $('#cf').onsubmit=async e=>{e.preventDefault();
     const addr={name:$('#a-name').value.trim(),phone:$('#a-phone').value.trim(),pincode:$('#a-pin').value.trim(),city:$('#a-city').value.trim(),state:$('#a-state').value.trim(),line:$('#a-line').value.trim()};
     const b=$('#po');b.disabled=true;b.textContent='Placing order…';
-    const {data,error}=await sb.rpc('place_order',{p_items:cart.map(i=>({id:i.id,qty:i.qty})),p_address:addr,p_coupon:coupon||null});
+    const {data,error}=await sb.rpc('place_order_guest',{p_items:cart.map(i=>({id:i.id,qty:i.qty})),p_address:addr,p_coupon:coupon||null});
     if(error){toast(error.message);b.disabled=false;b.textContent='Place Order';return}
-    store.set('addr',addr);cart=[];coupon='';saveCart();
+    store.set('addr',addr);store.set('orders',[{code:String(data).slice(0,8).toUpperCase(),phone:addr.phone},...(store.get('orders')||[])]);cart=[];coupon='';saveCart();
     app.innerHTML=`<div class="text-center py-20"><div class="text-5xl">🎉</div><h2 class="text-xl font-bold mt-3">ஆர்டர் வெற்றிகரமாகப் பதிவானது!</h2>
-     <p class="text-sm text-gray-600 mt-1">Order ID #${esc(String(data).slice(0,8).toUpperCase())}</p><a href="#/account" class="${btn} inline-block mt-5">Track Order</a></div>`;
+     <p class="text-sm text-gray-600 mt-1">Order ID #${esc(String(data).slice(0,8).toUpperCase())}<br>Keep this ID and your mobile number to track your order.</p><a href="#/account" class="${btn} inline-block mt-5">Track Order</a></div>`;
   };
 }
 
@@ -300,24 +287,35 @@ function loginView(){
 }
 
 async function account(){
-  if(!user)return loginView();
-  const [{data:ords},{data:wl}]=await Promise.all([
-    sb.from('orders').select('*').order('created_at',{ascending:false}),
-    sb.from('wishlist').select('products(*)')]);
+  const saved=store.get('orders')||[];
+  const res=await Promise.all(saved.map(x=>sb.rpc('track_order',{p_code:x.code,p_phone:x.phone})));
+  const ords=res.map(r=>r.data).filter(Boolean);
+  let wp=[];if(wish.size){const {data}=await sb.from('products').select('*').in('id',[...wish]);wp=data||[]}
   const stl={pending:'bg-amber-100 text-amber-800',verified:'bg-blue-100 text-blue-800',dispatched:'bg-purple-100 text-purple-800',delivered:'bg-emerald-100 text-emerald-800',cancelled:'bg-red-100 text-red-800'};
   const steps=['pending','verified','dispatched','delivered'];
-  app.innerHTML=`<div class="flex justify-between items-center mb-4"><h1 class="font-bold text-lg">My Account</h1><button id="lo" class="text-red-600 text-sm font-semibold">Logout</button></div>
-   <h2 class="font-bold mb-2">📦 My Orders</h2><div class="space-y-3">${(ords||[]).map(o=>`
-    <div class="bg-white border rounded-xl p-4 text-sm"><div class="flex justify-between"><span class="font-mono text-gray-500">#${o.id.slice(0,8).toUpperCase()} · ${new Date(o.created_at).toLocaleDateString('en-IN')}</span><span class="px-2 py-0.5 rounded-full text-xs font-bold ${stl[o.order_status]||''}">${esc(o.order_status)}</span></div>
-     ${o.order_status==='cancelled'?'':`<div class="flex gap-1 my-3">${steps.map((s,i)=>`<div class="flex-1 h-1.5 rounded ${i<=steps.indexOf(o.order_status)?'bg-emerald-500':'bg-gray-200'}"></div>`).join('')}</div>`}
+  app.innerHTML=`<h1 class="font-bold text-lg mb-3">📦 Track Your Order</h1>
+   <form id="tf" class="bg-white border rounded-xl p-4 grid sm:grid-cols-3 gap-2 mb-5">
+    <input id="tc" required maxlength="8" placeholder="Order ID (e.g. 3F9A12BC)" class="border rounded-lg p-2.5 text-sm uppercase">
+    <input id="tp" required maxlength="10" inputmode="numeric" placeholder="Mobile number" class="border rounded-lg p-2.5 text-sm">
+    <button class="${btn} !py-2.5">Track</button></form>
+   <h2 class="font-bold mb-2">Your orders on this device</h2><div class="space-y-3">${ords.map(o=>`
+    <div class="bg-white border rounded-xl p-4 text-sm"><div class="flex justify-between"><span class="font-mono text-gray-500">#${esc(o.id.slice(0,8).toUpperCase())} · ${new Date(o.created_at).toLocaleDateString('en-IN')}</span><span class="px-2 py-0.5 rounded-full text-xs font-bold ${stl[o.order_status]||''}">${esc(o.order_status)}</span></div>
+     ${o.order_status==='cancelled'?'':`<div class="flex gap-1 my-3">${steps.map((st,i)=>`<div class="flex-1 h-1.5 rounded ${i<=steps.indexOf(o.order_status)?'bg-emerald-500':'bg-gray-200'}"></div>`).join('')}</div>`}
      ${o.items.map(i=>`<div class="flex justify-between"><span>${esc(i.name)} × ${i.quantity}</span><span>${inr(i.price*i.quantity)}</span></div>`).join('')}
      <div class="flex justify-between font-bold border-t mt-2 pt-2"><span>Total (COD)</span><span>${inr(o.total)}</span></div>
      ${o.tracking_id?`<p class="text-xs mt-1">Tracking ID: <b>${esc(o.tracking_id)}</b></p>`:''}
-     ${['pending','verified'].includes(o.order_status)?`<button data-c="${o.id}" class="mt-2 text-red-600 text-xs font-semibold underline">Cancel order</button>`:''}</div>`).join('')||'<p class="text-sm text-gray-500">No orders yet.</p>'}</div>
-   <h2 class="font-bold mt-8 mb-2">❤️ Wishlist</h2>${grid((wl||[]).map(w=>w.products).filter(Boolean))}`;
-  $('#lo').onclick=async()=>{await sb.auth.signOut();user=null;setNav();location.hash='#/'};
-  app.onclick=async e=>{const id=e.target.dataset.c;if(!id||!confirm('Cancel this order?'))return;
-    const {error}=await sb.rpc('cancel_order',{p_id:id});toast(error?error.message:'Order cancelled');account()};
+     ${['pending','verified'].includes(o.order_status)?`<button data-c="${esc(o.id.slice(0,8))}" data-ph="${esc(o.address.phone)}" class="mt-2 text-red-600 text-xs font-semibold underline">Cancel order</button>`:''}</div>`).join('')||'<p class="text-sm text-gray-500">No orders yet. Use the form above to look up an order.</p>'}</div>
+   <h2 class="font-bold mt-8 mb-2">❤️ Wishlist</h2>${grid(wp)}`;
+  $('#tf').onsubmit=async e=>{e.preventDefault();
+    const code=$('#tc').value.trim().toUpperCase().replace(/^#/,''), phone=$('#tp').value.trim();
+    const {data}=await sb.rpc('track_order',{p_code:code,p_phone:phone});
+    if(!data)return toast('Order not found. Check the Order ID and mobile number.');
+    const list=store.get('orders')||[];
+    if(!list.some(x=>x.code===code))store.set('orders',[{code,phone},...list]);
+    account()};
+  app.onclick=async e=>{const c=e.target.dataset.c;if(!c||!confirm('Cancel this order?'))return;
+    const {error}=await sb.rpc('cancel_order_guest',{p_code:c,p_phone:e.target.dataset.ph});
+    toast(error?error.message:'Order cancelled');account()};
 }
 
 /* ===== ROUTER ===== */
