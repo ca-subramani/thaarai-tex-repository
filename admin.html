@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Thaarai Tex Admin</title>
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-gray-100 text-gray-800 text-sm">
+<header class="bg-slate-900 text-white px-4 py-3 flex items-center gap-4">
+  <b class="uppercase">Thaarai Tex · Admin</b>
+  <nav id="tabs" class="hidden gap-1 flex-1">
+    <button data-t="dash" class="tab px-3 py-1.5 rounded-full">Dashboard</button>
+    <button data-t="prod" class="tab px-3 py-1.5 rounded-full">Products</button>
+    <button data-t="ord" class="tab px-3 py-1.5 rounded-full">Orders</button>
+    <button data-t="coup" class="tab px-3 py-1.5 rounded-full">Coupons</button>
+    <button data-t="cat" class="tab px-3 py-1.5 rounded-full">Categories</button>
+  </nav>
+  <a href="index.html" class="ml-auto text-xs underline">View store</a>
+  <button id="out" class="hidden text-xs underline">Logout</button>
+</header>
+<main id="app" class="max-w-6xl mx-auto p-4"></main>
+<div id="toast" class="fixed bottom-4 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-4 py-2 rounded-full hidden z-50"></div>
+
+<script>
+const SUPABASE_URL="https://hjogdvqwwbgzgwtdlrak.supabase.co";
+const SUPABASE_ANON_KEY="sb_publishable_gURnxsEPWoxUqqAqnEtJ_g_EmUlUgUZ";
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+const $=s=>document.querySelector(s), app=$('#app');
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const inr=n=>'₹'+Number(n||0).toLocaleString('en-IN');
+const btn='bg-slate-900 hover:bg-slate-800 text-white font-semibold px-4 py-2 rounded-lg disabled:opacity-50';
+const inp='border rounded-lg p-2 w-full outline-none focus:border-slate-900';
+const card='bg-white border rounded-xl p-4';
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.remove('hidden');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.add('hidden'),2500)}
+let tab='dash', editing=null, cats=[];
+
+/* ---------- AUTH ---------- */
+async function boot(){
+  const {data}=await sb.auth.getSession();
+  if(!data.session)return loginView();
+  const {data:p}=await sb.from('profiles').select('is_admin').eq('id',data.session.user.id).maybeSingle();
+  if(!p?.is_admin){app.innerHTML=`<div class="${card} max-w-md mx-auto text-center space-y-2"><b>Not an admin account</b>
+    <p>Logged in as ${esc(data.session.user.email)}</p>
+    <p class="text-xs text-gray-500">Your user ID (give it admin in SQL):</p><code class="block bg-gray-100 p-2 rounded break-all select-all">${esc(data.session.user.id)}</code></div>`;
+    $('#out').classList.remove('hidden');return}
+  $('#tabs').classList.replace('hidden','flex');$('#out').classList.remove('hidden');
+  ({data:cats}=await sb.from('categories').select('*').order('name'));cats=cats||[];
+  render();
+}
+function loginView(){
+  app.innerHTML=`<div class="${card} max-w-sm mx-auto space-y-3"><b>Admin login</b>
+   <div class="grid grid-cols-2 gap-2 text-xs font-semibold"><button id="m1" class="py-2 rounded-lg">📱 Mobile + Password</button><button id="m2" class="py-2 rounded-lg">✉️ Email + OTP</button></div>
+   <div id="pm" class="space-y-3"><input id="mb" maxlength="10" inputmode="numeric" placeholder="Mobile number" class="${inp}">
+    <input id="pw" type="password" placeholder="Password" class="${inp}"><button id="go" class="${btn} w-full">Login</button></div>
+   <div id="em" class="hidden space-y-3"><div id="e1"><input id="le" type="email" placeholder="Email" class="${inp}"><button id="so" class="${btn} w-full mt-3">Send OTP</button></div>
+    <div id="e2" class="hidden"><input id="lo" maxlength="8" placeholder="OTP code" class="${inp}"><button id="vo" class="${btn} w-full mt-3">Verify</button></div></div></div>`;
+  const set=m=>{$('#pm').classList.toggle('hidden',m!=='m');$('#em').classList.toggle('hidden',m!=='e');
+    $('#m1').className='py-2 rounded-lg '+(m==='m'?'bg-slate-900 text-white':'bg-gray-100');$('#m2').className='py-2 rounded-lg '+(m==='e'?'bg-slate-900 text-white':'bg-gray-100')};
+  set('m');$('#m1').onclick=()=>set('m');$('#m2').onclick=()=>set('e');
+  $('#go').onclick=async()=>{const n=$('#mb').value.trim();
+    if(!/^[6-9]\d{9}$/.test(n))return toast('Enter a valid mobile number');
+    const {error}=await sb.auth.signInWithPassword({email:`91${n}@phone.thaaraitex.com`,password:$('#pw').value});
+    if(error)return toast('Wrong mobile number or password');boot()};
+  let email='';
+  $('#so').onclick=async()=>{email=$('#le').value.trim().toLowerCase();
+    const {error}=await sb.auth.signInWithOtp({email});
+    if(error)return toast(error.message);$('#e1').classList.add('hidden');$('#e2').classList.remove('hidden')};
+  $('#vo').onclick=async()=>{const {error}=await sb.auth.verifyOtp({email,token:$('#lo').value.trim(),type:'email'});
+    if(error)return toast('Invalid OTP');boot()};
+}
+$('#out').onclick=async()=>{await sb.auth.signOut();location.reload()};
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{tab=b.dataset.t;editing=null;render()});
+
+function render(){
+  document.querySelectorAll('.tab').forEach(b=>b.className='tab px-3 py-1.5 rounded-full '+(b.dataset.t===tab?'bg-white text-slate-900':'hover:bg-slate-700'));
+  app.innerHTML='<p class="text-center py-10 text-gray-500">Loading…</p>';
+  ({dash,prod,ord,coup,cat}[tab])().catch(e=>app.innerHTML='<p class="text-red-600 text-center py-10">Error: '+esc(e.message)+'</p>');
+}
+const must=r=>{if(r.error)throw r.error;return r.data};
+
+/* ---------- DASHBOARD ---------- */
+async function dash(){
+  const ords=must(await sb.from('orders').select('total,order_status,created_at'));
+  const low=must(await sb.from('products').select('id,name,stock').lte('stock',5).order('stock'));
+  const live=ords.filter(o=>o.order_status!=='cancelled');
+  const today=new Date().toDateString();
+  const k=(l,v)=>`<div class="${card}"><p class="text-xs text-gray-500">${l}</p><p class="text-2xl font-bold">${v}</p></div>`;
+  app.innerHTML=`<div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+   ${k('Total orders',ords.length)}${k('Pending',ords.filter(o=>o.order_status==='pending').length)}
+   ${k('Revenue (excl. cancelled)',inr(live.reduce((s,o)=>s+Number(o.total),0)))}
+   ${k("Today's sales",inr(live.filter(o=>new Date(o.created_at).toDateString()===today).reduce((s,o)=>s+Number(o.total),0)))}</div>
+   <div class="${card} mt-4"><b>Low stock (5 or fewer)</b>
+   ${low.map(p=>`<div class="flex justify-between border-t py-1.5 mt-1"><span>${esc(p.name)}</span><b class="${p.stock===0?'text-red-600':'text-orange-600'}">${p.stock} left</b></div>`).join('')||'<p class="text-gray-500 mt-2">All products well stocked.</p>'}</div>`;
+}
+
+/* ---------- PRODUCTS ---------- */
+async function prod(){
+  if(editing!==null)return prodForm();
+  const ps=must(await sb.from('products').select('*').order('created_at',{ascending:false}));
+  app.innerHTML=`<div class="flex justify-between mb-3"><b class="text-base">Products (${ps.length})</b><button id="new" class="${btn}">+ Add product</button></div>
+  <div class="${card} overflow-x-auto"><table class="w-full text-left"><thead class="text-xs text-gray-500"><tr><th>Product</th><th>Price</th><th>MRP</th><th>Stock</th><th>Status</th><th></th></tr></thead><tbody>
+  ${ps.map(p=>`<tr class="border-t"><td class="py-2 flex items-center gap-2"><img src="${esc(p.images?.[0]||'https://placehold.co/40')}" class="w-10 h-10 object-cover rounded">${esc(p.name)}</td>
+   <td>${inr(p.price)}</td><td>${inr(p.mrp)}</td><td class="${p.stock<5?'text-orange-600 font-bold':''}">${p.stock}</td>
+   <td>${p.active?'<span class="text-emerald-700">Live</span>':'<span class="text-gray-400">Hidden</span>'}</td>
+   <td class="text-right whitespace-nowrap"><button data-e="${p.id}" class="underline mr-3">Edit</button><button data-d="${p.id}" class="underline text-red-600">Delete</button></td></tr>`).join('')}
+  </tbody></table></div>`;
+  $('#new').onclick=()=>{editing={};render()};
+  app.onclick=async e=>{
+    if(e.target.dataset.e){editing=ps.find(p=>p.id===e.target.dataset.e);render()}
+    if(e.target.dataset.d&&confirm('Delete this product permanently?')){
+      const {error}=await sb.from('products').delete().eq('id',e.target.dataset.d);
+      toast(error?error.message:'Deleted');render()}};
+}
+function prodForm(){
+  const p=editing, v=k=>esc(p[k]??'');
+  let imgs=[...(p.images||[])];
+  app.innerHTML=`<form id="pf" class="${card} max-w-2xl space-y-3"><b class="text-base">${p.id?'Edit':'New'} product</b>
+   <input id="n" required placeholder="Name" value="${v('name')}" class="${inp}">
+   <textarea id="d" rows="3" placeholder="Description" class="${inp}">${v('description')}</textarea>
+   <div class="grid grid-cols-3 gap-2"><label>Price ₹<input id="pr" type="number" min="0" required value="${v('price')}" class="${inp}"></label>
+    <label>MRP ₹<input id="mr" type="number" min="0" required value="${v('mrp')}" class="${inp}"></label>
+    <label>Stock<input id="st" type="number" min="0" required value="${v('stock')||0}" class="${inp}"></label></div>
+   <div class="grid grid-cols-3 gap-2"><label>Fabric<input id="fa" value="${v('fabric')}" class="${inp}"></label>
+    <label>Colour<input id="co" value="${v('color')}" class="${inp}"></label><label>Occasion<input id="oc" value="${v('occasion')}" class="${inp}"></label></div>
+   <label class="block">Category<select id="ca" class="${inp}"><option value="">None</option>${cats.map(c=>`<option value="${c.id}" ${c.id===p.category_id?'selected':''}>${esc(c.name)}</option>`).join('')}</select></label>
+   <div><p class="mb-1">Images (first = main)</p><div id="im" class="flex flex-wrap gap-2 mb-2"></div>
+    <input id="up" type="file" accept="image/*" multiple class="text-xs"></div>
+   <label class="flex items-center gap-2"><input id="ac" type="checkbox" ${p.active!==false?'checked':''}> Visible in store</label>
+   <div class="flex gap-2"><button id="sv" class="${btn}">Save</button><button type="button" id="cn" class="px-4 py-2 border rounded-lg">Cancel</button></div></form>`;
+  const drawImgs=()=>{$('#im').innerHTML=imgs.map((u,i)=>`<div class="relative"><img src="${esc(u)}" class="w-20 h-20 object-cover rounded border"><button type="button" data-x="${i}" class="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-5 h-5 text-xs">×</button></div>`).join('')};
+  drawImgs();
+  $('#im').onclick=e=>{if(e.target.dataset.x!==undefined){imgs.splice(+e.target.dataset.x,1);drawImgs()}};
+  $('#up').onchange=async e=>{toast('Uploading…');
+    for(const f of e.target.files){
+      const path=`${Date.now()}-${Math.random().toString(36).slice(2,7)}-${f.name.replace(/[^\w.-]/g,'_')}`;
+      const {error}=await sb.storage.from('product-images').upload(path,f);
+      if(error){toast('Upload failed: '+error.message);return}
+      imgs.push(sb.storage.from('product-images').getPublicUrl(path).data.publicUrl)}
+    drawImgs();toast('Uploaded ✓')};
+  $('#cn').onclick=()=>{editing=null;render()};
+  $('#pf').onsubmit=async e=>{e.preventDefault();
+    const row={name:$('#n').value.trim(),description:$('#d').value.trim(),price:+$('#pr').value,mrp:+$('#mr').value,stock:+$('#st').value,
+      fabric:$('#fa').value.trim()||null,color:$('#co').value.trim()||null,occasion:$('#oc').value.trim()||null,
+      category_id:$('#ca').value||null,images:imgs,active:$('#ac').checked};
+    if(row.mrp<row.price)return toast('MRP must be ≥ price');
+    $('#sv').disabled=true;
+    const {error}=p.id?await sb.from('products').update(row).eq('id',p.id):await sb.from('products').insert(row);
+    if(error){toast(error.message);$('#sv').disabled=false;return}
+    toast('Saved ✓');editing=null;render()};
+}
+
+/* ---------- ORDERS ---------- */
+async function ord(){
+  const os=must(await sb.from('orders').select('*').order('created_at',{ascending:false}));
+  const sts=['pending','verified','dispatched','delivered','cancelled'];
+  app.innerHTML=`<div class="flex justify-between mb-3"><b class="text-base">Orders (${os.length})</b><button id="csv" class="${btn}">Export CSV</button></div>
+  <div class="space-y-3">${os.map(o=>`<div class="${card}"><div class="flex flex-wrap justify-between gap-2">
+   <div><b class="font-mono">#${o.id.slice(0,8).toUpperCase()}</b> <span class="text-gray-500">${new Date(o.created_at).toLocaleString('en-IN')}</span>
+    <p>${esc(o.address.name)} · <a class="underline" href="tel:${esc(o.address.phone)}">${esc(o.address.phone)}</a></p>
+    <p class="text-gray-600">${esc(o.address.line)}, ${esc(o.address.city)}, ${esc(o.address.state)} - ${esc(o.address.pincode)}</p></div>
+   <div class="text-right"><b>${inr(o.total)}</b><p class="text-xs text-gray-500">${esc(o.payment_method)}${o.coupon?' · '+esc(o.coupon):''}</p></div></div>
+   <div class="border-t mt-2 pt-2">${o.items.map(i=>`<div class="flex justify-between"><span>${esc(i.name)} × ${i.quantity}</span><span>${inr(i.price*i.quantity)}</span></div>`).join('')}</div>
+   <div class="flex flex-wrap gap-2 mt-3 items-center">
+    <select data-s="${o.id}" class="border rounded-lg p-1.5" ${o.order_status==='cancelled'?'disabled':''}>${sts.map(s=>`<option ${s===o.order_status?'selected':''}>${s}</option>`).join('')}</select>
+    <input data-t="${o.id}" placeholder="Tracking ID" value="${esc(o.tracking_id||'')}" class="border rounded-lg p-1.5">
+    <button data-u="${o.id}" class="${btn} !py-1.5">Update</button>
+    <button data-p="${o.id}" class="underline text-xs">Print label</button></div></div>`).join('')}</div>`;
+  app.onclick=async e=>{
+    const id=e.target.dataset.u;
+    if(id){const st=app.querySelector(`[data-s="${id}"]`).value, tr=app.querySelector(`[data-t="${id}"]`).value.trim();
+      if(st==='cancelled'&&!confirm('Cancel and restore stock?'))return;
+      const {error}=await sb.rpc('admin_set_status',{p_id:id,p_status:st,p_tracking:tr});
+      toast(error?error.message:'Updated ✓');if(!error)render()}
+    if(e.target.dataset.p){const o=os.find(x=>x.id===e.target.dataset.p),a=o.address;
+      const w=open('','_blank');w.document.write(`<body style="font:16px sans-serif;padding:24px;border:2px solid #000;max-width:420px"><h3>To:</h3><b>${esc(a.name)}</b><br>${esc(a.line)}<br>${esc(a.city)}, ${esc(a.state)} - <b>${esc(a.pincode)}</b><br>Ph: ${esc(a.phone)}<hr><b>COD: ${inr(o.total)}</b><br>Order #${o.id.slice(0,8).toUpperCase()}<hr>From: Thaarai Tex, Melur, Tamil Nadu<script>print()<\/script>`);w.document.close()}};
+  $('#csv').onclick=()=>{
+    const q=v=>'"'+String(v??'').replace(/"/g,'""').replace(/^([=+\-@])/,"'$1")+'"';
+    const rows=[['Order','Date','Name','Phone','Address','Pincode','Items','Total','Status','Tracking']].concat(os.map(o=>[o.id.slice(0,8),o.created_at,o.address.name,o.address.phone,`${o.address.line}, ${o.address.city}`,o.address.pincode,o.items.map(i=>`${i.name} x${i.quantity}`).join('; '),o.total,o.order_status,o.tracking_id]));
+    const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+rows.map(r=>r.map(q).join(',')).join('\n')],{type:'text/csv'}));a.download='orders.csv';a.click()};
+}
+
+/* ---------- COUPONS ---------- */
+async function coup(){
+  const cs=must(await sb.from('coupons').select('*').order('code'));
+  app.innerHTML=`<div class="${card} max-w-xl space-y-3"><b class="text-base">Coupons</b>
+   <form id="cf" class="grid grid-cols-4 gap-2"><input id="cc" required placeholder="CODE" class="${inp} uppercase"><input id="cp" type="number" min="1" max="90" required placeholder="% off" class="${inp}">
+    <input id="cm" type="number" min="0" placeholder="Min ₹" class="${inp}"><button class="${btn}">Add</button></form>
+   ${cs.map(c=>`<div class="flex justify-between items-center border-t pt-2"><span><b>${esc(c.code)}</b> · ${c.percent}% off · min ${inr(c.min_total)}</span>
+    <span><button data-a="${c.code}" class="underline mr-3">${c.active?'Disable':'Enable'}</button><button data-r="${c.code}" class="underline text-red-600">Delete</button></span></div>`).join('')}</div>`;
+  $('#cf').onsubmit=async e=>{e.preventDefault();
+    const {error}=await sb.from('coupons').insert({code:$('#cc').value.trim().toUpperCase(),percent:+$('#cp').value,min_total:+$('#cm').value||0});
+    toast(error?error.message:'Added ✓');render()};
+  app.onclick=async e=>{const t=e.target.dataset;
+    if(t.a){const c=cs.find(x=>x.code===t.a);await sb.from('coupons').update({active:!c.active}).eq('code',t.a);render()}
+    if(t.r&&confirm('Delete coupon?')){await sb.from('coupons').delete().eq('code',t.r);render()}};
+}
+
+/* ---------- CATEGORIES ---------- */
+async function cat(){
+  ({data:cats}=await sb.from('categories').select('*').order('name'));cats=cats||[];
+  app.innerHTML=`<div class="${card} max-w-md space-y-3"><b class="text-base">Categories</b>
+   <form id="kf" class="flex gap-2"><input id="kn" required placeholder="e.g. Kanchipuram Silk" class="${inp}"><button class="${btn}">Add</button></form>
+   ${cats.map(c=>`<div class="flex justify-between border-t pt-2"><span>${esc(c.name)}</span><button data-r="${c.id}" class="underline text-red-600">Delete</button></div>`).join('')}</div>`;
+  $('#kf').onsubmit=async e=>{e.preventDefault();const n=$('#kn').value.trim();
+    const {error}=await sb.from('categories').insert({name:n,slug:n.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')+'-'+Math.random().toString(36).slice(2,5)});
+    toast(error?error.message:'Added ✓');cat()};
+  app.onclick=async e=>{const id=e.target.dataset.r;if(id&&confirm('Delete category?')){const {error}=await sb.from('categories').delete().eq('id',id);toast(error?error.message:'Deleted');cat()}};
+}
+boot();
+</script>
+</body>
+</html>
