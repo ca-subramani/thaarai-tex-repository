@@ -7,9 +7,10 @@
 <meta name="description" content="Handloom silk and cotton sarees direct from weavers. Free delivery, Cash on Delivery.">
 <script src="https://cdn.tailwindcss.com/3.4.17"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body class="bg-gray-100 text-gray-800 antialiased">
-<div class="bg-slate-900 text-white text-xs py-1.5 text-center">✨ இலவச டெலிவரி (₹999+) &amp; Cash on Delivery</div>
+<div class="bg-slate-900 text-white text-xs py-1.5 text-center">✨ இலவச டெலிவரி (Free Delivery) &amp; COD / UPI</div>
 <header class="bg-white border-b sticky top-0 z-40 shadow-sm">
   <div class="max-w-6xl mx-auto px-4 py-3 flex items-center gap-3">
     <a href="#/" class="font-black text-xl uppercase text-slate-900">Thaarai Tex</a>
@@ -32,6 +33,7 @@
 const SUPABASE_URL="https://hjogdvqwwbgzgwtdlrak.supabase.co";
 const SUPABASE_ANON_KEY="sb_publishable_gURnxsEPWoxUqqAqnEtJ_g_EmUlUgUZ";
 const WHATSAPP="919999999999"; // change to your number
+const UPI_ID="yourname@upi", UPI_NAME="Thaarai Tex"; // change to YOUR UPI ID
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
 
 /* ===== HELPERS ===== */
@@ -66,8 +68,8 @@ async function cartLines(){
 }
 async function couponDiscount(sub){
   if(!coupon)return 0;
-  const {data}=await sb.from('coupons').select('*').eq('code',coupon).eq('active',true).maybeSingle();
-  return data&&sub>=data.min_total?Math.round(sub*data.percent/100):0;
+  const {data}=await sb.rpc('check_coupon',{p_code:coupon,p_subtotal:sub});
+  return Number(data)||0;
 }
 
 /* ===== COMPONENTS ===== */
@@ -159,7 +161,7 @@ async function product(id){
     <table class="text-sm"><tbody>${[['Fabric',p.fabric],['Colour',p.color],['Occasion',p.occasion]].filter(r=>r[1]).map(r=>`<tr><td class="pr-6 py-0.5 text-gray-500">${r[0]}</td><td>${esc(r[1])}</td></tr>`).join('')}</tbody></table>
     <div class="border rounded-xl p-3 text-sm"><b>Delivery check</b>
      <div class="flex gap-2 mt-2"><input id="pin" maxlength="6" inputmode="numeric" placeholder="Pincode" class="border rounded-lg p-2 w-32 text-sm"><button id="pinb" class="bg-gray-100 px-3 rounded-lg font-semibold">Check</button></div><p id="pinr" class="text-xs mt-1"></p></div>
-    <div class="grid grid-cols-3 gap-2 text-center text-[11px] font-semibold"><div>💵<br>Cash on Delivery</div><div>🚚<br>Free above ₹999</div><div>🔄<br>7-day returns</div></div>
+    <div class="grid grid-cols-3 gap-2 text-center text-[11px] font-semibold"><div>💵<br>Cash on Delivery</div><div>🚚<br>Free Delivery</div><div>🔄<br>7-day returns</div></div>
     <p class="text-sm text-gray-600 leading-relaxed">${esc(p.description||'')}</p>
     <div class="flex gap-2"><button id="add" ${ok?'':'disabled'} class="flex-1 ${btn} !bg-amber-500 hover:!bg-amber-600">Add to Bag 🛒</button><button id="buy" ${ok?'':'disabled'} class="flex-1 ${btn}">Buy Now ⚡</button></div>
     <div class="flex gap-3 text-xs"><a class="underline" target="_blank" rel="noopener" href="https://wa.me/?text=${shareTxt}%20${shareUrl}">Share on WhatsApp</a>
@@ -189,7 +191,8 @@ async function product(id){
 async function cartView(){
   const L=await cartLines(); cart=L.map(l=>({id:l.id,qty:Math.min(l.qty,l.p.stock||1)}));saveCart();
   if(!L.length){app.innerHTML='<div class="text-center py-20"><p class="mb-4">உங்கள் பை காலியாக உள்ளது.</p><a href="#/shop" class="'+btn+' inline-block">Continue Shopping</a></div>';return}
-  const sub=L.reduce((s,l)=>s+l.p.price*l.qty,0), d=await couponDiscount(sub), ship=sub-d<999?60:0;
+  const sub=L.reduce((s,l)=>s+l.p.price*l.qty,0), d=await couponDiscount(sub), ship=0;
+  if(coupon&&!d)toast('Coupon not valid for this cart');
   app.innerHTML=`<div class="grid md:grid-cols-[1fr_320px] gap-6"><div class="space-y-3">${L.map(l=>`
    <div class="bg-white border rounded-xl p-3 flex gap-3"><img src="${img(l.p)}" class="w-20 h-24 object-cover rounded-lg">
     <div class="flex-1 text-sm"><a href="#/p/${l.p.id}" class="font-bold">${esc(l.p.name)}</a><div>${inr(l.p.price)}</div>
@@ -210,7 +213,8 @@ async function cartView(){
 
 async function checkout(){
   const L=await cartLines(); if(!L.length){location.hash='#/cart';return}
-  const sub=L.reduce((s,l)=>s+l.p.price*l.qty,0), d=await couponDiscount(sub), ship=sub-d<999?60:0, total=sub-d+ship;
+  const sub=L.reduce((s,l)=>s+l.p.price*l.qty,0);
+  let d=await couponDiscount(sub), method='COD';
   const pf=store.get('profile'), AL=getAddrs(), def=AL.find(a=>a.def)||AL[0]||store.get('addr')||{}, saved={...(pf?{name:pf.name,phone:pf.phone}:{}),...def};
   app.innerHTML=`<div class="grid md:grid-cols-[1fr_320px] gap-6">
    <form id="cf" class="bg-white border rounded-xl p-5 space-y-3">
@@ -222,22 +226,61 @@ async function checkout(){
     <div class="grid grid-cols-2 gap-2">${input('a-city','City / District',`required value="${esc(saved.city||'')}"`)}${input('a-state','State',`required value="${esc(saved.state||'Tamil Nadu')}"`)}</div>
     <label class="block text-xs font-medium">Door no, street, area<textarea id="a-line" required rows="2" class="mt-1 w-full border rounded-lg p-2.5 text-sm">${esc(saved.line||'')}</textarea></label>
     <h2 class="font-bold pt-2">Payment</h2>
-    <label class="flex items-center gap-2 border rounded-lg p-3 text-sm"><input type="radio" checked> 💵 Cash on Delivery</label>
-    <label class="flex items-center gap-2 border rounded-lg p-3 text-sm opacity-50"><input type="radio" disabled> UPI / Card / Netbanking (coming soon)</label>
-    <button id="po" class="${btn} w-full">Place Order · ${inr(total)}</button></form>
-   <aside class="bg-white border rounded-xl p-4 h-fit text-sm space-y-1">${L.map(l=>`<div class="flex justify-between"><span>${esc(l.p.name)} × ${l.qty}</span><span>${inr(l.p.price*l.qty)}</span></div>`).join('')}
-    <div class="flex justify-between border-t pt-2 mt-2"><span>Delivery</span><span>${ship?inr(ship):'FREE'}</span></div>
-    <div class="flex justify-between font-bold"><span>Total</span><span>${inr(total)}</span></div></aside></div>`;
-  const sa=$('#sa');if(sa)sa.onchange=()=>{const a=AL.find(x=>x.id===sa.value);if(!a)return;$('#a-name').value=a.name;$('#a-phone').value=a.phone;$('#a-pin').value=a.pincode;$('#a-city').value=a.city;$('#a-state').value=a.state;$('#a-line').value=a.line};
-  $('#cf').onsubmit=async e=>{e.preventDefault();
-    const addr={name:$('#a-name').value.trim(),phone:$('#a-phone').value.trim(),pincode:$('#a-pin').value.trim(),city:$('#a-city').value.trim(),state:$('#a-state').value.trim(),line:$('#a-line').value.trim()};
-    const b=$('#po');b.disabled=true;b.textContent='Placing order…';
-    const {data,error}=await sb.rpc('place_order_guest',{p_items:cart.map(i=>({id:i.id,qty:i.qty})),p_address:addr,p_coupon:coupon||null});
-    if(error){toast(error.message);b.disabled=false;b.textContent='Place Order';return}
-    store.set('addr',addr);{const L=getAddrs();if(!L.some(x=>x.line===addr.line&&x.pincode===addr.pincode))store.set('addrs',[...L,{...addr,id:Date.now().toString(36),def:!L.length}])}store.set('orders',[{code:String(data).slice(0,8).toUpperCase(),phone:addr.phone},...(store.get('orders')||[])]);cart=[];coupon='';saveCart();
-    app.innerHTML=`<div class="text-center py-20"><div class="text-5xl">🎉</div><h2 class="text-xl font-bold mt-3">ஆர்டர் வெற்றிகரமாகப் பதிவானது!</h2>
-     <p class="text-sm text-gray-600 mt-1">Order ID #${esc(String(data).slice(0,8).toUpperCase())}<br>Keep this ID and your mobile number to track your order.</p><a href="#/account/orders" class="${btn} inline-block mt-5">My Orders</a></div>`;
+    <label class="flex items-center gap-2 border rounded-lg p-3 text-sm cursor-pointer"><input type="radio" name="pm" value="COD" checked> 💵 Cash on Delivery</label>
+    <label class="flex items-center gap-2 border rounded-lg p-3 text-sm cursor-pointer"><input type="radio" name="pm" value="UPI"> 📲 Pay Online (UPI)</label>
+    <div id="upi" class="hidden border border-emerald-200 rounded-xl p-4 bg-emerald-50 text-sm space-y-3 text-center">
+     <p>Pay exactly <b id="upa" class="text-lg"></b> to this UPI ID</p>
+     <p class="font-mono bg-white border rounded-lg py-2 font-bold select-all">${esc(UPI_ID)}</p>
+     <div id="qr" class="flex justify-center"></div>
+     <a id="upl" class="${btn} inline-block !py-2">Open UPI app</a>
+     <input id="utr" maxlength="22" placeholder="After paying, enter UPI transaction / UTR number" class="w-full border rounded-lg p-2.5 text-sm outline-none focus:border-slate-900">
+     <p class="text-xs text-gray-500">We confirm your order once the payment is verified.</p></div>
+    <button id="po" class="${btn} w-full"></button></form>
+   <aside class="bg-white border rounded-xl p-4 h-fit text-sm space-y-1">${L.map(l=>`<div class="flex justify-between gap-2"><span>${esc(l.p.name)} × ${l.qty}</span><span>${inr(l.p.price*l.qty)}</span></div>`).join('')}
+    <div class="flex gap-2 pt-3"><input id="cp" value="${esc(coupon)}" placeholder="Coupon code" class="border rounded-lg p-2 flex-1 uppercase"><button type="button" id="cpb" class="bg-gray-100 px-3 rounded-lg font-semibold">Apply</button></div>
+    <div class="flex justify-between border-t pt-2 mt-2"><span>Subtotal</span><span>${inr(sub)}</span></div>
+    <div class="flex justify-between text-emerald-700"><span>Discount</span><span id="sd"></span></div>
+    <div class="flex justify-between"><span>Delivery</span><span class="text-emerald-700 font-semibold">FREE</span></div>
+    <div class="flex justify-between font-bold text-base border-t pt-2"><span>Total</span><span id="st"></span></div></aside></div>`;
+  const refresh=()=>{
+    const t=sub-d, link=`upi://pay?pa=${encodeURIComponent(UPI_ID)}&pn=${encodeURIComponent(UPI_NAME)}&am=${t}&cu=INR&tn=${encodeURIComponent('Thaarai Tex order')}`;
+    $('#sd').textContent='−'+inr(d);$('#st').textContent=inr(t);$('#upa').textContent=inr(t);$('#upl').href=link;
+    $('#po').textContent='Review Order · '+inr(t);
+    $('#qr').innerHTML='';if(method==='UPI'&&window.QRCode)new QRCode($('#qr'),{text:link,width:160,height:160});
   };
+  refresh();
+  document.querySelectorAll('input[name=pm]').forEach(r=>r.onchange=()=>{method=r.value;
+    $('#upi').classList.toggle('hidden',method!=='UPI');$('#utr').required=method==='UPI';refresh()});
+  $('#cpb').onclick=async()=>{coupon=$('#cp').value.trim().toUpperCase();d=await couponDiscount(sub);
+    toast(coupon?(d?'Coupon applied ✓':'Coupon not valid or minimum not met'):'Coupon removed');refresh()};
+  const sa=$('#sa');if(sa)sa.onchange=()=>{const a=AL.find(x=>x.id===sa.value);if(!a)return;$('#a-name').value=a.name;$('#a-phone').value=a.phone;$('#a-pin').value=a.pincode;$('#a-city').value=a.city;$('#a-state').value=a.state;$('#a-line').value=a.line};
+  $('#cf').onsubmit=e=>{e.preventDefault();
+    const addr={name:$('#a-name').value.trim(),phone:$('#a-phone').value.trim(),pincode:$('#a-pin').value.trim(),city:$('#a-city').value.trim(),state:$('#a-state').value.trim(),line:$('#a-line').value.trim()};
+    const utr=method==='UPI'?$('#utr').value.trim():'';
+    if(method==='UPI'&&!/^[A-Za-z0-9]{8,22}$/.test(utr))return toast('Pay first, then enter the UPI transaction number');
+    confirmBox(addr,utr)};
+  function confirmBox(addr,utr){
+    const ov=document.createElement('div');ov.className='fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4';
+    ov.innerHTML=`<div class="bg-white rounded-2xl max-w-md w-full p-5 space-y-3 max-h-[90vh] overflow-y-auto"><h3 class="font-bold text-base">Please confirm your order</h3>
+     <div class="bg-gray-50 border rounded-xl p-3 text-sm space-y-1">${L.map(l=>`<div class="flex justify-between gap-2"><span>${esc(l.p.name)} × ${l.qty}</span><span>${inr(l.p.price*l.qty)}</span></div>`).join('')}</div>
+     <div class="text-sm"><b>${esc(addr.name)}</b> · ${esc(addr.phone)}<br>${esc(addr.line)}, ${esc(addr.city)}, ${esc(addr.state)} - ${esc(addr.pincode)}</div>
+     <div class="flex justify-between text-sm"><span>Payment</span><b>${method==='UPI'?'UPI · Ref '+esc(utr):'Cash on Delivery'}</b></div>
+     <div class="flex justify-between text-sm"><span>Delivery</span><b class="text-emerald-700">FREE</b></div>
+     <div class="flex justify-between font-bold text-base"><span>${method==='UPI'?'Amount paid':'Amount to pay on delivery'}</span><span>${inr(sub-d)}</span></div>
+     <div class="flex gap-2 pt-1"><button id="cE" class="flex-1 border rounded-xl py-2.5 font-semibold">✏️ Edit</button><button id="cO" class="flex-1 ${btn}">✓ Confirm Order</button></div></div>`;
+    document.body.appendChild(ov);
+    ov.querySelector('#cE').onclick=()=>ov.remove();
+    ov.querySelector('#cO').onclick=async()=>{
+      const b=ov.querySelector('#cO');b.disabled=true;b.textContent='Placing order…';
+      const {data,error}=await sb.rpc('place_order_guest',{p_items:cart.map(i=>({id:i.id,qty:i.qty})),p_address:addr,p_coupon:coupon||null,p_method:method,p_ref:utr||null});
+      if(error){toast(error.message);b.disabled=false;b.textContent='✓ Confirm Order';return}
+      store.set('addr',addr);{const AL2=getAddrs();if(!AL2.some(x=>x.line===addr.line&&x.pincode===addr.pincode))store.set('addrs',[...AL2,{...addr,id:Date.now().toString(36),def:!AL2.length}])}
+      store.set('orders',[{code:String(data).slice(0,8).toUpperCase(),phone:addr.phone},...(store.get('orders')||[])]);
+      cart=[];coupon='';saveCart();ov.remove();
+      app.innerHTML=`<div class="text-center py-20"><div class="text-5xl">🎉</div><h2 class="text-xl font-bold mt-3">ஆர்டர் வெற்றிகரமாகப் பதிவானது!</h2>
+       <p class="text-sm text-gray-600 mt-1">Order ID #${esc(String(data).slice(0,8).toUpperCase())}${method==='UPI'?'<br>We will verify your payment shortly.':''}</p><a href="#/account/orders" class="${btn} inline-block mt-5">My Orders</a></div>`;
+    };
+  }
 }
 
 function loginView(){
@@ -269,7 +312,7 @@ function orderCard(o){
   return `<div class="bg-white border rounded-xl p-4 text-sm"><div class="flex justify-between items-center"><span class="text-gray-500 text-xs">Ordered ${new Date(o.created_at).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})}</span><span class="px-2 py-0.5 rounded-full text-xs font-bold ${STL[o.order_status]||''}">${esc(SLBL[o.order_status]||o.order_status)}</span></div>
    ${o.items.map(i=>`<div class="flex gap-3 items-center mt-3">${i.image?`<img src="${esc(i.image)}" class="w-12 h-14 object-cover rounded">`:'<div class="w-12 h-14 bg-gray-100 rounded"></div>'}<div class="flex-1"><p class="font-semibold">${esc(i.name)}</p><p class="text-xs text-gray-500">Qty ${i.quantity}</p></div><b>${inr(i.price*i.quantity)}</b></div>`).join('')}
    ${o.order_status==='cancelled'?'':`<div class="grid grid-cols-4 gap-1 mt-4 text-[10px] text-center text-gray-500">${['Placed','Confirmed','Shipped','Delivered'].map((l,i)=>`<div><div class="h-1.5 rounded ${i<=at?'bg-emerald-500':'bg-gray-200'} mb-1"></div>${l}</div>`).join('')}</div>`}
-   <div class="flex justify-between font-bold border-t mt-3 pt-2"><span>Total (COD)</span><span>${inr(o.total)}</span></div>
+   <div class="flex justify-between font-bold border-t mt-3 pt-2"><span>Total</span><span>${inr(o.total)}</span></div>
    ${o.tracking_id?`<p class="text-xs mt-1">Tracking ID: <b>${esc(o.tracking_id)}</b></p>`:''}
    </div>`;
 }
