@@ -265,13 +265,13 @@ const STEPS=['pending','verified','dispatched','delivered'], SLBL={pending:'Orde
 const GRP={all:()=>true,progress:o=>['pending','verified'].includes(o.order_status),shipped:o=>o.order_status==='dispatched',delivered:o=>o.order_status==='delivered',cancelled:o=>o.order_status==='cancelled'};
 
 function orderCard(o){
-  const d=OC.dev.find(x=>x.created_at===o.created_at), can=d&&GRP.progress(o), at=STEPS.indexOf(o.order_status);
+  const at=STEPS.indexOf(o.order_status);
   return `<div class="bg-white border rounded-xl p-4 text-sm"><div class="flex justify-between items-center"><span class="text-gray-500 text-xs">Ordered ${new Date(o.created_at).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})}</span><span class="px-2 py-0.5 rounded-full text-xs font-bold ${STL[o.order_status]||''}">${esc(SLBL[o.order_status]||o.order_status)}</span></div>
    ${o.items.map(i=>`<div class="flex gap-3 items-center mt-3">${i.image?`<img src="${esc(i.image)}" class="w-12 h-14 object-cover rounded">`:'<div class="w-12 h-14 bg-gray-100 rounded"></div>'}<div class="flex-1"><p class="font-semibold">${esc(i.name)}</p><p class="text-xs text-gray-500">Qty ${i.quantity}</p></div><b>${inr(i.price*i.quantity)}</b></div>`).join('')}
    ${o.order_status==='cancelled'?'':`<div class="grid grid-cols-4 gap-1 mt-4 text-[10px] text-center text-gray-500">${['Placed','Confirmed','Shipped','Delivered'].map((l,i)=>`<div><div class="h-1.5 rounded ${i<=at?'bg-emerald-500':'bg-gray-200'} mb-1"></div>${l}</div>`).join('')}</div>`}
    <div class="flex justify-between font-bold border-t mt-3 pt-2"><span>Total (COD)</span><span>${inr(o.total)}</span></div>
    ${o.tracking_id?`<p class="text-xs mt-1">Tracking ID: <b>${esc(o.tracking_id)}</b></p>`:''}
-   ${can?`<button data-c="${esc(d.id.slice(0,8))}" data-ph="${esc(d.address.phone)}" class="mt-2 text-red-600 text-xs font-semibold underline">Cancel order</button>`:''}</div>`;
+   </div>`;
 }
 async function ordersHtml(pf){
   const saved=store.get('orders')||[];
@@ -326,7 +326,6 @@ async function account(section){
   app.onclick=async e=>{const t=e.target,d=t.dataset,again=()=>account(section);
     if(t.id==='lgo'){localStorage.removeItem('profile');setNav();toast('Logged out');location.hash='#/';return}
     if(d.f){ofilter=d.f;again()}
-    if(d.c&&confirm('Cancel this order?')){const {error}=await sb.rpc('cancel_order_guest',{p_code:d.c,p_phone:d.ph});toast(error?error.message:'Order cancelled');again()}
     if(t.id==='ps'){const name=$('#pn').value.trim(),phone=$('#pp').value.trim();
       if(name.length<2)return toast('Enter your name');if(!/^[6-9]\d{9}$/.test(phone))return toast('Enter a valid mobile number');
       store.set('profile',{name,phone});localStorage.removeItem('lookup');setNav();toast('Saved ✓');again()}
