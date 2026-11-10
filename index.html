@@ -17,7 +17,7 @@
     <nav class="flex items-center gap-2 ml-auto text-sm">
       <a href="#/shop" class="px-3 py-2 hover:bg-gray-100 rounded-full">Shop</a>
       <a href="#/login" id="lgn" class="px-3 py-2 hover:bg-gray-100 rounded-full">👤 Login</a>
-      <a href="#/account" id="acc" class="px-3 py-2 bg-gray-100 rounded-full">👤 Login</a>
+      <a href="#/account/orders" id="acc" class="px-3 py-2 bg-gray-100 rounded-full">👤 Login</a>
       <a href="#/cart" class="px-3 py-2 bg-slate-900 text-white rounded-full">🛒 <span id="cc">0</span></a>
     </nav>
   </div>
@@ -49,7 +49,7 @@ $('#wa').href=`https://wa.me/${WHATSAPP}`;
 
 /* ===== WISHLIST (kept on this device) ===== */
 let wish=new Set(store.get('wish')||[]);
-function setNav(){$('#acc').textContent='📦 Track Order';const p=store.get('profile');$('#lgn').textContent=p?'👤 '+p.name.split(' ')[0]:'👤 Login'}
+function setNav(){$('#acc').textContent='📦 Orders';const p=store.get('profile');$('#lgn').textContent=p?'👤 '+p.name.split(' ')[0]:'👤 Login';$('#lgn').href=p?'#/account/profile':'#/login'}
 async function initAuth(){setNav()}
 function toggleWish(id){wish.has(id)?wish.delete(id):wish.add(id);store.set('wish',[...wish]);route()}
 
@@ -211,10 +211,11 @@ async function cartView(){
 async function checkout(){
   const L=await cartLines(); if(!L.length){location.hash='#/cart';return}
   const sub=L.reduce((s,l)=>s+l.p.price*l.qty,0), d=await couponDiscount(sub), ship=sub-d<999?60:0, total=sub-d+ship;
-  const pf=store.get('profile'), saved={...(store.get('addr')||{}),...(pf?{name:pf.name,phone:pf.phone}:{})};
+  const pf=store.get('profile'), AL=getAddrs(), def=AL.find(a=>a.def)||AL[0]||store.get('addr')||{}, saved={...(pf?{name:pf.name,phone:pf.phone}:{}),...def};
   app.innerHTML=`<div class="grid md:grid-cols-[1fr_320px] gap-6">
    <form id="cf" class="bg-white border rounded-xl p-5 space-y-3">
     <h2 class="font-bold">Delivery Address</h2>
+    ${AL.length?`<select id="sa" class="w-full border rounded-lg p-2.5 text-sm"><option value="">Use a saved address…</option>${AL.map(a=>`<option value="${esc(a.id)}">${esc(a.name)} – ${esc(a.line.slice(0,30))}, ${esc(a.pincode)}</option>`).join('')}</select>`:''}
     ${input('a-name','Full name',`required value="${esc(saved.name||'')}"`)}
     ${input('a-phone','Mobile (10 digits)',`required pattern="[6-9][0-9]{9}" maxlength="10" value="${esc(saved.phone||'')}"`)}
     ${input('a-pin','Pincode',`required pattern="[1-9][0-9]{5}" maxlength="6" value="${esc(saved.pincode||'')}"`)}
@@ -227,14 +228,15 @@ async function checkout(){
    <aside class="bg-white border rounded-xl p-4 h-fit text-sm space-y-1">${L.map(l=>`<div class="flex justify-between"><span>${esc(l.p.name)} × ${l.qty}</span><span>${inr(l.p.price*l.qty)}</span></div>`).join('')}
     <div class="flex justify-between border-t pt-2 mt-2"><span>Delivery</span><span>${ship?inr(ship):'FREE'}</span></div>
     <div class="flex justify-between font-bold"><span>Total</span><span>${inr(total)}</span></div></aside></div>`;
+  const sa=$('#sa');if(sa)sa.onchange=()=>{const a=AL.find(x=>x.id===sa.value);if(!a)return;$('#a-name').value=a.name;$('#a-phone').value=a.phone;$('#a-pin').value=a.pincode;$('#a-city').value=a.city;$('#a-state').value=a.state;$('#a-line').value=a.line};
   $('#cf').onsubmit=async e=>{e.preventDefault();
     const addr={name:$('#a-name').value.trim(),phone:$('#a-phone').value.trim(),pincode:$('#a-pin').value.trim(),city:$('#a-city').value.trim(),state:$('#a-state').value.trim(),line:$('#a-line').value.trim()};
     const b=$('#po');b.disabled=true;b.textContent='Placing order…';
     const {data,error}=await sb.rpc('place_order_guest',{p_items:cart.map(i=>({id:i.id,qty:i.qty})),p_address:addr,p_coupon:coupon||null});
     if(error){toast(error.message);b.disabled=false;b.textContent='Place Order';return}
-    store.set('addr',addr);store.set('orders',[{code:String(data).slice(0,8).toUpperCase(),phone:addr.phone},...(store.get('orders')||[])]);cart=[];coupon='';saveCart();
+    store.set('addr',addr);{const L=getAddrs();if(!L.some(x=>x.line===addr.line&&x.pincode===addr.pincode))store.set('addrs',[...L,{...addr,id:Date.now().toString(36),def:!L.length}])}store.set('orders',[{code:String(data).slice(0,8).toUpperCase(),phone:addr.phone},...(store.get('orders')||[])]);cart=[];coupon='';saveCart();
     app.innerHTML=`<div class="text-center py-20"><div class="text-5xl">🎉</div><h2 class="text-xl font-bold mt-3">ஆர்டர் வெற்றிகரமாகப் பதிவானது!</h2>
-     <p class="text-sm text-gray-600 mt-1">Order ID #${esc(String(data).slice(0,8).toUpperCase())}<br>Keep this ID and your mobile number to track your order.</p><a href="#/account" class="${btn} inline-block mt-5">Track Order</a></div>`;
+     <p class="text-sm text-gray-600 mt-1">Order ID #${esc(String(data).slice(0,8).toUpperCase())}<br>Keep this ID and your mobile number to track your order.</p><a href="#/account/orders" class="${btn} inline-block mt-5">My Orders</a></div>`;
   };
 }
 
@@ -255,37 +257,93 @@ function loginView(){
   const lo=$('#lo');if(lo)lo.onclick=()=>{localStorage.removeItem('profile');setNav();toast('Logged out');loginView()};
 }
 
-async function account(){
+/* ===== ACCOUNT (full page) ===== */
+let ofilter='all', addrEdit=null, OC={list:[],dev:[]};
+function getAddrs(){return store.get('addrs')||[]}
+const STL={pending:'bg-amber-100 text-amber-800',verified:'bg-blue-100 text-blue-800',dispatched:'bg-purple-100 text-purple-800',delivered:'bg-emerald-100 text-emerald-800',cancelled:'bg-red-100 text-red-800'};
+const STEPS=['pending','verified','dispatched','delivered'], SLBL={pending:'Order placed',verified:'Confirmed',dispatched:'Shipped 🚚',delivered:'Delivered ✓',cancelled:'Cancelled'};
+const GRP={all:()=>true,progress:o=>['pending','verified'].includes(o.order_status),shipped:o=>o.order_status==='dispatched',delivered:o=>o.order_status==='delivered',cancelled:o=>o.order_status==='cancelled'};
+
+function orderCard(o){
+  const d=OC.dev.find(x=>x.created_at===o.created_at), can=d&&GRP.progress(o), at=STEPS.indexOf(o.order_status);
+  return `<div class="bg-white border rounded-xl p-4 text-sm"><div class="flex justify-between items-center"><span class="text-gray-500 text-xs">Ordered ${new Date(o.created_at).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})}</span><span class="px-2 py-0.5 rounded-full text-xs font-bold ${STL[o.order_status]||''}">${esc(SLBL[o.order_status]||o.order_status)}</span></div>
+   ${o.items.map(i=>`<div class="flex gap-3 items-center mt-3">${i.image?`<img src="${esc(i.image)}" class="w-12 h-14 object-cover rounded">`:'<div class="w-12 h-14 bg-gray-100 rounded"></div>'}<div class="flex-1"><p class="font-semibold">${esc(i.name)}</p><p class="text-xs text-gray-500">Qty ${i.quantity}</p></div><b>${inr(i.price*i.quantity)}</b></div>`).join('')}
+   ${o.order_status==='cancelled'?'':`<div class="grid grid-cols-4 gap-1 mt-4 text-[10px] text-center text-gray-500">${['Placed','Confirmed','Shipped','Delivered'].map((l,i)=>`<div><div class="h-1.5 rounded ${i<=at?'bg-emerald-500':'bg-gray-200'} mb-1"></div>${l}</div>`).join('')}</div>`}
+   <div class="flex justify-between font-bold border-t mt-3 pt-2"><span>Total (COD)</span><span>${inr(o.total)}</span></div>
+   ${o.tracking_id?`<p class="text-xs mt-1">Tracking ID: <b>${esc(o.tracking_id)}</b></p>`:''}
+   ${can?`<button data-c="${esc(d.id.slice(0,8))}" data-ph="${esc(d.address.phone)}" class="mt-2 text-red-600 text-xs font-semibold underline">Cancel order</button>`:''}</div>`;
+}
+async function ordersHtml(pf){
   const saved=store.get('orders')||[];
   const res=await Promise.all(saved.map(x=>sb.rpc('track_order',{p_code:x.code,p_phone:x.phone})));
   const dev=res.map(r=>r.data).filter(Boolean);
-  const phone=store.get('lookup')||store.get('profile')?.phone||'';
+  const phone=pf?.phone||store.get('lookup')||'';
   let list=[];
   if(phone){const {data}=await sb.rpc('track_orders_by_phone',{p_phone:phone});list=data||[]}
   dev.forEach(d=>{if(!list.some(o=>o.created_at===d.created_at))list.push(d)});
-  list.sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
+  list.sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));OC={list,dev};
+  const chips=[['all','All'],['progress','In progress'],['shipped','Shipped 🚚'],['delivered','Delivered ✓'],['cancelled','Cancelled']];
+  return `<h1 class="font-bold text-lg mb-3">My Orders</h1>
+   ${pf?'':`<form id="tf" class="bg-white border rounded-xl p-4 flex gap-2 mb-4"><input id="tp" required maxlength="10" inputmode="numeric" placeholder="Enter mobile number to see orders" value="${esc(phone)}" class="flex-1 border rounded-lg p-2.5 text-sm"><button class="${btn} !py-2.5">Track</button></form>`}
+   <div class="flex gap-2 overflow-x-auto mb-3">${chips.map(c=>`<button data-f="${c[0]}" class="shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold border ${ofilter===c[0]?'bg-slate-900 text-white':'bg-white'}">${c[1]} (${list.filter(GRP[c[0]]).length})</button>`).join('')}</div>
+   <div class="space-y-3">${list.filter(GRP[ofilter]).map(orderCard).join('')||'<div class="bg-white border rounded-xl p-8 text-center text-gray-500 text-sm">No orders here yet. <a href="#/shop" class="underline font-semibold">Start shopping</a></div>'}</div>`;
+}
+function profileHtml(pf){
+  return `<h1 class="font-bold text-lg mb-3">Profile Information</h1><div class="bg-white border rounded-xl p-5 max-w-md space-y-3">
+   ${input('pn','Name',`maxlength="60" value="${esc(pf.name)}"`)}${input('pp','Mobile number',`maxlength="10" inputmode="numeric" value="${esc(pf.phone)}"`)}
+   <button id="ps" class="${btn}">Save changes</button></div>`;
+}
+function addressesHtml(){
+  const L=getAddrs(), a=addrEdit;
+  return `<h1 class="font-bold text-lg mb-3">Manage Addresses</h1>
+   ${a?`<div class="bg-white border rounded-xl p-5 mb-4 space-y-3 max-w-xl"><b>${a.id?'Edit':'Add new'} address</b>
+     ${input('a-name','Full name',`value="${esc(a.name||'')}"`)}${input('a-phone','Mobile number',`maxlength="10" value="${esc(a.phone||store.get('profile')?.phone||'')}"`)}
+     ${input('a-pin','Pincode',`maxlength="6" value="${esc(a.pincode||'')}"`)}
+     <div class="grid grid-cols-2 gap-2">${input('a-city','City / District',`value="${esc(a.city||'')}"`)}${input('a-state','State',`value="${esc(a.state||'Tamil Nadu')}"`)}</div>
+     <label class="block text-xs font-medium">Door no, street, area<textarea id="a-line" rows="2" class="mt-1 w-full border rounded-lg p-2.5 text-sm">${esc(a.line||'')}</textarea></label>
+     <div class="flex gap-2"><button id="asv" class="${btn}">Save address</button><button id="acn" class="px-4 py-2 border rounded-lg">Cancel</button></div></div>`
+   :`<button id="addA" class="mb-4 bg-white border-2 border-dashed rounded-xl w-full py-3 font-semibold text-slate-900">+ Add a new address</button>`}
+   <div class="space-y-3">${L.map(x=>`<div class="bg-white border rounded-xl p-4 text-sm"><div class="flex items-center gap-2"><b>${esc(x.name)}</b><span class="text-gray-500">${esc(x.phone)}</span>${x.def?'<span class="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-bold">DEFAULT</span>':''}</div>
+    <p class="text-gray-600 mt-1">${esc(x.line)}, ${esc(x.city)}, ${esc(x.state)} - <b>${esc(x.pincode)}</b></p>
+    <div class="mt-2 text-xs font-semibold flex gap-4"><button data-ae="${esc(x.id)}" class="underline">Edit</button><button data-ad="${esc(x.id)}" class="underline text-red-600">Delete</button>${x.def?'':`<button data-adef="${esc(x.id)}" class="underline">Set as default</button>`}</div></div>`).join('')||(a?'':'<p class="text-sm text-gray-500">No saved addresses yet. Addresses you use at checkout are saved here automatically.</p>')}</div>`;
+}
+async function wishHtml(){
   let wp=[];if(wish.size){const {data}=await sb.from('products').select('*').in('id',[...wish]);wp=data||[]}
-  const stl={pending:'bg-amber-100 text-amber-800',verified:'bg-blue-100 text-blue-800',dispatched:'bg-purple-100 text-purple-800',delivered:'bg-emerald-100 text-emerald-800',cancelled:'bg-red-100 text-red-800'};
-  const steps=['pending','verified','dispatched','delivered'];
-  app.innerHTML=`<h1 class="font-bold text-lg mb-3">📦 Track Your Orders</h1>
-   <form id="tf" class="bg-white border rounded-xl p-4 flex gap-2 mb-5">
-    <input id="tp" required maxlength="10" inputmode="numeric" placeholder="Enter mobile number" value="${esc(phone)}" class="flex-1 border rounded-lg p-2.5 text-sm">
-    <button class="${btn} !py-2.5">Track</button></form>
-   <div class="space-y-3">${list.map(o=>{
-     const d=dev.find(x=>x.created_at===o.created_at), canCancel=d&&['pending','verified'].includes(o.order_status);
-     return `<div class="bg-white border rounded-xl p-4 text-sm"><div class="flex justify-between"><span class="text-gray-500">${new Date(o.created_at).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})}</span><span class="px-2 py-0.5 rounded-full text-xs font-bold ${stl[o.order_status]||''}">${esc(o.order_status)}</span></div>
-     ${o.order_status==='cancelled'?'':`<div class="flex gap-1 my-3">${steps.map((st,i)=>`<div class="flex-1 h-1.5 rounded ${i<=steps.indexOf(o.order_status)?'bg-emerald-500':'bg-gray-200'}"></div>`).join('')}</div>`}
-     ${o.items.map(i=>`<div class="flex justify-between"><span>${esc(i.name)} × ${i.quantity}</span><span>${inr(i.price*i.quantity)}</span></div>`).join('')}
-     <div class="flex justify-between font-bold border-t mt-2 pt-2"><span>Total (COD)</span><span>${inr(o.total)}</span></div>
-     ${o.tracking_id?`<p class="text-xs mt-1">Tracking ID: <b>${esc(o.tracking_id)}</b></p>`:''}
-     ${canCancel?`<button data-c="${esc(d.id.slice(0,8))}" data-ph="${esc(d.address.phone)}" class="mt-2 text-red-600 text-xs font-semibold underline">Cancel order</button>`:''}</div>`}).join('')||(phone?'<p class="text-sm text-gray-500">No orders found for this number.</p>':'<p class="text-sm text-gray-500">Enter your mobile number to see your orders.</p>')}</div>
-   <h2 class="font-bold mt-8 mb-2">❤️ Wishlist</h2>${grid(wp)}`;
-  $('#tf').onsubmit=e=>{e.preventDefault();const v=$('#tp').value.trim();
-    if(!/^[6-9]\d{9}$/.test(v))return toast('Enter a valid 10-digit mobile number');
-    store.set('lookup',v);account()};
-  app.onclick=async e=>{const c=e.target.dataset.c;if(!c||!confirm('Cancel this order?'))return;
-    const {error}=await sb.rpc('cancel_order_guest',{p_code:c,p_phone:e.target.dataset.ph});
-    toast(error?error.message:'Order cancelled');account()};
+  return `<h1 class="font-bold text-lg mb-3">My Wishlist (${wp.length})</h1>${wp.length?grid(wp):'<div class="bg-white border rounded-xl p-8 text-center text-gray-500 text-sm">Your wishlist is empty. Tap the 🤍 on any saree to save it.</div>'}`;
+}
+async function account(section){
+  const pf=store.get('profile');
+  if(!pf&&section!=='orders'){location.hash='#/login';return}
+  const menu=[['orders','📦','My Orders'],['profile','👤','Profile Information'],['addresses','📍','Manage Addresses'],['wishlist','❤️','My Wishlist']];
+  const body=section==='profile'?profileHtml(pf):section==='addresses'?addressesHtml():section==='wishlist'?await wishHtml():await ordersHtml(pf);
+  app.innerHTML=`<div class="grid md:grid-cols-[260px_1fr] gap-4 items-start"><aside class="space-y-3">
+   ${pf?`<div class="bg-white border rounded-xl p-4 flex items-center gap-3"><div class="w-12 h-12 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-lg">${esc(pf.name[0].toUpperCase())}</div><div><p class="text-xs text-gray-500">Hello,</p><p class="font-bold">${esc(pf.name)}</p></div></div>`:''}
+   <nav class="bg-white border rounded-xl flex md:block overflow-x-auto overflow-y-hidden text-sm">${menu.map(m=>`<a href="#/account/${m[0]}" class="shrink-0 flex items-center gap-2 px-4 py-3 ${m[0]===section?'bg-slate-900 text-white':'hover:bg-gray-50'}">${m[1]} ${m[2]}</a>`).join('')}
+   ${pf?'<button id="lgo" class="shrink-0 md:w-full text-left px-4 py-3 text-red-600 font-semibold">⏻ Logout</button>':''}</nav></aside>
+   <section class="min-w-0">${body}</section></div>`;
+  const tf=$('#tf');if(tf)tf.onsubmit=e=>{e.preventDefault();const v=$('#tp').value.trim();
+    if(!/^[6-9]\d{9}$/.test(v))return toast('Enter a valid 10-digit mobile number');store.set('lookup',v);account(section)};
+  app.onclick=async e=>{const t=e.target,d=t.dataset,again=()=>account(section);
+    if(t.id==='lgo'){localStorage.removeItem('profile');setNav();toast('Logged out');location.hash='#/';return}
+    if(d.f){ofilter=d.f;again()}
+    if(d.c&&confirm('Cancel this order?')){const {error}=await sb.rpc('cancel_order_guest',{p_code:d.c,p_phone:d.ph});toast(error?error.message:'Order cancelled');again()}
+    if(t.id==='ps'){const name=$('#pn').value.trim(),phone=$('#pp').value.trim();
+      if(name.length<2)return toast('Enter your name');if(!/^[6-9]\d{9}$/.test(phone))return toast('Enter a valid mobile number');
+      store.set('profile',{name,phone});localStorage.removeItem('lookup');setNav();toast('Saved ✓');again()}
+    if(t.id==='addA'){addrEdit={};again()}
+    if(d.ae){addrEdit=getAddrs().find(x=>x.id===d.ae);again()}
+    if(d.ad&&confirm('Delete this address?')){store.set('addrs',getAddrs().filter(x=>x.id!==d.ad));again()}
+    if(d.adef){store.set('addrs',getAddrs().map(x=>({...x,def:x.id===d.adef})));again()}
+    if(t.id==='acn'){addrEdit=null;again()}
+    if(t.id==='asv'){
+      const n={name:$('#a-name').value.trim(),phone:$('#a-phone').value.trim(),pincode:$('#a-pin').value.trim(),city:$('#a-city').value.trim(),state:$('#a-state').value.trim(),line:$('#a-line').value.trim()};
+      if(!n.name||!n.city||!n.state||!n.line)return toast('Please fill all fields');
+      if(!/^[6-9]\d{9}$/.test(n.phone))return toast('Enter a valid mobile number');
+      if(!/^[1-9]\d{5}$/.test(n.pincode))return toast('Enter a valid 6-digit pincode');
+      let L=getAddrs();
+      if(addrEdit.id){n.id=addrEdit.id;n.def=addrEdit.def;L=L.map(x=>x.id===n.id?n:x)}else{n.id=Date.now().toString(36);n.def=!L.length;L.push(n)}
+      store.set('addrs',L);addrEdit=null;toast('Address saved ✓');again()}
+  };
 }
 
 /* ===== ROUTER ===== */
@@ -299,7 +357,7 @@ async function route(){
     else if(path.startsWith('/p/'))await product(path.slice(3));
     else if(path==='/cart')await cartView();
     else if(path==='/checkout')await checkout();
-    else if(path==='/account')await account();
+    else if(path.startsWith('/account'))await account(path.split('/')[2]||'orders');
     else if(path==='/login')loginView();
     else app.innerHTML='<p class="text-center py-20">Page not found.</p>';
   }catch(err){console.error(err);app.innerHTML='<p class="text-center text-red-600 py-20">Error: '+esc(err.message||err)+'</p>'}
