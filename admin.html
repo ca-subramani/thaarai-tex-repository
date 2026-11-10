@@ -63,7 +63,7 @@ function loginView(){
   $('#go').onclick=async()=>{const n=$('#mb').value.trim();
     if(!/^[6-9]\d{9}$/.test(n))return toast('Enter a valid mobile number');
     const {error}=await sb.auth.signInWithPassword({email:`91${n}@phone.thaaraitex.com`,password:$('#pw').value});
-    if(error)return toast('Wrong mobile number or password');boot()};
+    if(error)return toast('Login failed: '+error.message);boot()};
   let email='';
   $('#so').onclick=async()=>{email=$('#le').value.trim().toLowerCase();
     const {error}=await sb.auth.signInWithOtp({email});
@@ -161,7 +161,7 @@ async function ord(){
    <div><b class="font-mono">#${o.id.slice(0,8).toUpperCase()}</b> <span class="text-gray-500">${new Date(o.created_at).toLocaleString('en-IN')}</span>
     <p>${esc(o.address.name)} · <a class="underline" href="tel:${esc(o.address.phone)}">${esc(o.address.phone)}</a></p>
     <p class="text-gray-600">${esc(o.address.line)}, ${esc(o.address.city)}, ${esc(o.address.state)} - ${esc(o.address.pincode)}</p></div>
-   <div class="text-right"><b>${inr(o.total)}</b><p class="text-xs text-gray-500">${esc(o.payment_method)}${o.coupon?' · '+esc(o.coupon):''}</p></div></div>
+   <div class="text-right"><b>${inr(o.total)}</b><p class="text-xs text-gray-500">${o.payment_method==='UPI'?'<b class="text-emerald-700">UPI · Ref '+esc(o.payment_ref||'-')+'</b>':esc(o.payment_method)}${o.coupon?' · '+esc(o.coupon):''}</p></div></div>
    <div class="border-t mt-2 pt-2">${o.items.map(i=>`<div class="flex justify-between"><span>${esc(i.name)} × ${i.quantity}</span><span>${inr(i.price*i.quantity)}</span></div>`).join('')}</div>
    <div class="flex flex-wrap gap-2 mt-3 items-center">
     <select data-s="${o.id}" class="border rounded-lg p-1.5" ${o.order_status==='cancelled'?'disabled':''}>${sts.map(s=>`<option ${s===o.order_status?'selected':''}>${s}</option>`).join('')}</select>
