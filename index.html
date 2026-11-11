@@ -28,7 +28,7 @@ input,select,textarea{font-size:16px!important}
 nav.overflow-x-auto{scrollbar-width:none}nav.overflow-x-auto::-webkit-scrollbar{display:none}
 </style>
 </head>
-<body class="bg-white text-gray-900 antialiased">
+<body class="bg-gray-50 text-gray-900 antialiased">
 <div id="ann" class="text-xs py-2 px-3 text-center"></div>
 <header class="bg-white/95 backdrop-blur sticky top-0 z-40 border-b">
   <div class="max-w-6xl mx-auto px-4 py-3 flex items-center gap-3">
@@ -43,13 +43,15 @@ nav.overflow-x-auto{scrollbar-width:none}nav.overflow-x-auto::-webkit-scrollbar{
     </nav></div>
   <div id="msearch" class="hidden px-4 pb-3 sm:hidden"><form id="sf2"><input id="q2" placeholder="Search sarees…" class="w-full bg-[#f3f3f3] rounded-full py-3 px-5 outline-none"></form></div>
 </header>
-<main id="app" class="max-w-6xl mx-auto px-4 pt-5 pb-28 sm:pb-8 min-h-[70vh]"></main>
+<main id="app" class="max-w-6xl mx-auto px-4 pt-5 pb-28 min-h-[70vh]"></main>
 <footer id="foot" class="bg-slate-900 text-gray-300 text-xs pt-8 pb-28 sm:pb-8 mt-10"></footer>
-<nav id="tabbar" class="sm:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur border-t grid grid-cols-5 text-[10px] font-semibold" style="padding-bottom:env(safe-area-inset-bottom)">
-  <a href="#/" data-tb="/"   class="tb relative flex flex-col items-center gap-0.5 py-2 text-gray-400"><svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg><span>Home</span></a>
-  <a href="#/shop" data-tb="/shop"   class="tb relative flex flex-col items-center gap-0.5 py-2 text-gray-400"><svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg><span>Shop</span></a>
+
+<!-- Bottom Navigation Bar (Displays on both Mobile & Desktop) -->
+<nav id="tabbar" class="fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur border-t grid grid-cols-5 text-[10px] font-semibold max-w-lg mx-auto sm:rounded-t-2xl sm:shadow-lg sm:border-x" style="padding-bottom:env(safe-area-inset-bottom)">
+  <a href="#/" data-tb="/" class="tb relative flex flex-col items-center gap-0.5 py-2 text-gray-400"><svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg><span>Home</span></a>
+  <a href="#/shop" data-tb="/shop" class="tb relative flex flex-col items-center gap-0.5 py-2 text-gray-400"><svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg><span>Shop</span></a>
   <a href="#/cart" data-tb="/cart" class="tb relative flex flex-col items-center gap-0.5 py-2 text-gray-400"><span class="relative"><svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 7h12l1 13H5z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg><span class="cc absolute -top-1 -right-2 bg-rose-600 text-white text-[10px] font-bold rounded-full min-w-[16px] h-4 px-1 grid place-items-center hidden">0</span></span><span>Bag</span></a>
-  <a href="#/account/wishlist" data-tb="/account/wishlist"   class="tb relative flex flex-col items-center gap-0.5 py-2 text-gray-400"><svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-8-5.2-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.8-8 11-8 11z"/></svg><span>Wishlist</span></a>
+  <a href="#/account/wishlist" data-tb="/account/wishlist" class="tb relative flex flex-col items-center gap-0.5 py-2 text-gray-400"><svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-8-5.2-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.8-8 11-8 11z"/></svg><span>Wishlist</span></a>
   <a href="#/account/hub" data-tb="/account/hub|/account/profile|/account/orders|/account/addresses|/login" id="tbp" class="tb relative flex flex-col items-center gap-0.5 py-2 text-gray-400"><svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span>Profile</span></a>
 </nav>
 <div id="toast" class="fixed bottom-24 sm:bottom-4 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-sm px-4 py-2 rounded-full shadow hidden z-50"></div>
@@ -79,7 +81,7 @@ const DEF={
  brand:{name:'Thaarai Tex',tagline:'Premium Sarees',logo:''},
  announce:{on:true,text:'✨ இலவச டெலிவரி (Free Delivery) & COD / UPI',bg:'#0f172a',color:'#ffffff'},
  theme:{primary:'#0f172a'},
- banners:[{image:'',title:'பாரம்பரிய பட்டு & காட்டன் சேலைகள்',subtitle:'நேரடி நெசவாளர் விலை · Cash on Delivery & UPI',btn:'Shop Now',link:'#/shop',c1:'#b45309',c2:'#0f172a'}],
+ banners:[{image:'',title:'பாரம்பரிய பட்டு & காட்டன் சேலைகள்',subtitle:'நேரடி நெசவாளர் விலை · Cash on Delivery & UPI',btn:'Shop Now',link:'#/shop',c1:'#1e293b',c2:'#0f172a'}],
  sections:{cats:true,deals:true,fresh:true,trust:true,about:false,catsTitle:'Shop by Category',dealsTitle:'Best Value',freshTitle:'New Arrivals'},
  trust:[{icon:'🚚',text:'Free Delivery'},{icon:'💵',text:'Cash on Delivery'},{icon:'🧵',text:'100% Handloom'},{icon:'📲',text:'UPI Payments'}],
  about:{title:'Our Story',text:'',image:''},
@@ -141,7 +143,7 @@ async function couponDiscount(sub){
 function card(p){
   const o=off(p);
   return `<a href="#/p/${p.id}" class="block group">
-   <div class="relative aspect-[4/5] bg-[#f3f3f3] rounded-3xl overflow-hidden">
+   <div class="relative aspect-[4/5] bg-[#f3f3f3] rounded-3xl overflow-hidden border border-gray-100">
     <img loading="lazy" src="${img(p)}" alt="${esc(p.name)}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
     ${o?`<span class="absolute top-3 left-3 bg-slate-900 text-white text-[10px] font-bold px-2.5 py-1 rounded-full">${o}% OFF</span>`:''}
     <button data-w="${p.id}" aria-label="Wishlist" class="absolute top-3 right-3 bg-white w-9 h-9 rounded-full shadow-sm grid place-items-center">${heart(wish.has(p.id))}</button>
@@ -163,15 +165,15 @@ async function home(){
     sb.from('products').select('*').eq('active',true).order('created_at',{ascending:false}).limit(8),
     sb.from('products').select('*').eq('active',true).gt('stock',0).order('price').limit(4)]);
   if(e2)throw e2;
-  const slide=(b,i)=>`<div class="slide absolute inset-0 transition-opacity duration-700 ${i?'opacity-0 pointer-events-none':''} flex flex-col justify-end p-6 sm:p-12 text-white" style="background:linear-gradient(110deg,${hx(b.c1,'#b45309')},${hx(b.c2,'#0f172a')})">
+  const slide=(b,i)=>`<div class="slide absolute inset-0 transition-opacity duration-700 ${i?'opacity-0 pointer-events-none':''} flex flex-col justify-end p-6 sm:p-12 text-white" style="background:linear-gradient(110deg,${hx(b.c1,'#1e293b')},${hx(b.c2,'#0f172a')})">
     ${b.image?`<img src="${esc(b.image)}" alt="" class="absolute inset-0 w-full h-full object-cover">`:''}
-    <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent"></div>
+    <div class="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent"></div>
     <div class="relative max-w-xl pb-4"><h1 class="text-2xl sm:text-4xl font-extrabold">${esc(b.title)}</h1><p class="mt-1 text-sm text-gray-100">${esc(b.subtitle)}</p>
     ${b.btn?`<a href="${esc(safeLink(b.link))}" class="inline-flex items-center gap-2 mt-3 text-sm font-semibold border-b border-white/70 pb-0.5">${esc(b.btn)} <span>→</span></a>`:''}</div></div>`;
   app.innerHTML=`
   <h1 class="text-3xl font-extrabold mb-4 sm:hidden">Discover</h1>
   ${bn.length?`<section id="car" class="relative rounded-3xl overflow-hidden h-72 sm:h-96">${bn.map(slide).join('')}${bn.length>1?`<div class="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5 z-10">${bn.map((_,i)=>`<button data-dot="${i}" class="dot w-2 h-2 rounded-full ${i?'bg-white/50':'bg-white'}"></button>`).join('')}</div>`:''}</section>`:''}
-  ${sc.trust?`<div class="grid grid-cols-2 sm:grid-cols-4 gap-2 my-4">${(SET.trust||[]).filter(t=>t.text).map(t=>`<div class="bg-[#f6f6f6] rounded-2xl py-3 px-1 text-center text-xs font-semibold"><div class="text-xl">${esc(t.icon)}</div>${esc(t.text)}</div>`).join('')}</div>`:''}
+  ${sc.trust?`<div class="grid grid-cols-2 sm:grid-cols-4 gap-2 my-4">${(SET.trust||[]).filter(t=>t.text).map(t=>`<div class="bg-white rounded-2xl py-3.5 px-2 text-center text-xs font-semibold border border-gray-100 shadow-sm"><div class="text-xl">${esc(t.icon)}</div>${esc(t.text)}</div>`).join('')}</div>`:''}
   ${sc.cats&&cats?.length?`<h2 class="font-bold text-lg mt-6 mb-3">${esc(sc.catsTitle)}</h2><div class="flex gap-4 overflow-x-auto pb-2">${cats.map(c=>`<a href="#/shop?cat=${c.id}" class="shrink-0 w-20 text-center"><img loading="lazy" src="${esc(c.image||'https://placehold.co/160?text='+encodeURIComponent((c.name||'?')[0]))}" alt="" class="w-20 h-20 rounded-full object-cover border-2 border-white shadow"><p class="text-xs font-semibold mt-1 line-clamp-2">${esc(c.name)}</p></a>`).join('')}</div>`:''}
   ${sc.deals?`<h2 class="font-bold text-lg mt-6 mb-3">${esc(sc.dealsTitle)}</h2>${grid(deals||[])}`:''}
   ${sc.fresh?`<h2 class="font-bold text-lg mt-8 mb-3">${esc(sc.freshTitle)}</h2>${grid(neu||[])}`:''}
@@ -194,17 +196,17 @@ async function shop(params){
   if(f.stock)q=q.gt('stock',0);
   q=f.sort==='low'?q.order('price'):f.sort==='high'?q.order('price',{ascending:false}):q.order('created_at',{ascending:false});
   const {data,error}=await q; if(error)throw error;
-  const sel=(n,opts)=>`<select id="f-${n}" class="w-full border rounded-lg p-2 text-sm">${opts.map(([v,l])=>`<option value="${v}" ${f[n]===v?'selected':''}>${l}</option>`).join('')}</select>`;
+  const sel=(n,opts)=>`<select id="f-${n}" class="w-full border rounded-lg p-2 text-sm bg-white">${opts.map(([v,l])=>`<option value="${v}" ${f[n]===v?'selected':''}>${l}</option>`).join('')}</select>`;
   app.innerHTML=`<div class="grid md:grid-cols-[220px_1fr] gap-6">
-    <button id="ftg" type="button" class="md:hidden flex items-center justify-between w-full bg-[#f6f6f6] rounded-2xl px-4 py-3 text-sm font-semibold">Filters &amp; Sort <span>▾</span></button>
-    <aside id="fl" class="hidden md:block bg-[#f6f6f6] rounded-2xl p-4 space-y-3 h-fit text-xs">
+    <button id="ftg" type="button" class="md:hidden flex items-center justify-between w-full bg-white rounded-2xl px-4 py-3 text-sm font-semibold border border-gray-100 shadow-sm">Filters &amp; Sort <span>▾</span></button>
+    <aside id="fl" class="hidden md:block bg-white rounded-2xl p-4 space-y-3 h-fit text-xs border border-gray-100 shadow-sm">
      <b class="text-sm">Filters</b>
      <div>Category${sel('cat',[['','All'],...(cats||[]).map(c=>[c.id,esc(c.name)])])}</div>
      <div>Fabric${sel('fabric',[['','All'],['Silk','Silk'],['Cotton','Cotton'],['Semi Silk','Semi Silk'],['Linen','Linen']])}</div>
-     <div class="grid grid-cols-2 gap-2"><div>Min ₹<input id="f-min" type="number" value="${esc(f.min)}" class="w-full border rounded-lg p-2"></div><div>Max ₹<input id="f-max" type="number" value="${esc(f.max)}" class="w-full border rounded-lg p-2"></div></div>
+     <div class="grid grid-cols-2 gap-2"><div>Min ₹<input id="f-min" type="number" value="${esc(f.min)}" class="w-full border rounded-lg p-2 bg-white"></div><div>Max ₹<input id="f-max" type="number" value="${esc(f.max)}" class="w-full border rounded-lg p-2 bg-white"></div></div>
      <div>Sort${sel('sort',[['new','Newest'],['low','Price: Low to High'],['high','Price: High to Low']])}</div>
-     <label class="flex items-center gap-2"><input id="f-stock" type="checkbox" ${f.stock?'checked':''}> In stock only</label>
-     <button id="apply" class="${btn} w-full !py-2">Apply</button></aside>
+     <label class="flex items-center gap-2 cursor-pointer"><input id="f-stock" type="checkbox" ${f.stock?'checked':''}> In stock only</label>
+     <button id="apply" class="${btn} w-full !py-2.5">Apply</button></aside>
     <section><p class="text-xs text-gray-500 mb-3">${(data||[]).length} products${f.q?` for “${esc(f.q)}”`:''}</p>${grid(data||[])}</section></div>`;
   $('#ftg').onclick=()=>$('#fl').classList.toggle('hidden');
   $('#apply').onclick=()=>{
@@ -228,27 +230,27 @@ async function product(id){
   const o=off(p), ok=p.stock>0;
   const shareUrl=encodeURIComponent(location.href), shareTxt=encodeURIComponent(p.name+' - '+inr(p.price));
   app.innerHTML=`<div class="grid md:grid-cols-2 gap-6 md:gap-10">
-    <div><div class="relative aspect-square bg-[#f3f3f3] rounded-3xl overflow-hidden"><img id="main" src="${img(p)}" alt="${esc(p.name)}" class="w-full h-full object-cover cursor-zoom-in transition-transform duration-200">${imgs.length>1?'<button id="pv" class="absolute left-2 top-1/2 -translate-y-1/2 bg-white/90 w-9 h-9 rounded-full shadow text-xl">‹</button><button id="nx" class="absolute right-2 top-1/2 -translate-y-1/2 bg-white/90 w-9 h-9 rounded-full shadow text-xl">›</button>':''}</div>
-     <div class="flex gap-2 mt-3 overflow-x-auto">${imgs.map(u=>`<img src="${esc(u)}" class="thumb w-20 h-20 shrink-0 object-cover rounded-2xl bg-[#f3f3f3] cursor-pointer">`).join('')}</div></div>
+    <div><div class="relative aspect-square bg-[#f3f3f3] rounded-3xl overflow-hidden border border-gray-100"><img id="main" src="${img(p)}" alt="${esc(p.name)}" class="w-full h-full object-cover cursor-zoom-in transition-transform duration-200">${imgs.length>1?'<button id="pv" class="absolute left-2 top-1/2 -translate-y-1/2 bg-white/90 w-9 h-9 rounded-full shadow text-xl">‹</button><button id="nx" class="absolute right-2 top-1/2 -translate-y-1/2 bg-white/90 w-9 h-9 rounded-full shadow text-xl">›</button>':''}</div>
+     <div class="flex gap-2 mt-3 overflow-x-auto">${imgs.map(u=>`<img src="${esc(u)}" class="thumb w-20 h-20 shrink-0 object-cover rounded-2xl bg-[#f3f3f3] cursor-pointer border border-gray-100">`).join('')}</div></div>
     <div class="space-y-4">
-     <h1 class="text-2xl font-extrabold">${esc(p.name)}</h1>
+     <h1 class="text-2xl font-extrabold text-gray-900">${esc(p.name)}</h1>
      <div class="text-sm text-amber-600">${stars(avg)} <span class="text-gray-500">(${rv?.length||0} reviews)</span></div>
      <div class="flex items-baseline gap-3"><b class="text-3xl">${inr(p.price)}</b>${o?`<s class="text-gray-400">${inr(p.mrp)}</s><span class="text-emerald-600 font-bold text-sm">${o}% off</span>`:''}</div>
      <p class="text-sm font-semibold ${ok?'text-emerald-700':'text-red-600'}">${ok?(p.stock<5?`Only ${p.stock} left`:'In stock'):'Out of stock'}</p>
      <table class="text-sm"><tbody>${[['Fabric',p.fabric],['Colour',p.color],['Occasion',p.occasion]].filter(r=>r[1]).map(r=>`<tr><td class="pr-6 py-0.5 text-gray-500">${r[0]}</td><td>${esc(r[1])}</td></tr>`).join('')}</tbody></table>
-     <div class="bg-[#f6f6f6] rounded-2xl p-4 text-sm"><b>Delivery check</b>
-      <div class="flex gap-2 mt-2"><input id="pin" maxlength="6" inputmode="numeric" placeholder="Pincode" class="border rounded-lg p-2 w-32 text-sm"><button id="pinb" class="bg-gray-100 px-3 rounded-lg font-semibold">Check</button></div><p id="pinr" class="text-xs mt-1"></p></div>
-     <div class="grid grid-cols-3 gap-2 text-center text-[11px] font-semibold"><div>💵<br>Cash on Delivery</div><div>🚚<br>Free Delivery</div><div>🔄<br>7-day returns</div></div>
+     <div class="bg-white rounded-2xl p-4 text-sm border border-gray-100 shadow-sm"><b>Delivery check</b>
+      <div class="flex gap-2 mt-2"><input id="pin" maxlength="6" inputmode="numeric" placeholder="Pincode" class="border rounded-lg p-2 w-32 text-sm bg-white"><button id="pinb" class="bg-gray-100 px-3 rounded-lg font-semibold">Check</button></div><p id="pinr" class="text-xs mt-1"></p></div>
+     <div class="grid grid-cols-3 gap-2 text-center text-[11px] font-semibold bg-white p-3 rounded-2xl border border-gray-100"><div>💵<br>Cash on Delivery</div><div>🚚<br>Free Delivery</div><div>🔄<br>7-day returns</div></div>
      <p class="text-sm text-gray-600 leading-relaxed">${esc(p.description||'')}</p>
      <div class="fixed sm:static inset-x-0 bottom-0 z-40 bg-white/95 backdrop-blur sm:bg-transparent border-t sm:border-0 p-3 sm:p-0 flex gap-2" style="padding-bottom:calc(.75rem + env(safe-area-inset-bottom))"><button id="add" ${ok?'':'disabled'} class="flex-1 border-2 font-bold py-3.5 rounded-full text-sm disabled:opacity-40" style="border-color:var(--p);color:var(--p)">Add to Bag</button><button id="buy" ${ok?'':'disabled'} class="flex-1 ${btn}">Buy Now</button></div>
      <div class="flex gap-3 text-xs"><a class="underline" target="_blank" rel="noopener" href="https://wa.me/?text=${shareTxt}%20${shareUrl}">Share on WhatsApp</a>
       <a class="underline" target="_blank" rel="noopener" href="https://wa.me/${WHATSAPP}?text=${encodeURIComponent('I want to order: '+p.name)}">Order via WhatsApp</a>
       <button data-w="${p.id}" class="underline">${wish.has(p.id)?'❤️ Wishlisted':'🤍 Wishlist'}</button></div>
     </div></div>
-    <section class="bg-[#f6f6f6] rounded-3xl p-5 mt-8"><h2 class="font-bold mb-3">Ratings &amp; Reviews</h2>
+    <section class="bg-white rounded-3xl p-5 mt-8 border border-gray-100 shadow-sm"><h2 class="font-bold mb-3">Ratings &amp; Reviews</h2>
      ${user?`<div class="border rounded-xl p-3 mb-4 text-sm space-y-2"><select id="rr" class="border rounded p-1">${[5,4,3,2,1].map(n=>`<option>${n}</option>`)}</select> ★
       <textarea id="rb" maxlength="500" rows="2" placeholder="Write your review" class="w-full border rounded-lg p-2"></textarea><button id="rs" class="${btn} !py-2">Submit</button></div>`:''}
-     ${(rv||[]).map(r=>`<div class="border-t py-3 text-sm"><span class="text-amber-600">${stars(r.rating)}</span> <b>${esc(r.author||'Customer')}</b><p class="text-gray-600">${esc(r.body)}</p></div>`).join('')||'<p class="text-sm text-gray-500">No reviews yet.</p>'}</section>
+     ${(rv||[]).map(r=>`<div class="border-t py-3 text-sm"><span class="text-amber-600">${stars(r.rating)}</span> <b>${esc(r.author||'Customer')}</b><p class="text-gray-600 mt-1">${esc(r.body)}</p></div>`).join('')||'<p class="text-sm text-gray-500">No reviews yet.</p>'}</section>
     ${sim?.length?`<h2 class="font-bold text-lg mt-8 mb-3">Similar Products</h2>${grid(sim)}`:''}`;
   const main=$('#main');
   let cur=0;const th=[...document.querySelectorAll('.thumb')];
@@ -277,15 +279,15 @@ async function cartView(){
   const sub=L.reduce((s,l)=>s+l.p.price*l.qty,0), d=await couponDiscount(sub), ship=0;
   if(coupon&&!d)toast('Coupon not valid for this cart');
   app.innerHTML=`<h1 class="text-2xl font-extrabold mb-4">Bag <span class="text-gray-400 text-base font-semibold">(${L.reduce((n,l)=>n+l.qty,0)})</span></h1>
-  <div class="grid md:grid-cols-[1fr_340px] gap-6 items-start"><div class="space-y-5">${L.map(l=>`
-   <div class="flex gap-3 items-start"><a href="#/p/${l.p.id}" class="shrink-0"><img src="${img(l.p)}" alt="" class="w-24 h-28 object-cover rounded-2xl bg-[#f3f3f3]"></a>
+  <div class="grid md:grid-cols-[1fr_340px] gap-6 items-start"><div class="space-y-4">${L.map(l=>`
+   <div class="flex gap-3 items-start bg-white p-4 rounded-3xl border border-gray-100 shadow-sm"><a href="#/p/${l.p.id}" class="shrink-0"><img src="${img(l.p)}" alt="" class="w-20 h-24 object-cover rounded-2xl bg-[#f3f3f3]"></a>
     <div class="flex-1 min-w-0"><a href="#/p/${l.p.id}" class="font-semibold text-sm line-clamp-2 block">${esc(l.p.name)}</a>
      <p class="text-xs text-gray-500 mt-1">${inr(l.p.price)}</p>
-     <div class="flex items-center gap-3 mt-3"><button data-q="${l.id}" data-d="-1" aria-label="Less" class="w-8 h-8 rounded-full border grid place-items-center text-lg">−</button><b class="w-5 text-center">${l.qty}</b><button data-q="${l.id}" data-d="1" aria-label="More" class="w-8 h-8 rounded-full border grid place-items-center text-lg">+</button></div>
-     <button data-rm="${l.id}" class="text-xs text-gray-400 underline mt-3">Remove</button></div>
+     <div class="flex items-center gap-3 mt-3"><button data-q="${l.id}" data-d="-1" aria-label="Less" class="w-8 h-8 rounded-full border grid place-items-center text-lg bg-gray-50">−</button><b class="w-5 text-center">${l.qty}</b><button data-q="${l.id}" data-d="1" aria-label="More" class="w-8 h-8 rounded-full border grid place-items-center text-lg bg-gray-50">+</button></div>
+     <button data-rm="${l.id}" class="text-xs text-red-500 font-semibold underline mt-3">Remove</button></div>
     <b class="text-base shrink-0">${inr(l.p.price*l.qty)}</b></div>`).join('')}</div>
-   <aside class="bg-[#f6f6f6] rounded-3xl p-5 text-sm space-y-3">
-    <div class="flex gap-2"><input id="cp" value="${esc(coupon)}" placeholder="Coupon code" class="border border-gray-200 bg-white rounded-xl p-3 flex-1 uppercase"><button id="cpb" class="bg-white border border-gray-200 px-4 rounded-xl font-semibold">Apply</button></div>
+   <aside class="bg-white rounded-3xl p-5 text-sm space-y-3 border border-gray-100 shadow-sm">
+    <div class="flex gap-2"><input id="cp" value="${esc(coupon)}" placeholder="Coupon code" class="border border-gray-200 bg-gray-50 rounded-xl p-3 flex-1 uppercase"><button id="cpb" class="bg-gray-100 px-4 rounded-xl font-semibold">Apply</button></div>
     <div class="flex justify-between"><span class="text-gray-500">Subtotal</span><span>${inr(sub)}</span></div>
     <div class="flex justify-between text-emerald-700"><span>Discount</span><span>−${inr(d)}</span></div>
     <div class="flex justify-between"><span class="text-gray-500">Delivery</span><span class="text-emerald-700 font-semibold">FREE</span></div>
@@ -303,18 +305,18 @@ async function checkout(){
   let d=await couponDiscount(sub), method='COD';
   const pf=store.get('profile'), AL=getAddrs(), def=AL.find(a=>a.def)||AL[0]||store.get('addr')||{}, saved={...(pf?{name:pf.name,phone:pf.phone}:{}),...def};
   app.innerHTML=`<div class="grid md:grid-cols-[1fr_320px] gap-6">
-   <form id="cf" class="bg-white border rounded-xl p-5 space-y-3">
-    <h2 class="font-bold">Delivery Address</h2>
-    ${AL.length?`<select id="sa" class="w-full border rounded-lg p-2.5 text-sm"><option value="">Use a saved address…</option>${AL.map(a=>`<option value="${esc(a.id)}">${esc(a.name)} – ${esc(a.line.slice(0,30))}, ${esc(a.pincode)}</option>`).join('')}</select>`:''}
+   <form id="cf" class="bg-white border border-gray-100 rounded-3xl p-5 space-y-3 shadow-sm">
+    <h2 class="font-bold text-gray-900">Delivery Address</h2>
+    ${AL.length?`<select id="sa" class="w-full border rounded-xl p-2.5 text-sm bg-white"><option value="">Use a saved address…</option>${AL.map(a=>`<option value="${esc(a.id)}">${esc(a.name)} – ${esc(a.line.slice(0,30))}, ${esc(a.pincode)}</option>`).join('')}</select>`:''}
     ${input('a-name','Full name',`required value="${esc(saved.name||'')}"`)}
     ${input('a-phone','Mobile (10 digits)',`required pattern="[6-9][0-9]{9}" maxlength="10" value="${esc(saved.phone||'')}"`)}
     ${input('a-pin','Pincode',`required pattern="[1-9][0-9]{5}" maxlength="6" value="${esc(saved.pincode||'')}"`)}
     <div class="grid grid-cols-2 gap-2">${input('a-city','City / District',`required value="${esc(saved.city||'')}"`)}${input('a-state','State',`required value="${esc(saved.state||'Tamil Nadu')}"`)}</div>
-    <label class="block text-xs font-medium">Door no, street, area<textarea id="a-line" required rows="2" class="mt-1 w-full border rounded-lg p-2.5 text-sm">${esc(saved.line||'')}</textarea></label>
-    <h2 class="font-bold pt-2">Payment</h2>
-    <label class="flex items-center gap-2 border rounded-lg p-3 text-sm cursor-pointer"><input type="radio" name="pm" value="COD" checked> 💵 Cash on Delivery</label>
-    <label class="flex items-center gap-2 border rounded-lg p-3 text-sm cursor-pointer"><input type="radio" name="pm" value="UPI"> 📲 Pay Online (UPI)</label>
-    <div id="upi" class="hidden border border-emerald-200 rounded-xl p-4 bg-emerald-50 text-sm space-y-3 text-center">
+    <label class="block text-xs font-medium">Door no, street, area<textarea id="a-line" required rows="2" class="mt-1 w-full border rounded-xl p-2.5 text-sm outline-none">${esc(saved.line||'')}</textarea></label>
+    <h2 class="font-bold pt-2 text-gray-900">Payment</h2>
+    <label class="flex items-center gap-2 border rounded-xl p-3 text-sm cursor-pointer"><input type="radio" name="pm" value="COD" checked> 💵 Cash on Delivery</label>
+    <label class="flex items-center gap-2 border rounded-xl p-3 text-sm cursor-pointer"><input type="radio" name="pm" value="UPI"> 📲 Pay Online (UPI)</label>
+    <div id="upi" class="hidden border border-emerald-200 rounded-2xl p-4 bg-emerald-50 text-sm space-y-3 text-center">
      <p>Pay exactly <b id="upa" class="text-lg"></b> to this UPI ID</p>
      <p class="font-mono bg-white border rounded-lg py-2 font-bold select-all">${esc(UPI_ID)}</p>
      <div id="qr" class="flex justify-center"></div>
@@ -322,8 +324,8 @@ async function checkout(){
      <input id="utr" maxlength="22" placeholder="After paying, enter UPI transaction / UTR number" class="w-full border rounded-lg p-2.5 text-sm outline-none focus:border-slate-900">
      <p class="text-xs text-gray-500">We confirm your order once the payment is verified.</p></div>
     <button id="po" class="${btn} w-full"></button></form>
-   <aside class="bg-white border rounded-xl p-4 h-fit text-sm space-y-1">${L.map(l=>`<div class="flex justify-between gap-2"><span>${esc(l.p.name)} × ${l.qty}</span><span>${inr(l.p.price*l.qty)}</span></div>`).join('')}
-    <div class="flex gap-2 pt-3"><input id="cp" value="${esc(coupon)}" placeholder="Coupon code" class="border rounded-lg p-2 flex-1 uppercase"><button type="button" id="cpb" class="bg-gray-100 px-3 rounded-lg font-semibold">Apply</button></div>
+   <aside class="bg-white border border-gray-100 rounded-3xl p-5 h-fit text-sm space-y-1 shadow-sm">${L.map(l=>`<div class="flex justify-between gap-2"><span>${esc(l.p.name)} × ${l.qty}</span><span>${inr(l.p.price*l.qty)}</span></div>`).join('')}
+    <div class="flex gap-2 pt-3"><input id="cp" value="${esc(coupon)}" placeholder="Coupon code" class="border rounded-xl p-2.5 flex-1 uppercase"><button type="button" id="cpb" class="bg-gray-100 px-3 rounded-xl font-semibold">Apply</button></div>
     <div class="flex justify-between border-t pt-2 mt-2"><span>Subtotal</span><span>${inr(sub)}</span></div>
     <div class="flex justify-between text-emerald-700"><span>Discount</span><span id="sd"></span></div>
     <div class="flex justify-between"><span>Delivery</span><span class="text-emerald-700 font-semibold">FREE</span></div>
@@ -347,13 +349,13 @@ async function checkout(){
     confirmBox(addr,utr)};
   function confirmBox(addr,utr){
     const ov=document.createElement('div');ov.className='fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4';
-    ov.innerHTML=`<div class="bg-white rounded-2xl max-w-md w-full p-5 space-y-3 max-h-[90vh] overflow-y-auto"><h3 class="font-bold text-base">Please confirm your order</h3>
-      <div class="bg-gray-50 border rounded-xl p-3 text-sm space-y-1">${L.map(l=>`<div class="flex justify-between gap-2"><span>${esc(l.p.name)} × ${l.qty}</span><span>${inr(l.p.price*l.qty)}</span></div>`).join('')}</div>
-      <div class="text-sm"><b>${esc(addr.name)}</b> · ${esc(addr.phone)}<br>${esc(addr.line)}, ${esc(addr.city)}, ${esc(addr.state)} - ${esc(addr.pincode)}</div>
-      <div class="flex justify-between text-sm"><span>Payment</span><b>${method==='UPI'?'UPI · Ref '+esc(utr):'Cash on Delivery'}</b></div>
-      <div class="flex justify-between text-sm"><span>Delivery</span><b class="text-emerald-700">FREE</b></div>
-      <div class="flex justify-between font-bold text-base"><span>${method==='UPI'?'Amount paid':'Amount to pay on delivery'}</span><span>${inr(sub-d)}</span></div>
-      <div class="flex gap-2 pt-1"><button id="cE" class="flex-1 border rounded-xl py-2.5 font-semibold">✏️ Edit</button><button id="cO" class="flex-1 ${btn}">✓ Confirm Order</button></div></div>`;
+    ov.innerHTML=`<div class="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl"><h3 class="font-bold text-base text-gray-900">Please confirm your order</h3>
+      <div class="bg-gray-50 border rounded-2xl p-3 text-xs space-y-1.5">${L.map(l=>`<div class="flex justify-between gap-2"><span>${esc(l.p.name)} × ${l.qty}</span><span class="font-bold">${inr(l.p.price*l.qty)}</span></div>`).join('')}</div>
+      <div class="text-xs text-gray-700 leading-relaxed bg-gray-50 p-3 rounded-2xl border"><b>${esc(addr.name)}</b> · ${esc(addr.phone)}<br>${esc(addr.line)}, ${esc(addr.city)}, ${esc(addr.state)} - ${esc(addr.pincode)}</div>
+      <div class="flex justify-between text-xs"><span>Payment</span><b>${method==='UPI'?'UPI · Ref '+esc(utr):'Cash on Delivery'}</b></div>
+      <div class="flex justify-between text-xs"><span>Delivery</span><b class="text-emerald-700">FREE</b></div>
+      <div class="flex justify-between font-bold text-base border-t pt-2"><span>${method==='UPI'?'Amount paid':'Amount to pay on delivery'}</span><span class="text-emerald-700">${inr(sub-d)}</span></div>
+      <div class="flex gap-2 pt-2"><button id="cE" class="flex-1 border rounded-full py-3 text-xs font-semibold">✏️ Edit</button><button id="cO" class="flex-1 ${btn} !py-3 text-xs">✓ Confirm Order</button></div></div>`;
     document.body.appendChild(ov);
     ov.querySelector('#cE').onclick=()=>ov.remove();
     ov.querySelector('#cO').onclick=async()=>{
@@ -371,7 +373,7 @@ async function checkout(){
 
 function loginView(){
   const p=store.get('profile');
-  app.innerHTML=`<div class="max-w-sm mx-auto bg-white border rounded-3xl p-6 space-y-4 shadow-sm my-6">
+  app.innerHTML=`<div class="max-w-sm mx-auto bg-white border border-gray-100 rounded-3xl p-6 space-y-4 shadow-sm my-6">
     <div class="text-center">
       <div class="w-16 h-16 mx-auto rounded-full bg-slate-900 text-white flex items-center justify-center text-2xl font-bold shadow-md">👤</div>
       <h2 class="font-extrabold text-lg mt-3 text-slate-900">${p?'Your Profile Details':'Login to Thaarai Tex'}</h2>
@@ -389,10 +391,17 @@ function loginView(){
   const lo=$('#lo');if(lo)lo.onclick=()=>{localStorage.removeItem('profile');setNav();toast('Logged out');loginView()};
 }
 
-/* ===== UPDATED PROFILE & ORDERS (Matches Exact Shared Images) ===== */
+/* ===== ELEGANT PROFILE HUB & DEDICATED ORDER DETAILS VIEW ===== */
 let ofilter='all', addrEdit=null, OC={list:[],dev:[]};
 function getAddrs(){return store.get('addrs')||[]}
-const STL={pending:'text-amber-600 font-bold',verified:'text-blue-600 font-bold',dispatched:'text-purple-600 font-bold',delivered:'text-emerald-600 font-bold',cancelled:'text-red-500 font-bold'};
+
+const STL={
+  pending:'text-slate-700 font-bold bg-slate-100 px-3 py-1 rounded-full',
+  verified:'text-sky-700 font-bold bg-sky-50 px-3 py-1 rounded-full',
+  dispatched:'text-purple-700 font-bold bg-purple-50 px-3 py-1 rounded-full',
+  delivered:'text-emerald-700 font-bold bg-emerald-50 px-3 py-1 rounded-full',
+  cancelled:'text-rose-700 font-bold bg-rose-50 px-3 py-1 rounded-full'
+};
 const SLBL={pending:'Pending',verified:'Processing',dispatched:'Shipped',delivered:'Delivered',cancelled:'Cancelled'};
 const GRP={
   all:()=>true,
@@ -403,55 +412,51 @@ const GRP={
   cancelled:o=>o.order_status==='cancelled'
 };
 
-// UI 1: Exact Profile Hub (First Image Layout)
+// Elegant Minimalist Profile Hub (Clean Slate / Gray Theme)
 function profileHubHtml(pf){
   const name=pf?.name||'Customer';
   const initial=(name[0]||'C').toUpperCase();
-  const avatarUrl=store.get('user_avatar')||'';
 
   const menuRow=(iconSvg,label,hashLink,extraBadge='')=>`
-    <a href="${hashLink}" class="flex items-center justify-between py-3.5 px-3 rounded-2xl hover:bg-gray-50 active:bg-gray-100 transition group">
+    <a href="${hashLink}" class="flex items-center justify-between py-3.5 px-4 rounded-2xl hover:bg-gray-100/70 active:bg-gray-200/60 transition group">
       <div class="flex items-center gap-3.5 text-gray-700">
-        <span class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 group-hover:text-slate-900 transition">${iconSvg}</span>
+        <span class="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-slate-800 group-hover:bg-slate-900 group-hover:text-white transition duration-200">${iconSvg}</span>
         <span class="font-semibold text-sm text-gray-900">${label}</span>
       </div>
       <div class="flex items-center gap-2">
         ${extraBadge}
-        <svg class="w-4 h-4 text-gray-400 group-hover:translate-x-0.5 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        <svg class="w-4 h-4 text-gray-400 group-hover:text-slate-900 group-hover:translate-x-0.5 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
       </div>
     </a>`;
 
   return `
-  <div class="max-w-md mx-auto bg-white rounded-3xl p-5 sm:p-6 shadow-sm border border-gray-100 my-2">
+  <div class="max-w-md mx-auto bg-white rounded-3xl p-6 shadow-sm border border-gray-100 my-2">
     <!-- Header -->
     <div class="flex items-center justify-between pb-3">
       <button onclick="history.back()" class="w-9 h-9 rounded-full bg-gray-50 flex items-center justify-center text-gray-700 hover:bg-gray-100">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
       </button>
-      <h2 class="font-bold text-lg text-gray-900">Profile</h2>
+      <h2 class="font-extrabold text-base tracking-tight text-gray-900">Profile</h2>
       <div class="w-9"></div>
     </div>
 
-    <!-- Circular Profile Ring Avatar -->
-    <div class="flex flex-col items-center mt-4">
-      <div class="relative w-36 h-36 rounded-full flex items-center justify-center p-2" style="background: radial-gradient(circle, rgba(224,242,254,0.6) 0%, rgba(240,249,255,0.2) 65%, transparent 72%);">
-        <div class="w-28 h-28 rounded-full p-1 border-2 border-sky-300 shadow-sm flex items-center justify-center bg-white overflow-hidden">
-          ${avatarUrl
-            ? `<img src="${esc(avatarUrl)}" alt="Avatar" class="w-full h-full rounded-full object-cover">`
-            : `<div class="w-full h-full rounded-full bg-gradient-to-tr from-rose-400 to-amber-300 flex items-center justify-center text-white text-3xl font-extrabold">${initial}</div>`
-          }
+    <!-- Minimalist Elegant Avatar -->
+    <div class="flex flex-col items-center mt-3">
+      <div class="w-24 h-24 rounded-full p-1 border-2 border-slate-200 shadow-sm flex items-center justify-center bg-white">
+        <div class="w-full h-full rounded-full bg-slate-900 flex items-center justify-center text-white text-3xl font-extrabold tracking-wider">
+          ${initial}
         </div>
       </div>
 
-      <h3 class="text-lg font-bold text-gray-900 mt-2">${esc(name)}</h3>
+      <h3 class="text-lg font-bold text-gray-900 mt-3">${esc(name)}</h3>
       <div class="flex items-center gap-1.5 mt-0.5 text-xs text-gray-500 font-medium">
         <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
         <span>Active status</span>
       </div>
     </div>
 
-    <!-- Action List Menu (Exact match to First Screenshot) -->
-    <div class="mt-8 space-y-1">
+    <!-- Elegant Menu List -->
+    <div class="mt-6 space-y-0.5 divide-y divide-gray-50">
       ${menuRow(
         `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>`,
         'Edit Profile',
@@ -480,7 +485,7 @@ function profileHubHtml(pf){
       )}
       ${menuRow(
         `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>`,
-        'Cards / UPI',
+        'Cards / Payment',
         '#/account/profile'
       )}
     </div>
@@ -491,15 +496,16 @@ function profileHubHtml(pf){
   </div>`;
 }
 
-// UI 2: Exact Orders Page (Second Image Layout)
+// UI: Orders List
 function orderCardSecondImage(o){
   const d=new Date(o.created_at);
   const dateStr=`${d.getDate()}-${d.getMonth()+1}-${d.getFullYear()}`;
-  const orderNo=o.tracking_id||(o.id?String(o.id).slice(0,8).toUpperCase():'19451655');
-  const trackingNumber='UW'+(o.id?String(o.id).replace(/[^0-9]/g,'').slice(0,10):'3458795445');
+  const orderIdRaw=o.id?String(o.id):'';
+  const orderNo=o.tracking_id||(orderIdRaw?orderIdRaw.slice(0,8).toUpperCase():'19451655');
+  const trackingNumber='UW'+(orderIdRaw?orderIdRaw.replace(/[^0-9]/g,'').slice(0,10):'3458795445');
   const totalQty=o.items?o.items.reduce((s,i)=>s+(i.quantity||1),0):1;
   const statusLabel=SLBL[o.order_status]||'Delivered';
-  const statusColor=STL[o.order_status]||'text-emerald-600 font-bold';
+  const statusBadge=STL[o.order_status]||'text-emerald-700 font-bold bg-emerald-50 px-3 py-1 rounded-full';
 
   return `
   <div class="bg-white rounded-3xl p-5 shadow-sm border border-gray-100 space-y-3">
@@ -514,15 +520,15 @@ function orderCardSecondImage(o){
 
     <div class="flex justify-between text-xs text-gray-600 font-medium pt-0.5">
       <span>Quantity: <b class="text-gray-900">${totalQty}</b></span>
-      <span>Total Amount: <b class="text-gray-900">${Number(o.total||0).toLocaleString('en-IN')}</b></span>
+      <span>Total Amount: <b class="text-gray-900">${Number(o.total||o.total_amount||0).toLocaleString('en-IN')}</b></span>
     </div>
 
     <div class="flex justify-between items-center pt-2">
-      <button onclick="alert('Order items:\\n${(o.items||[]).map(i=>esc(i.name)+' x '+i.quantity).join('\\n')}')" 
-              class="border border-gray-300 hover:border-gray-900 text-gray-800 text-xs font-semibold px-6 py-2 rounded-full transition">
+      <a href="#/account/order-detail?id=${esc(orderIdRaw||orderNo)}" 
+         class="border border-gray-300 hover:border-slate-900 hover:bg-slate-900 hover:text-white text-gray-800 text-xs font-semibold px-6 py-2 rounded-full transition shadow-sm">
         Details
-      </button>
-      <span class="text-xs ${statusColor}">${statusLabel}</span>
+      </a>
+      <span class="text-xs ${statusBadge}">${statusLabel}</span>
     </div>
   </div>`;
 }
@@ -533,11 +539,18 @@ async function ordersHtml(pf){
   const dev=res.map(r=>r.data).filter(Boolean);
   const phone=pf?.phone||store.get('lookup')||'';
   let list=[];
-  if(phone){const {data}=await sb.rpc('track_orders_by_phone',{p_phone:phone});list=data||[]}
+  if(phone){
+    const {data:rpcData}=await sb.rpc('track_orders_by_phone',{p_phone:phone});
+    if(rpcData) list=rpcData;
+    else {
+      const {data:directData}=await sb.from('orders').select('*').eq('phone',phone).order('created_at',{ascending:false});
+      if(directData) list=directData;
+    }
+  }
   dev.forEach(d=>{if(!list.some(o=>o.created_at===d.created_at))list.push(d)});
-  list.sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));OC={list,dev};
+  list.sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
+  OC={list,dev};
 
-  // Exact Pills Filter from Screenshot 2
   const chips=[
     ['all','All'],
     ['delivered','Delivered'],
@@ -548,40 +561,143 @@ async function ordersHtml(pf){
 
   return `
   <div class="max-w-md mx-auto space-y-4 my-2">
-    <!-- Top Header Bar with Back & Search -->
+    <!-- Header -->
     <div class="flex items-center justify-between px-1">
       <button onclick="location.hash='#/account/hub'" class="w-9 h-9 rounded-full bg-white flex items-center justify-center text-gray-700 shadow-sm border border-gray-100">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
       </button>
       <h1 class="text-2xl font-black text-gray-900">My Orders</h1>
-      <button onclick="const q=prompt('Enter Order No or Phone:');if(q){store.set('lookup',q.trim());route();}" class="w-9 h-9 rounded-full bg-white flex items-center justify-center text-gray-700 shadow-sm border border-gray-100">
+      <button onclick="const q=prompt('Enter 10-digit Phone:');if(q){store.set('lookup',q.trim());route();}" class="w-9 h-9 rounded-full bg-white flex items-center justify-center text-gray-700 shadow-sm border border-gray-100">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
       </button>
     </div>
 
     ${pf?'':`
-      <form id="tf" class="bg-white border rounded-2xl p-3 flex gap-2">
+      <form id="tf" class="bg-white border border-gray-100 rounded-2xl p-3 flex gap-2 shadow-sm">
         <input id="tp" required maxlength="10" inputmode="numeric" placeholder="Enter mobile number to view orders" value="${esc(phone)}" class="flex-1 border-0 bg-gray-50 rounded-xl px-3 py-2 text-xs outline-none">
         <button class="bg-slate-900 text-white text-xs px-4 rounded-xl font-bold">Track</button>
       </form>`
     }
 
-    <!-- Red / Gray Rounded Filter Pills -->
+    <!-- Pills Filter -->
     <div class="flex gap-2 overflow-x-auto no-scrollbar py-1">
       ${chips.map(c=>`
-        <button data-f="${c[0]}" class="shrink-0 px-4 py-2 rounded-full text-xs font-bold transition ${ofilter===c[0]?'bg-rose-500 text-white shadow-sm':'bg-gray-100 text-gray-600 hover:bg-gray-200'}">
+        <button data-f="${c[0]}" class="shrink-0 px-4 py-2 rounded-full text-xs font-bold transition ${ofilter===c[0]?'bg-slate-900 text-white shadow-sm':'bg-white text-gray-600 hover:bg-gray-100 border border-gray-100'}">
           ${c[1]}
         </button>
       `).join('')}
     </div>
 
-    <!-- Order Cards List -->
+    <!-- Cards -->
     <div class="space-y-4 pt-1">
       ${list.filter(GRP[ofilter]||GRP.all).map(orderCardSecondImage).join('')||`
-        <div class="bg-white rounded-3xl p-10 text-center text-gray-400 text-xs border border-gray-100">
+        <div class="bg-white rounded-3xl p-10 text-center text-gray-400 text-xs border border-gray-100 shadow-sm">
           No orders found in this category.
         </div>`
       }
+    </div>
+  </div>`;
+}
+
+// UI: Dedicated Full Order Details View
+async function orderDetailView(orderId){
+  let ord = (OC.list||[]).find(o => String(o.id) === orderId || o.tracking_id === orderId);
+  if(!ord){
+    const {data}=await sb.from('orders').select('*').or(`id.eq.${orderId},tracking_id.eq.${orderId}`).maybeSingle();
+    ord = data;
+  }
+  if(!ord){
+    app.innerHTML=`<div class="max-w-md mx-auto text-center py-16 bg-white rounded-3xl p-8 border my-4">
+      <p class="text-sm text-gray-500">Order not found.</p>
+      <a href="#/account/orders" class="${btn} inline-block mt-4 !py-2.5">Back to Orders</a>
+    </div>`;
+    return;
+  }
+
+  const items = ord.items || [];
+  const status = ord.order_status || 'pending';
+  const steps = ['pending', 'verified', 'dispatched', 'delivered'];
+  const curIdx = steps.indexOf(status);
+  const d = new Date(ord.created_at);
+  const dateStr = d.toLocaleDateString('en-IN', {day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'});
+  const addr = ord.shipping_address || (ord.address ? `${ord.address.line}, ${ord.address.city}, ${ord.address.state} - ${ord.address.pincode}` : 'Standard Delivery');
+
+  app.innerHTML=`
+  <div class="max-w-md mx-auto space-y-4 my-2">
+    <!-- Header -->
+    <div class="flex items-center justify-between px-1">
+      <button onclick="location.hash='#/account/orders'" class="w-9 h-9 rounded-full bg-white flex items-center justify-center text-gray-700 shadow-sm border border-gray-100">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+      </button>
+      <h1 class="text-lg font-extrabold text-gray-900">Order Details</h1>
+      <div class="w-9"></div>
+    </div>
+
+    <!-- Status Tracking Card -->
+    <div class="bg-white rounded-3xl p-5 shadow-sm border border-gray-100 space-y-4">
+      <div class="flex justify-between items-start">
+        <div>
+          <span class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Status</span>
+          <h3 class="font-extrabold text-base text-gray-900 capitalize mt-0.5">${esc(SLBL[status]||status)}</h3>
+          <p class="text-[11px] text-gray-500 mt-0.5">Placed on ${dateStr}</p>
+        </div>
+        <span class="${STL[status]||'bg-gray-100 text-gray-800 text-xs px-3 py-1 rounded-full font-bold'} text-xs">${esc(SLBL[status]||status)}</span>
+      </div>
+
+      <!-- Linear Step Indicator -->
+      <div class="pt-2">
+        <div class="grid grid-cols-4 gap-1 text-center">
+          ${['Placed','Confirmed','Shipped','Delivered'].map((step, idx)=>`
+            <div>
+              <div class="h-1.5 rounded-full mb-1.5 ${idx <= curIdx ? 'bg-slate-900' : 'bg-gray-200'}"></div>
+              <span class="text-[10px] font-semibold ${idx <= curIdx ? 'text-slate-900' : 'text-gray-400'}">${step}</span>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    </div>
+
+    <!-- Purchased Products Card -->
+    <div class="bg-white rounded-3xl p-5 shadow-sm border border-gray-100 space-y-3">
+      <h3 class="font-extrabold text-xs text-gray-400 uppercase tracking-wider">Items in Order (${items.length})</h3>
+      <div class="divide-y divide-gray-100">
+        ${items.map(i=>`
+          <div class="py-3 flex items-center gap-3.5">
+            <img src="${esc(i.image||i.images?.[0]||'https://placehold.co/100x120?text=Saree')}" class="w-14 h-16 object-cover rounded-xl bg-gray-50 border">
+            <div class="flex-1 min-w-0">
+              <h4 class="font-bold text-xs text-gray-900 line-clamp-1">${esc(i.name)}</h4>
+              <p class="text-[11px] text-gray-500 mt-0.5">Quantity: ${i.quantity}</p>
+              <b class="text-xs text-slate-900 mt-1 block">${inr(i.price*i.quantity)}</b>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+
+    <!-- Delivery Address Card -->
+    <div class="bg-white rounded-3xl p-5 shadow-sm border border-gray-100 space-y-2 text-xs">
+      <h3 class="font-extrabold text-gray-400 uppercase tracking-wider text-[11px]">Delivery Address</h3>
+      <p class="font-bold text-gray-900 text-sm">${esc(ord.customer_name||ord.address?.name||'Customer')}</p>
+      <p class="text-gray-500">${esc(ord.phone||'')}</p>
+      <p class="text-gray-600 leading-relaxed mt-1">${esc(addr)}</p>
+    </div>
+
+    <!-- Payment & Total Card -->
+    <div class="bg-white rounded-3xl p-5 shadow-sm border border-gray-100 space-y-2 text-xs">
+      <h3 class="font-extrabold text-gray-400 uppercase tracking-wider text-[11px]">Payment Summary</h3>
+      <div class="flex justify-between text-gray-600 pt-1"><span>Payment Method</span><b class="text-gray-900">${esc(ord.payment_method||'Cash on Delivery')}</b></div>
+      <div class="flex justify-between text-gray-600"><span>Delivery Charges</span><b class="text-emerald-700">FREE</b></div>
+      <div class="flex justify-between text-base font-extrabold text-slate-900 border-t pt-2.5 mt-2">
+        <span>Total Amount</span>
+        <span>${inr(ord.total||ord.total_amount||0)}</span>
+      </div>
+    </div>
+
+    <!-- WhatsApp Support Action -->
+    <div class="text-center pt-2">
+      <a href="https://wa.me/${WHATSAPP}?text=${encodeURIComponent('Hi, I need assistance regarding my order #'+(ord.tracking_id||orderId))}" target="_blank" rel="noopener" class="text-xs font-semibold text-emerald-700 hover:underline inline-flex items-center gap-1">
+        <span>💬 Contact Support on WhatsApp</span>
+      </a>
     </div>
   </div>`;
 }
@@ -666,9 +782,15 @@ async function wishHtml(){
   </div>`;
 }
 
-async function account(section){
+async function account(section, params){
   const pf=store.get('profile');
-  if(!pf&&section!=='orders'&&section!=='hub'){location.hash='#/login';return}
+  if(!pf&&section!=='orders'&&section!=='hub'&&section!=='order-detail'){location.hash='#/login';return}
+
+  if(section==='order-detail'){
+    const oid=params.get('id');
+    await orderDetailView(oid);
+    return;
+  }
 
   let body='';
   if(section==='hub'||!section) body=profileHubHtml(pf);
@@ -683,11 +805,11 @@ async function account(section){
   if(tf)tf.onsubmit=e=>{
     e.preventDefault();const v=$('#tp').value.trim();
     if(!/^[6-9]\d{9}$/.test(v))return toast('Enter a valid 10-digit mobile number');
-    store.set('lookup',v);account(section);
+    store.set('lookup',v);account(section, params);
   };
 
   app.onclick=async e=>{
-    const t=e.target,d=t.dataset,again=()=>account(section);
+    const t=e.target,d=t.dataset,again=()=>account(section, params);
     if(t.id==='lgo'){localStorage.removeItem('profile');setNav();toast('Logged out');location.hash='#/';return}
     if(d.f){ofilter=d.f;again()}
     if(t.id==='ps'){
@@ -727,7 +849,7 @@ async function route(){
     else if(path.startsWith('/p/'))await product(path.slice(3));
     else if(path==='/cart')await cartView();
     else if(path==='/checkout')await checkout();
-    else if(path.startsWith('/account'))await account(path.split('/')[2]||'hub');
+    else if(path.startsWith('/account'))await account(path.split('/')[2]||'hub', params);
     else if(path==='/login')loginView();
     else app.innerHTML='<p class="text-center py-20">Page not found.</p>';
   }catch(err){console.error(err);app.innerHTML='<p class="text-center text-red-600 py-20">Error: '+esc(err.message||err)+'</p>'}
