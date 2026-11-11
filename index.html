@@ -77,7 +77,8 @@ const SUPABASE_URL="https://hjogdvqwwbgzgwtdlrak.supabase.co";
 const SUPABASE_ANON_KEY="sb_publishable_gURnxsEPWoxUqqAqnEtJ_g_EmUlUgUZ";
 let WHATSAPP="919999999999";
 let UPI_ID="yourname@upi", UPI_NAME="Thaarai Tex";
-const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+let sb=null;
+try { sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY); } catch(e){ console.error(e); }
 
 /* ===== ICONS ===== */
 const ic=(p,c='w-5 h-5 text-slate-800')=>`<svg viewBox="0 0 24 24" class="${c}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
@@ -87,6 +88,7 @@ const ICONS={
   handloom:ic('<path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M19.07 4.93L4.93 19.07"/>','w-5 h-5 text-slate-800'),
   upi:ic('<rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/>','w-5 h-5 text-slate-800'),
   tag:ic('<path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/>','w-5 h-5 text-slate-800'),
+  filter:ic('<polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>','w-4 h-4 text-slate-800'),
   phone:ic('<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>','w-3.5 h-3.5 inline mr-1 text-gray-400'),
   mail:ic('<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>','w-3.5 h-3.5 inline mr-1 text-gray-400'),
   mapPin:ic('<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>','w-3.5 h-3.5 inline mr-1 text-gray-400'),
@@ -113,27 +115,33 @@ const img=p=>esc(p.images?.[0]||'https://placehold.co/600x750?text=Thaarai+Tex')
 const store={get:k=>{try{return JSON.parse(localStorage.getItem(k))}catch{return null}},set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}}};
 let coupon='', wish=new Set();
 const off=p=>p.mrp>p.price?Math.round((p.mrp-p.price)/p.mrp*100):0;
-function toast(m){const t=$('#toast');t.textContent=m;t.classList.remove('hidden');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.add('hidden'),2200)}
+function toast(m){const t=$('#toast');if(!t)return;t.textContent=m;t.classList.remove('hidden');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.add('hidden'),2200)}
 
-/* ===== CUSTOMER IDENTITY & PERSISTENT SYNC (Cart, Address, Wishlist, Orders) ===== */
+/* ===== CUSTOMER IDENTITY & PERSISTENT SYNC ===== */
 let OC={list:[]};
 let ofilter='all', addrEdit=null;
 const profile=()=>store.get('profile');
 
 let cart = [];
 async function loadCartCloud(){
-  const p = profile();
-  if(!p) { cart = store.get('cart')||[]; saveCartBadge(); return; }
-  const {data} = await sb.rpc('get_user_cart', {p_phone: p.phone});
-  cart = Array.isArray(data) ? data : (store.get('cart')||[]);
+  try{
+    const p = profile();
+    if(!p) { cart = store.get('cart')||[]; saveCartBadge(); return; }
+    if(sb){
+      const {data} = await sb.rpc('get_user_cart', {p_phone: p.phone});
+      cart = Array.isArray(data) ? data : (store.get('cart')||[]);
+    } else {
+      cart = store.get('cart')||[];
+    }
+  }catch{ cart = store.get('cart')||[]; }
   saveCartBadge();
 }
 async function saveCartCloud(){
   const p = profile();
   store.set('cart', cart);
   saveCartBadge();
-  if(p) {
-    await sb.rpc('save_user_cart', {p_phone: p.phone, p_items: cart});
+  if(p && sb) {
+    try{ await sb.rpc('save_user_cart', {p_phone: p.phone, p_items: cart}); }catch{}
   }
 }
 function saveCart(){ saveCartCloud(); }
@@ -143,19 +151,23 @@ function saveCartBadge(){
 }
 
 async function getAddrs(){
-  const p = profile();
-  if(!p) return store.get('addrs:none')||[];
-  const {data} = await sb.rpc('get_user_addresses', {p_phone: p.phone});
-  if(data && data.length) return data;
-  const local = store.get('addrs:'+p.phone)||[];
-  if(local.length) await setAddrs(local);
-  return local;
+  try{
+    const p = profile();
+    if(!p) return store.get('addrs:none')||[];
+    if(sb){
+      const {data} = await sb.rpc('get_user_addresses', {p_phone: p.phone});
+      if(data && data.length) return data;
+    }
+    return store.get('addrs:'+p.phone)||[];
+  }catch{ return store.get('addrs:none')||[]; }
 }
 async function setAddrs(L){
   const p = profile();
   if(p) {
     store.set('addrs:'+p.phone, L);
-    await sb.rpc('save_user_addresses', {p_phone: p.phone, p_addresses: L});
+    if(sb){
+      try{ await sb.rpc('save_user_addresses', {p_phone: p.phone, p_addresses: L}); }catch{}
+    }
   } else {
     store.set('addrs:none', L);
   }
@@ -172,55 +184,47 @@ const stars=n=>{
 };
 
 /* ===== SITE SETTINGS ===== */
-const DEF={
+const SET={
   brand:{name:'Thaarai Tex',tagline:'Premium Sarees',logo:''},
-  theme:{primary:'#0f172a'},
   banners:[
     {image:'',title:'பாரம்பரிய பட்டு & காட்டன் சேலைகள்',subtitle:'நேரடி நெசவாளர் விலை · Cash on Delivery & UPI',btn:'Explore Collection',link:'#/shop',c1:'#1e293b',c2:'#0f172a'},
     {image:'',title:'Exquisite Handloom Silks',subtitle:'Direct from Master Weavers to Your Doorstep',btn:'Shop Now',link:'#/shop',c1:'#0f172a',c2:'#334155'}
   ],
-  sections:{cats:true,deals:false,fresh:false,trust:true,about:true,catsTitle:'Featured Collections',dealsTitle:'',freshTitle:''},
-  about:{title:'Crafted with Tradition',text:'Thaarai Tex brings you handpicked, authentic handloom sarees directly from traditional weavers. Every piece reflects meticulous artistry, premium fabrics, and timeless elegance.',image:''},
-  footer:{about:'Handloom sarees direct from the weavers.',phone:'',email:'',address:'Melur, Tamil Nadu',whatsapp:'919999999999',upi:'yourname@upi',upiName:'Thaarai Tex',instagram:'',facebook:''}
+  about:{title:'Crafted with Tradition',text:'Thaarai Tex brings you handpicked, authentic handloom sarees directly from traditional weavers. Every piece reflects meticulous artistry, premium fabrics, and timeless elegance.'},
+  footer:{about:'Handloom sarees direct from the weavers.',phone:'',email:'',address:'Melur, Tamil Nadu',whatsapp:'919999999999',upi:'yourname@upi',upiName:'Thaarai Tex'}
 };
-const merge=(a,b)=>{if(Array.isArray(b))return b;if(b&&typeof b==='object'){const o={...a};for(const k in b)o[k]=merge(a?.[k],b[k]);return o}return b===undefined?a:b};
-let SET=JSON.parse(JSON.stringify(DEF));
-const hx=(c,d)=>/^#[0-9a-f]{6}$/i.test(c||'')?c:d;
-const safeLink=u=>/^(#|https?:\/\/|\/)/.test(u||'')?u:'#/shop';
 
 function applySettings(){
-  const b=SET.brand,f=SET.footer,p=hx(SET.theme.primary,'#0f172a');
-  $('#brand').innerHTML=b.logo?`<img src="${esc(b.logo)}" alt="${esc(b.name)}" class="h-8 max-w-[160px] object-contain">`:`<span class="font-extrabold text-xl uppercase tracking-tight text-slate-900">${esc(b.name)}</span><span class="text-[10px] text-gray-400 font-semibold uppercase tracking-wider">${esc(b.tagline)}</span>`;
-  let st=document.getElementById('th');if(!st){st=document.createElement('style');st.id='th';document.head.appendChild(st)}
-  st.textContent=`:root{--p:${p}}.bg-slate-900{background-color:var(--p)!important}.hover\\:bg-slate-800:hover{background-color:var(--p)!important;filter:brightness(1.15)}.text-slate-900{color:var(--p)!important}`;
-  WHATSAPP=f.whatsapp||WHATSAPP;UPI_ID=f.upi||UPI_ID;UPI_NAME=f.upiName||UPI_NAME;
-  const lk=(u,t)=>u?`<a class="underline" target="_blank" rel="noopener" href="${esc(safeLink(u))}">${t}</a> `:'';
-  $('#foot').innerHTML=`<div class="max-w-6xl mx-auto px-4 grid sm:grid-cols-3 gap-6 text-left"><div><b class="text-white text-sm">${esc(b.name)}</b><p class="mt-2 leading-relaxed text-gray-400">${esc(f.about)}</p></div>
+  const b=SET.brand,f=SET.footer;
+  const brandEl=$('#brand');
+  if(brandEl) brandEl.innerHTML=`<span class="font-extrabold text-xl uppercase tracking-tight text-slate-900">${esc(b.name)}</span><span class="text-[10px] text-gray-400 font-semibold uppercase tracking-wider">${esc(b.tagline)}</span>`;
+  const footEl=$('#foot');
+  if(footEl) footEl.innerHTML=`<div class="max-w-6xl mx-auto px-4 grid sm:grid-cols-3 gap-6 text-left"><div><b class="text-white text-sm">${esc(b.name)}</b><p class="mt-2 leading-relaxed text-gray-400">${esc(f.about)}</p></div>
    <div><b class="text-white text-sm">Contact</b><p class="mt-2 leading-6 text-gray-400">${f.phone?`${ICONS.phone}<a href="tel:${esc(f.phone)}">${esc(f.phone)}</a><br>`:''}${f.email?`${ICONS.mail}${esc(f.email)}<br>`:''}${f.address?`${ICONS.mapPin}${esc(f.address)}`:''}</p></div>
-   <div><b class="text-white text-sm">Quick links</b><p class="mt-2 leading-7 text-gray-400"><a href="#/shop" class="underline">Shop</a> · <a href="#/account/orders" class="underline">My Orders</a><br>${f.whatsapp?lk('https://wa.me/'+f.whatsapp,`${ICONS.whatsapp}WhatsApp support`):''}${lk(f.instagram,'Instagram')}${lk(f.facebook,'Facebook')}</p></div></div>
+   <div><b class="text-white text-sm">Quick links</b><p class="mt-2 leading-7 text-gray-400"><a href="#/shop" class="underline">Shop</a> · <a href="#/account/orders" class="underline">My Orders</a><br><a class="underline" target="_blank" rel="noopener" href="https://wa.me/${esc(f.whatsapp)}">${ICONS.whatsapp}WhatsApp support</a></p></div></div>
    <p class="mt-6 text-center text-gray-500 text-[11px]">© ${new Date().getFullYear()} ${esc(b.name)}. All rights reserved.</p>`;
-}
-async function loadSettings(){
-  try{const {data}=await sb.from('site_settings').select('data').eq('id','main').maybeSingle();if(data?.data)SET=merge(DEF,data.data)}catch{}
-  applySettings();
 }
 applySettings();
 
 function setNav(){
   const p=profile(), txt=$('#lgn-txt');
   if(txt)txt.textContent=p?p.name.split(' ')[0]:'Login';
-  $('#lgn').href=p?'#/account/hub':'#/login';
-  $('#tbp').href=p?'#/account/hub':'#/login';
+  if($('#lgn')) $('#lgn').href=p?'#/account/hub':'#/login';
+  if($('#tbp')) $('#tbp').href=p?'#/account/hub':'#/login';
 }
 async function loadUserData(){
   wish = new Set();
   const p = profile();
   if(!p){await loadCartCloud();return;}
-  const {data:cData}=await sb.rpc('get_user_cart',{p_phone:p.phone});
-  if(cData&&Array.isArray(cData)){cart=cData;store.set('cart',cart);}
-  else{await saveCartCloud();}
-  const {data:wData}=await sb.rpc('get_wishlist',{p_phone:p.phone});
-  (wData||[]).forEach(x=>wish.add(x));
+  try{
+    if(sb){
+      const {data:cData}=await sb.rpc('get_user_cart',{p_phone:p.phone});
+      if(cData&&Array.isArray(cData)){cart=cData;store.set('cart',cart);}
+      else{await saveCartCloud();}
+      const {data:wData}=await sb.rpc('get_wishlist',{p_phone:p.phone});
+      (wData||[]).forEach(x=>wish.add(x));
+    }
+  }catch{}
   saveCartBadge();
   setNav();
 }
@@ -238,11 +242,15 @@ async function initAuth(){setNav();await loadUserData()}
 async function toggleWish(id){
   const p=profile();
   if(!p){toast('Login to save to your wishlist');location.hash='#/login';return}
-  const {data,error}=await sb.rpc('toggle_wishlist',{p_phone:p.phone,p_product:id});
-  if(error)return toast('Could not update wishlist');
-  data?wish.add(id):wish.delete(id);
-  document.querySelectorAll(`[data-w="${id}"]`).forEach(b=>{b.innerHTML=heart(wish.has(id))});
-  if((location.hash||'').startsWith('#/account/wishlist'))route();
+  try{
+    if(sb){
+      const {data,error}=await sb.rpc('toggle_wishlist',{p_phone:p.phone,p_product:id});
+      if(error)return toast('Could not update wishlist');
+      data?wish.add(id):wish.delete(id);
+    }
+    document.querySelectorAll(`[data-w="${id}"]`).forEach(b=>{b.innerHTML=heart(wish.has(id))});
+    if((location.hash||'').startsWith('#/account/wishlist'))route();
+  }catch{toast('Could not update wishlist');}
 }
 
 /* ===== CART ===== */
@@ -253,13 +261,20 @@ function addCart(id,qty=1,max=10){
 }
 async function cartLines(){
   if(!cart.length)return[];
-  const {data}=await sb.from('products').select('*').in('id',cart.map(i=>i.id));
-  return cart.map(i=>({...i,p:(data||[]).find(p=>p.id===i.id)})).filter(l=>l.p);
+  try{
+    if(sb){
+      const {data}=await sb.from('products').select('*').in('id',cart.map(i=>i.id));
+      return cart.map(i=>({...i,p:(data||[]).find(p=>p.id===i.id)})).filter(l=>l.p);
+    }
+  }catch{}
+  return [];
 }
 async function couponDiscount(sub){
-  if(!coupon)return 0;
-  const {data}=await sb.rpc('check_coupon',{p_code:coupon,p_subtotal:sub});
-  return Number(data)||0;
+  if(!coupon || !sb)return 0;
+  try{
+    const {data}=await sb.rpc('check_coupon',{p_code:coupon,p_subtotal:sub});
+    return Number(data)||0;
+  }catch{return 0;}
 }
 
 /* ===== CARDS & VIEWS ===== */
@@ -299,8 +314,8 @@ async function home(){
     <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent"></div>
     <div class="relative max-w-xl pb-4">
       <span class="inline-block bg-white/20 backdrop-blur-md text-white text-[10px] font-extrabold uppercase tracking-widest px-3 py-1 rounded-full mb-3">Thaarai Tex Exclusive</span>
-      <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight">${esc(b.title)}</h1>
-      <p class="mt-2 text-xs sm:text-sm text-gray-200">${esc(b.subtitle)}</p>
+      <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight">${esc(b.title||'')}</h1>
+      <p class="mt-2 text-xs sm:text-sm text-gray-200">${esc(b.subtitle||'')}</p>
       ${b.btn?`<a href="${esc(safeLink(b.link))}" class="inline-flex items-center gap-2 mt-4 px-6 py-3 rounded-full bg-white text-slate-900 font-bold text-xs hover:bg-gray-100 transition shadow-soft">${esc(b.btn)} <span>→</span></a>`:''}
     </div>
   </div>`;
@@ -333,7 +348,7 @@ async function home(){
   </section>
 
   <!-- About / Brand Story Section -->
-  ${SET.about&&SET.about.text?`
+  ${(SET&&SET.about&&SET.about.text)?`
     <section class="bg-white border border-gray-100 rounded-3xl p-8 mb-8 shadow-soft grid sm:grid-cols-2 gap-8 items-center">
       <div class="space-y-3">
         <span class="text-[10px] font-extrabold uppercase tracking-widest text-slate-600 bg-slate-100 px-3 py-1 rounded-full">Authentic Weaves</span>
@@ -372,8 +387,8 @@ async function home(){
     const sl=[...car.querySelectorAll('.slide')], dots=[...car.querySelectorAll('.dot')];
     const show=n=>{
       i=n;
-      sl.forEach((x,k)=>{x.classList.toggle('opacity-0',k!==n);x.classList.toggle('pointer-events-none',k!==n)});
-      dots.forEach((d,k)=>{d.classList.toggle('bg-white',k===n);d.classList.toggle('bg-white/40',k!==n);d.classList.toggle('w-8',k===n);d.classList.toggle('w-2',k!==n)});
+      sl.forEach((x,k)=>{if(x){x.classList.toggle('opacity-0',k!==n);x.classList.toggle('pointer-events-none',k!==n)}});
+      dots.forEach((d,k)=>{if(d){d.classList.toggle('bg-white',k===n);d.classList.toggle('bg-white/40',k!==n);d.classList.toggle('w-8',k===n);d.classList.toggle('w-2',k!==n)}});
     };
     dots.forEach((d,k)=>d.onclick=()=>show(k));
     window._bt=setInterval(()=>show((i+1)%sl.length),5000);
@@ -382,7 +397,9 @@ async function home(){
 
 async function shop(params){
   const f={q:params.get('q')||'',cat:params.get('cat')||'',fabric:params.get('fabric')||'',min:params.get('min')||'',max:params.get('max')||'',sort:params.get('sort')||'new',stock:params.get('stock')||''};
-  const {data:cats}=await sb.from('categories').select('*');
+  let cats=[];
+  try{ const res=await sb.from('categories').select('*'); cats=res.data||[]; }catch{}
+  
   let q=sb.from('products').select('*').eq('active',true);
   if(f.q)q=q.or(`name.ilike.%${f.q.replace(/[%,()]/g,'')}%,description.ilike.%${f.q.replace(/[%,()]/g,'')}%`);
   if(f.cat)q=q.eq('category_id',f.cat);
@@ -391,95 +408,174 @@ async function shop(params){
   if(f.max)q=q.lte('price',+f.max);
   if(f.stock)q=q.gt('stock',0);
   q=f.sort==='low'?q.order('price'):f.sort==='high'?q.order('price',{ascending:false}):q.order('created_at',{ascending:false});
-  const {data,error}=await q; if(error)throw error;
+  let data=[];
+  try{ const res=await q; data=res.data||[]; }catch{}
 
   app.innerHTML=`
   <div class="space-y-6">
-    <!-- Professional Filter & Sort Bar -->
-    <div class="bg-white rounded-3xl p-4 sm:p-5 border border-gray-100 shadow-soft space-y-4">
-      <div class="flex flex-col lg:flex-row gap-4 items-center justify-between">
-        
-        <!-- Search within shop -->
-        <div class="w-full lg:w-72 relative">
-          <input id="shop-q" value="${esc(f.q)}" placeholder="Search products..." class="w-full bg-gray-50 border border-gray-200 rounded-2xl py-2.5 pl-9 pr-4 text-xs outline-none focus:bg-white focus:border-slate-900 transition">
-          <svg class="w-4 h-4 text-gray-400 absolute left-3 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3" stroke-width="1.8" stroke-linecap="round"/></svg>
-        </div>
-
-        <!-- Filter Pills & Dropdowns -->
-        <div class="flex flex-wrap items-center gap-2.5 w-full lg:w-auto">
-          
-          <!-- Category Filter -->
-          <select id="f-cat" class="bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs font-semibold text-gray-700 outline-none focus:bg-white focus:border-slate-900 transition cursor-pointer">
-            <option value="">All Categories</option>
-            ${(cats||[]).map(c=>`<option value="${c.id}" ${f.cat===c.id?'selected':''}>${esc(c.name)}</option>`).join('')}
-          </select>
-
-          <!-- Fabric Filter -->
-          <select id="f-fabric" class="bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs font-semibold text-gray-700 outline-none focus:bg-white focus:border-slate-900 transition cursor-pointer">
-            <option value="">All Fabrics</option>
-            ${['Silk','Cotton','Semi Silk','Linen'].map(fb=>`<option value="${fb}" ${f.fabric===fb?'selected':''}>${fb}</option>`).join('')}
-          </select>
-
-          <!-- Price Range -->
-          <div class="flex items-center gap-1 bg-gray-50 border border-gray-200 rounded-xl px-2.5 py-1 text-xs">
-            <span class="text-gray-400">₹</span>
-            <input id="f-min" type="number" placeholder="Min" value="${esc(f.min)}" class="w-14 bg-transparent outline-none text-xs">
-            <span class="text-gray-300">-</span>
-            <input id="f-max" type="number" placeholder="Max" value="${esc(f.max)}" class="w-14 bg-transparent outline-none text-xs">
-          </div>
-
-          <!-- Sort Dropdown -->
-          <select id="f-sort" class="bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs font-semibold text-gray-700 outline-none focus:bg-white focus:border-slate-900 transition cursor-pointer ml-auto">
-            <option value="new" ${f.sort==='new'?'selected':''}>Sort: Newest</option>
-            <option value="low" ${f.sort==='low'?'selected':''}>Price: Low to High</option>
-            <option value="high" ${f.sort==='high'?'selected':''}>Price: High to Low</option>
-          </select>
-
-          <!-- In Stock Checkbox -->
-          <label class="flex items-center gap-1.5 text-xs font-semibold text-gray-700 cursor-pointer bg-gray-50 border border-gray-200 rounded-xl px-3 py-2">
-            <input id="f-stock" type="checkbox" ${f.stock?'checked':''}> In Stock
-          </label>
-
-          <!-- Apply Button -->
-          <button id="apply-filters" class="bg-slate-900 hover:bg-slate-800 text-white font-bold px-5 py-2 rounded-xl text-xs transition shadow-sm">Apply</button>
-        </div>
-
+    <!-- Clean Elegant Shop Header & Filter Trigger Bar -->
+    <div class="flex items-center justify-between bg-white rounded-3xl p-4 sm:p-5 border border-gray-100 shadow-soft">
+      <div>
+        <h1 class="font-extrabold text-base sm:text-lg text-gray-900">Explore Sarees & Weaves</h1>
+        <p class="text-xs text-gray-500 mt-0.5">Showing <b>${data.length}</b> products${f.q?` for "${esc(f.q)}"`:''}</p>
       </div>
+      <button id="open-filter-modal" class="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs px-5 py-3 rounded-full transition shadow-soft">
+        ${ICONS.filter}
+        <span>Filter &amp; Sort</span>
+      </button>
     </div>
 
     <!-- Products Grid Section -->
     <div>
-      <p class="text-xs text-gray-500 mb-3 px-1">Showing <b>${(data||[]).length}</b> professional handloom items</p>
-      ${grid(data||[])}
+      ${grid(data)}
+    </div>
+  </div>
+
+  <!-- Professional Modal Popup Filter -->
+  <div id="filter-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4 backdrop-blur-sm transition-opacity">
+    <div class="bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden border border-gray-100">
+      
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+        <button id="close-filter-modal" class="text-gray-400 hover:text-gray-700 text-lg font-bold">✕</button>
+        <h2 class="font-extrabold text-sm sm:text-base text-gray-900">Filters &amp; Sorting</h2>
+        <button id="reset-filters" class="text-xs font-bold text-rose-600 hover:underline">Reset All</button>
+      </div>
+
+      <!-- Modal Body (Scrollable) -->
+      <div class="p-6 overflow-y-auto space-y-6 text-xs">
+        
+        <!-- Search query filter -->
+        <div>
+          <label class="block font-bold text-gray-700 mb-1.5 uppercase tracking-wider text-[11px]">Search Keyword</label>
+          <input id="modal-q" value="${esc(f.q)}" placeholder="Search saree name or description..." class="w-full bg-gray-50 border border-gray-200 rounded-2xl p-3 outline-none focus:bg-white focus:border-slate-900 transition">
+        </div>
+
+        <!-- Categories Selection -->
+        <div>
+          <label class="block font-bold text-gray-700 mb-2 uppercase tracking-wider text-[11px]">Categories</label>
+          <div class="grid grid-cols-2 gap-2">
+            <button type="button" data-cat="" class="cat-pill py-2.5 px-3 rounded-xl border text-center font-bold transition ${!f.cat?'bg-slate-900 text-white border-slate-900':'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100'}">All Categories</button>
+            ${cats.map(c=>`
+              <button type="button" data-cat="${c.id}" class="cat-pill py-2.5 px-3 rounded-xl border text-center font-bold transition truncate ${f.cat===c.id?'bg-slate-900 text-white border-slate-900':'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100'}">${esc(c.name)}</button>
+            `).join('')}
+          </div>
+        </div>
+
+        <!-- Fabric Selection -->
+        <div>
+          <label class="block font-bold text-gray-700 mb-2 uppercase tracking-wider text-[11px]">Fabric</label>
+          <div class="grid grid-cols-2 gap-2">
+            ${['','Silk','Cotton','Semi Silk','Linen'].map(fb=>`
+              <button type="button" data-fabric="${fb}" class="fab-pill py-2.5 px-3 rounded-xl border text-center font-bold transition ${f.fabric===fb?'bg-slate-900 text-white border-slate-900':'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100'}">${fb||'All Fabrics'}</button>
+            `).join('')}
+          </div>
+        </div>
+
+        <!-- Price Range -->
+        <div>
+          <label class="block font-bold text-gray-700 mb-2 uppercase tracking-wider text-[11px]">Price Range (₹)</label>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <span class="text-[10px] text-gray-400 font-semibold">Min Price</span>
+              <input id="modal-min" type="number" value="${esc(f.min)}" placeholder="0" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 outline-none focus:bg-white focus:border-slate-900">
+            </div>
+            <div>
+              <span class="text-[10px] text-gray-400 font-semibold">Max Price</span>
+              <input id="modal-max" type="number" value="${esc(f.max)}" placeholder="10000" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 outline-none focus:bg-white focus:border-slate-900">
+            </div>
+          </div>
+        </div>
+
+        <!-- Sorting Options -->
+        <div>
+          <label class="block font-bold text-gray-700 mb-2 uppercase tracking-wider text-[11px]">Sort By</label>
+          <div class="space-y-1.5">
+            {[
+              ['new', 'Newest Arrivals'],
+              ['low', 'Price: Low to High'],
+              ['high', 'Price: High to Low']
+            ].map(([val, label])=>`
+              <label class="flex items-center justify-between p-3 rounded-xl bg-gray-50 border border-gray-200 cursor-pointer hover:bg-gray-100 transition">
+                <span class="font-semibold text-gray-800">${label}</span>
+                <input type="radio" name="modal-sort" value="${val}" ${f.sort===val?'checked':''} class="accent-slate-900">
+              </label>
+            `).join('')}
+          </div>
+        </div>
+
+        <!-- In Stock Only Toggle -->
+        <div class="flex items-center justify-between p-3 rounded-xl bg-gray-50 border border-gray-200">
+          <span class="font-bold text-gray-800">In Stock Only</span>
+          <input id="modal-stock" type="checkbox" ${f.stock?'checked':''} class="w-4 h-4 accent-slate-900 cursor-pointer">
+        </div>
+
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="p-4 border-t border-gray-100 bg-white">
+        <button id="confirm-filters" class="${btn} w-full !py-3.5 text-center">Apply &amp; Confirm</button>
+      </div>
+
     </div>
   </div>`;
 
-  const triggerFilter=()=>{
+  let selectedCat = f.cat, selectedFab = f.fabric;
+
+  const modal=$('#filter-modal');
+  $('#open-filter-modal').onclick=()=>modal.classList.remove('hidden');
+  $('#close-filter-modal').onclick=()=>modal.classList.add('hidden');
+  modal.onclick=e=>{if(e.target===modal)modal.classList.add('hidden')};
+
+  document.querySelectorAll('.cat-pill').forEach(btn=>{
+    btn.onclick=()=>{
+      document.querySelectorAll('.cat-pill').forEach(b=>{b.className='cat-pill py-2.5 px-3 rounded-xl border text-center font-bold transition bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100'});
+      btn.className='cat-pill py-2.5 px-3 rounded-xl border text-center font-bold transition bg-slate-900 text-white border-slate-900';
+      selectedCat=btn.dataset.cat;
+    };
+  });
+
+  document.querySelectorAll('.fab-pill').forEach(btn=>{
+    btn.onclick=()=>{
+      document.querySelectorAll('.fab-pill').forEach(b=>{b.className='fab-pill py-2.5 px-3 rounded-xl border text-center font-bold transition bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100'});
+      btn.className='fab-pill py-2.5 px-3 rounded-xl border text-center font-bold transition bg-slate-900 text-white border-slate-900';
+      selectedFab=btn.dataset.fabric;
+    };
+  });
+
+  $('#reset-filters').onclick=()=>{ location.hash='#/shop'; };
+
+  $('#confirm-filters').onclick=()=>{
     const p=new URLSearchParams();
-    const qv=$('#shop-q').value.trim(); if(qv)p.set('q',qv);
-    const catv=$('#f-cat').value; if(catv)p.set('cat',catv);
-    const fbv=$('#f-fabric').value; if(fbv)p.set('fabric',fbv);
-    const minv=$('#f-min').value; if(minv)p.set('min',minv);
-    const maxv=$('#f-max').value; if(maxv)p.set('max',maxv);
-    const sortv=$('#f-sort').value; if(sortv)p.set('sort',sortv);
-    if($('#f-stock').checked)p.set('stock','1');
+    const qv=$('#modal-q').value.trim(); if(qv)p.set('q',qv);
+    if(selectedCat)p.set('cat',selectedCat);
+    if(selectedFab)p.set('fabric',selectedFab);
+    const minv=$('#modal-min').value; if(minv)p.set('min',minv);
+    const maxv=$('#modal-max').value; if(maxv)p.set('max',maxv);
+    const sortChecked=document.querySelector('input[name="modal-sort"]:checked');
+    if(sortChecked)p.set('sort',sortChecked.value);
+    if($('#modal-stock').checked)p.set('stock','1');
+    modal.classList.add('hidden');
     location.hash='#/shop?'+p.toString();
   };
-
-  $('#apply-filters').onclick=triggerFilter;
-  $('#shop-q').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();triggerFilter()}};
 }
 
 /* ===== PRODUCT PAGE ===== */
 async function product(id){
-  const {data:p}=await sb.from('products').select('*').eq('id',id).maybeSingle();
+  let p=null;
+  try{ const res=await sb.from('products').select('*').eq('id',id).maybeSingle(); p=res.data; }catch{}
   if(!p){app.innerHTML='<div class="text-center py-20 text-xs text-gray-400 bg-white rounded-3xl border p-8 max-w-md mx-auto shadow-soft">Product not found. <br><a href="#/shop" class="font-bold underline text-slate-900 mt-2 inline-block">Back to Shop</a></div>';return}
   document.title=p.name+' | '+SET.brand.name;
-  const [{data:rv},{data:sim}]=await Promise.all([
-    sb.from('reviews').select('*').eq('product_id',id).order('created_at',{ascending:false}),
-    p.category_id?sb.from('products').select('*').eq('active',true).eq('category_id',p.category_id).neq('id',id).limit(4):Promise.resolve({data:[]})
-  ]);
-  const reviews=rv||[], avg=reviews.length?reviews.reduce((s,r)=>s+r.rating,0)/reviews.length:0;
+  let reviews=[], sim=[];
+  try{
+    const r1=await sb.from('reviews').select('*').eq('product_id',id).order('created_at',{ascending:false});
+    reviews=r1.data||[];
+    if(p.category_id){
+      const r2=await sb.from('products').select('*').eq('active',true).eq('category_id',p.category_id).neq('id',id).limit(4);
+      sim=r2.data||[];
+    }
+  }catch{}
+  const avg=reviews.length?reviews.reduce((s,r)=>s+r.rating,0)/reviews.length:0;
   const imgs=p.images?.length?p.images:['https://placehold.co/600x750?text=Thaarai+Tex'];
   const o=off(p), ok=p.stock>0;
   const specs=[['Fabric',p.fabric],['Colour',p.color],['Occasion',p.occasion]].filter(r=>r[1]);
@@ -689,18 +785,21 @@ async function checkout(){
     ov.querySelector('#cE').onclick=()=>ov.remove();
     ov.querySelector('#cO').onclick=async()=>{
       const b=ov.querySelector('#cO');b.disabled=true;b.textContent='Placing order…';
-      const {data:orderId,error}=await sb.rpc('place_order_guest',{p_items:cart.map(i=>({id:i.id,qty:i.qty})),p_address:addr,p_coupon:coupon||null,p_method:method,p_ref:utr||null});
-      if(error){toast(error.message);b.disabled=false;b.textContent='Confirm Order';return}
-      const owner=profile()?.phone||addr.phone;
-      await sb.rpc('set_order_account',{p_id:orderId,p_account:owner});
-      if(!profile())await setProfile(addr.name,addr.phone);
-      {const L2=await getAddrs();if(!L2.some(x=>x.line===addr.line&&x.pincode===addr.pincode))await setAddrs([...L2,{...addr,id:Date.now().toString(36),def:!L2.length}])}
-      cart=[];saveCart();OC={list:[]};ov.remove();
-      app.innerHTML=`<div class="max-w-md mx-auto text-center py-12 px-6 bg-white rounded-3xl shadow-soft border border-gray-100 my-4 space-y-4">
-        <div class="py-2"><svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52"><circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none"/><path class="checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/></svg></div>
-        <h2 class="text-xl font-extrabold text-gray-900 tracking-tight">Order Placed Successfully!</h2>
-        <p class="text-xs text-gray-500 leading-relaxed max-w-xs mx-auto">உங்கள் ஆர்டர் வெற்றிகரமாகப் பதிவானது. ஆர்டர் எண்: <span class="font-mono font-bold text-gray-900">#${esc(String(orderId).slice(0,8).toUpperCase())}</span>${method==='UPI'?'<br><span class="text-emerald-700 font-semibold">We will verify your payment shortly.</span>':''}</p>
-        <div class="pt-4 flex gap-2"><a href="#/account/orders" class="${btn} flex-1 !py-3">My Orders</a><a href="#/shop" class="border border-gray-200 hover:border-slate-900 text-gray-800 text-xs font-bold px-6 py-3 rounded-full transition flex-1">Shop More</a></div></div>`;
+      try{
+        if(!sb) throw new Error('Database connection missing');
+        const {data:orderId,error}=await sb.rpc('place_order_guest',{p_items:cart.map(i=>({id:i.id,qty:i.qty})),p_address:addr,p_coupon:coupon||null,p_method:method,p_ref:utr||null});
+        if(error){toast(error.message);b.disabled=false;b.textContent='Confirm Order';return}
+        const owner=profile()?.phone||addr.phone;
+        await sb.rpc('set_order_account',{p_id:orderId,p_account:owner});
+        if(!profile())await setProfile(addr.name,addr.phone);
+        {const L2=await getAddrs();if(!L2.some(x=>x.line===addr.line&&x.pincode===addr.pincode))await setAddrs([...L2,{...addr,id:Date.now().toString(36),def:!L2.length}])}
+        cart=[];saveCart();OC={list:[]};ov.remove();
+        app.innerHTML=`<div class="max-w-md mx-auto text-center py-12 px-6 bg-white rounded-3xl shadow-soft border border-gray-100 my-4 space-y-4">
+          <div class="py-2"><svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52"><circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none"/><path class="checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/></svg></div>
+          <h2 class="text-xl font-extrabold text-gray-900 tracking-tight">Order Placed Successfully!</h2>
+          <p class="text-xs text-gray-500 leading-relaxed max-w-xs mx-auto">உங்கள் ஆர்டர் வெற்றிகரமாகப் பதிவானது. ஆர்டர் எண்: <span class="font-mono font-bold text-gray-900">#${esc(String(orderId).slice(0,8).toUpperCase())}</span>${method==='UPI'?'<br><span class="text-emerald-700 font-semibold">We will verify your payment shortly.</span>':''}</p>
+          <div class="pt-4 flex gap-2"><a href="#/account/orders" class="${btn} flex-1 !py-3">My Orders</a><a href="#/shop" class="border border-gray-200 hover:border-slate-900 text-gray-800 text-xs font-bold px-6 py-3 rounded-full transition flex-1">Shop More</a></div></div>`;
+      }catch(err){toast(err.message||'Error placing order');b.disabled=false;b.textContent='Confirm Order';}
     };
   }
 }
@@ -714,8 +813,8 @@ function loginView(){
       <h2 class="font-extrabold text-base mt-3 text-slate-900">${p?'Your Profile Details':'Login'}</h2>
       <p class="text-[11px] text-gray-500 mt-0.5">உங்கள் பெயர் மற்றும் மொபைல் எண்ணை உள்ளிடவும்.</p>
     </div>
-    ${input('ln','Your Name',`maxlength="60" placeholder="உதாரணம்: Subramani" value="${esc(p?.name||'')}"`)}
-    ${input('lp','Mobile Number (10 digits)',`maxlength="10" inputmode="numeric" placeholder="9876543210" value="${esc(p?.phone||'')}"`)}
+    ${input('ln','Your Name',`maxlength="60" placeholder="" value="${esc(p?.name||'')}"`)}
+    ${input('lp','Mobile Number (10 digits)',`maxlength="10" inputmode="numeric" placeholder="" value="${esc(p?.phone||'')}"`)}
     <button id="go" class="${btn} w-full">${p?'Save Details':'Continue'}</button>
     ${p?`<button id="lo" class="w-full text-rose-600 text-xs font-bold py-1 hover:underline flex items-center justify-center">${ICONS.logout}Logout from this device</button>`:''}</div>`;
   $('#go').onclick=async()=>{
@@ -734,9 +833,14 @@ const PAYLBL={COD:'Cash on Delivery',UPI:'UPI'};
 
 async function fetchOrders(){
   const p=profile();if(!p)return[];
-  const {data,error}=await sb.rpc('my_orders',{p_phone:p.phone});
-  if(error)throw new Error(error.message);
-  OC={list:data||[]};return OC.list;
+  try{
+    if(sb){
+      const {data,error}=await sb.rpc('my_orders',{p_phone:p.phone});
+      if(error)throw new Error(error.message);
+      OC={list:data||[]};return OC.list;
+    }
+  }catch{}
+  return [];
 }
 
 function hubHtml(pf){
@@ -831,7 +935,7 @@ async function addressesHtml(){
 }
 
 async function wishHtml(){
-  let wp=[];if(wish.size){const {data}=await sb.from('products').select('*').in('id',[...wish]);wp=data||[]}
+  let wp=[];if(wish.size){try{const {data}=await sb.from('products').select('*').in('id',[...wish]);wp=data||[]}catch{}}
   return `<div class="max-w-4xl mx-auto space-y-4 my-2">${topbar('My Wishlist ('+wp.length+')','#/account/hub')}
     ${wp.length?grid(wp):'<div class="bg-white rounded-3xl p-12 text-center text-gray-400 text-xs border border-gray-100 shadow-soft">Your wishlist is empty.</div>'}</div>`;
 }
@@ -874,7 +978,7 @@ async function account(section,params){
 
 /* ===== ROUTER ===== */
 async function route(){
-  app.onclick=null;clearInterval(window._bt);document.title=SET.brand.name+' | '+SET.brand.tagline;
+  app.onclick=null;if(window._bt)clearInterval(window._bt);document.title=(SET&&SET.brand)?(SET.brand.name+' | '+SET.brand.tagline):'Thaarai Tex';
   const [path,qs]=(location.hash||'#/').slice(1).split('?'), params=new URLSearchParams(qs||'');
   app.innerHTML='<p class="text-center text-gray-400 py-20 text-xs">ஏற்றப்படுகிறது…</p>';
   $('#tabbar').classList.toggle('hidden',path.startsWith('/p/')||path==='/checkout');
@@ -888,7 +992,7 @@ async function route(){
     else if(path.startsWith('/account'))await account(path.split('/')[2]||'hub',params);
     else if(path==='/login')loginView();
     else app.innerHTML='<p class="text-center py-20 text-xs text-gray-400">Page not found.</p>';
-  }catch(err){console.error(err);app.innerHTML='<p class="text-center text-rose-600 py-20 text-xs">Error: '+esc(err.message||err)+'</p>'}
+  }catch(err){console.error(err);app.innerHTML='<p class="text-center text-rose-600 py-20 text-xs">Error: '+esc(err.message||err)+'</p>';}
   window.scrollTo(0,0);
 }
 document.addEventListener('click',e=>{const b=e.target.closest('[data-w]');if(b){e.preventDefault();e.stopPropagation();toggleWish(b.dataset.w)}},true);
