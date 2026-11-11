@@ -123,18 +123,20 @@ const profile=()=>store.get('profile');
 
 let cart = [];
 async function loadCartCloud(){
-  const p = profile();
-  if(!p) { cart = store.get('cart')||[]; saveCartBadge(); return; }
-  const {data} = await sb.rpc('get_user_cart', {p_phone: p.phone});
-  cart = Array.isArray(data) ? data : (store.get('cart')||[]);
-  saveCartBadge();
+  try{
+    const p = profile();
+    if(!p) { cart = store.get('cart')||[]; saveCartBadge(); return; }
+    const {data} = await sb.rpc('get_user_cart', {p_phone: p.phone});
+    cart = Array.isArray(data) ? data : (store.get('cart')||[]);
+    saveCartBadge();
+  }catch{ cart = store.get('cart')||[]; saveCartBadge(); }
 }
 async function saveCartCloud(){
   const p = profile();
   store.set('cart', cart);
   saveCartBadge();
   if(p) {
-    await sb.rpc('save_user_cart', {p_phone: p.phone, p_items: cart});
+    try{ await sb.rpc('save_user_cart', {p_phone: p.phone, p_items: cart}); }catch{}
   }
 }
 function saveCart(){ saveCartCloud(); }
@@ -144,19 +146,20 @@ function saveCartBadge(){
 }
 
 async function getAddrs(){
-  const p = profile();
-  if(!p) return store.get('addrs:none')||[];
-  const {data} = await sb.rpc('get_user_addresses', {p_phone: p.phone});
-  if(data && data.length) return data;
-  const local = store.get('addrs:'+p.phone)||[];
-  if(local.length) await setAddrs(local);
-  return local;
+  try{
+    const p = profile();
+    if(!p) return store.get('addrs:none')||[];
+    const {data} = await sb.rpc('get_user_addresses', {p_phone: p.phone});
+    if(data && data.length) return data;
+    const local = store.get('addrs:'+p.phone)||[];
+    return local;
+  }catch{ return store.get('addrs:none')||[]; }
 }
 async function setAddrs(L){
   const p = profile();
   if(p) {
     store.set('addrs:'+p.phone, L);
-    await sb.rpc('save_user_addresses', {p_phone: p.phone, p_addresses: L});
+    try{ await sb.rpc('save_user_addresses', {p_phone: p.phone, p_addresses: L}); }catch{}
   } else {
     store.set('addrs:none', L);
   }
@@ -217,11 +220,13 @@ async function loadUserData(){
   wish = new Set();
   const p = profile();
   if(!p){await loadCartCloud();return;}
-  const {data:cData}=await sb.rpc('get_user_cart',{p_phone:p.phone});
-  if(cData&&Array.isArray(cData)){cart=cData;store.set('cart',cart);}
-  else{await saveCartCloud();}
-  const {data:wData}=await sb.rpc('get_wishlist',{p_phone:p.phone});
-  (wData||[]).forEach(x=>wish.add(x));
+  try{
+    const {data:cData}=await sb.rpc('get_user_cart',{p_phone:p.phone});
+    if(cData&&Array.isArray(cData)){cart=cData;store.set('cart',cart);}
+    else{await saveCartCloud();}
+    const {data:wData}=await sb.rpc('get_wishlist',{p_phone:p.phone});
+    (wData||[]).forEach(x=>wish.add(x));
+  }catch{}
   saveCartBadge();
   setNav();
 }
@@ -239,11 +244,13 @@ async function initAuth(){setNav();await loadUserData()}
 async function toggleWish(id){
   const p=profile();
   if(!p){toast('Login to save to your wishlist');location.hash='#/login';return}
-  const {data,error}=await sb.rpc('toggle_wishlist',{p_phone:p.phone,p_product:id});
-  if(error)return toast('Could not update wishlist');
-  data?wish.add(id):wish.delete(id);
-  document.querySelectorAll(`[data-w="${id}"]`).forEach(b=>{b.innerHTML=heart(wish.has(id))});
-  if((location.hash||'').startsWith('#/account/wishlist'))route();
+  try{
+    const {data,error}=await sb.rpc('toggle_wishlist',{p_phone:p.phone,p_product:id});
+    if(error)return toast('Could not update wishlist');
+    data?wish.add(id):wish.delete(id);
+    document.querySelectorAll(`[data-w="${id}"]`).forEach(b=>{b.innerHTML=heart(wish.has(id))});
+    if((location.hash||'').startsWith('#/account/wishlist'))route();
+  }catch{toast('Could not update wishlist');}
 }
 
 /* ===== CART ===== */
@@ -254,13 +261,17 @@ function addCart(id,qty=1,max=10){
 }
 async function cartLines(){
   if(!cart.length)return[];
-  const {data}=await sb.from('products').select('*').in('id',cart.map(i=>i.id));
-  return cart.map(i=>({...i,p:(data||[]).find(p=>p.id===i.id)})).filter(l=>l.p);
+  try{
+    const {data}=await sb.from('products').select('*').in('id',cart.map(i=>i.id));
+    return cart.map(i=>({...i,p:(data||[]).find(p=>p.id===i.id)})).filter(l=>l.p);
+  }catch{return[];}
 }
 async function couponDiscount(sub){
   if(!coupon)return 0;
-  const {data}=await sb.rpc('check_coupon',{p_code:coupon,p_subtotal:sub});
-  return Number(data)||0;
+  try{
+    const {data}=await sb.rpc('check_coupon',{p_code:coupon,p_subtotal:sub});
+    return Number(data)||0;
+  }catch{return 0;}
 }
 
 /* ===== CARDS & VIEWS ===== */
@@ -285,7 +296,7 @@ const loginNeeded=msg=>`<div class="max-w-md mx-auto text-center py-14 bg-white 
 
 /* ===== HOME & SHOP ===== */
 async function home(){
-  const bn=SET.banners||[];
+  const bn=(SET&&SET.banners)?SET.banners:[];
   const featuredCats = [
     { name: 'Sarees', subtitle: 'Exclusive Handloom', image: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=600&q=80', query: 'Sarees' },
     { name: 'Lungies', subtitle: 'Comfort & Heritage', image: 'https://images.unsplash.com/photo-1583394838336-acd977736f90?auto=format&fit=crop&w=600&q=80', query: 'Lungies' },
@@ -300,8 +311,8 @@ async function home(){
     <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent"></div>
     <div class="relative max-w-xl pb-4">
       <span class="inline-block bg-white/20 backdrop-blur-md text-white text-[10px] font-extrabold uppercase tracking-widest px-3 py-1 rounded-full mb-3">Thaarai Tex Exclusive</span>
-      <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight">${esc(b.title)}</h1>
-      <p class="mt-2 text-xs sm:text-sm text-gray-200">${esc(b.subtitle)}</p>
+      <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight">${esc(b.title||'')}</h1>
+      <p class="mt-2 text-xs sm:text-sm text-gray-200">${esc(b.subtitle||'')}</p>
       ${b.btn?`<a href="${esc(safeLink(b.link))}" class="inline-flex items-center gap-2 mt-4 px-6 py-3 rounded-full bg-white text-slate-900 font-bold text-xs hover:bg-gray-100 transition shadow-soft">${esc(b.btn)} <span>→</span></a>`:''}
     </div>
   </div>`;
@@ -334,7 +345,7 @@ async function home(){
   </section>
 
   <!-- About / Brand Story Section -->
-  ${SET.about&&SET.about.text?`
+  ${(SET&&SET.about&&SET.about.text)?`
     <section class="bg-white border border-gray-100 rounded-3xl p-8 mb-8 shadow-soft grid sm:grid-cols-2 gap-8 items-center">
       <div class="space-y-3">
         <span class="text-[10px] font-extrabold uppercase tracking-widest text-slate-600 bg-slate-100 px-3 py-1 rounded-full">Authentic Weaves</span>
@@ -373,8 +384,8 @@ async function home(){
     const sl=[...car.querySelectorAll('.slide')], dots=[...car.querySelectorAll('.dot')];
     const show=n=>{
       i=n;
-      sl.forEach((x,k)=>{x.classList.toggle('opacity-0',k!==n);x.classList.toggle('pointer-events-none',k!==n)});
-      dots.forEach((d,k)=>{d.classList.toggle('bg-white',k===n);d.classList.toggle('bg-white/40',k!==n);d.classList.toggle('w-8',k===n);d.classList.toggle('w-2',k!==n)});
+      sl.forEach((x,k)=>{if(x){x.classList.toggle('opacity-0',k!==n);x.classList.toggle('pointer-events-none',k!==n)}});
+      dots.forEach((d,k)=>{if(d){d.classList.toggle('bg-white',k===n);d.classList.toggle('bg-white/40',k!==n);d.classList.toggle('w-8',k===n);d.classList.toggle('w-2',k!==n)}});
     };
     dots.forEach((d,k)=>d.onclick=()=>show(k));
     window._bt=setInterval(()=>show((i+1)%sl.length),5000);
@@ -383,7 +394,9 @@ async function home(){
 
 async function shop(params){
   const f={q:params.get('q')||'',cat:params.get('cat')||'',fabric:params.get('fabric')||'',min:params.get('min')||'',max:params.get('max')||'',sort:params.get('sort')||'new',stock:params.get('stock')||''};
-  const {data:cats}=await sb.from('categories').select('*');
+  let cats=[];
+  try{ const res=await sb.from('categories').select('*'); cats=res.data||[]; }catch{}
+  
   let q=sb.from('products').select('*').eq('active',true);
   if(f.q)q=q.or(`name.ilike.%${f.q.replace(/[%,()]/g,'')}%,description.ilike.%${f.q.replace(/[%,()]/g,'')}%`);
   if(f.cat)q=q.eq('category_id',f.cat);
@@ -392,7 +405,8 @@ async function shop(params){
   if(f.max)q=q.lte('price',+f.max);
   if(f.stock)q=q.gt('stock',0);
   q=f.sort==='low'?q.order('price'):f.sort==='high'?q.order('price',{ascending:false}):q.order('created_at',{ascending:false});
-  const {data,error}=await q; if(error)throw error;
+  let data=[];
+  try{ const res=await q; data=res.data||[]; }catch{}
 
   app.innerHTML=`
   <div class="space-y-6">
@@ -400,7 +414,7 @@ async function shop(params){
     <div class="flex items-center justify-between bg-white rounded-3xl p-4 sm:p-5 border border-gray-100 shadow-soft">
       <div>
         <h1 class="font-extrabold text-base sm:text-lg text-gray-900">Explore Sarees & Weaves</h1>
-        <p class="text-xs text-gray-500 mt-0.5">Showing <b>${(data||[]).length}</b> products${f.q?` for "${esc(f.q)}"`:''}</p>
+        <p class="text-xs text-gray-500 mt-0.5">Showing <b>${data.length}</b> products${f.q?` for "${esc(f.q)}"`:''}</p>
       </div>
       <button id="open-filter-modal" class="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs px-5 py-3 rounded-full transition shadow-soft">
         ${ICONS.filter}
@@ -410,11 +424,11 @@ async function shop(params){
 
     <!-- Products Grid Section -->
     <div>
-      ${grid(data||[])}
+      ${grid(data)}
     </div>
   </div>
 
-  <!-- Professional Modal Popup Filter (Inspired by Design) -->
+  <!-- Professional Modal Popup Filter -->
   <div id="filter-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4 backdrop-blur-sm transition-opacity">
     <div class="bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden border border-gray-100">
       
@@ -439,7 +453,7 @@ async function shop(params){
           <label class="block font-bold text-gray-700 mb-2 uppercase tracking-wider text-[11px]">Categories</label>
           <div class="grid grid-cols-2 gap-2">
             <button type="button" data-cat="" class="cat-pill py-2.5 px-3 rounded-xl border text-center font-bold transition ${!f.cat?'bg-slate-900 text-white border-slate-900':'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100'}">All Categories</button>
-            ${(cats||[]).map(c=>`
+            ${cats.map(c=>`
               <button type="button" data-cat="${c.id}" class="cat-pill py-2.5 px-3 rounded-xl border text-center font-bold transition truncate ${f.cat===c.id?'bg-slate-900 text-white border-slate-900':'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100'}">${esc(c.name)}</button>
             `).join('')}
           </div>
@@ -526,9 +540,7 @@ async function shop(params){
     };
   });
 
-  $('#reset-filters').onclick=()=>{
-    location.hash='#/shop';
-  };
+  $('#reset-filters').onclick=()=>{ location.hash='#/shop'; };
 
   $('#confirm-filters').onclick=()=>{
     const p=new URLSearchParams();
@@ -764,18 +776,20 @@ async function checkout(){
     ov.querySelector('#cE').onclick=()=>ov.remove();
     ov.querySelector('#cO').onclick=async()=>{
       const b=ov.querySelector('#cO');b.disabled=true;b.textContent='Placing order…';
-      const {data:orderId,error}=await sb.rpc('place_order_guest',{p_items:cart.map(i=>({id:i.id,qty:i.qty})),p_address:addr,p_coupon:coupon||null,p_method:method,p_ref:utr||null});
-      if(error){toast(error.message);b.disabled=false;b.textContent='Confirm Order';return}
-      const owner=profile()?.phone||addr.phone;
-      await sb.rpc('set_order_account',{p_id:orderId,p_account:owner});
-      if(!profile())await setProfile(addr.name,addr.phone);
-      {const L2=await getAddrs();if(!L2.some(x=>x.line===addr.line&&x.pincode===addr.pincode))await setAddrs([...L2,{...addr,id:Date.now().toString(36),def:!L2.length}])}
-      cart=[];saveCart();OC={list:[]};ov.remove();
-      app.innerHTML=`<div class="max-w-md mx-auto text-center py-12 px-6 bg-white rounded-3xl shadow-soft border border-gray-100 my-4 space-y-4">
-        <div class="py-2"><svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52"><circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none"/><path class="checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/></svg></div>
-        <h2 class="text-xl font-extrabold text-gray-900 tracking-tight">Order Placed Successfully!</h2>
-        <p class="text-xs text-gray-500 leading-relaxed max-w-xs mx-auto">உங்கள் ஆர்டர் வெற்றிகரமாகப் பதிவானது. ஆர்டர் எண்: <span class="font-mono font-bold text-gray-900">#${esc(String(orderId).slice(0,8).toUpperCase())}</span>${method==='UPI'?'<br><span class="text-emerald-700 font-semibold">We will verify your payment shortly.</span>':''}</p>
-        <div class="pt-4 flex gap-2"><a href="#/account/orders" class="${btn} flex-1 !py-3">My Orders</a><a href="#/shop" class="border border-gray-200 hover:border-slate-900 text-gray-800 text-xs font-bold px-6 py-3 rounded-full transition flex-1">Shop More</a></div></div>`;
+      try{
+        const {data:orderId,error}=await sb.rpc('place_order_guest',{p_items:cart.map(i=>({id:i.id,qty:i.qty})),p_address:addr,p_coupon:coupon||null,p_method:method,p_ref:utr||null});
+        if(error){toast(error.message);b.disabled=false;b.textContent='Confirm Order';return}
+        const owner=profile()?.phone||addr.phone;
+        await sb.rpc('set_order_account',{p_id:orderId,p_account:owner});
+        if(!profile())await setProfile(addr.name,addr.phone);
+        {const L2=await getAddrs();if(!L2.some(x=>x.line===addr.line&&x.pincode===addr.pincode))await setAddrs([...L2,{...addr,id:Date.now().toString(36),def:!L2.length}])}
+        cart=[];saveCart();OC={list:[]};ov.remove();
+        app.innerHTML=`<div class="max-w-md mx-auto text-center py-12 px-6 bg-white rounded-3xl shadow-soft border border-gray-100 my-4 space-y-4">
+          <div class="py-2"><svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52"><circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none"/><path class="checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/></svg></div>
+          <h2 class="text-xl font-extrabold text-gray-900 tracking-tight">Order Placed Successfully!</h2>
+          <p class="text-xs text-gray-500 leading-relaxed max-w-xs mx-auto">உங்கள் ஆர்டர் வெற்றிகரமாகப் பதிவானது. ஆர்டர் எண்: <span class="font-mono font-bold text-gray-900">#${esc(String(orderId).slice(0,8).toUpperCase())}</span>${method==='UPI'?'<br><span class="text-emerald-700 font-semibold">We will verify your payment shortly.</span>':''}</p>
+          <div class="pt-4 flex gap-2"><a href="#/account/orders" class="${btn} flex-1 !py-3">My Orders</a><a href="#/shop" class="border border-gray-200 hover:border-slate-900 text-gray-800 text-xs font-bold px-6 py-3 rounded-full transition flex-1">Shop More</a></div></div>`;
+      }catch(err){toast(err.message||'Error placing order');b.disabled=false;b.textContent='Confirm Order';}
     };
   }
 }
@@ -809,9 +823,11 @@ const PAYLBL={COD:'Cash on Delivery',UPI:'UPI'};
 
 async function fetchOrders(){
   const p=profile();if(!p)return[];
-  const {data,error}=await sb.rpc('my_orders',{p_phone:p.phone});
-  if(error)throw new Error(error.message);
-  OC={list:data||[]};return OC.list;
+  try{
+    const {data,error}=await sb.rpc('my_orders',{p_phone:p.phone});
+    if(error)throw new Error(error.message);
+    OC={list:data||[]};return OC.list;
+  }catch{return[];}
 }
 
 function hubHtml(pf){
@@ -906,7 +922,7 @@ async function addressesHtml(){
 }
 
 async function wishHtml(){
-  let wp=[];if(wish.size){const {data}=await sb.from('products').select('*').in('id',[...wish]);wp=data||[]}
+  let wp=[];if(wish.size){try{const {data}=await sb.from('products').select('*').in('id',[...wish]);wp=data||[]}catch{}}
   return `<div class="max-w-4xl mx-auto space-y-4 my-2">${topbar('My Wishlist ('+wp.length+')','#/account/hub')}
     ${wp.length?grid(wp):'<div class="bg-white rounded-3xl p-12 text-center text-gray-400 text-xs border border-gray-100 shadow-soft">Your wishlist is empty.</div>'}</div>`;
 }
@@ -949,7 +965,7 @@ async function account(section,params){
 
 /* ===== ROUTER ===== */
 async function route(){
-  app.onclick=null;clearInterval(window._bt);document.title=SET.brand.name+' | '+SET.brand.tagline;
+  app.onclick=null;if(window._bt)clearInterval(window._bt);document.title=(SET&&SET.brand)?(SET.brand.name+' | '+SET.brand.tagline):'Thaarai Tex';
   const [path,qs]=(location.hash||'#/').slice(1).split('?'), params=new URLSearchParams(qs||'');
   app.innerHTML='<p class="text-center text-gray-400 py-20 text-xs">ஏற்றப்படுகிறது…</p>';
   $('#tabbar').classList.toggle('hidden',path.startsWith('/p/')||path==='/checkout');
@@ -963,7 +979,7 @@ async function route(){
     else if(path.startsWith('/account'))await account(path.split('/')[2]||'hub',params);
     else if(path==='/login')loginView();
     else app.innerHTML='<p class="text-center py-20 text-xs text-gray-400">Page not found.</p>';
-  }catch(err){console.error(err);app.innerHTML='<p class="text-center text-rose-600 py-20 text-xs">Error: '+esc(err.message||err)+'</p>'}
+  }catch(err){console.error(err);app.innerHTML='<p class="text-center text-rose-600 py-20 text-xs">Error: '+esc(err.message||err)+'</p>';}
   window.scrollTo(0,0);
 }
 document.addEventListener('click',e=>{const b=e.target.closest('[data-w]');if(b){e.preventDefault();e.stopPropagation();toggleWish(b.dataset.w)}},true);
