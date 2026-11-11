@@ -37,8 +37,6 @@ input,select,textarea{font-size:16px!important}
 </head>
 <body class="text-gray-900 antialiased selection:bg-slate-900 selection:text-white">
 
-<div id="ann" class="text-xs py-2 px-3 text-center"></div>
-
 <header class="bg-white/95 backdrop-blur sticky top-0 z-40 border-b border-gray-100">
   <div class="max-w-6xl mx-auto px-4 py-3.5 flex items-center gap-3">
     <a href="#/" id="brand" class="flex flex-col"></a>
@@ -95,7 +93,9 @@ const ICONS={
   edit:ic('<path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>','w-3 h-3 inline mr-1 text-gray-600'),
   logout:ic('<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>','w-3.5 h-3.5 inline mr-1 text-rose-500'),
   back:ic('<path d="M15 19l-7-7 7-7"/>','w-5 h-5'),
-  chev:ic('<path d="M9 5l7 7-7 7"/>','w-4 h-4 text-gray-400')
+  chev:ic('<path d="M9 5l7 7-7 7"/>','w-4 h-4 text-gray-400'),
+  star:ic('<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>','w-3.5 h-3.5 text-amber-500 inline fill-amber-500'),
+  starEmpty:ic('<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>','w-3.5 h-3.5 text-amber-300 inline')
 };
 const TRUST_ICONS=[ICONS.truck,ICONS.cash,ICONS.handloom,ICONS.upi];
 
@@ -156,12 +156,18 @@ async function setAddrs(L){
 }
 
 const heart=a=>`<svg width="17" height="17" viewBox="0 0 24 24" fill="${a?'#e11d48':'none'}" stroke="${a?'#e11d48':'currentColor'}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-8-5.2-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.8-8 11-8 11z"/></svg>`;
-const stars=n=>`<span class="text-amber-500 font-semibold tracking-wide">${'★'.repeat(Math.round(n))}${'☆'.repeat(5-Math.round(n))}</span>`;
+const stars=n=>{
+  const filled = Math.round(n);
+  let html = '';
+  for(let i=0; i<5; i++){
+    html += (i < filled) ? ICONS.star : ICONS.starEmpty;
+  }
+  return `<span class="inline-flex items-center gap-0.5">${html}</span>`;
+};
 
 /* ===== SITE SETTINGS ===== */
 const DEF={
   brand:{name:'Thaarai Tex',tagline:'Premium Sarees',logo:''},
-  announce:{on:true,text:'✨ இலவச டெலிவரி (Free Delivery) & COD / UPI',bg:'#0f172a',color:'#ffffff'},
   theme:{primary:'#0f172a'},
   banners:[{image:'',title:'பாரம்பரிய பட்டு & காட்டன் சேலைகள்',subtitle:'நேரடி நெசவாளர் விலை · Cash on Delivery & UPI',btn:'Shop Now',link:'#/shop',c1:'#1e293b',c2:'#0f172a'}],
   sections:{cats:true,deals:true,fresh:true,trust:true,about:false,catsTitle:'Shop by Category',dealsTitle:'Best Value',freshTitle:'New Arrivals'},
@@ -175,9 +181,8 @@ const hx=(c,d)=>/^#[0-9a-f]{6}$/i.test(c||'')?c:d;
 const safeLink=u=>/^(#|https?:\/\/|\/)/.test(u||'')?u:'#/shop';
 
 function applySettings(){
-  const b=SET.brand,a=SET.announce,f=SET.footer,p=hx(SET.theme.primary,'#0f172a');
+  const b=SET.brand,f=SET.footer,p=hx(SET.theme.primary,'#0f172a');
   $('#brand').innerHTML=b.logo?`<img src="${esc(b.logo)}" alt="${esc(b.name)}" class="h-8 max-w-[160px] object-contain">`:`<span class="font-extrabold text-xl uppercase tracking-tight text-slate-900">${esc(b.name)}</span><span class="text-[10px] text-gray-400 font-semibold uppercase tracking-wider">${esc(b.tagline)}</span>`;
-  const an=$('#ann');an.style.display=a.on?'':'none';an.textContent=a.text;an.style.background=hx(a.bg,'#0f172a');an.style.color=hx(a.color,'#ffffff');
   let st=document.getElementById('th');if(!st){st=document.createElement('style');st.id='th';document.head.appendChild(st)}
   st.textContent=`:root{--p:${p}}.bg-slate-900{background-color:var(--p)!important}.hover\\:bg-slate-800:hover{background-color:var(--p)!important;filter:brightness(1.15)}.text-slate-900{color:var(--p)!important}`;
   WHATSAPP=f.whatsapp||WHATSAPP;UPI_ID=f.upi||UPI_ID;UPI_NAME=f.upiName||UPI_NAME;
@@ -372,7 +377,7 @@ async function product(id){
               <button data-w="${p.id}" aria-label="Wishlist" class="w-9 h-9 rounded-full bg-gray-50 flex items-center justify-center hover:bg-rose-50 transition border border-gray-100">${heart(wish.has(p.id))}</button>
             </div>
             <h1 class="text-xl sm:text-2xl font-extrabold text-gray-950 mt-3 leading-snug tracking-tight">${esc(p.name)}</h1>
-            ${reviews.length?`<div class="flex items-center gap-2 mt-2"><div class="flex items-center bg-amber-50 border border-amber-200/60 px-2.5 py-0.5 rounded-lg text-xs font-bold text-amber-800"><span class="mr-1">★</span> ${avg.toFixed(1)}</div><span class="text-xs text-gray-400 font-medium">· ${reviews.length} review${reviews.length>1?'s':''}</span></div>`:''}
+            ${reviews.length?`<div class="flex items-center gap-2 mt-2"><div class="flex items-center bg-amber-50 border border-amber-200/60 px-2.5 py-0.5 rounded-lg text-xs font-bold text-amber-800"><span class="mr-1">${ICONS.star}</span> ${avg.toFixed(1)}</div><span class="text-xs text-gray-400 font-medium">· ${reviews.length} review${reviews.length>1?'s':''}</span></div>`:''}
           </div>
           <div class="bg-[#f8fafc] rounded-2xl p-4 border border-gray-100">
             <div class="flex items-baseline gap-3 flex-wrap">
@@ -417,7 +422,7 @@ async function product(id){
     </div>
 
     ${reviews.length?`<section class="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-soft space-y-4">
-      <div class="flex items-center justify-between"><h2 class="font-extrabold text-base text-gray-900">Customer Reviews</h2><span class="text-xs font-bold text-amber-600">★ ${avg.toFixed(1)} / 5</span></div>
+      <div class="flex items-center justify-between"><h2 class="font-extrabold text-base text-gray-900">Customer Reviews</h2><span class="text-xs font-bold text-amber-600">${ICONS.star} ${avg.toFixed(1)} / 5</span></div>
       <div class="divide-y divide-gray-100">${reviews.map(r=>`<div class="py-4 text-xs space-y-1"><div class="flex items-center justify-between"><b class="text-gray-900">${esc(r.author||'Customer')}</b><span class="text-gray-400 text-[10px]">${new Date(r.created_at).toLocaleDateString('en-IN',{day:'numeric',month:'short'})}</span></div><div>${stars(r.rating)}</div><p class="text-gray-600 leading-relaxed mt-1">${esc(r.body)}</p></div>`).join('')}</div>
     </section>`:''}
 
