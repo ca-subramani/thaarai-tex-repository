@@ -123,7 +123,7 @@ const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
 
 /* ===== SVG ICONS SYSTEM ===== */
 const ICONS = {
-  truck: `<svg viewBox="0 0 24 24" class="w-5 h-5 text-slate-800" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13" rx="2"/><polygon points="16 8 20 8 23 11 23 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>`,
+  truck: `<svg viewBox="0 0 24 24" class="w-5 h-5 text-slate-800" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13" rx="2"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>`,
   cash: `<svg viewBox="0 0 24 24" class="w-5 h-5 text-slate-800" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg>`,
   handloom: `<svg viewBox="0 0 24 24" class="w-5 h-5 text-slate-800" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M19.07 4.93L4.93 19.07"/></svg>`,
   upi: `<svg viewBox="0 0 24 24" class="w-5 h-5 text-slate-800" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>`,
@@ -287,7 +287,6 @@ async function shop(params){
   };
 }
 
-/* ===== ULTRA PRO GRADE PRODUCT DETAIL & ZOOM VIEW ===== */
 async function product(id){
   const {data:p}=await sb.from('products').select('*').eq('id',id).maybeSingle();
   if(!p){app.innerHTML='<div class="text-center py-20 text-xs text-gray-400 bg-white rounded-3xl border p-8 max-w-md mx-auto shadow-soft">Product not found. <br><a href="#/shop" class="font-bold underline text-slate-900 mt-2 inline-block">Back to Shop</a></div>';return}
@@ -306,7 +305,6 @@ async function product(id){
 
   app.innerHTML=`
   <div class="space-y-8 my-2">
-    <!-- Breadcrumbs -->
     <div class="flex items-center gap-2 text-xs text-gray-400 font-medium px-1">
       <a href="#/" class="hover:text-slate-900">Home</a>
       <span>/</span>
@@ -315,13 +313,8 @@ async function product(id){
       <span class="text-gray-800 line-clamp-1 font-semibold">${esc(p.name)}</span>
     </div>
 
-    <!-- Product Main Grid (Amazon / Luxury Studio Grade) -->
     <div class="grid lg:grid-cols-12 gap-8 items-start">
-      
-      <!-- Image Gallery Column (Left - 7 cols) -->
       <div class="lg:col-span-7 flex flex-col-reverse md:flex-row gap-4 items-start">
-        
-        <!-- Vertical / Horizontal Thumbnails -->
         <div class="flex md:flex-col gap-3 overflow-x-auto md:overflow-y-auto no-scrollbar w-full md:w-20 shrink-0">
           ${imgs.map((u, idx)=>`
             <div data-idx="${idx}" class="thumb-btn relative w-16 h-20 md:w-20 md:h-24 rounded-2xl overflow-hidden cursor-pointer border-2 transition-all shrink-0 bg-white shadow-sm ${idx===0?'border-slate-900 shadow-md ring-2 ring-slate-900/10':'border-gray-200 hover:border-gray-400 opacity-70 hover:opacity-100'}">
@@ -330,9 +323,7 @@ async function product(id){
           `).join('')}
         </div>
 
-        <!-- Main Studio Zoom Display Viewport -->
         <div class="flex-1 w-full bg-white rounded-3xl border border-gray-100 shadow-soft p-3 relative">
-          
           <div id="zoom-stage" class="lens-zoom-container aspect-[3/4] sm:aspect-[4/5] rounded-2xl bg-gray-50 flex items-center justify-center relative overflow-hidden select-none">
             <img id="main-product-img" src="${esc(imgs[0])}" alt="${esc(p.name)}" class="w-full h-full object-cover">
             
@@ -341,12 +332,10 @@ async function product(id){
               <span class="sm:hidden">Pinch or drag to inspect</span>
             </div>
 
-            <!-- Fullscreen Lightbox Button -->
             <button id="open-lightbox-btn" title="View Fullscreen HD" class="absolute top-3 right-3 bg-white/90 backdrop-blur w-9 h-9 rounded-full shadow-sm flex items-center justify-center hover:bg-slate-900 hover:text-white transition">
               <svg viewBox="0 0 24 24" class="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
             </button>
 
-            <!-- Nav Arrows -->
             ${imgs.length>1?`
               <button id="img-prev" class="absolute left-2.5 top-1/2 -translate-y-1/2 bg-white/90 backdrop-blur w-9 h-9 rounded-full shadow-sm flex items-center justify-center text-gray-700 hover:bg-slate-900 hover:text-white transition text-lg font-bold">‹</button>
               <button id="img-next" class="absolute right-2.5 top-1/2 -translate-y-1/2 bg-white/90 backdrop-blur w-9 h-9 rounded-full shadow-sm flex items-center justify-center text-gray-700 hover:bg-slate-900 hover:text-white transition text-lg font-bold">›</button>
@@ -355,10 +344,8 @@ async function product(id){
         </div>
       </div>
 
-      <!-- Product Meta & Checkout Controls -->
       <div class="lg:col-span-5 space-y-5">
         <div class="bg-white rounded-3xl p-6 sm:p-7 border border-gray-100 shadow-soft space-y-5">
-          
           <div>
             <div class="flex items-center justify-between gap-2">
               <span class="text-[10px] font-extrabold uppercase tracking-widest text-slate-700 bg-slate-100 px-3 py-1 rounded-full">Pure Handloom Saree</span>
@@ -377,7 +364,6 @@ async function product(id){
             </div>
           </div>
 
-          <!-- Price Card -->
           <div class="bg-[#f8fafc] rounded-2xl p-4 border border-gray-100">
             <div class="flex items-baseline gap-3">
               <span class="text-3xl font-black text-gray-950">${inr(p.price)}</span>
@@ -386,13 +372,11 @@ async function product(id){
             <p class="text-[11px] text-gray-500 mt-1">Inclusive of all taxes &amp; Free Direct Weaver Shipping</p>
           </div>
 
-          <!-- Stock Pill -->
           <div class="flex items-center gap-2">
             <span class="w-2.5 h-2.5 rounded-full ${ok?'bg-emerald-500 animate-pulse':'bg-rose-500'}"></span>
             <span class="text-xs font-bold ${ok?'text-emerald-700':'text-rose-600'}">${ok?(p.stock<5?`Hurry, only ${p.stock} sarees left in loom!`:'In Stock · Ready to dispatch'):'Temporarily Out of Stock'}</span>
           </div>
 
-          <!-- Specifications Table -->
           <div class="border-t border-b border-gray-100 py-3.5 space-y-2 text-xs">
             <div class="grid grid-cols-3 gap-2 py-1">
               <span class="text-gray-400 font-medium">Fabric Type</span>
@@ -408,7 +392,6 @@ async function product(id){
             </div>
           </div>
 
-          <!-- Action Buttons -->
           <div class="space-y-2.5 pt-1">
             <button id="btn-buy-now" ${ok?'':'disabled'} class="${btn} w-full text-sm !py-4 uppercase tracking-wider font-extrabold flex items-center justify-center gap-2">
               <span>⚡ Buy Now with COD</span>
@@ -418,7 +401,6 @@ async function product(id){
             </button>
           </div>
 
-          <!-- Pincode Estimator -->
           <div class="pt-2">
             <label class="block text-[11px] font-bold text-gray-600 uppercase tracking-wider mb-1.5">Check Delivery &amp; COD Availability</label>
             <div class="flex gap-2">
@@ -428,47 +410,31 @@ async function product(id){
             <p id="pin-feedback" class="text-[11px] mt-1.5 font-semibold"></p>
           </div>
 
-          <!-- Trust Badges -->
           <div class="grid grid-cols-3 gap-2 pt-2 border-t border-gray-100 text-center">
-            <div class="p-2.5 rounded-2xl bg-gray-50 flex flex-col items-center">
-              ${ICONS.cash}
-              <span class="text-[10px] font-bold text-gray-700 mt-1">Cash on Delivery</span>
-            </div>
-            <div class="p-2.5 rounded-2xl bg-gray-50 flex flex-col items-center">
-              ${ICONS.truck}
-              <span class="text-[10px] font-bold text-gray-700 mt-1">Free Delivery</span>
-            </div>
-            <div class="p-2.5 rounded-2xl bg-gray-50 flex flex-col items-center">
-              ${ICONS.returns}
-              <span class="text-[10px] font-bold text-gray-700 mt-1">7-Day Guarantee</span>
-            </div>
+            <div class="p-2.5 rounded-2xl bg-gray-50 flex flex-col items-center">${ICONS.cash}<span class="text-[10px] font-bold text-gray-700 mt-1">Cash on Delivery</span></div>
+            <div class="p-2.5 rounded-2xl bg-gray-50 flex flex-col items-center">${ICONS.truck}<span class="text-[10px] font-bold text-gray-700 mt-1">Free Delivery</span></div>
+            <div class="p-2.5 rounded-2xl bg-gray-50 flex flex-col items-center">${ICONS.returns}<span class="text-[10px] font-bold text-gray-700 mt-1">7-Day Guarantee</span></div>
           </div>
 
-          <!-- WhatsApp Direct Assistant -->
           <div class="pt-2 text-center">
             <a href="https://wa.me/${WHATSAPP}?text=${encodeURIComponent('Hello Thaarai Tex, I am interested in this saree: '+p.name+' ('+location.href+')')}" target="_blank" rel="noopener" class="inline-flex items-center text-xs font-bold text-emerald-700 hover:underline">
               ${ICONS.whatsapp} Chat with weaver on WhatsApp
             </a>
           </div>
-
         </div>
 
-        <!-- Description Box -->
         <div class="bg-white rounded-3xl p-6 border border-gray-100 shadow-soft space-y-3">
           <h3 class="text-xs font-extrabold uppercase tracking-wider text-gray-400">Saree Description &amp; Craftsmanship</h3>
           <p class="text-xs sm:text-sm text-gray-600 leading-relaxed whitespace-pre-line">${esc(p.description||'பாரம்பரிய முறைப்படி கைத்தறியில் நெய்யப்பட்ட அசல் பட்டுச் சேலை. மென்மையான உணர்வு மற்றும் நீடித்து உழைக்கும் சிறந்த தரம் கொண்டது.')}</p>
         </div>
-
       </div>
     </div>
 
-    <!-- Mobile Fixed Bottom Action Bar -->
     <div class="fixed sm:hidden inset-x-0 bottom-0 z-40 bg-white/95 backdrop-blur border-t border-gray-200 p-3 flex gap-2" style="padding-bottom:calc(0.75rem + env(safe-area-inset-bottom))">
       <button id="mob-add-bag" ${ok?'':'disabled'} class="flex-1 bg-white border border-slate-900 text-slate-900 font-bold py-3 rounded-full text-xs">Add to Bag</button>
       <button id="mob-buy-now" ${ok?'':'disabled'} class="flex-1 ${btn} !py-3 text-xs">Buy Now</button>
     </div>
 
-    <!-- Ratings & Customer Feedback -->
     <section class="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-soft space-y-4">
       <div class="flex items-center justify-between">
         <h2 class="font-extrabold text-base text-gray-900">Customer Ratings &amp; Reviews</h2>
@@ -517,17 +483,14 @@ async function product(id){
       </div>
     </section>
 
-    <!-- Similar Recommendations -->
     ${sim?.length?`
       <div class="space-y-4 pt-4">
         <h2 class="font-extrabold text-base text-gray-900">Similar Handloom Sarees</h2>
         ${grid(sim)}
       </div>`:''
     }
-
   </div>
 
-  <!-- Ultra HD Lightbox Modal for Inspection -->
   <div id="hd-lightbox" class="fixed inset-0 bg-black/95 z-50 hidden flex flex-col justify-between p-4 backdrop-blur-md">
     <div class="flex justify-between items-center text-white px-2">
       <span class="text-xs font-bold tracking-wider">${esc(p.name)} (Ultra HD Zoom)</span>
@@ -536,9 +499,7 @@ async function product(id){
     <div class="flex-1 flex items-center justify-center overflow-hidden p-2">
       <img id="lightbox-img" src="${esc(imgs[0])}" class="max-w-full max-h-[85vh] object-contain transition-transform duration-300 rounded-xl cursor-zoom-out">
     </div>
-    <div class="text-center text-gray-400 text-xs pb-3">
-      Click anywhere to close full screen
-    </div>
+    <div class="text-center text-gray-400 text-xs pb-3">Click anywhere to close full screen</div>
   </div>`;
 
   const mainImg = $('#main-product-img');
@@ -558,14 +519,10 @@ async function product(id){
     });
   }
 
-  thumbs.forEach(t => {
-    t.onclick = () => switchImage(Number(t.dataset.idx));
-  });
-
+  thumbs.forEach(t => { t.onclick = () => switchImage(Number(t.dataset.idx)); });
   if($('#img-prev')) $('#img-prev').onclick = () => switchImage(currentImgIndex - 1);
   if($('#img-next')) $('#img-next').onclick = () => switchImage(currentImgIndex + 1);
 
-  // Optical Smooth Zoom
   stage.addEventListener('mousemove', e => {
     const rect = stage.getBoundingClientRect();
     const x = ((e.clientX - rect.left) / rect.width) * 100;
@@ -579,20 +536,15 @@ async function product(id){
     mainImg.style.transform = 'scale(1)';
   });
 
-  // Lightbox
   const lb = $('#hd-lightbox');
   const lbImg = $('#lightbox-img');
-  const openLb = () => {
-    lbImg.src = imgs[currentImgIndex];
-    lb.classList.remove('hidden');
-  };
+  const openLb = () => { lbImg.src = imgs[currentImgIndex]; lb.classList.remove('hidden'); };
   const closeLb = () => lb.classList.add('hidden');
   
   $('#open-lightbox-btn').onclick = openLb;
   $('#close-lightbox').onclick = closeLb;
   lb.onclick = e => { if(e.target === lb || e.target === lbImg) closeLb(); };
 
-  // Cart / Buy bindings
   const onAddBag = () => addCart(p.id, 1, p.stock);
   const onBuyNow = () => { addCart(p.id, 1, p.stock); location.hash = '#/checkout'; };
 
@@ -601,7 +553,6 @@ async function product(id){
   if($('#mob-add-bag')) $('#mob-add-bag').onclick = onAddBag;
   if($('#mob-buy-now')) $('#mob-buy-now').onclick = onBuyNow;
 
-  // Pincode Validator
   $('#pin-check-btn').onclick = () => {
     const pin = $('#pin-input').value.trim();
     const out = $('#pin-feedback');
@@ -615,7 +566,6 @@ async function product(id){
     out.className = 'text-[11px] mt-1.5 font-bold text-emerald-700';
   };
 
-  // Submit Review
   const revBtn = $('#submit-review-btn');
   if(revBtn) {
     revBtn.onclick = async () => {
@@ -661,7 +611,7 @@ async function cartView(){
   app.onclick=e=>{const t=e.target;
     if(t.dataset.q){const i=cart.find(x=>x.id===t.dataset.q);i.qty+=+t.dataset.d;if(i.qty<1)cart=cart.filter(x=>x!==i);saveCart();cartView()}
     if(t.dataset.rm){cart=cart.filter(x=>x.id!==t.dataset.rm);saveCart();cartView()}};
-  $('#cpb').onclick=()=>{coupon=$('#cp').value.trim().toUpperCase();cartView()};
+  $('#cpb').onclick=()=>{coupon=$('#cp'].value.trim().toUpperCase();cartView()};
 }
 
 async function checkout(){
@@ -704,7 +654,7 @@ async function checkout(){
   refresh();
   document.querySelectorAll('input[name=pm]').forEach(r=>r.onchange=()=>{method=r.value;
     $('#upi').classList.toggle('hidden',method!=='UPI');$('#utr').required=method==='UPI';refresh()});
-  $('#cpb').onclick=async()=>{coupon=$('#cp').value.trim().toUpperCase();d=await couponDiscount(sub);
+  $('#cpb').onclick=async()=>{coupon=$('#cp'].value.trim().toUpperCase();d=await couponDiscount(sub);
     toast(coupon?(d?'Coupon applied ✓':'Coupon not valid or minimum not met'):'Coupon removed');refresh()};
   const sa=$('#sa');if(sa)sa.onchange=()=>{const a=AL.find(x=>x.id===sa.value);if(!a)return;$('#a-name').value=a.name;$('#a-phone').value=a.phone;$('#a-pin').value=a.pincode;$('#a-city').value=a.city;$('#a-state').value=a.state;$('#a-line').value=a.line};
   $('#cf').onsubmit=e=>{e.preventDefault();
@@ -794,12 +744,11 @@ function loginView(){
     ${input('ln','Your Name',`maxlength="60" placeholder="உதாரணம்: Subramani" value="${esc(p?.name||'')}"`)}
     ${input('lp','Mobile Number (10 digits)',`maxlength="10" inputmode="numeric" placeholder="9876543210" value="${esc(p?.phone||'')}"`)}
     <button id="go" class="${btn} w-full">${p?'Save Details':'Continue to Profile'}</button>
-    ${p?`<button id="lo" class="w-full text-rose-600 text-xs font-bold py-1 hover:underline flex items-center justify-center">${ICONS.logout}Logout from this device</button>`:''}</div>`;
+    ${p?`<button id="lo" class="w-full text-rose-600 text-xs font-bold py-1 hover:underline flex items-center justify-center">${ICONS.logout}Logout from this device</button>':''}</div>`;
   $('#go').onclick=()=>{
     const name=$('#ln').value.trim(), phone=$('#lp').value.trim();
     if(name.length<2)return toast('Enter your name');
     if(!/^[6-9]\d{9}$/.test(phone))return toast('Enter a valid 10-digit mobile number');
-    // Clear any previous user's order cache on new login
     OC={list:[]};
     store.set('profile',{name,phone});localStorage.removeItem('lookup');setNav();toast('Welcome, '+name.split(' ')[0]+'!');location.hash='#/account/hub'};
   const lo=$('#lo');if(lo)lo.onclick=()=>{
@@ -809,7 +758,7 @@ function loginView(){
     setNav();toast('Logged out');loginView()};
 }
 
-/* ===== PROFILE HUB & USER-SPECIFIC ORDERS ===== */
+/* ===== PROFILE HUB ===== */
 let ofilter='all', addrEdit=null, OC={list:[],dev:[]};
 function getAddrs(){return store.get('addrs')||[]}
 
@@ -1003,7 +952,6 @@ async function ordersHtml(pf){
   </div>`;
 }
 
-// Dedicated Full Order Details View
 async function orderDetailView(orderId){
   let ord = (OC.list||[]).find(o => String(o.id) === orderId || (String(o.id).slice(0,8).toUpperCase() === orderId.toUpperCase()));
   
