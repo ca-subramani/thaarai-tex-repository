@@ -714,8 +714,8 @@ function loginView(){
       <h2 class="font-extrabold text-base mt-3 text-slate-900">${p?'Your Profile Details':'Login'}</h2>
       <p class="text-[11px] text-gray-500 mt-0.5">உங்கள் பெயர் மற்றும் மொபைல் எண்ணை உள்ளிடவும்.</p>
     </div>
-    ${input('ln','Your Name',`maxlength="60" placeholder="உதாரணம்: Subramani" value="${esc(p?.name||'')}"`)}
-    ${input('lp','Mobile Number (10 digits)',`maxlength="10" inputmode="numeric" placeholder="9876543210" value="${esc(p?.phone||'')}"`)}
+    ${input('ln','Your Name',`maxlength="60" placeholder="" value="${esc(p?.name||'')}"`)}
+    ${input('lp','Mobile Number (10 digits)',`maxlength="10" inputmode="numeric" placeholder="" value="${esc(p?.phone||'')}"`)}
     <button id="go" class="${btn} w-full">${p?'Save Details':'Continue'}</button>
     ${p?`<button id="lo" class="w-full text-rose-600 text-xs font-bold py-1 hover:underline flex items-center justify-center">${ICONS.logout}Logout from this device</button>`:''}</div>`;
   $('#go').onclick=async()=>{
