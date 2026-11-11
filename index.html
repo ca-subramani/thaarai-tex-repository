@@ -10,10 +10,10 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body class="bg-gray-100 text-gray-800 antialiased">
-<div class="bg-slate-900 text-white text-xs py-1.5 text-center">✨ இலவச டெலிவரி (Free Delivery) &amp; COD / UPI</div>
+<div id="ann" class="text-xs py-1.5 text-center"></div>
 <header class="bg-white border-b sticky top-0 z-40 shadow-sm">
   <div class="max-w-6xl mx-auto px-4 py-3 flex items-center gap-3">
-    <a href="#/" class="font-black text-xl uppercase text-slate-900">Thaarai Tex</a>
+    <a href="#/" id="brand" class="flex flex-col"></a>
     <form id="sf" class="flex-1 hidden sm:block"><input id="q" placeholder="சேலைகளைத் தேடுங்கள்… Search sarees" class="w-full bg-gray-50 border rounded-full py-2 px-4 text-sm outline-none focus:border-slate-900"></form>
     <nav class="flex items-center gap-2 ml-auto text-sm">
       <a href="#/shop" class="px-3 py-2 hover:bg-gray-100 rounded-full">Shop</a>
@@ -24,16 +24,15 @@
   </div>
 </header>
 <main id="app" class="max-w-6xl mx-auto px-4 py-6 min-h-[70vh]"></main>
-<footer class="bg-slate-900 text-gray-300 text-xs text-center py-6 mt-10">© Thaarai Tex · Melur, Tamil Nadu ·
-  <a class="underline" id="wa" target="_blank" rel="noopener">WhatsApp support</a></footer>
+<footer id="foot" class="bg-slate-900 text-gray-300 text-xs py-8 mt-10"></footer>
 <div id="toast" class="fixed bottom-4 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-sm px-4 py-2 rounded-full shadow hidden z-50"></div>
 
 <script>
 /* ===== CONFIG ===== */
 const SUPABASE_URL="https://hjogdvqwwbgzgwtdlrak.supabase.co";
 const SUPABASE_ANON_KEY="sb_publishable_gURnxsEPWoxUqqAqnEtJ_g_EmUlUgUZ";
-const WHATSAPP="919361378211"; // change to your number
-const UPI_ID="thaaraitex@hdfc", UPI_NAME="Thaarai Tex"; // change to YOUR UPI ID
+let WHATSAPP="919999999999"; // change to your number
+let UPI_ID="yourname@upi", UPI_NAME="Thaarai Tex"; // change to YOUR UPI ID
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
 
 /* ===== HELPERS ===== */
@@ -47,7 +46,40 @@ const off=p=>p.mrp>p.price?Math.round((p.mrp-p.price)/p.mrp*100):0;
 function toast(m){const t=$('#toast');t.textContent=m;t.classList.remove('hidden');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.add('hidden'),2200)}
 function saveCart(){store.set('cart',cart);$('#cc').textContent=cart.reduce((s,i)=>s+i.qty,0)}
 const stars=n=>'★'.repeat(Math.round(n))+'☆'.repeat(5-Math.round(n));
-$('#wa').href=`https://wa.me/${WHATSAPP}`;
+
+
+const DEF={
+ brand:{name:'Thaarai Tex',tagline:'Premium Sarees',logo:''},
+ announce:{on:true,text:'✨ இலவச டெலிவரி (Free Delivery) & COD / UPI',bg:'#0f172a',color:'#ffffff'},
+ theme:{primary:'#0f172a'},
+ banners:[{image:'',title:'பாரம்பரிய பட்டு & காட்டன் சேலைகள்',subtitle:'நேரடி நெசவாளர் விலை · Cash on Delivery & UPI',btn:'Shop Now',link:'#/shop',c1:'#b45309',c2:'#0f172a'}],
+ sections:{cats:true,deals:true,fresh:true,trust:true,about:false,catsTitle:'Shop by Category',dealsTitle:'Best Value',freshTitle:'New Arrivals'},
+ trust:[{icon:'🚚',text:'Free Delivery'},{icon:'💵',text:'Cash on Delivery'},{icon:'🧵',text:'100% Handloom'},{icon:'📲',text:'UPI Payments'}],
+ about:{title:'Our Story',text:'',image:''},
+ footer:{about:'Handloom sarees direct from the weavers.',phone:'',email:'',address:'Melur, Tamil Nadu',whatsapp:'919999999999',upi:'yourname@upi',upiName:'Thaarai Tex',instagram:'',facebook:''}
+};
+const merge=(a,b)=>{if(Array.isArray(b))return b;if(b&&typeof b==='object'){const o={...a};for(const k in b)o[k]=merge(a?.[k],b[k]);return o}return b===undefined?a:b};
+let SET=JSON.parse(JSON.stringify(DEF));
+const hx=(c,d)=>/^#[0-9a-f]{6}$/i.test(c||'')?c:d;
+const safeLink=u=>/^(#|https?:\/\/|\/)/.test(u||'')?u:'#/shop';
+function applySettings(){
+  const b=SET.brand,a=SET.announce,f=SET.footer,p=hx(SET.theme.primary,'#0f172a');
+  $('#brand').innerHTML=b.logo?`<img src="${esc(b.logo)}" alt="${esc(b.name)}" class="h-9 max-w-[170px] object-contain">`:`<span class="font-black text-xl uppercase tracking-tight text-slate-900">${esc(b.name)}</span><span class="text-[10px] text-gray-500 font-semibold uppercase tracking-wider">${esc(b.tagline)}</span>`;
+  const an=$('#ann');an.style.display=a.on?'':'none';an.textContent=a.text;an.style.background=hx(a.bg,'#0f172a');an.style.color=hx(a.color,'#ffffff');
+  let st=document.getElementById('th');if(!st){st=document.createElement('style');st.id='th';document.head.appendChild(st)}
+  st.textContent=`:root{--p:${p}}.bg-slate-900{background-color:var(--p)!important}.hover\\:bg-slate-800:hover{background-color:var(--p)!important;filter:brightness(1.2)}.text-slate-900{color:var(--p)!important}`;
+  WHATSAPP=f.whatsapp||WHATSAPP;UPI_ID=f.upi||UPI_ID;UPI_NAME=f.upiName||UPI_NAME;
+  const lk=(u,t)=>u?`<a class="underline" target="_blank" rel="noopener" href="${esc(safeLink(u))}">${t}</a> `:'';
+  $('#foot').innerHTML=`<div class="max-w-6xl mx-auto px-4 grid sm:grid-cols-3 gap-6 text-left"><div><b class="text-white text-sm">${esc(b.name)}</b><p class="mt-2 leading-relaxed">${esc(f.about)}</p></div>
+   <div><b class="text-white text-sm">Contact</b><p class="mt-2 leading-6">${f.phone?`📞 <a href="tel:${esc(f.phone)}">${esc(f.phone)}</a><br>`:''}${f.email?`✉️ ${esc(f.email)}<br>`:''}${f.address?`📍 ${esc(f.address)}`:''}</p></div>
+   <div><b class="text-white text-sm">Quick links</b><p class="mt-2 leading-7"><a href="#/shop" class="underline">Shop</a> · <a href="#/account/orders" class="underline">My Orders</a><br>${f.whatsapp?lk('https://wa.me/'+f.whatsapp,'WhatsApp support'):''}${lk(f.instagram,'Instagram')}${lk(f.facebook,'Facebook')}</p></div></div>
+   <p class="mt-5 text-center text-gray-400">© ${new Date().getFullYear()} ${esc(b.name)}. All rights reserved.</p>`;
+}
+async function loadSettings(){
+  try{const {data}=await sb.from('site_settings').select('data').eq('id','main').maybeSingle();if(data?.data)SET=merge(DEF,data.data)}catch{}
+  applySettings();
+}
+applySettings();
 
 /* ===== WISHLIST (kept on this device) ===== */
 let wish=new Set(store.get('wish')||[]);
@@ -92,19 +124,27 @@ const btn='bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 px-5 rounde
 
 /* ===== VIEWS ===== */
 async function home(){
+  const sc=SET.sections, bn=SET.banners||[];
   const [{data:cats},{data:neu,error:e2},{data:deals}]=await Promise.all([
     sb.from('categories').select('*'),
     sb.from('products').select('*').eq('active',true).order('created_at',{ascending:false}).limit(8),
     sb.from('products').select('*').eq('active',true).gt('stock',0).order('price').limit(4)]);
   if(e2)throw e2;
+  const slide=(b,i)=>`<div class="slide absolute inset-0 transition-opacity duration-700 ${i?'opacity-0 pointer-events-none':''} flex flex-col justify-center p-6 sm:p-12 text-white" style="background:linear-gradient(110deg,${hx(b.c1,'#b45309')},${hx(b.c2,'#0f172a')})">
+    ${b.image?`<img src="${esc(b.image)}" alt="" class="absolute inset-0 w-full h-full object-cover"><div class="absolute inset-0 bg-black/35"></div>`:''}
+    <div class="relative max-w-xl"><h1 class="text-2xl sm:text-4xl font-extrabold">${esc(b.title)}</h1><p class="mt-2 text-sm sm:text-base text-gray-100">${esc(b.subtitle)}</p>
+    ${b.btn?`<a href="${esc(safeLink(b.link))}" class="inline-block mt-4 bg-white text-slate-900 font-bold text-sm px-5 py-2.5 rounded-full">${esc(b.btn)}</a>`:''}</div></div>`;
   app.innerHTML=`
-  <section class="bg-gradient-to-r from-amber-700 via-rose-700 to-slate-900 rounded-2xl p-6 sm:p-10 text-white">
-    <p class="text-xs uppercase tracking-widest text-amber-200 font-bold">நேரடி நெசவாளர் விலை</p>
-    <h1 class="text-2xl sm:text-4xl font-extrabold mt-1">பாரம்பரிய பட்டு &amp; காட்டன் சேலைகள்</h1>
-    <a href="#/shop" class="inline-block mt-4 bg-white text-slate-900 font-bold text-sm px-5 py-2.5 rounded-full">Shop Now →</a></section>
-  <div class="flex gap-2 overflow-x-auto py-5">${(cats||[]).map(c=>`<a href="#/shop?cat=${c.id}" class="shrink-0 bg-white border rounded-full px-4 py-2 text-sm font-semibold hover:bg-slate-900 hover:text-white">${esc(c.name)}</a>`).join('')}</div>
-  <h2 class="font-bold text-lg mb-3">Best Value</h2>${grid(deals||[])}
-  <h2 class="font-bold text-lg mt-8 mb-3">New Arrivals</h2>${grid(neu||[])}`;
+  ${bn.length?`<section id="car" class="relative rounded-2xl overflow-hidden h-52 sm:h-80">${bn.map(slide).join('')}${bn.length>1?`<div class="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5 z-10">${bn.map((_,i)=>`<button data-dot="${i}" class="dot w-2 h-2 rounded-full ${i?'bg-white/50':'bg-white'}"></button>`).join('')}</div>`:''}</section>`:''}
+  ${sc.trust?`<div class="grid grid-cols-2 sm:grid-cols-4 gap-2 my-4">${(SET.trust||[]).filter(t=>t.text).map(t=>`<div class="bg-white border rounded-xl py-3 text-center text-xs font-semibold"><div class="text-xl">${esc(t.icon)}</div>${esc(t.text)}</div>`).join('')}</div>`:''}
+  ${sc.cats&&cats?.length?`<h2 class="font-bold text-lg mt-6 mb-3">${esc(sc.catsTitle)}</h2><div class="flex gap-4 overflow-x-auto pb-2">${cats.map(c=>`<a href="#/shop?cat=${c.id}" class="shrink-0 w-20 text-center"><img loading="lazy" src="${esc(c.image||'https://placehold.co/160?text='+encodeURIComponent((c.name||'?')[0]))}" alt="" class="w-20 h-20 rounded-full object-cover border-2 border-white shadow"><p class="text-xs font-semibold mt-1 line-clamp-2">${esc(c.name)}</p></a>`).join('')}</div>`:''}
+  ${sc.deals?`<h2 class="font-bold text-lg mt-6 mb-3">${esc(sc.dealsTitle)}</h2>${grid(deals||[])}`:''}
+  ${sc.fresh?`<h2 class="font-bold text-lg mt-8 mb-3">${esc(sc.freshTitle)}</h2>${grid(neu||[])}`:''}
+  ${sc.about&&SET.about.text?`<section class="bg-white border rounded-2xl p-6 mt-8 grid ${SET.about.image?'sm:grid-cols-2':''} gap-5 items-center">${SET.about.image?`<img src="${esc(SET.about.image)}" alt="" class="rounded-xl w-full object-cover max-h-72">`:''}<div><h2 class="font-bold text-xl">${esc(SET.about.title)}</h2><p class="text-sm text-gray-600 mt-2 whitespace-pre-line leading-relaxed">${esc(SET.about.text)}</p></div></section>`:''}`;
+  const car=$('#car');
+  if(car&&bn.length>1){let i=0;const sl=[...car.querySelectorAll('.slide')],dots=[...car.querySelectorAll('.dot')];
+    const show=n=>{i=n;sl.forEach((x,k)=>{x.classList.toggle('opacity-0',k!==n);x.classList.toggle('pointer-events-none',k!==n)});dots.forEach((d,k)=>{d.classList.toggle('bg-white',k===n);d.classList.toggle('bg-white/50',k!==n)})};
+    dots.forEach((d,k)=>d.onclick=()=>show(k));window._bt=setInterval(()=>show((i+1)%sl.length),5000)}
 }
 
 async function shop(params){
@@ -151,7 +191,7 @@ async function product(id){
   const o=off(p), ok=p.stock>0;
   const shareUrl=encodeURIComponent(location.href), shareTxt=encodeURIComponent(p.name+' - '+inr(p.price));
   app.innerHTML=`<div class="bg-white rounded-2xl border p-4 sm:p-8 grid md:grid-cols-2 gap-8">
-   <div><div class="aspect-square bg-gray-50 rounded-xl overflow-hidden border"><img id="main" src="${img(p)}" alt="${esc(p.name)}" class="w-full h-full object-cover cursor-zoom-in transition-transform duration-200"></div>
+   <div><div class="relative aspect-square bg-gray-50 rounded-xl overflow-hidden border"><img id="main" src="${img(p)}" alt="${esc(p.name)}" class="w-full h-full object-cover cursor-zoom-in transition-transform duration-200">${imgs.length>1?'<button id="pv" class="absolute left-2 top-1/2 -translate-y-1/2 bg-white/90 w-9 h-9 rounded-full shadow text-xl">‹</button><button id="nx" class="absolute right-2 top-1/2 -translate-y-1/2 bg-white/90 w-9 h-9 rounded-full shadow text-xl">›</button>':''}</div>
     <div class="flex gap-2 mt-3 overflow-x-auto">${imgs.map(u=>`<img src="${esc(u)}" class="thumb w-16 h-16 object-cover rounded-lg border cursor-pointer">`).join('')}</div></div>
    <div class="space-y-4">
     <h1 class="text-2xl font-bold">${esc(p.name)}</h1>
@@ -174,7 +214,13 @@ async function product(id){
     ${(rv||[]).map(r=>`<div class="border-t py-3 text-sm"><span class="text-amber-600">${stars(r.rating)}</span> <b>${esc(r.author||'Customer')}</b><p class="text-gray-600">${esc(r.body)}</p></div>`).join('')||'<p class="text-sm text-gray-500">No reviews yet.</p>'}</section>
    ${sim?.length?`<h2 class="font-bold text-lg mt-8 mb-3">Similar Products</h2>${grid(sim)}`:''}`;
   const main=$('#main');
-  document.querySelectorAll('.thumb').forEach(t=>t.onclick=()=>main.src=t.src);
+  let cur=0;const th=[...document.querySelectorAll('.thumb')];
+  const go=n=>{cur=(n+imgs.length)%imgs.length;if(imgs[cur])main.src=imgs[cur];th.forEach((x,k)=>{x.classList.toggle('ring-2',k===cur);x.classList.toggle('ring-slate-900',k===cur)})};
+  th.forEach((x,k)=>x.onclick=()=>go(k));
+  if(imgs.length>1){$('#pv').onclick=()=>go(cur-1);$('#nx').onclick=()=>go(cur+1);
+    let x0=null;main.ontouchstart=e=>x0=e.touches[0].clientX;
+    main.ontouchend=e=>{if(x0===null)return;const dx=e.changedTouches[0].clientX-x0;if(Math.abs(dx)>40)go(cur+(dx<0?1:-1));x0=null}}
+  go(0);
   main.onmousemove=e=>{const r=main.getBoundingClientRect();main.style.transformOrigin=`${(e.clientX-r.left)/r.width*100}% ${(e.clientY-r.top)/r.height*100}%`;main.style.transform='scale(2)'};
   main.onmouseleave=()=>main.style.transform='scale(1)';
   $('#pinb').onclick=()=>{const v=$('#pin').value.trim(),r=$('#pinr');
@@ -390,7 +436,7 @@ async function account(section){
 
 /* ===== ROUTER ===== */
 async function route(){
-  app.onclick=null;document.title='Thaarai Tex | Pure Sarees & Handloom';
+  app.onclick=null;clearInterval(window._bt);document.title=SET.brand.name+' | '+SET.brand.tagline;
   const [path,qs]=(location.hash||'#/').slice(1).split('?'), params=new URLSearchParams(qs||'');
   app.innerHTML='<p class="text-center text-gray-500 py-20">ஏற்றப்படுகிறது…</p>';
   try{
@@ -408,7 +454,7 @@ async function route(){
 document.addEventListener('click',e=>{const b=e.target.closest('[data-w]');if(b){e.preventDefault();e.stopPropagation();toggleWish(b.dataset.w)}},true);
 $('#sf').onsubmit=e=>{e.preventDefault();location.hash='#/shop?q='+encodeURIComponent($('#q').value.trim())};
 window.addEventListener('hashchange',route);
-saveCart();initAuth().then(route);
+saveCart();Promise.all([initAuth(),loadSettings()]).then(route);
 </script>
 </body>
 </html>
