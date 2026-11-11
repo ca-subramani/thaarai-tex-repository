@@ -60,18 +60,23 @@ input,select,textarea{font-size:16px!important}
 </style>
 </head>
 <body class="text-gray-900 antialiased">
-<div id="ann" class="text-xs py-2 px-3 text-center"></div>
 
-<!-- Header -->
+<!-- Header (Announcement Bar Removed) -->
 <header class="bg-white/95 backdrop-blur sticky top-0 z-40 border-b border-gray-100">
   <div class="max-w-6xl mx-auto px-4 py-3 flex items-center gap-3">
     <a href="#/" id="brand" class="flex flex-col"></a>
-    <form id="sf" class="flex-1 hidden sm:block max-w-md mx-auto"><input id="q" placeholder="சேலைகளைத் தேடுங்கள்… Search sarees" class="w-full bg-[#f1f5f9] rounded-full py-2.5 px-5 outline-none text-xs border border-transparent focus:border-slate-300"></form>
+    <form id="sf" class="flex-1 hidden sm:block max-w-md mx-auto"><input id="q" placeholder="சேலைகளைத் தேடுங்கள்… Search sarees" class="w-full bg-[#f1f5f9] rounded-full py-2 px-5 outline-none text-xs border border-transparent focus:border-slate-300"></form>
     <nav class="flex items-center gap-1.5 ml-auto text-sm">
       <button id="msb" aria-label="Search" class="sm:hidden w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-700"><svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></button>
-      <a href="#/shop" class="hidden sm:block px-4 py-2 rounded-full hover:bg-gray-100 font-medium text-xs">Shop</a>
-      <a href="#/login" id="lgn" class="hidden sm:block px-4 py-2 rounded-full hover:bg-gray-100 font-medium text-xs">👤 Login</a>
-      <a href="#/account/orders" id="acc" class="hidden sm:block px-4 py-2 rounded-full hover:bg-gray-100 font-medium text-xs">📦 Orders</a>
+      <a href="#/shop" class="hidden sm:block px-4 py-2 rounded-full hover:bg-gray-100 font-semibold text-xs text-gray-700">Shop</a>
+      
+      <!-- Minimalist Vector User Button (No Emoji) -->
+      <a href="#/account/hub" id="lgn" class="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full hover:bg-gray-100 font-semibold text-xs text-gray-700 transition">
+        <svg viewBox="0 0 24 24" class="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span id="lgn-txt">Login</span>
+      </a>
+
+      <!-- Bag Button -->
       <a href="#/cart" aria-label="Bag" class="relative w-10 h-10 rounded-full flex items-center justify-center bg-slate-900 text-white sm:w-auto sm:px-4 sm:flex sm:items-center sm:gap-2 shadow-sm"><svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 7h12l1 13H5z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg><span class="cc absolute -top-1 -right-1 bg-rose-600 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] px-1 grid place-items-center hidden">0</span></a>
     </nav></div>
   <div id="msearch" class="hidden px-4 pb-3 sm:hidden"><form id="sf2"><input id="q2" placeholder="Search sarees…" class="w-full bg-[#f1f5f9] rounded-full py-2.5 px-4 outline-none text-xs"></form></div>
@@ -80,13 +85,13 @@ input,select,textarea{font-size:16px!important}
 <main id="app" class="max-w-6xl mx-auto px-4 pt-5 pb-28 min-h-[75vh]"></main>
 <footer id="foot" class="bg-slate-900 text-gray-300 text-xs pt-8 pb-28 sm:pb-8 mt-10"></footer>
 
-<!-- Tab Bar -->
+<!-- Tab Bar (Orders Replaces Wishlist, Home, Shop, Bag, Orders, Profile) -->
 <nav id="tabbar" class="fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur border-t border-gray-100 grid grid-cols-5 text-[10px] font-semibold max-w-lg mx-auto sm:rounded-t-3xl sm:shadow-soft sm:border-x" style="padding-bottom:env(safe-area-inset-bottom)">
   <a href="#/" data-tb="/" class="tb relative flex flex-col items-center gap-1 py-2 text-gray-400"><svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg><span>Home</span></a>
   <a href="#/shop" data-tb="/shop" class="tb relative flex flex-col items-center gap-1 py-2 text-gray-400"><svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg><span>Shop</span></a>
   <a href="#/cart" data-tb="/cart" class="tb relative flex flex-col items-center gap-1 py-2 text-gray-400"><span class="relative"><svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 7h12l1 13H5z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg><span class="cc absolute -top-1 -right-2 bg-rose-600 text-white text-[10px] font-bold rounded-full min-w-[16px] h-4 px-1 grid place-items-center hidden">0</span></span><span>Bag</span></a>
-  <a href="#/account/wishlist" data-tb="/account/wishlist" class="tb relative flex flex-col items-center gap-1 py-2 text-gray-400"><svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-8-5.2-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.8-8 11-8 11z"/></svg><span>Wishlist</span></a>
-  <a href="#/account/hub" data-tb="/account/hub|/account/profile|/account/orders|/account/addresses|/account/order-detail|/login" id="tbp" class="tb relative flex flex-col items-center gap-1 py-2 text-gray-400"><svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span>Profile</span></a>
+  <a href="#/account/orders" data-tb="/account/orders|/account/order-detail" class="tb relative flex flex-col items-center gap-1 py-2 text-gray-400"><svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg><span>Orders</span></a>
+  <a href="#/account/hub" data-tb="/account/hub|/account/profile|/account/addresses|/login" id="tbp" class="tb relative flex flex-col items-center gap-1 py-2 text-gray-400"><svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span>Profile</span></a>
 </nav>
 
 <div id="toast" class="fixed bottom-24 sm:bottom-4 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-xs px-4 py-2.5 rounded-full shadow-soft hidden z-50"></div>
@@ -114,7 +119,6 @@ const stars=n=>'★'.repeat(Math.round(n))+'☆'.repeat(5-Math.round(n));
 
 const DEF={
  brand:{name:'Thaarai Tex',tagline:'Premium Sarees',logo:''},
- announce:{on:true,text:'✨ இலவச டெலிவரி (Free Delivery) & COD / UPI',bg:'#0f172a',color:'#ffffff'},
  theme:{primary:'#0f172a'},
  banners:[{image:'',title:'பாரம்பரிய பட்டு & காட்டன் சேலைகள்',subtitle:'நேரடி நெசவாளர் விலை · Cash on Delivery & UPI',btn:'Shop Now',link:'#/shop',c1:'#1e293b',c2:'#0f172a'}],
  sections:{cats:true,deals:true,fresh:true,trust:true,about:false,catsTitle:'Shop by Category',dealsTitle:'Best Value',freshTitle:'New Arrivals'},
@@ -128,9 +132,8 @@ const hx=(c,d)=>/^#[0-9a-f]{6}$/i.test(c||'')?c:d;
 const safeLink=u=>/^(#|https?:\/\/|\/)/.test(u||'')?u:'#/shop';
 
 function applySettings(){
-  const b=SET.brand,a=SET.announce,f=SET.footer,p=hx(SET.theme.primary,'#0f172a');
+  const b=SET.brand,f=SET.footer,p=hx(SET.theme.primary,'#0f172a');
   $('#brand').innerHTML=b.logo?`<img src="${esc(b.logo)}" alt="${esc(b.name)}" class="h-8 max-w-[160px] object-contain">`:`<span class="font-extrabold text-xl uppercase tracking-tight text-slate-900">${esc(b.name)}</span><span class="text-[10px] text-gray-400 font-semibold uppercase tracking-wider">${esc(b.tagline)}</span>`;
-  const an=$('#ann');an.style.display=a.on?'':'none';an.textContent=a.text;an.style.background=hx(a.bg,'#0f172a');an.style.color=hx(a.color,'#ffffff');
   let st=document.getElementById('th');if(!st){st=document.createElement('style');st.id='th';document.head.appendChild(st)}
   st.textContent=`:root{--p:${p}}.bg-slate-900{background-color:var(--p)!important}.hover\\:bg-slate-800:hover{background-color:var(--p)!important;filter:brightness(1.15)}.text-slate-900{color:var(--p)!important}`;
   WHATSAPP=f.whatsapp||WHATSAPP;UPI_ID=f.upi||UPI_ID;UPI_NAME=f.upiName||UPI_NAME;
@@ -150,8 +153,8 @@ applySettings();
 let wish=new Set(store.get('wish')||[]);
 function setNav(){
   const p=store.get('profile');
-  $('#acc').textContent='📦 Orders';
-  $('#lgn').textContent=p?'👤 '+p.name.split(' ')[0]:'👤 Login';
+  const txt=$('#lgn-txt');
+  if(txt) txt.textContent=p?p.name.split(' ')[0]:'Login';
   $('#lgn').href=p?'#/account/hub':'#/login';
   $('#tbp').href=p?'#/account/hub':'#/login';
 }
@@ -175,7 +178,7 @@ async function couponDiscount(sub){
   return Number(data)||0;
 }
 
-/* ===== CARDS & UNIFIED PROFILE THEME COMPONENTS ===== */
+/* ===== CARDS ===== */
 function card(p){
   const o=off(p);
   return `<a href="#/p/${p.id}" class="block group">
@@ -193,7 +196,7 @@ const grid=ps=>ps.length?`<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-co
 const input=(id,label,extra='')=>`<label class="block text-xs font-semibold text-gray-700 mb-1">${label}<input id="${id}" ${extra} class="mt-1 w-full border border-gray-200 bg-white rounded-2xl p-3 text-xs outline-none focus:border-slate-900 transition"></label>`;
 const btn='bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 px-6 rounded-full text-xs sm:text-sm transition disabled:opacity-50 shadow-soft';
 
-/* ===== VIEWS ===== */
+/* ===== HOME & SHOP ===== */
 async function home(){
   const sc=SET.sections, bn=SET.banners||[];
   const [{data:cats},{data:neu,error:e2},{data:deals}]=await Promise.all([
@@ -413,12 +416,10 @@ async function checkout(){
       };
 
       let finalId = null;
-      // 1. Direct Table Insert for Full Compatibility
       const {data:insData, error:insErr}=await sb.from('orders').insert([payload]).select();
       if(!insErr && insData?.[0]){
         finalId = insData[0].id;
       } else {
-        // Fallback to RPC if direct table is constrained
         const {data:rpcData, error:rpcErr}=await sb.rpc('place_order_guest',{p_items:cart.map(i=>({id:i.id,qty:i.qty})),p_address:addr,p_coupon:coupon||null,p_method:method,p_ref:utr||null});
         if(rpcErr){toast(rpcErr.message);b.disabled=false;b.textContent='✓ Confirm Order';return}
         finalId = rpcData;
@@ -427,7 +428,7 @@ async function checkout(){
       const orderCode = String(finalId).slice(0,8).toUpperCase();
       store.set('addr',addr);
       {const AL2=getAddrs();if(!AL2.some(x=>x.line===addr.line&&x.pincode===addr.pincode))store.set('addrs',[...AL2,{...addr,id:Date.now().toString(36),def:!AL2.length}])}
-      store.set('orders',[{code:orderCode,id:finalId,phone:addr.phone},...(store.get('orders')||[])]);
+      store.set('orders',[{code:orderCode,id:String(finalId),phone:addr.phone},...(store.get('orders')||[])]);
       store.set('profile',{name:addr.name,phone:addr.phone});
       setNav();
       cart=[];coupon='';saveCart();ov.remove();
@@ -459,7 +460,9 @@ function loginView(){
   const p=store.get('profile');
   app.innerHTML=`<div class="max-w-sm mx-auto bg-white border border-gray-100 rounded-3xl p-6 space-y-4 shadow-soft my-6">
     <div class="text-center">
-      <div class="w-16 h-16 mx-auto rounded-full bg-slate-900 text-white flex items-center justify-center text-xl font-bold shadow-soft">👤</div>
+      <div class="w-14 h-14 mx-auto rounded-full bg-slate-900 text-white flex items-center justify-center shadow-soft">
+        <svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </div>
       <h2 class="font-extrabold text-base mt-3 text-slate-900">${p?'Your Profile Details':'Login to Thaarai Tex'}</h2>
       <p class="text-[11px] text-gray-500 mt-0.5">உங்கள் பெயர் மற்றும் மொபைல் எண்ணை உள்ளிடவும்.</p>
     </div>
@@ -475,7 +478,7 @@ function loginView(){
   const lo=$('#lo');if(lo)lo.onclick=()=>{localStorage.removeItem('profile');setNav();toast('Logged out');loginView()};
 }
 
-/* ===== CONSISTENT ELEGANT PROFILE HUB & RELIABLE ORDER DETAILS ===== */
+/* ===== PROFILE HUB & ACCURATE ORDER DETAILS ===== */
 let ofilter='all', addrEdit=null, OC={list:[],dev:[]};
 function getAddrs(){return store.get('addrs')||[]}
 
@@ -522,7 +525,7 @@ function profileHubHtml(pf){
       <div class="w-9"></div>
     </div>
 
-    <!-- Avatar matching profile mockup -->
+    <!-- Minimalist Vector User Display -->
     <div class="flex flex-col items-center mt-3">
       <div class="w-24 h-24 rounded-full p-1 border-2 border-slate-200 shadow-soft flex items-center justify-center bg-white">
         <div class="w-full h-full rounded-full bg-slate-900 flex items-center justify-center text-white text-3xl font-extrabold tracking-wider">
@@ -577,13 +580,13 @@ function profileHubHtml(pf){
   </div>`;
 }
 
-// Order Card on Orders List
+// Order Card on Orders List (Using unique ord.id)
 function orderCardSecondImage(o){
   const d=new Date(o.created_at);
   const dateStr=`${d.getDate()}-${d.getMonth()+1}-${d.getFullYear()}`;
-  const orderIdRaw=o.id?String(o.id):'';
-  const orderNo=o.tracking_id||(orderIdRaw?orderIdRaw.slice(0,8).toUpperCase():'19451655');
-  const trackingNumber='UW'+(orderIdRaw?orderIdRaw.replace(/[^0-9]/g,'').slice(0,10):'3458795445');
+  const fullId=String(o.id||'');
+  const shortId=fullId ? fullId.slice(0,8).toUpperCase() : (o.code||'ORDER');
+  const trackingNumber='UW'+(fullId ? fullId.replace(/[^0-9]/g,'').slice(0,10) : '3458795445');
   const totalQty=o.items?o.items.reduce((s,i)=>s+(i.quantity||1),0):1;
   const statusLabel=SLBL[o.order_status]||'Delivered';
   const statusBadge=STL[o.order_status]||'text-emerald-700 font-bold bg-emerald-50 px-3 py-1 rounded-full';
@@ -591,7 +594,7 @@ function orderCardSecondImage(o){
   return `
   <div class="bg-white rounded-3xl p-5 shadow-soft border border-gray-100 space-y-3">
     <div class="flex justify-between items-center text-xs font-bold text-gray-900">
-      <span>Order No: <span class="font-extrabold">${esc(orderNo)}</span></span>
+      <span>Order No: <span class="font-extrabold">#${esc(shortId)}</span></span>
       <span class="text-gray-400 font-medium">${dateStr}</span>
     </div>
 
@@ -601,11 +604,11 @@ function orderCardSecondImage(o){
 
     <div class="flex justify-between text-xs text-gray-600 font-medium pt-0.5">
       <span>Quantity: <b class="text-gray-900">${totalQty}</b></span>
-      <span>Total Amount: <b class="text-gray-900">${Number(o.total||o.total_amount||0).toLocaleString('en-IN')}</b></span>
+      <span>Total Amount: <b class="text-gray-900">${inr(o.total_amount||o.total||0)}</b></span>
     </div>
 
     <div class="flex justify-between items-center pt-2">
-      <a href="#/account/order-detail?id=${encodeURIComponent(orderIdRaw||orderNo)}" 
+      <a href="#/account/order-detail?id=${encodeURIComponent(fullId)}" 
          class="border border-gray-200 hover:border-slate-900 hover:bg-slate-900 hover:text-white text-gray-800 text-xs font-bold px-6 py-2 rounded-full transition shadow-sm">
         Details
       </a>
@@ -620,7 +623,6 @@ async function ordersHtml(pf){
   let list=[];
 
   if(phone){
-    // Query direct orders table first
     const {data:directData}=await sb.from('orders').select('*').eq('phone',phone).order('created_at',{ascending:false});
     if(directData && directData.length) list=directData;
     else {
@@ -629,7 +631,6 @@ async function ordersHtml(pf){
     }
   }
 
-  // Also resolve any device-saved orders by ID
   if(saved.length){
     const savedIds = saved.map(s=>s.id).filter(Boolean);
     if(savedIds.length){
@@ -692,20 +693,18 @@ async function ordersHtml(pf){
 
 // Dedicated Full Order Details View
 async function orderDetailView(orderId){
-  let ord = (OC.list||[]).find(o => String(o.id) === orderId || o.tracking_id === orderId);
+  let ord = (OC.list||[]).find(o => String(o.id) === orderId || (String(o.id).slice(0,8).toUpperCase() === orderId.toUpperCase()));
   
   if(!ord){
-    // Query direct order by UUID
     const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(orderId);
     let q = sb.from('orders').select('*');
     if(isUuid) q = q.eq('id', orderId);
-    else q = q.eq('tracking_id', orderId);
+    else q = q.ilike('id', `${orderId}%`);
     
     const {data, error}=await q.maybeSingle();
     if(data) ord = data;
     else {
-      // Try search by partial ID matching
-      const {data:allMatch}=await sb.from('orders').select('*').limit(25);
+      const {data:allMatch}=await sb.from('orders').select('*').limit(30);
       ord = (allMatch||[]).find(o => String(o.id).slice(0,8).toUpperCase() === orderId.toUpperCase() || String(o.id) === orderId);
     }
   }
@@ -725,7 +724,7 @@ async function orderDetailView(orderId){
   const d = new Date(ord.created_at);
   const dateStr = d.toLocaleDateString('en-IN', {day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'});
   const addr = ord.shipping_address || (ord.address ? `${ord.address.line}, ${ord.address.city}, ${ord.address.state} - ${ord.address.pincode}` : 'Delivery Address Provided');
-  const orderNo = ord.tracking_id || (ord.id ? String(ord.id).slice(0,8).toUpperCase() : '19451655');
+  const shortNo = String(ord.id||'').slice(0,8).toUpperCase();
 
   app.innerHTML=`
   <div class="max-w-md mx-auto space-y-4 my-2">
@@ -734,7 +733,7 @@ async function orderDetailView(orderId){
       <button onclick="location.hash='#/account/orders'" class="w-9 h-9 rounded-full bg-white flex items-center justify-center text-gray-700 shadow-soft border border-gray-100">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
       </button>
-      <h1 class="text-base font-extrabold text-gray-900">Order #${esc(orderNo)}</h1>
+      <h1 class="text-base font-extrabold text-gray-900">Order #${esc(shortNo)}</h1>
       <div class="w-9"></div>
     </div>
 
@@ -791,16 +790,16 @@ async function orderDetailView(orderId){
     <div class="bg-white rounded-3xl p-5 shadow-soft border border-gray-100 space-y-2 text-xs">
       <h3 class="font-extrabold text-gray-400 uppercase tracking-wider text-[11px]">Payment Summary</h3>
       <div class="flex justify-between text-gray-600 pt-1"><span>Payment Method</span><b class="text-gray-900">${esc(ord.payment_method||'Cash on Delivery')}</b></div>
-      <div class="flex justify-between text-gray-600"><span>Delivery Charges</span><b class="text-emerald-700">FREE</b></div>
+      <div class="flex justify-between text-gray-600"><span>Delivery Charges</span><b class="text-emerald-700 font-bold">FREE</b></div>
       <div class="flex justify-between text-sm font-extrabold text-slate-900 border-t pt-2.5 mt-2">
         <span>Total Amount</span>
-        <span>${inr(ord.total||ord.total_amount||0)}</span>
+        <span>${inr(ord.total_amount||ord.total||0)}</span>
       </div>
     </div>
 
     <!-- Support Link -->
     <div class="text-center pt-2">
-      <a href="https://wa.me/${WHATSAPP}?text=${encodeURIComponent('Hi, I need assistance regarding my order #'+orderNo)}" target="_blank" rel="noopener" class="text-xs font-bold text-emerald-700 hover:underline inline-flex items-center gap-1">
+      <a href="https://wa.me/${WHATSAPP}?text=${encodeURIComponent('Hi, I need assistance regarding my order #'+shortNo)}" target="_blank" rel="noopener" class="text-xs font-bold text-emerald-700 hover:underline inline-flex items-center gap-1">
         <span>💬 Contact Support on WhatsApp</span>
       </a>
     </div>
