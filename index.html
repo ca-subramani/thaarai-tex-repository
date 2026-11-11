@@ -107,7 +107,15 @@ const TRUST_ICONS=[
   {icon: ICONS.handloom, title: '100% Handloom', desc: 'Pure authentic quality'}
 ];
 
+
 /* ===== HELPERS ===== */
+function hx(value, fallback = '#1e293b') {
+  const color = String(value || fallback).trim();
+  return /^#([0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})$/i.test(color)
+    ? color
+    : fallback;
+}
+
 const $=s=>document.querySelector(s), app=$('#app');
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const inr=n=>'₹'+Number(n||0).toLocaleString('en-IN');
