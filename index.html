@@ -1,127 +1,64 @@
-<!DOCTYPE html>
-<html lang="ta">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Thaarai Tex | Pure Sarees & Handloom</title>
-<meta name="description" content="Handloom silk and cotton sarees direct from weavers. Free delivery, Cash on Delivery.">
-<script src="https://cdn.tailwindcss.com/3.4.17"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+Tamil:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-html,body{overflow-x:hidden;max-width:100%}
-body{font-family:'Plus Jakarta Sans','Noto Sans Tamil',system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;background-color:#f8fafc}
-*{min-width:0}
-h1,h2,h3,p,label,td,li{overflow-wrap:anywhere}
-.text-xs,.text-sm,.text-base,.text-lg,.text-xl{line-height:1.65!important}
-.text-\[10px\],.text-\[11px\]{line-height:1.5!important}
-.text-2xl,.text-3xl,.text-4xl{line-height:1.3!important}
-.line-clamp-1,.line-clamp-2{line-height:1.6!important}
-input,select,textarea{font-size:16px!important}
-.rounded-2xl{border-radius:1.25rem!important}
-.rounded-3xl{border-radius:1.75rem!important}
-.shadow-soft{box-shadow:0 10px 30px -5px rgba(0,0,0,0.05),0 4px 12px -2px rgba(0,0,0,0.02)!important}
-.no-scrollbar::-webkit-scrollbar{display:none}.no-scrollbar{scrollbar-width:none}
-#brand{max-width:55vw;overflow:hidden}
-.checkmark-circle{stroke-dasharray:166;stroke-dashoffset:166;stroke-width:2.5;stroke-miterlimit:10;stroke:#10b981;fill:none;animation:stroke .6s cubic-bezier(.65,0,.45,1) forwards}
-.checkmark{width:76px;height:76px;border-radius:50%;display:block;stroke-width:3;stroke:#10b981;stroke-miterlimit:10;margin:0 auto;box-shadow:inset 0 0 0 #10b981;animation:fill .4s ease-in-out .4s forwards,scale .3s ease-in-out .9s both}
-.checkmark-check{transform-origin:50% 50%;stroke-dasharray:48;stroke-dashoffset:48;animation:stroke .3s cubic-bezier(.65,0,.45,1) .8s forwards}
-@keyframes stroke{100%{stroke-dashoffset:0}}
-@keyframes scale{0%,100%{transform:none}50%{transform:scale3d(1.1,1.1,1)}}
-@keyframes fill{100%{box-shadow:inset 0 0 0 38px rgba(16,185,129,.12)}}
-.lens-zoom-container{position:relative;overflow:hidden;cursor:crosshair}
-.lens-zoom-container img{transition:transform .15s ease-out;transform-origin:center center;will-change:transform}
-</style>
-</head>
-<body class="text-gray-900 antialiased selection:bg-slate-900 selection:text-white">
+/* ===== CUSTOMER IDENTITY & PERSISTENT SYNC (Cart, Address, Wishlist, Orders) ===== */
+let OC={list:[]};
+let ofilter='all', addrEdit=null;
+const profile=()=>store.get('profile');
 
-<div id="ann" class="text-xs py-2 px-3 text-center"></div>
+// Persistent Cloud Sync for Cart & Addresses based on mobile number
+let cart = [];
+async function loadCartCloud(){
+  const p = profile();
+  if(!p) { cart = store.get('cart')||[]; saveCartBadge(); return; }
+  const {data} = await sb.rpc('get_user_cart', {p_phone: p.phone});
+  cart = Array.isArray(data) ? data : (store.get('cart')||[]);
+  saveCartBadge();
+}
+async function saveCartCloud(){
+  const p = profile();
+  store.set('cart', cart);
+  saveCartBadge();
+  if(p) {
+    await sb.rpc('save_user_cart', {p_phone: p.phone, p_items: cart});
+  }
+}
+function saveCart(){ saveCartCloud(); }
+function saveCartBadge(){
+  const n = cart.reduce((s,i)=>s+i.qty,0);
+  document.querySelectorAll('.cc').forEach(e=>{e.textContent=n;e.classList.toggle('hidden',!n)});
+}
 
-<header class="bg-white/95 backdrop-blur sticky top-0 z-40 border-b border-gray-100">
-  <div class="max-w-6xl mx-auto px-4 py-3.5 flex items-center gap-3">
-    <a href="#/" id="brand" class="flex flex-col"></a>
-    <form id="sf" class="flex-1 hidden sm:block max-w-md mx-auto">
-      <div class="relative">
-        <input id="q" placeholder="சேலைகளைத் தேடுங்கள்… Search sarees" class="w-full bg-[#f1f5f9] rounded-full py-2.5 pl-10 pr-5 outline-none text-xs border border-transparent focus:border-slate-300 focus:bg-white transition">
-        <svg class="w-4 h-4 text-gray-400 absolute left-3.5 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3" stroke-width="1.8" stroke-linecap="round"/></svg>
-      </div>
-    </form>
-    <nav class="flex items-center gap-1.5 ml-auto text-sm">
-      <button id="msb" aria-label="Search" class="sm:hidden w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-700 hover:bg-gray-100"><svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></button>
-      <a href="#/shop" class="hidden sm:block px-4 py-2 rounded-full hover:bg-gray-100 font-semibold text-xs text-gray-700">Shop</a>
-      <a href="#/login" id="lgn" class="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full hover:bg-gray-100 font-semibold text-xs text-gray-700 transition">
-        <svg viewBox="0 0 24 24" class="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        <span id="lgn-txt">Login</span>
-      </a>
-      <a href="#/cart" aria-label="Bag" class="relative w-10 h-10 rounded-full flex items-center justify-center bg-slate-900 text-white sm:w-auto sm:px-4 sm:flex sm:items-center sm:gap-2 shadow-soft hover:bg-slate-800 transition"><svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 7h12l1 13H5z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg><span class="cc absolute -top-1 -right-1 bg-rose-600 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] px-1 grid place-items-center hidden">0</span></a>
-    </nav></div>
-  <div id="msearch" class="hidden px-4 pb-3 sm:hidden"><form id="sf2"><input id="q2" placeholder="Search sarees…" class="w-full bg-[#f1f5f9] rounded-full py-2.5 px-4 outline-none text-xs"></form></div>
-</header>
+async function getAddrs(){
+  const p = profile();
+  if(!p) return store.get('addrs:none')||[];
+  const {data} = await sb.rpc('get_user_addresses', {p_phone: p.phone});
+  if(data && data.length) return data;
+  // Fallback to local migration if empty in cloud
+  const local = store.get('addrs:'+p.phone)||[];
+  if(local.length) await setAddrs(local);
+  return local;
+}
+async function setAddrs(L){
+  const p = profile();
+  if(p) {
+    store.set('addrs:'+p.phone, L);
+    await sb.rpc('save_user_addresses', {p_phone: p.phone, p_addresses: L});
+  } else {
+    store.set('addrs:none', L);
+  }
+}
 
-<main id="app" class="max-w-6xl mx-auto px-4 pt-5 pb-28 min-h-[75vh]"></main>
-<footer id="foot" class="bg-slate-900 text-gray-300 text-xs pt-8 pb-28 sm:pb-8 mt-10"></footer>
-
-<nav id="tabbar" class="fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur border-t border-gray-100 grid grid-cols-5 text-[10px] font-semibold max-w-lg mx-auto sm:rounded-t-3xl sm:shadow-soft sm:border-x" style="padding-bottom:env(safe-area-inset-bottom)">
-  <a href="#/" data-tb="/" class="tb relative flex flex-col items-center gap-1 py-2 text-gray-400"><svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg><span>Home</span></a>
-  <a href="#/shop" data-tb="/shop" class="tb relative flex flex-col items-center gap-1 py-2 text-gray-400"><svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg><span>Shop</span></a>
-  <a href="#/cart" data-tb="/cart" class="tb relative flex flex-col items-center gap-1 py-2 text-gray-400"><span class="relative"><svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 7h12l1 13H5z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg><span class="cc absolute -top-1 -right-2 bg-rose-600 text-white text-[10px] font-bold rounded-full min-w-[16px] h-4 px-1 grid place-items-center hidden">0</span></span><span>Bag</span></a>
-  <a href="#/account/orders" data-tb="/account/orders|/account/order-detail" class="tb relative flex flex-col items-center gap-1 py-2 text-gray-400"><svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg><span>Orders</span></a>
-  <a href="#/login" data-tb="/account/hub|/account/profile|/account/addresses|/account/wishlist|/login" id="tbp" class="tb relative flex flex-col items-center gap-1 py-2 text-gray-400"><svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span>Profile</span></a>
-</nav>
-
-<div id="toast" class="fixed bottom-24 sm:bottom-4 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-xs px-4 py-2.5 rounded-full shadow-soft hidden z-50"></div>
-
-<script>
-/* ===== CONFIG ===== */
-const SUPABASE_URL="https://hjogdvqwwbgzgwtdlrak.supabase.co";
-const SUPABASE_ANON_KEY="sb_publishable_gURnxsEPWoxUqqAqnEtJ_g_EmUlUgUZ";
-let WHATSAPP="919999999999";
-let UPI_ID="yourname@upi", UPI_NAME="Thaarai Tex";
-const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
-
-/* ===== ICONS ===== */
-const ic=(p,c='w-5 h-5 text-slate-800')=>`<svg viewBox="0 0 24 24" class="${c}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
-const ICONS={
-  truck:ic('<rect x="1" y="3" width="15" height="13" rx="2"/><polygon points="16 8 20 8 23 11 23 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>'),
-  cash:ic('<rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/>'),
-  handloom:ic('<path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M19.07 4.93L4.93 19.07"/>'),
-  upi:ic('<rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/>'),
-  phone:ic('<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>','w-3.5 h-3.5 inline mr-1 text-gray-400'),
-  mail:ic('<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>','w-3.5 h-3.5 inline mr-1 text-gray-400'),
-  mapPin:ic('<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>','w-3.5 h-3.5 inline mr-1 text-gray-400'),
-  whatsapp:ic('<path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>','w-4 h-4 inline mr-1.5 text-emerald-600'),
-  edit:ic('<path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>','w-3 h-3 inline mr-1 text-gray-600'),
-  logout:ic('<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>','w-3.5 h-3.5 inline mr-1 text-rose-500'),
-  back:ic('<path d="M15 19l-7-7 7-7"/>','w-5 h-5'),
-  chev:ic('<path d="M9 5l7 7-7 7"/>','w-4 h-4 text-gray-400')
-};
-const TRUST_ICONS=[ICONS.truck,ICONS.cash,ICONS.handloom,ICONS.upi];
-
-/* ===== HELPERS ===== */
-const $=s=>document.querySelector(s), app=$('#app');
-const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const inr=n=>'₹'+Number(n||0).toLocaleString('en-IN');
-const img=p=>esc(p.images?.[0]||'https://placehold.co/600x750?text=Thaarai+Tex');
-const store={get:k=>{try{return JSON.parse(localStorage.getItem(k))}catch{return null}},set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}}};
-let cart=store.get('cart')||[], coupon='', wish=new Set();
-const off=p=>p.mrp>p.price?Math.round((p.mrp-p.price)/p.mrp*100):0;
-function toast(m){const t=$('#toast');t.textContent=m;t.classList.remove('hidden');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.add('hidden'),2200)}
-function saveCart(){store.set('cart',cart);const n=cart.reduce((s,i)=>s+i.qty,0);document.querySelectorAll('.cc').forEach(e=>{e.textContent=n;e.classList.toggle('hidden',!n)})}
 const heart=a=>`<svg width="17" height="17" viewBox="0 0 24 24" fill="${a?'#e11d48':'none'}" stroke="${a?'#e11d48':'currentColor'}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-8-5.2-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.8-8 11-8 11z"/></svg>`;
 const stars=n=>`<span class="text-amber-500 font-semibold tracking-wide">${'★'.repeat(Math.round(n))}${'☆'.repeat(5-Math.round(n))}</span>`;
 
-/* ===== SITE SETTINGS (edited from admin → Site Design) ===== */
+/* ===== SITE SETTINGS ===== */
 const DEF={
- brand:{name:'Thaarai Tex',tagline:'Premium Sarees',logo:''},
- announce:{on:true,text:'✨ இலவச டெலிவரி (Free Delivery) & COD / UPI',bg:'#0f172a',color:'#ffffff'},
- theme:{primary:'#0f172a'},
- banners:[{image:'',title:'பாரம்பரிய பட்டு & காட்டன் சேலைகள்',subtitle:'நேரடி நெசவாளர் விலை · Cash on Delivery & UPI',btn:'Shop Now',link:'#/shop',c1:'#1e293b',c2:'#0f172a'}],
- sections:{cats:true,deals:true,fresh:true,trust:true,about:false,catsTitle:'Shop by Category',dealsTitle:'Best Value',freshTitle:'New Arrivals'},
- trust:[{icon:'',text:'Free Delivery'},{icon:'',text:'Cash on Delivery'},{icon:'',text:'100% Handloom'},{icon:'',text:'UPI Payments'}],
- about:{title:'Our Story',text:'',image:''},
- footer:{about:'Handloom sarees direct from the weavers.',phone:'',email:'',address:'Melur, Tamil Nadu',whatsapp:'919999999999',upi:'yourname@upi',upiName:'Thaarai Tex',instagram:'',facebook:''}
+  brand:{name:'Thaarai Tex',tagline:'Premium Sarees',logo:''},
+  announce:{on:true,text:'✨ இலவச டெலிவரி (Free Delivery) & COD / UPI',bg:'#0f172a',color:'#ffffff'},
+  theme:{primary:'#0f172a'},
+  banners:[{image:'',title:'பாரம்பரிய பட்டு & காட்டன் சேலைகள்',subtitle:'நேரடி நெசவாளர் விலை · Cash on Delivery & UPI',btn:'Shop Now',link:'#/shop',c1:'#1e293b',c2:'#0f172a'}],
+  sections:{cats:true,deals:true,fresh:true,trust:true,about:false,catsTitle:'Shop by Category',dealsTitle:'Best Value',freshTitle:'New Arrivals'},
+  trust:[{icon:'',text:'Free Delivery'},{icon:'',text:'Cash on Delivery'},{icon:'',text:'100% Handloom'},{icon:'',text:'UPI Payments'}],
+  about:{title:'Our Story',text:'',image:''},
+  footer:{about:'Handloom sarees direct from the weavers.',phone:'',email:'',address:'Melur, Tamil Nadu',whatsapp:'919999999999',upi:'yourname@upi',upiName:'Thaarai Tex',instagram:'',facebook:''}
 };
 const merge=(a,b)=>{if(Array.isArray(b))return b;if(b&&typeof b==='object'){const o={...a};for(const k in b)o[k]=merge(a?.[k],b[k]);return o}return b===undefined?a:b};
 let SET=JSON.parse(JSON.stringify(DEF));
@@ -147,37 +84,37 @@ async function loadSettings(){
 }
 applySettings();
 
-/* ===== CUSTOMER IDENTITY (name + mobile). Everything is separated by mobile number ===== */
-['wish','addr','addrs','orders','lookup'].forEach(k=>localStorage.removeItem(k)); // old shared data from earlier versions
-let ofilter='all', addrEdit=null, OC={list:[]};
-const profile=()=>store.get('profile');
-const akey=()=>'addrs:'+(profile()?.phone||'none');
-function getAddrs(){return profile()?store.get(akey())||[]:[]}
-function setAddrs(L){if(profile())store.set(akey(),L)}
-
 function setNav(){
   const p=profile(), txt=$('#lgn-txt');
   if(txt)txt.textContent=p?p.name.split(' ')[0]:'Login';
   $('#lgn').href=p?'#/account/hub':'#/login';
   $('#tbp').href=p?'#/account/hub':'#/login';
 }
-async function loadWish(){
-  wish=new Set();const p=profile();if(!p)return;
-  const {data}=await sb.rpc('get_wishlist',{p_phone:p.phone});
-  (data||[]).forEach(x=>wish.add(x));
+async function loadUserData(){
+  wish=new Set();
+  const p=profile();
+  if(!p){await loadCartCloud();return;}
+  // Load cloud cart
+  const {data:cData}=await sb.rpc('get_user_cart',{p_phone:p.phone});
+  if(cData&&Array.isArray(cData)){cart=cData;store.set('cart',cart);}
+  else{await saveCartCloud();}
+  // Load wishlist
+  const {data:wData}=await sb.rpc('get_wishlist',{p_phone:p.phone});
+  (wData||[]).forEach(x=>wish.add(x));
+  saveCartBadge();
+  setNav();
 }
 async function setProfile(name,phone){
-  const prev=profile();
-  if(prev&&prev.phone!==phone){cart=[];coupon='';saveCart()}   // a different person: start with an empty bag
   store.set('profile',{name,phone});
   OC={list:[]};ofilter='all';addrEdit=null;
-  await loadWish();setNav();
+  await loadUserData();
+  setNav();
 }
 function clearProfile(){
   localStorage.removeItem('profile');
-  cart=[];coupon='';saveCart();wish=new Set();OC={list:[]};ofilter='all';addrEdit=null;setNav();
+  cart=[];saveCart();wish=new Set();OC={list:[]};ofilter='all';addrEdit=null;setNav();
 }
-async function initAuth(){setNav();await loadWish()}
+async function initAuth(){setNav();await loadUserData()}
 async function toggleWish(id){
   const p=profile();
   if(!p){toast('Login to save to your wishlist');location.hash='#/login';return}
@@ -205,7 +142,7 @@ async function couponDiscount(sub){
   return Number(data)||0;
 }
 
-/* ===== CARDS ===== */
+/* ===== CARDS & VIEWS (Same as before) ===== */
 function card(p){
   const o=off(p);
   return `<a href="#/p/${p.id}" class="block group">
@@ -255,7 +192,7 @@ async function shop(params){
   const f={q:params.get('q')||'',cat:params.get('cat')||'',fabric:params.get('fabric')||'',min:params.get('min')||'',max:params.get('max')||'',sort:params.get('sort')||'new',stock:params.get('stock')||''};
   const {data:cats}=await sb.from('categories').select('*');
   let q=sb.from('products').select('*').eq('active',true);
-  if(f.q)q=q.or(`name.ilike.%${f.q.replace(/[%,()]/g,'')}%,description.ilike.%${f.q.replace(/[%,()]/g,'')}%`);
+  if(f.q)q=q.or(`name.ilike.%${f.q.replace(/[%,()]/g, '')}%,description.ilike.%${f.q.replace(/[%,()]/g, '')}%`);
   if(f.cat)q=q.eq('category_id',f.cat);
   if(f.fabric)q=q.eq('fabric',f.fabric);
   if(f.min)q=q.gte('price',+f.min);
@@ -441,12 +378,12 @@ async function cartView(){
   $('#cpb').onclick=()=>{coupon=$('#cp').value.trim().toUpperCase();cartView()};
 }
 
-/* ===== CHECKOUT (order is created ONLY by the secure server function) ===== */
+/* ===== CHECKOUT ===== */
 async function checkout(){
   const L=await cartLines(); if(!L.length){location.hash='#/cart';return}
   const sub=L.reduce((s,l)=>s+l.p.price*l.qty,0);
   let d=await couponDiscount(sub), method='COD';
-  const pf=profile(), AL=getAddrs(), def=AL.find(a=>a.def)||AL[0]||{}, saved={...(pf?{name:pf.name,phone:pf.phone}:{}),...def};
+  const pf=profile(), AL=await getAddrs(), def=AL.find(a=>a.def)||AL[0]||{}, saved={...(pf?{name:pf.name,phone:pf.phone}:{}),...def};
   app.innerHTML=`<div class="grid md:grid-cols-[1fr_320px] gap-6">
    <form id="cf" class="bg-white border border-gray-100 rounded-3xl p-6 space-y-3.5 shadow-soft">
     <h2 class="font-extrabold text-sm text-gray-900">Delivery Address</h2>
@@ -505,23 +442,21 @@ async function checkout(){
       const b=ov.querySelector('#cO');b.disabled=true;b.textContent='Placing order…';
       const {data:orderId,error}=await sb.rpc('place_order_guest',{p_items:cart.map(i=>({id:i.id,qty:i.qty})),p_address:addr,p_coupon:coupon||null,p_method:method,p_ref:utr||null});
       if(error){toast(error.message);b.disabled=false;b.textContent='Confirm Order';return}
-      // the order belongs to the logged-in account's mobile number (or the delivery number if nobody is logged in)
       const owner=profile()?.phone||addr.phone;
       await sb.rpc('set_order_account',{p_id:orderId,p_account:owner});
-      if(!profile())await setProfile(addr.name,addr.phone);          // never replaces an existing login
-      {const L2=getAddrs();if(!L2.some(x=>x.line===addr.line&&x.pincode===addr.pincode))setAddrs([...L2,{...addr,id:Date.now().toString(36),def:!L2.length}])}
-      const code=String(orderId).slice(0,8).toUpperCase();
-      cart=[];coupon='';saveCart();OC={list:[]};ov.remove();
+      if(!profile())await setProfile(addr.name,addr.phone);
+      {const L2=await getAddrs();if(!L2.some(x=>x.line===addr.line&&x.pincode===addr.pincode))await setAddrs([...L2,{...addr,id:Date.now().toString(36),def:!L2.length}])}
+      cart=[];saveCart();OC={list:[]};ov.remove();
       app.innerHTML=`<div class="max-w-md mx-auto text-center py-12 px-6 bg-white rounded-3xl shadow-soft border border-gray-100 my-4 space-y-4">
         <div class="py-2"><svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52"><circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none"/><path class="checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/></svg></div>
         <h2 class="text-xl font-extrabold text-gray-900 tracking-tight">Order Placed Successfully!</h2>
-        <p class="text-xs text-gray-500 leading-relaxed max-w-xs mx-auto">உங்கள் ஆர்டர் வெற்றிகரமாகப் பதிவானது. ஆர்டர் எண்: <span class="font-mono font-bold text-gray-900">#${esc(code)}</span>${method==='UPI'?'<br><span class="text-emerald-700 font-semibold">We will verify your payment shortly.</span>':''}</p>
+        <p class="text-xs text-gray-500 leading-relaxed max-w-xs mx-auto">உங்கள் ஆர்டர் வெற்றிகரமாகப் பதிவானது. ஆர்டர் எண்: <span class="font-mono font-bold text-gray-900">#${esc(String(orderId).slice(0,8).toUpperCase())}</span>${method==='UPI'?'<br><span class="text-emerald-700 font-semibold">We will verify your payment shortly.</span>':''}</p>
         <div class="pt-4 flex gap-2"><a href="#/account/orders" class="${btn} flex-1 !py-3">My Orders</a><a href="#/shop" class="border border-gray-200 hover:border-slate-900 text-gray-800 text-xs font-bold px-6 py-3 rounded-full transition flex-1">Shop More</a></div></div>`;
     };
   }
 }
 
-/* ===== LOGIN (name + mobile number) ===== */
+/* ===== LOGIN ===== */
 function loginView(){
   const p=profile();
   app.innerHTML=`<div class="max-w-sm mx-auto bg-white border border-gray-100 rounded-3xl p-6 space-y-4 shadow-soft my-6">
@@ -542,7 +477,7 @@ function loginView(){
   const lo=$('#lo');if(lo)lo.onclick=()=>{clearProfile();toast('Logged out');location.hash='#/'};
 }
 
-/* ===== ACCOUNT: hub, orders, details, profile, addresses, wishlist ===== */
+/* ===== ACCOUNT ===== */
 const STL={pending:'text-slate-700 font-bold bg-slate-100 px-3 py-1 rounded-full',verified:'text-sky-700 font-bold bg-sky-50 px-3 py-1 rounded-full',dispatched:'text-purple-700 font-bold bg-purple-50 px-3 py-1 rounded-full',delivered:'text-emerald-700 font-bold bg-emerald-50 px-3 py-1 rounded-full',cancelled:'text-rose-700 font-bold bg-rose-50 px-3 py-1 rounded-full'};
 const SLBL={pending:'Pending',verified:'Processing',dispatched:'Shipped',delivered:'Delivered',cancelled:'Cancelled'};
 const GRP={all:()=>true,pending:o=>o.order_status==='pending',verified:o=>o.order_status==='verified',dispatched:o=>o.order_status==='dispatched',delivered:o=>o.order_status==='delivered',cancelled:o=>o.order_status==='cancelled'};
@@ -551,7 +486,7 @@ const PAYLBL={COD:'Cash on Delivery',UPI:'UPI'};
 async function fetchOrders(){
   const p=profile();if(!p)return[];
   const {data,error}=await sb.rpc('my_orders',{p_phone:p.phone});
-  if(error)throw new Error(error.message+' — run phone-data.sql in Supabase');
+  if(error)throw new Error(error.message);
   OC={list:data||[]};return OC.list;
 }
 
@@ -627,12 +562,12 @@ function profileHtml(pf){
     <div class="space-y-4 mt-4">
       ${input('pn','Full Name',`maxlength="60" value="${esc(pf.name)}"`)}
       ${input('pp','Mobile Number (10 digits)',`maxlength="10" inputmode="numeric" value="${esc(pf.phone)}"`)}
-      <p class="text-[11px] text-gray-400">Orders, wishlist and addresses are saved against your mobile number. Changing the number switches to that number's data.</p>
+      <p class="text-[11px] text-gray-400">Orders, wishlist, cart and addresses are saved against your mobile number.</p>
       <button id="ps" class="${btn} w-full mt-2">Save Changes</button></div></div>`;
 }
 
-function addressesHtml(){
-  const L=getAddrs(), a=addrEdit;
+async function addressesHtml(){
+  const L=await getAddrs(), a=addrEdit;
   return `<div class="max-w-md mx-auto space-y-4 my-2">
     ${topbar('Shopping Address','#/account/hub')}
     ${a?`<div class="bg-white rounded-3xl p-5 shadow-soft border border-gray-100 space-y-3"><b class="text-xs block text-gray-900 font-extrabold">${a.id?'Edit':'Add New'} Address</b>
@@ -643,13 +578,13 @@ function addressesHtml(){
     :`<button id="addA" class="bg-white border-2 border-dashed border-gray-300 hover:border-slate-900 rounded-3xl w-full py-3.5 font-bold text-xs text-slate-900 transition shadow-soft">+ Add New Address</button>`}
     <div class="space-y-3">${L.map(x=>`<div class="bg-white rounded-3xl p-4 shadow-soft border border-gray-100 text-xs"><div class="flex items-center justify-between"><b class="text-gray-900">${esc(x.name)}</b>${x.def?'<span class="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-bold">DEFAULT</span>':''}</div>
       <p class="text-gray-500 mt-1">${esc(x.phone)}</p><p class="text-gray-700 mt-1 leading-relaxed">${esc(x.line)}, ${esc(x.city)}, ${esc(x.state)} - <b>${esc(x.pincode)}</b></p>
-      <div class="mt-3 pt-2 border-t flex gap-4 font-bold text-[11px]"><button data-ae="${esc(x.id)}" class="text-slate-900 underline flex items-center">${ICONS.edit}Edit</button><button data-ad="${esc(x.id)}" class="text-rose-600 underline">Delete</button>${x.def?'':`<button data-adef="${esc(x.id)}" class="text-gray-400 underline ml-auto">Set as Default</button>`}</div></div>`).join('')||(a?'':'<p class="text-center text-xs text-gray-400 py-8">No saved addresses. Addresses you use at checkout are saved here.</p>')}</div></div>`;
+      <div class="mt-3 pt-2 border-t flex gap-4 font-bold text-[11px]"><button data-ae="${esc(x.id)}" class="text-slate-900 underline flex items-center">${ICONS.edit}Edit</button><button data-ad="${esc(x.id)}" class="text-rose-600 underline">Delete</button>${x.def?'':`<button data-adef="${esc(x.id)}" class="text-gray-400 underline ml-auto">Set as Default</button>`}</div></div>`).join('')||(a?'':'<p class="text-center text-xs text-gray-400 py-8">No saved addresses.</p>')}</div></div>`;
 }
 
 async function wishHtml(){
   let wp=[];if(wish.size){const {data}=await sb.from('products').select('*').in('id',[...wish]);wp=data||[]}
   return `<div class="max-w-4xl mx-auto space-y-4 my-2">${topbar('My Wishlist ('+wp.length+')','#/account/hub')}
-    ${wp.length?grid(wp):'<div class="bg-white rounded-3xl p-12 text-center text-gray-400 text-xs border border-gray-100 shadow-soft">Your wishlist is empty. Tap the heart on any saree to save it.</div>'}</div>`;
+    ${wp.length?grid(wp):'<div class="bg-white rounded-3xl p-12 text-center text-gray-400 text-xs border border-gray-100 shadow-soft">Your wishlist is empty.</div>'}</div>`;
 }
 
 async function account(section,params){
@@ -659,7 +594,7 @@ async function account(section,params){
   let body='';
   if(section==='orders')body=await ordersHtml(pf);
   else if(section==='profile')body=profileHtml(pf);
-  else if(section==='addresses')body=addressesHtml();
+  else if(section==='addresses')body=await addressesHtml();
   else if(section==='wishlist')body=await wishHtml();
   else body=hubHtml(pf);
   app.innerHTML=body;
@@ -673,18 +608,18 @@ async function account(section,params){
       if(!/^[6-9]\d{9}$/.test(phone))return toast('Enter a valid mobile number');
       await setProfile(name,phone);toast('Saved ✓');location.hash='#/account/hub'}
     if(t.id==='addA'){addrEdit={};again()}
-    if(d.ae){addrEdit=getAddrs().find(x=>x.id===d.ae);again()}
-    if(d.ad&&confirm('Delete this address?')){setAddrs(getAddrs().filter(x=>x.id!==d.ad));again()}
-    if(d.adef){setAddrs(getAddrs().map(x=>({...x,def:x.id===d.adef})));again()}
+    if(d.ae){const L=await getAddrs();addrEdit=L.find(x=>x.id===d.ae);again()}
+    if(d.ad&&confirm('Delete this address?')){let L=await getAddrs();await setAddrs(L.filter(x=>x.id!==d.ad));again()}
+    if(d.adef){let L=await getAddrs();await setAddrs(L.map(x=>({...x,def:x.id===d.adef})));again()}
     if(t.id==='acn'){addrEdit=null;again()}
     if(t.id==='asv'){
       const n={name:$('#a-name').value.trim(),phone:$('#a-phone').value.trim(),pincode:$('#a-pin').value.trim(),city:$('#a-city').value.trim(),state:$('#a-state').value.trim(),line:$('#a-line').value.trim()};
       if(!n.name||!n.city||!n.state||!n.line)return toast('Please fill all fields');
       if(!/^[6-9]\d{9}$/.test(n.phone))return toast('Enter a valid mobile number');
       if(!/^[1-9]\d{5}$/.test(n.pincode))return toast('Enter a valid 6-digit pincode');
-      let L=getAddrs();
+      let L=await getAddrs();
       if(addrEdit.id){n.id=addrEdit.id;n.def=addrEdit.def;L=L.map(x=>x.id===n.id?n:x)}else{n.id=Date.now().toString(36);n.def=!L.length;L.push(n)}
-      setAddrs(L);addrEdit=null;toast('Address saved ✓');again()}
+      await setAddrs(L);addrEdit=null;toast('Address saved ✓');again()}
   };
 }
 
@@ -712,7 +647,4 @@ $('#sf').onsubmit=e=>{e.preventDefault();location.hash='#/shop?q='+encodeURIComp
 $('#sf2').onsubmit=e=>{e.preventDefault();location.hash='#/shop?q='+encodeURIComponent($('#q2').value.trim());$('#msearch').classList.add('hidden')};
 $('#msb').onclick=()=>{$('#msearch').classList.toggle('hidden');$('#q2').focus()};
 window.addEventListener('hashchange',route);
-saveCart();Promise.all([initAuth(),loadSettings()]).then(route);
-</script>
-</body>
-</html>
+Promise.all([initAuth(),loadSettings()]).then(route);
