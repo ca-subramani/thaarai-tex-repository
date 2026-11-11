@@ -77,7 +77,8 @@ const SUPABASE_URL="https://hjogdvqwwbgzgwtdlrak.supabase.co";
 const SUPABASE_ANON_KEY="sb_publishable_gURnxsEPWoxUqqAqnEtJ_g_EmUlUgUZ";
 let WHATSAPP="919999999999";
 let UPI_ID="yourname@upi", UPI_NAME="Thaarai Tex";
-const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+let sb=null;
+try { sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY); } catch(e){ console.error(e); }
 
 /* ===== ICONS ===== */
 const ic=(p,c='w-5 h-5 text-slate-800')=>`<svg viewBox="0 0 24 24" class="${c}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
@@ -114,9 +115,9 @@ const img=p=>esc(p.images?.[0]||'https://placehold.co/600x750?text=Thaarai+Tex')
 const store={get:k=>{try{return JSON.parse(localStorage.getItem(k))}catch{return null}},set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}}};
 let coupon='', wish=new Set();
 const off=p=>p.mrp>p.price?Math.round((p.mrp-p.price)/p.mrp*100):0;
-function toast(m){const t=$('#toast');t.textContent=m;t.classList.remove('hidden');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.add('hidden'),2200)}
+function toast(m){const t=$('#toast');if(!t)return;t.textContent=m;t.classList.remove('hidden');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.add('hidden'),2200)}
 
-/* ===== CUSTOMER IDENTITY & PERSISTENT SYNC (Cart, Address, Wishlist, Orders) ===== */
+/* ===== CUSTOMER IDENTITY & PERSISTENT SYNC ===== */
 let OC={list:[]};
 let ofilter='all', addrEdit=null;
 const profile=()=>store.get('profile');
@@ -126,16 +127,20 @@ async function loadCartCloud(){
   try{
     const p = profile();
     if(!p) { cart = store.get('cart')||[]; saveCartBadge(); return; }
-    const {data} = await sb.rpc('get_user_cart', {p_phone: p.phone});
-    cart = Array.isArray(data) ? data : (store.get('cart')||[]);
-    saveCartBadge();
-  }catch{ cart = store.get('cart')||[]; saveCartBadge(); }
+    if(sb){
+      const {data} = await sb.rpc('get_user_cart', {p_phone: p.phone});
+      cart = Array.isArray(data) ? data : (store.get('cart')||[]);
+    } else {
+      cart = store.get('cart')||[];
+    }
+  }catch{ cart = store.get('cart')||[]; }
+  saveCartBadge();
 }
 async function saveCartCloud(){
   const p = profile();
   store.set('cart', cart);
   saveCartBadge();
-  if(p) {
+  if(p && sb) {
     try{ await sb.rpc('save_user_cart', {p_phone: p.phone, p_items: cart}); }catch{}
   }
 }
@@ -149,17 +154,20 @@ async function getAddrs(){
   try{
     const p = profile();
     if(!p) return store.get('addrs:none')||[];
-    const {data} = await sb.rpc('get_user_addresses', {p_phone: p.phone});
-    if(data && data.length) return data;
-    const local = store.get('addrs:'+p.phone)||[];
-    return local;
+    if(sb){
+      const {data} = await sb.rpc('get_user_addresses', {p_phone: p.phone});
+      if(data && data.length) return data;
+    }
+    return store.get('addrs:'+p.phone)||[];
   }catch{ return store.get('addrs:none')||[]; }
 }
 async function setAddrs(L){
   const p = profile();
   if(p) {
     store.set('addrs:'+p.phone, L);
-    try{ await sb.rpc('save_user_addresses', {p_phone: p.phone, p_addresses: L}); }catch{}
+    if(sb){
+      try{ await sb.rpc('save_user_addresses', {p_phone: p.phone, p_addresses: L}); }catch{}
+    }
   } else {
     store.set('addrs:none', L);
   }
@@ -176,56 +184,46 @@ const stars=n=>{
 };
 
 /* ===== SITE SETTINGS ===== */
-const DEF={
+const SET={
   brand:{name:'Thaarai Tex',tagline:'Premium Sarees',logo:''},
-  theme:{primary:'#0f172a'},
   banners:[
     {image:'',title:'பாரம்பரிய பட்டு & காட்டன் சேலைகள்',subtitle:'நேரடி நெசவாளர் விலை · Cash on Delivery & UPI',btn:'Explore Collection',link:'#/shop',c1:'#1e293b',c2:'#0f172a'},
     {image:'',title:'Exquisite Handloom Silks',subtitle:'Direct from Master Weavers to Your Doorstep',btn:'Shop Now',link:'#/shop',c1:'#0f172a',c2:'#334155'}
   ],
-  sections:{cats:true,deals:false,fresh:false,trust:true,about:true,catsTitle:'Featured Collections',dealsTitle:'',freshTitle:''},
-  about:{title:'Crafted with Tradition',text:'Thaarai Tex brings you handpicked, authentic handloom sarees directly from traditional weavers. Every piece reflects meticulous artistry, premium fabrics, and timeless elegance.',image:''},
-  footer:{about:'Handloom sarees direct from the weavers.',phone:'',email:'',address:'Melur, Tamil Nadu',whatsapp:'919999999999',upi:'yourname@upi',upiName:'Thaarai Tex',instagram:'',facebook:''}
+  about:{title:'Crafted with Tradition',text:'Thaarai Tex brings you handpicked, authentic handloom sarees directly from traditional weavers. Every piece reflects meticulous artistry, premium fabrics, and timeless elegance.'},
+  footer:{about:'Handloom sarees direct from the weavers.',phone:'',email:'',address:'Melur, Tamil Nadu',whatsapp:'919999999999',upi:'yourname@upi',upiName:'Thaarai Tex'}
 };
-const merge=(a,b)=>{if(Array.isArray(b))return b;if(b&&typeof b==='object'){const o={...a};for(const k in b)o[k]=merge(a?.[k],b[k]);return o}return b===undefined?a:b};
-let SET=JSON.parse(JSON.stringify(DEF));
-const hx=(c,d)=>/^#[0-9a-f]{6}$/i.test(c||'')?c:d;
-const safeLink=u=>/^(#|https?:\/\/|\/)/.test(u||'')?u:'#/shop';
 
 function applySettings(){
-  const b=SET.brand,f=SET.footer,p=hx(SET.theme.primary,'#0f172a');
-  $('#brand').innerHTML=b.logo?`<img src="${esc(b.logo)}" alt="${esc(b.name)}" class="h-8 max-w-[160px] object-contain">`:`<span class="font-extrabold text-xl uppercase tracking-tight text-slate-900">${esc(b.name)}</span><span class="text-[10px] text-gray-400 font-semibold uppercase tracking-wider">${esc(b.tagline)}</span>`;
-  let st=document.getElementById('th');if(!st){st=document.createElement('style');st.id='th';document.head.appendChild(st)}
-  st.textContent=`:root{--p:${p}}.bg-slate-900{background-color:var(--p)!important}.hover\\:bg-slate-800:hover{background-color:var(--p)!important;filter:brightness(1.15)}.text-slate-900{color:var(--p)!important}`;
-  WHATSAPP=f.whatsapp||WHATSAPP;UPI_ID=f.upi||UPI_ID;UPI_NAME=f.upiName||UPI_NAME;
-  const lk=(u,t)=>u?`<a class="underline" target="_blank" rel="noopener" href="${esc(safeLink(u))}">${t}</a> `:'';
-  $('#foot').innerHTML=`<div class="max-w-6xl mx-auto px-4 grid sm:grid-cols-3 gap-6 text-left"><div><b class="text-white text-sm">${esc(b.name)}</b><p class="mt-2 leading-relaxed text-gray-400">${esc(f.about)}</p></div>
+  const b=SET.brand,f=SET.footer;
+  const brandEl=$('#brand');
+  if(brandEl) brandEl.innerHTML=`<span class="font-extrabold text-xl uppercase tracking-tight text-slate-900">${esc(b.name)}</span><span class="text-[10px] text-gray-400 font-semibold uppercase tracking-wider">${esc(b.tagline)}</span>`;
+  const footEl=$('#foot');
+  if(footEl) footEl.innerHTML=`<div class="max-w-6xl mx-auto px-4 grid sm:grid-cols-3 gap-6 text-left"><div><b class="text-white text-sm">${esc(b.name)}</b><p class="mt-2 leading-relaxed text-gray-400">${esc(f.about)}</p></div>
    <div><b class="text-white text-sm">Contact</b><p class="mt-2 leading-6 text-gray-400">${f.phone?`${ICONS.phone}<a href="tel:${esc(f.phone)}">${esc(f.phone)}</a><br>`:''}${f.email?`${ICONS.mail}${esc(f.email)}<br>`:''}${f.address?`${ICONS.mapPin}${esc(f.address)}`:''}</p></div>
-   <div><b class="text-white text-sm">Quick links</b><p class="mt-2 leading-7 text-gray-400"><a href="#/shop" class="underline">Shop</a> · <a href="#/account/orders" class="underline">My Orders</a><br>${f.whatsapp?lk('https://wa.me/'+f.whatsapp,`${ICONS.whatsapp}WhatsApp support`):''}${lk(f.instagram,'Instagram')}${lk(f.facebook,'Facebook')}</p></div></div>
+   <div><b class="text-white text-sm">Quick links</b><p class="mt-2 leading-7 text-gray-400"><a href="#/shop" class="underline">Shop</a> · <a href="#/account/orders" class="underline">My Orders</a><br><a class="underline" target="_blank" rel="noopener" href="https://wa.me/${esc(f.whatsapp)}">${ICONS.whatsapp}WhatsApp support</a></p></div></div>
    <p class="mt-6 text-center text-gray-500 text-[11px]">© ${new Date().getFullYear()} ${esc(b.name)}. All rights reserved.</p>`;
-}
-async function loadSettings(){
-  try{const {data}=await sb.from('site_settings').select('data').eq('id','main').maybeSingle();if(data?.data)SET=merge(DEF,data.data)}catch{}
-  applySettings();
 }
 applySettings();
 
 function setNav(){
   const p=profile(), txt=$('#lgn-txt');
   if(txt)txt.textContent=p?p.name.split(' ')[0]:'Login';
-  $('#lgn').href=p?'#/account/hub':'#/login';
-  $('#tbp').href=p?'#/account/hub':'#/login';
+  if($('#lgn')) $('#lgn').href=p?'#/account/hub':'#/login';
+  if($('#tbp')) $('#tbp').href=p?'#/account/hub':'#/login';
 }
 async function loadUserData(){
   wish = new Set();
   const p = profile();
   if(!p){await loadCartCloud();return;}
   try{
-    const {data:cData}=await sb.rpc('get_user_cart',{p_phone:p.phone});
-    if(cData&&Array.isArray(cData)){cart=cData;store.set('cart',cart);}
-    else{await saveCartCloud();}
-    const {data:wData}=await sb.rpc('get_wishlist',{p_phone:p.phone});
-    (wData||[]).forEach(x=>wish.add(x));
+    if(sb){
+      const {data:cData}=await sb.rpc('get_user_cart',{p_phone:p.phone});
+      if(cData&&Array.isArray(cData)){cart=cData;store.set('cart',cart);}
+      else{await saveCartCloud();}
+      const {data:wData}=await sb.rpc('get_wishlist',{p_phone:p.phone});
+      (wData||[]).forEach(x=>wish.add(x));
+    }
   }catch{}
   saveCartBadge();
   setNav();
@@ -245,9 +243,11 @@ async function toggleWish(id){
   const p=profile();
   if(!p){toast('Login to save to your wishlist');location.hash='#/login';return}
   try{
-    const {data,error}=await sb.rpc('toggle_wishlist',{p_phone:p.phone,p_product:id});
-    if(error)return toast('Could not update wishlist');
-    data?wish.add(id):wish.delete(id);
+    if(sb){
+      const {data,error}=await sb.rpc('toggle_wishlist',{p_phone:p.phone,p_product:id});
+      if(error)return toast('Could not update wishlist');
+      data?wish.add(id):wish.delete(id);
+    }
     document.querySelectorAll(`[data-w="${id}"]`).forEach(b=>{b.innerHTML=heart(wish.has(id))});
     if((location.hash||'').startsWith('#/account/wishlist'))route();
   }catch{toast('Could not update wishlist');}
@@ -262,12 +262,15 @@ function addCart(id,qty=1,max=10){
 async function cartLines(){
   if(!cart.length)return[];
   try{
-    const {data}=await sb.from('products').select('*').in('id',cart.map(i=>i.id));
-    return cart.map(i=>({...i,p:(data||[]).find(p=>p.id===i.id)})).filter(l=>l.p);
-  }catch{return[];}
+    if(sb){
+      const {data}=await sb.from('products').select('*').in('id',cart.map(i=>i.id));
+      return cart.map(i=>({...i,p:(data||[]).find(p=>p.id===i.id)})).filter(l=>l.p);
+    }
+  }catch{}
+  return [];
 }
 async function couponDiscount(sub){
-  if(!coupon)return 0;
+  if(!coupon || !sb)return 0;
   try{
     const {data}=await sb.rpc('check_coupon',{p_code:coupon,p_subtotal:sub});
     return Number(data)||0;
@@ -296,7 +299,7 @@ const loginNeeded=msg=>`<div class="max-w-md mx-auto text-center py-14 bg-white 
 
 /* ===== HOME & SHOP ===== */
 async function home(){
-  const bn=(SET&&SET.banners)?SET.banners:[];
+  const bn=SET.banners||[];
   const featuredCats = [
     { name: 'Sarees', subtitle: 'Exclusive Handloom', image: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=600&q=80', query: 'Sarees' },
     { name: 'Lungies', subtitle: 'Comfort & Heritage', image: 'https://images.unsplash.com/photo-1583394838336-acd977736f90?auto=format&fit=crop&w=600&q=80', query: 'Lungies' },
@@ -559,14 +562,20 @@ async function shop(params){
 
 /* ===== PRODUCT PAGE ===== */
 async function product(id){
-  const {data:p}=await sb.from('products').select('*').eq('id',id).maybeSingle();
+  let p=null;
+  try{ const res=await sb.from('products').select('*').eq('id',id).maybeSingle(); p=res.data; }catch{}
   if(!p){app.innerHTML='<div class="text-center py-20 text-xs text-gray-400 bg-white rounded-3xl border p-8 max-w-md mx-auto shadow-soft">Product not found. <br><a href="#/shop" class="font-bold underline text-slate-900 mt-2 inline-block">Back to Shop</a></div>';return}
   document.title=p.name+' | '+SET.brand.name;
-  const [{data:rv},{data:sim}]=await Promise.all([
-    sb.from('reviews').select('*').eq('product_id',id).order('created_at',{ascending:false}),
-    p.category_id?sb.from('products').select('*').eq('active',true).eq('category_id',p.category_id).neq('id',id).limit(4):Promise.resolve({data:[]})
-  ]);
-  const reviews=rv||[], avg=reviews.length?reviews.reduce((s,r)=>s+r.rating,0)/reviews.length:0;
+  let reviews=[], sim=[];
+  try{
+    const r1=await sb.from('reviews').select('*').eq('product_id',id).order('created_at',{ascending:false});
+    reviews=r1.data||[];
+    if(p.category_id){
+      const r2=await sb.from('products').select('*').eq('active',true).eq('category_id',p.category_id).neq('id',id).limit(4);
+      sim=r2.data||[];
+    }
+  }catch{}
+  const avg=reviews.length?reviews.reduce((s,r)=>s+r.rating,0)/reviews.length:0;
   const imgs=p.images?.length?p.images:['https://placehold.co/600x750?text=Thaarai+Tex'];
   const o=off(p), ok=p.stock>0;
   const specs=[['Fabric',p.fabric],['Colour',p.color],['Occasion',p.occasion]].filter(r=>r[1]);
@@ -777,6 +786,7 @@ async function checkout(){
     ov.querySelector('#cO').onclick=async()=>{
       const b=ov.querySelector('#cO');b.disabled=true;b.textContent='Placing order…';
       try{
+        if(!sb) throw new Error('Database connection missing');
         const {data:orderId,error}=await sb.rpc('place_order_guest',{p_items:cart.map(i=>({id:i.id,qty:i.qty})),p_address:addr,p_coupon:coupon||null,p_method:method,p_ref:utr||null});
         if(error){toast(error.message);b.disabled=false;b.textContent='Confirm Order';return}
         const owner=profile()?.phone||addr.phone;
@@ -824,10 +834,13 @@ const PAYLBL={COD:'Cash on Delivery',UPI:'UPI'};
 async function fetchOrders(){
   const p=profile();if(!p)return[];
   try{
-    const {data,error}=await sb.rpc('my_orders',{p_phone:p.phone});
-    if(error)throw new Error(error.message);
-    OC={list:data||[]};return OC.list;
-  }catch{return[];}
+    if(sb){
+      const {data,error}=await sb.rpc('my_orders',{p_phone:p.phone});
+      if(error)throw new Error(error.message);
+      OC={list:data||[]};return OC.list;
+    }
+  }catch{}
+  return [];
 }
 
 function hubHtml(pf){
