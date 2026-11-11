@@ -396,170 +396,145 @@ async function home(){
 }
 
 async function shop(params){
-  const f={q:params.get('q')||'',cat:params.get('cat')||'',fabric:params.get('fabric')||'',min:params.get('min')||'',max:params.get('max')||'',sort:params.get('sort')||'new',stock:params.get('stock')||''};
-  let cats=[];
-  try{ const res=await sb.from('categories').select('*'); cats=res.data||[]; }catch{}
-  
-  let q=sb.from('products').select('*').eq('active',true);
-  if(f.q)q=q.or(`name.ilike.%${f.q.replace(/[%,()]/g,'')}%,description.ilike.%${f.q.replace(/[%,()]/g,'')}%`);
-  if(f.cat)q=q.eq('category_id',f.cat);
-  if(f.fabric)q=q.eq('fabric',f.fabric);
-  if(f.min)q=q.gte('price',+f.min);
-  if(f.max)q=q.lte('price',+f.max);
-  if(f.stock)q=q.gt('stock',0);
-  q=f.sort==='low'?q.order('price'):f.sort==='high'?q.order('price',{ascending:false}):q.order('created_at',{ascending:false});
-  let data=[];
-  try{ const res=await q; data=res.data||[]; }catch{}
-
+  const f={
+    q:params.get('q')||'',cat:params.get('cat')||'',fabric:params.get('fabric')||'',
+    min:params.get('min')||'',max:params.get('max')||'',sort:params.get('sort')||'new',
+    stock:params.get('stock')||'',brand:params.get('brand')||'',color:params.get('color')||'',
+    location:params.get('location')||'',rating:params.get('rating')||'',discount:params.get('discount')||'',
+    view:params.get('view')||'grid'
+  };
+  let cats=[],data=[],reviews=[];
+  try{const res=await sb.from('categories').select('*');cats=res.data||[]}catch{}
+  try{const res=await sb.from('products').select('*').eq('active',true);data=res.data||[]}catch{}
+  if(data.length){
+    try{const rr=await sb.from('reviews').select('product_id,rating').in('product_id',data.map(p=>p.id));reviews=rr.data||[]}catch{}
+  }
+  const avgById={};
+  reviews.forEach(r=>{const k=r.product_id;(avgById[k]??=[]).push(Number(r.rating)||0)});
+  const average=id=>{const a=avgById[id]||[];return a.length?a.reduce((s,n)=>s+n,0)/a.length:0};
+  const unique=key=>[...new Set(data.map(p=>String(p[key]||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+  const brands=unique('brand'),colors=unique('color'),locations=unique('location'),fabrics=unique('fabric');
+  const matches=(v,selected)=>!selected||String(v||'').toLowerCase()===selected.toLowerCase();
+  const filtered=data.filter(p=>{
+    const search=(f.q||'').toLowerCase();
+    return (!search||`${p.name||''} ${p.description||''}`.toLowerCase().includes(search)) &&
+      (!f.cat||String(p.category_id)===String(f.cat)) && matches(p.fabric,f.fabric) &&
+      (!f.min||Number(p.price)>=Number(f.min)) && (!f.max||Number(p.price)<=Number(f.max)) &&
+      (!f.stock||Number(p.stock)>0) && matches(p.brand,f.brand) && matches(p.color,f.color) &&
+      matches(p.location,f.location) && (!f.rating||average(p.id)>=Number(f.rating)) &&
+      (!f.discount||Number(p.mrp)>Number(p.price));
+  });
+  const sorters={
+    recommended:(a,b)=>Number(b.stock>0)-Number(a.stock>0)||new Date(b.created_at||0)-new Date(a.created_at||0),
+    new:(a,b)=>new Date(b.created_at||0)-new Date(a.created_at||0),
+    rated:(a,b)=>average(b.id)-average(a.id),low:(a,b)=>Number(a.price)-Number(b.price),
+    high:(a,b)=>Number(b.price)-Number(a.price),az:(a,b)=>String(a.name||'').localeCompare(String(b.name||'')),
+    za:(a,b)=>String(b.name||'').localeCompare(String(a.name||''))
+  };
+  filtered.sort(sorters[f.sort]||sorters.new);
+  const activeCount=[f.cat,f.fabric,f.min,f.max,f.stock,f.brand,f.color,f.location,f.rating,f.discount].filter(Boolean).length;
+  const selectedLabel=(v,empty)=>v||empty;
+  const optionButtons=(key,values,current,allLabel)=>[
+    `<button type="button" data-option="${key}" data-value="" class="filter-chip ${!current?'is-selected':''}">${allLabel}</button>`,
+    ...values.map(v=>`<button type="button" data-option="${key}" data-value="${esc(v)}" class="filter-chip ${current===v?'is-selected':''}">${esc(v)}</button>`)
+  ].join('');
+  const sortOptions=[['recommended','Recommended','✧'],['new','Recently added','◷'],['rated','Top rated','☆'],['low','Price: Low to High','↧'],['high','Price: High to Low','↥'],['az','A to Z','A'],['za','Z to A','Z']];
+  const categoryIcon=(name)=>{const n=String(name||'').toLowerCase();if(/saree|silk|cotton|cloth|dress/.test(n))return '♧';if(/men|shirt|lungi|dhoti/.test(n))return '◇';if(/kid|baby/.test(n))return '♡';return '✧'};
+  const categoryTiles=[...cats].map(c=>`<button type="button" data-category="${esc(c.id)}" class="category-tile ${String(f.cat)===String(c.id)?'is-selected':''}"><span class="text-2xl text-slate-600">${categoryIcon(c.name)}</span><span class="text-[11px] font-semibold text-slate-700">${esc(c.name)}</span></button>`).join('');
+  const productGrid=ps=>ps.length?`<div class="${f.view==='list'?'grid grid-cols-1 gap-3':'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3.5 sm:gap-5'}">${ps.map(p=>f.view==='list'?`<div class="flex gap-3 bg-white rounded-2xl p-2 border border-gray-100 shadow-soft"><a href="#/p/${p.id}" class="w-24 h-28 shrink-0 rounded-xl overflow-hidden bg-gray-50"><img src="${img(p)}" alt="${esc(p.name)}" class="w-full h-full object-cover"></a><div class="min-w-0 flex-1 py-1"><a href="#/p/${p.id}" class="font-semibold text-xs text-gray-800 line-clamp-2">${esc(p.name)}</a><b class="block mt-2 text-sm">${inr(p.price)}</b>${off(p)?`<span class="text-[10px] text-emerald-700 font-bold">${off(p)}% OFF</span>`:''}<p class="text-[10px] text-gray-400 mt-1">${esc(p.fabric||'')}</p></div></div>`:card(p)).join('')}</div>`:'<p class="text-center text-gray-400 py-16 text-xs">பொருட்கள் எதுவும் இல்லை. No products found.</p>';
   app.innerHTML=`
-  <div class="space-y-6">
-    <!-- Clean Elegant Shop Header & Filter Trigger Bar -->
-    <div class="flex items-center justify-between bg-white rounded-3xl p-4 sm:p-5 border border-gray-100 shadow-soft">
-      <div>
-        <h1 class="font-extrabold text-base sm:text-lg text-gray-900">Explore Sarees & Weaves</h1>
-        <p class="text-xs text-gray-500 mt-0.5">Showing <b>${data.length}</b> products${f.q?` for "${esc(f.q)}"`:''}</p>
-      </div>
-      <button id="open-filter-modal" class="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs px-5 py-3 rounded-full transition shadow-soft">
-        ${ICONS.filter}
-        <span>Filter &amp; Sort</span>
-      </button>
+  <style>
+    .shop-action{display:flex;align-items:center;gap:8px;border:1px solid #dbe2ea;background:#fff;border-radius:15px;padding:11px 14px;font-size:12px;font-weight:700;color:#334155;transition:.2s}
+    .shop-action:active{transform:scale(.98)}.shop-action .value{margin-left:auto;color:#0d9488;font-size:11px;font-weight:700}
+    .shop-sheet{position:fixed;inset:0;z-index:70;background:rgba(15,23,42,.48);backdrop-filter:blur(3px);display:flex;align-items:flex-end;justify-content:center}
+    .shop-sheet.hidden{display:none}.shop-panel{width:100%;max-width:520px;max-height:91dvh;background:#fff;border-radius:26px 26px 0 0;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 -12px 50px #0f172a22}
+    @media(min-width:640px){.shop-sheet{align-items:center;padding:18px}.shop-panel{border-radius:26px;max-height:88vh}}
+    .shop-panel-head{height:58px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:0 20px;border-bottom:1px solid #edf0f4}
+    .shop-panel-body{overflow-y:auto;padding:18px 20px 22px;overscroll-behavior:contain}.shop-panel-foot{padding:13px 18px calc(13px + env(safe-area-inset-bottom));border-top:1px solid #edf0f4;background:#fff;flex-shrink:0}
+    .filter-section{margin-bottom:22px}.filter-section h3{font-size:11px;font-weight:700;color:#64748b;margin-bottom:10px}
+    .filter-row{width:100%;display:flex;align-items:center;justify-content:space-between;padding:13px 2px;border-bottom:1px solid #f1f5f9;text-align:left;font-size:12px;font-weight:650;color:#334155}
+    .filter-row .row-icon{width:25px;color:#0d9488;font-size:17px}.filter-row .row-value{margin-left:auto;margin-right:8px;color:#0d9488;font-size:11px;font-weight:600}
+    .filter-chip{border:1px solid #dbe2ea;border-radius:999px;padding:8px 12px;font-size:11px;color:#475569;background:#fff;white-space:nowrap}
+    .filter-chip.is-selected,.category-tile.is-selected{border-color:#0d9488;color:#0f766e;background:#f0fdfa}
+    .category-tile{min-height:86px;border:1px solid #dbe2ea;border-radius:15px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:#fff;padding:10px}
+    .sort-option{width:100%;display:flex;align-items:center;gap:12px;padding:12px 2px;color:#475569;font-size:12px;text-align:left}
+    .sort-radio{margin-left:auto;width:17px;height:17px;border:1.5px solid #cbd5e1;border-radius:50%;display:grid;place-items:center}
+    .sort-option.active .sort-radio{border-color:#0d9488}.sort-option.active .sort-radio:after{content:'';width:8px;height:8px;border-radius:50%;background:#0d9488}
+    .teal-cta{background:#0d9488;color:#fff;border-radius:999px;padding:13px 18px;font-size:12px;font-weight:750;width:100%}
+    .teal-cta:active{background:#0f766e}
+  </style>
+  <div class="space-y-5">
+    <div class="bg-white rounded-3xl p-4 sm:p-5 border border-gray-100 shadow-soft">
+      <div class="flex items-center justify-between gap-3"><div><h1 class="font-extrabold text-base sm:text-lg text-gray-900">Explore Sarees & Weaves</h1><p class="text-xs text-gray-500 mt-0.5">Showing <b>${filtered.length}</b> products${f.q?` for “${esc(f.q)}”`:''}</p></div><button id="open-more-functions" class="w-10 h-10 shrink-0 rounded-full border border-gray-200 grid place-items-center text-slate-600" aria-label="More options">•••</button></div>
+      <div class="grid grid-cols-2 gap-2 mt-4"><button id="open-filter" class="shop-action">${ICONS.filter}<span>Filter</span><span class="value">${activeCount?activeCount+' active':'Add'}</span></button><button id="open-sort" class="shop-action"><span class="text-base">↕</span><span>Sort By</span><span class="value">${sortOptions.find(x=>x[0]===f.sort)?.[1]||'Recently added'}</span></button></div>
+      ${(f.cat||f.fabric||f.color||f.min||f.max||f.discount)?`<div class="flex gap-2 overflow-x-auto no-scrollbar mt-3">${[f.cat?cats.find(c=>String(c.id)===String(f.cat))?.name:'',f.fabric,f.color,f.min||f.max?`${f.min||'0'} – ${f.max||'Any'}`:'',f.discount?'Discounted':'' ].filter(Boolean).map(x=>`<span class="shrink-0 rounded-full bg-teal-50 text-teal-800 px-3 py-1.5 text-[10px] font-semibold">${esc(x)}</span>`).join('')}</div>`:''}
     </div>
-
-    <!-- Products Grid Section -->
-    <div>
-      ${grid(data)}
-    </div>
+    ${productGrid(filtered)}
   </div>
 
-  <!-- Professional Modal Popup Filter -->
-  <div id="filter-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4 backdrop-blur-sm transition-opacity">
-    <div class="bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden border border-gray-100">
-      
-      <!-- Modal Header -->
-      <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-        <button id="close-filter-modal" class="text-gray-400 hover:text-gray-700 text-lg font-bold">✕</button>
-        <h2 class="font-extrabold text-sm sm:text-base text-gray-900">Filters &amp; Sorting</h2>
-        <button id="reset-filters" class="text-xs font-bold text-rose-600 hover:underline">Reset All</button>
+  <div id="shop-filter-sheet" class="shop-sheet hidden"><section class="shop-panel" role="dialog" aria-modal="true" aria-label="Filter products">
+    <header class="shop-panel-head"><button data-close-sheet="shop-filter-sheet" class="text-xl text-slate-500" aria-label="Close">×</button><h2 class="font-extrabold text-sm">Filter</h2><button id="filter-reset" class="text-[11px] font-bold text-teal-700">Reset All</button></header>
+    <div class="shop-panel-body text-xs">
+      <div class="filter-section"><h3>GENERAL</h3>
+        ${brands.length?`<button class="filter-row" data-open-sub="brand"><span class="row-icon">▣</span>Brand<span class="row-value">${f.brand?'1 Selected':'Any'}</span>›</button>`:''}
+        <button class="filter-row" data-open-sub="categories"><span class="row-icon">▤</span>Categories<span class="row-value">${f.cat?(cats.find(c=>String(c.id)===String(f.cat))?.name||'Selected'):'View all'}</span>›</button>
+        ${colors.length?`<button class="filter-row" data-open-sub="color"><span class="row-icon">◉</span>Colors<span class="row-value">${f.color?'1 Selected':'Any'}</span>›</button>`:''}
+        ${locations.length?`<button class="filter-row" data-open-sub="location"><span class="row-icon">⌖</span>Location<span class="row-value">${f.location||'Any'}</span>›</button>`:''}
+        <button class="filter-row" data-open-sub="fabric"><span class="row-icon">◇</span>Fabric<span class="row-value">${f.fabric||'Any'}</span>›</button>
       </div>
-
-      <!-- Modal Body (Scrollable) -->
-      <div class="p-6 overflow-y-auto space-y-6 text-xs">
-        
-        <!-- Search query filter -->
-        <div>
-          <label class="block font-bold text-gray-700 mb-1.5 uppercase tracking-wider text-[11px]">Search Keyword</label>
-          <input id="modal-q" value="${esc(f.q)}" placeholder="Search saree name or description..." class="w-full bg-gray-50 border border-gray-200 rounded-2xl p-3 outline-none focus:bg-white focus:border-slate-900 transition">
-        </div>
-
-        <!-- Categories Selection -->
-        <div>
-          <label class="block font-bold text-gray-700 mb-2 uppercase tracking-wider text-[11px]">Categories</label>
-          <div class="grid grid-cols-2 gap-2">
-            <button type="button" data-cat="" class="cat-pill py-2.5 px-3 rounded-xl border text-center font-bold transition ${!f.cat?'bg-slate-900 text-white border-slate-900':'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100'}">All Categories</button>
-            ${cats.map(c=>`
-              <button type="button" data-cat="${c.id}" class="cat-pill py-2.5 px-3 rounded-xl border text-center font-bold transition truncate ${f.cat===c.id?'bg-slate-900 text-white border-slate-900':'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100'}">${esc(c.name)}</button>
-            `).join('')}
-          </div>
-        </div>
-
-        <!-- Fabric Selection -->
-        <div>
-          <label class="block font-bold text-gray-700 mb-2 uppercase tracking-wider text-[11px]">Fabric</label>
-          <div class="grid grid-cols-2 gap-2">
-            ${['','Silk','Cotton','Semi Silk','Linen'].map(fb=>`
-              <button type="button" data-fabric="${fb}" class="fab-pill py-2.5 px-3 rounded-xl border text-center font-bold transition ${f.fabric===fb?'bg-slate-900 text-white border-slate-900':'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100'}">${fb||'All Fabrics'}</button>
-            `).join('')}
-          </div>
-        </div>
-
-        <!-- Price Range -->
-        <div>
-          <label class="block font-bold text-gray-700 mb-2 uppercase tracking-wider text-[11px]">Price Range (₹)</label>
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <span class="text-[10px] text-gray-400 font-semibold">Min Price</span>
-              <input id="modal-min" type="number" value="${esc(f.min)}" placeholder="0" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 outline-none focus:bg-white focus:border-slate-900">
-            </div>
-            <div>
-              <span class="text-[10px] text-gray-400 font-semibold">Max Price</span>
-              <input id="modal-max" type="number" value="${esc(f.max)}" placeholder="10000" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 outline-none focus:bg-white focus:border-slate-900">
-            </div>
-          </div>
-        </div>
-
-        <!-- Sorting Options -->
-        <div>
-          <label class="block font-bold text-gray-700 mb-2 uppercase tracking-wider text-[11px]">Sort By</label>
-          <div class="space-y-1.5">
-            {[
-              ['new', 'Newest Arrivals'],
-              ['low', 'Price: Low to High'],
-              ['high', 'Price: High to Low']
-            ].map(([val, label])=>`
-              <label class="flex items-center justify-between p-3 rounded-xl bg-gray-50 border border-gray-200 cursor-pointer hover:bg-gray-100 transition">
-                <span class="font-semibold text-gray-800">${label}</span>
-                <input type="radio" name="modal-sort" value="${val}" ${f.sort===val?'checked':''} class="accent-slate-900">
-              </label>
-            `).join('')}
-          </div>
-        </div>
-
-        <!-- In Stock Only Toggle -->
-        <div class="flex items-center justify-between p-3 rounded-xl bg-gray-50 border border-gray-200">
-          <span class="font-bold text-gray-800">In Stock Only</span>
-          <input id="modal-stock" type="checkbox" ${f.stock?'checked':''} class="w-4 h-4 accent-slate-900 cursor-pointer">
-        </div>
-
-      </div>
-
-      <!-- Modal Footer -->
-      <div class="p-4 border-t border-gray-100 bg-white">
-        <button id="confirm-filters" class="${btn} w-full !py-3.5 text-center">Apply &amp; Confirm</button>
-      </div>
-
+      <div class="filter-section"><h3>Customer review</h3><div class="flex flex-wrap gap-2">${[5,4,3,2,1].map(n=>`<button data-rating="${n}" class="filter-chip ${Number(f.rating)===n?'is-selected':''}">${n} ★</button>`).join('')}</div></div>
+      <div class="filter-section"><h3>Services & Promotion</h3><button id="discount-toggle" class="filter-chip ${f.discount?'is-selected':''}">${f.discount?'✓ ':''}Show only discount</button></div>
+      <div class="filter-section"><h3>Price range</h3><div class="flex items-center gap-3"><input id="filter-min" type="number" min="0" value="${esc(f.min)}" placeholder="Min ₹" class="w-1/2 rounded-xl border border-gray-200 p-3 outline-none"><input id="filter-max" type="number" min="0" value="${esc(f.max)}" placeholder="Max ₹" class="w-1/2 rounded-xl border border-gray-200 p-3 outline-none"></div></div>
+      <div class="filter-section"><h3>AVAILABILITY</h3><label class="flex items-center justify-between text-xs font-semibold text-slate-700"><span>Show only in-stock products</span><input id="filter-stock" type="checkbox" ${f.stock?'checked':''} class="w-5 h-5 accent-teal-600"></label></div>
     </div>
-  </div>`;
+    <footer class="shop-panel-foot"><button id="filter-confirm" class="teal-cta">Show ${filtered.length} Products · Confirm</button></footer>
+  </section></div>
 
-  let selectedCat = f.cat, selectedFab = f.fabric;
+  <div id="shop-sort-sheet" class="shop-sheet hidden"><section class="shop-panel" role="dialog" aria-modal="true" aria-label="Sort products">
+    <header class="shop-panel-head"><button data-close-sheet="shop-sort-sheet" class="text-xl text-slate-500">×</button><h2 class="font-extrabold text-sm">Sort By</h2><span class="w-5"></span></header>
+    <div class="shop-panel-body">${sortOptions.map(([v,label,ico])=>`<button class="sort-option ${f.sort===v?'active':''}" data-sort="${v}"><span class="w-6 text-base text-slate-500">${ico}</span><span>${label}</span><span class="sort-radio"></span></button>`).join('')}</div>
+    <footer class="shop-panel-foot"><button id="sort-confirm" class="teal-cta">Confirm</button></footer>
+  </section></div>
 
-  const modal=$('#filter-modal');
-  $('#open-filter-modal').onclick=()=>modal.classList.remove('hidden');
-  $('#close-filter-modal').onclick=()=>modal.classList.add('hidden');
-  modal.onclick=e=>{if(e.target===modal)modal.classList.add('hidden')};
+  <div id="shop-category-sheet" class="shop-sheet hidden"><section class="shop-panel" role="dialog" aria-modal="true" aria-label="Categories">
+    <header class="shop-panel-head"><button data-close-sheet="shop-category-sheet" class="text-xl text-slate-500">×</button><h2 class="font-extrabold text-sm">Categories</h2><button id="category-reset" class="text-[11px] font-bold text-teal-700">Reset All</button></header>
+    <div class="shop-panel-body"><input id="category-search" placeholder="⌕  Search categories" class="w-full rounded-full border border-gray-200 px-4 py-3 text-xs outline-none mb-4"><div id="category-tiles" class="grid grid-cols-3 gap-2">${categoryTiles}</div></div>
+    <footer class="shop-panel-foot"><button id="category-confirm" class="teal-cta">Confirm</button></footer>
+  </section></div>
 
-  document.querySelectorAll('.cat-pill').forEach(btn=>{
-    btn.onclick=()=>{
-      document.querySelectorAll('.cat-pill').forEach(b=>{b.className='cat-pill py-2.5 px-3 rounded-xl border text-center font-bold transition bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100'});
-      btn.className='cat-pill py-2.5 px-3 rounded-xl border text-center font-bold transition bg-slate-900 text-white border-slate-900';
-      selectedCat=btn.dataset.cat;
-    };
-  });
+  <div id="shop-more-sheet" class="shop-sheet hidden"><section class="shop-panel" role="dialog" aria-modal="true" aria-label="More functions">
+    <header class="shop-panel-head"><button data-close-sheet="shop-more-sheet" class="text-xl text-slate-500">×</button><h2 class="font-extrabold text-sm">More Function</h2><span class="w-5"></span></header>
+    <div class="shop-panel-body space-y-3"><button class="shop-action w-full" data-open-sub="sort"><span>◉</span>Sort By<span class="value">${sortOptions.find(x=>x[0]===f.sort)?.[1]||'Recently added'}</span>›</button><button class="shop-action w-full" data-open-sub="filter"><span>☷</span>Filter<span class="value">${activeCount} Filters</span>›</button><div class="shop-action w-full"><span>▦</span>View Product<div class="ml-auto flex gap-1"><button data-view="grid" class="px-2 py-1 rounded-lg ${f.view==='grid'?'bg-teal-50 text-teal-700':''}">Grid</button><button data-view="list" class="px-2 py-1 rounded-lg ${f.view==='list'?'bg-teal-50 text-teal-700':''}">List</button></div></div></div>
+  </section></div>
 
-  document.querySelectorAll('.fab-pill').forEach(btn=>{
-    btn.onclick=()=>{
-      document.querySelectorAll('.fab-pill').forEach(b=>{b.className='fab-pill py-2.5 px-3 rounded-xl border text-center font-bold transition bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100'});
-      btn.className='fab-pill py-2.5 px-3 rounded-xl border text-center font-bold transition bg-slate-900 text-white border-slate-900';
-      selectedFab=btn.dataset.fabric;
-    };
-  });
+  <div id="shop-option-sheet" class="shop-sheet hidden"><section class="shop-panel" role="dialog" aria-modal="true" aria-label="Choose filter">
+    <header class="shop-panel-head"><button data-close-sheet="shop-option-sheet" class="text-xl text-slate-500">×</button><h2 id="option-title" class="font-extrabold text-sm">Choose</h2><span class="w-5"></span></header><div id="option-content" class="shop-panel-body flex flex-wrap gap-2"></div><footer class="shop-panel-foot"><button id="option-confirm" class="teal-cta">Confirm</button></footer>
+  </section></div>`;
 
-  $('#reset-filters').onclick=()=>{ location.hash='#/shop'; };
-
-  $('#confirm-filters').onclick=()=>{
-    const p=new URLSearchParams();
-    const qv=$('#modal-q').value.trim(); if(qv)p.set('q',qv);
-    if(selectedCat)p.set('cat',selectedCat);
-    if(selectedFab)p.set('fabric',selectedFab);
-    const minv=$('#modal-min').value; if(minv)p.set('min',minv);
-    const maxv=$('#modal-max').value; if(maxv)p.set('max',maxv);
-    const sortChecked=document.querySelector('input[name="modal-sort"]:checked');
-    if(sortChecked)p.set('sort',sortChecked.value);
-    if($('#modal-stock').checked)p.set('stock','1');
-    modal.classList.add('hidden');
-    location.hash='#/shop?'+p.toString();
-  };
+  let draft={...f}, selectedSort=f.sort, optionKey='';
+  const open=id=>{$$('.shop-sheet').forEach(x=>x.classList.add('hidden'));$('#'+id)?.classList.remove('hidden')};
+  const close=id=>$('#'+id)?.classList.add('hidden');
+  const apply=()=>{const p=new URLSearchParams();Object.entries(draft).forEach(([k,v])=>{if(v&&!(k==='sort'&&v==='new')&&!(k==='view'&&v==='grid'))p.set(k,v)});location.hash='#/shop?'+p.toString()};
+  const $$=s=>[...app.querySelectorAll(s)];
+  $('#open-filter').onclick=()=>open('shop-filter-sheet');$('#open-sort').onclick=()=>open('shop-sort-sheet');$('#open-more-functions').onclick=()=>open('shop-more-sheet');
+  $$('[data-close-sheet]').forEach(b=>b.onclick=()=>close(b.dataset.closeSheet));
+  $$('.shop-sheet').forEach(s=>s.addEventListener('click',e=>{if(e.target===s)close(s.id)}));
+  $('#filter-reset').onclick=()=>{draft={...f,cat:'',fabric:'',min:'',max:'',stock:'',brand:'',color:'',location:'',rating:'',discount:''};location.hash='#/shop'+(f.q?'?q='+encodeURIComponent(f.q):'')};
+  $('#filter-confirm').onclick=()=>{draft.min=$('#filter-min').value;draft.max=$('#filter-max').value;draft.stock=$('#filter-stock').checked?'1':'';apply()};
+  $('#discount-toggle').onclick=()=>{draft.discount=draft.discount?'':'1';$('#discount-toggle').classList.toggle('is-selected',!!draft.discount);$('#discount-toggle').textContent=(draft.discount?'✓ ':'')+'Show only discount'};
+  $$('[data-rating]').forEach(b=>b.onclick=()=>{draft.rating=draft.rating===b.dataset.rating?'':b.dataset.rating;$$('[data-rating]').forEach(x=>x.classList.toggle('is-selected',x.dataset.rating===draft.rating))});
+  $$('[data-sort]').forEach(b=>b.onclick=()=>{selectedSort=b.dataset.sort;$$('[data-sort]').forEach(x=>x.classList.toggle('active',x===b))});
+  $('#sort-confirm').onclick=()=>{draft.sort=selectedSort;apply()};
+  $$('[data-category]').forEach(b=>b.onclick=()=>{draft.cat=b.dataset.category;$$('[data-category]').forEach(x=>x.classList.toggle('is-selected',x===b))});
+  $('#category-search').oninput=e=>{$$('#category-tiles [data-category]').forEach(b=>b.classList.toggle('hidden',!b.textContent.toLowerCase().includes(e.target.value.toLowerCase())))};
+  $('#category-reset').onclick=()=>{draft.cat='';$$('[data-category]').forEach(x=>x.classList.remove('is-selected'))};
+  $('#category-confirm').onclick=()=>apply();
+  const openOption=key=>{optionKey=key;const map={brand:['Brand',brands,draft.brand],color:['Colors',colors,draft.color],location:['Location',locations,draft.location],fabric:['Fabric',fabrics,draft.fabric]};const [title,values,current]=map[key]||['Choose',[], ''];$('#option-title').textContent=title;$('#option-content').innerHTML=optionButtons(key,values,current,'All '+title);open('shop-option-sheet');};
+  $$('[data-open-sub]').forEach(b=>b.onclick=()=>{const k=b.dataset.openSub;if(k==='filter')return open('shop-filter-sheet');if(k==='sort')return open('shop-sort-sheet');if(k==='categories')return open('shop-category-sheet');openOption(k)});
+  $('#option-content').onclick=e=>{const b=e.target.closest('[data-option]');if(!b)return;draft[optionKey]=b.dataset.value;$$('#option-content [data-option]').forEach(x=>x.classList.toggle('is-selected',x===b))};
+  $('#option-confirm').onclick=()=>{close('shop-option-sheet');open('shop-filter-sheet')};
+  $$('[data-view]').forEach(b=>b.onclick=()=>{draft.view=b.dataset.view;apply()});
 }
-
 /* ===== PRODUCT PAGE ===== */
 async function product(id){
   let p=null;
@@ -785,21 +760,18 @@ async function checkout(){
     ov.querySelector('#cE').onclick=()=>ov.remove();
     ov.querySelector('#cO').onclick=async()=>{
       const b=ov.querySelector('#cO');b.disabled=true;b.textContent='Placing order…';
-      try{
-        if(!sb) throw new Error('Database connection missing');
-        const {data:orderId,error}=await sb.rpc('place_order_guest',{p_items:cart.map(i=>({id:i.id,qty:i.qty})),p_address:addr,p_coupon:coupon||null,p_method:method,p_ref:utr||null});
-        if(error){toast(error.message);b.disabled=false;b.textContent='Confirm Order';return}
-        const owner=profile()?.phone||addr.phone;
-        await sb.rpc('set_order_account',{p_id:orderId,p_account:owner});
-        if(!profile())await setProfile(addr.name,addr.phone);
-        {const L2=await getAddrs();if(!L2.some(x=>x.line===addr.line&&x.pincode===addr.pincode))await setAddrs([...L2,{...addr,id:Date.now().toString(36),def:!L2.length}])}
-        cart=[];saveCart();OC={list:[]};ov.remove();
-        app.innerHTML=`<div class="max-w-md mx-auto text-center py-12 px-6 bg-white rounded-3xl shadow-soft border border-gray-100 my-4 space-y-4">
-          <div class="py-2"><svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52"><circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none"/><path class="checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/></svg></div>
-          <h2 class="text-xl font-extrabold text-gray-900 tracking-tight">Order Placed Successfully!</h2>
-          <p class="text-xs text-gray-500 leading-relaxed max-w-xs mx-auto">உங்கள் ஆர்டர் வெற்றிகரமாகப் பதிவானது. ஆர்டர் எண்: <span class="font-mono font-bold text-gray-900">#${esc(String(orderId).slice(0,8).toUpperCase())}</span>${method==='UPI'?'<br><span class="text-emerald-700 font-semibold">We will verify your payment shortly.</span>':''}</p>
-          <div class="pt-4 flex gap-2"><a href="#/account/orders" class="${btn} flex-1 !py-3">My Orders</a><a href="#/shop" class="border border-gray-200 hover:border-slate-900 text-gray-800 text-xs font-bold px-6 py-3 rounded-full transition flex-1">Shop More</a></div></div>`;
-      }catch(err){toast(err.message||'Error placing order');b.disabled=false;b.textContent='Confirm Order';}
+      const {data:orderId,error}=await sb.rpc('place_order_guest',{p_items:cart.map(i=>({id:i.id,qty:i.qty})),p_address:addr,p_coupon:coupon||null,p_method:method,p_ref:utr||null});
+      if(error){toast(error.message);b.disabled=false;b.textContent='Confirm Order';return}
+      const owner=profile()?.phone||addr.phone;
+      await sb.rpc('set_order_account',{p_id:orderId,p_account:owner});
+      if(!profile())await setProfile(addr.name,addr.phone);
+      {const L2=await getAddrs();if(!L2.some(x=>x.line===addr.line&&x.pincode===addr.pincode))await setAddrs([...L2,{...addr,id:Date.now().toString(36),def:!L2.length}])}
+      cart=[];saveCart();OC={list:[]};ov.remove();
+      app.innerHTML=`<div class="max-w-md mx-auto text-center py-12 px-6 bg-white rounded-3xl shadow-soft border border-gray-100 my-4 space-y-4">
+        <div class="py-2"><svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52"><circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none"/><path class="checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/></svg></div>
+        <h2 class="text-xl font-extrabold text-gray-900 tracking-tight">Order Placed Successfully!</h2>
+        <p class="text-xs text-gray-500 leading-relaxed max-w-xs mx-auto">உங்கள் ஆர்டர் வெற்றிகரமாகப் பதிவானது. ஆர்டர் எண்: <span class="font-mono font-bold text-gray-900">#${esc(String(orderId).slice(0,8).toUpperCase())}</span>${method==='UPI'?'<br><span class="text-emerald-700 font-semibold">We will verify your payment shortly.</span>':''}</p>
+        <div class="pt-4 flex gap-2"><a href="#/account/orders" class="${btn} flex-1 !py-3">My Orders</a><a href="#/shop" class="border border-gray-200 hover:border-slate-900 text-gray-800 text-xs font-bold px-6 py-3 rounded-full transition flex-1">Shop More</a></div></div>`;
     };
   }
 }
@@ -833,14 +805,9 @@ const PAYLBL={COD:'Cash on Delivery',UPI:'UPI'};
 
 async function fetchOrders(){
   const p=profile();if(!p)return[];
-  try{
-    if(sb){
-      const {data,error}=await sb.rpc('my_orders',{p_phone:p.phone});
-      if(error)throw new Error(error.message);
-      OC={list:data||[]};return OC.list;
-    }
-  }catch{}
-  return [];
+  const {data,error}=await sb.rpc('my_orders',{p_phone:p.phone});
+  if(error)throw new Error(error.message);
+  OC={list:data||[]};return OC.list;
 }
 
 function hubHtml(pf){
@@ -935,7 +902,7 @@ async function addressesHtml(){
 }
 
 async function wishHtml(){
-  let wp=[];if(wish.size){try{const {data}=await sb.from('products').select('*').in('id',[...wish]);wp=data||[]}catch{}}
+  let wp=[];if(wish.size){const {data}=await sb.from('products').select('*').in('id',[...wish]);wp=data||[]}
   return `<div class="max-w-4xl mx-auto space-y-4 my-2">${topbar('My Wishlist ('+wp.length+')','#/account/hub')}
     ${wp.length?grid(wp):'<div class="bg-white rounded-3xl p-12 text-center text-gray-400 text-xs border border-gray-100 shadow-soft">Your wishlist is empty.</div>'}</div>`;
 }
@@ -978,7 +945,7 @@ async function account(section,params){
 
 /* ===== ROUTER ===== */
 async function route(){
-  app.onclick=null;if(window._bt)clearInterval(window._bt);document.title=(SET&&SET.brand)?(SET.brand.name+' | '+SET.brand.tagline):'Thaarai Tex';
+  app.onclick=null;clearInterval(window._bt);document.title=SET.brand.name+' | '+SET.brand.tagline;
   const [path,qs]=(location.hash||'#/').slice(1).split('?'), params=new URLSearchParams(qs||'');
   app.innerHTML='<p class="text-center text-gray-400 py-20 text-xs">ஏற்றப்படுகிறது…</p>';
   $('#tabbar').classList.toggle('hidden',path.startsWith('/p/')||path==='/checkout');
@@ -992,7 +959,7 @@ async function route(){
     else if(path.startsWith('/account'))await account(path.split('/')[2]||'hub',params);
     else if(path==='/login')loginView();
     else app.innerHTML='<p class="text-center py-20 text-xs text-gray-400">Page not found.</p>';
-  }catch(err){console.error(err);app.innerHTML='<p class="text-center text-rose-600 py-20 text-xs">Error: '+esc(err.message||err)+'</p>';}
+  }catch(err){console.error(err);app.innerHTML='<p class="text-center text-rose-600 py-20 text-xs">Error: '+esc(err.message||err)+'</p>'}
   window.scrollTo(0,0);
 }
 document.addEventListener('click',e=>{const b=e.target.closest('[data-w]');if(b){e.preventDefault();e.stopPropagation();toggleWish(b.dataset.w)}},true);
