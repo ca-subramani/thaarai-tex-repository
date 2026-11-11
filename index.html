@@ -967,7 +967,7 @@ $('#sf').onsubmit=e=>{e.preventDefault();location.hash='#/shop?q='+encodeURIComp
 $('#sf2').onsubmit=e=>{e.preventDefault();location.hash='#/shop?q='+encodeURIComponent($('#q2').value.trim());$('#msearch').classList.add('hidden')};
 $('#msb').onclick=()=>{$('#msearch').classList.toggle('hidden');$('#q2').focus()};
 window.addEventListener('hashchange',route);
-Promise.all([initAuth(),loadSettings()]).then(route);
+Promise.all([initAuth()]).then(route);
 </script>
 </body>
 </html>
