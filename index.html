@@ -82,10 +82,11 @@ const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
 /* ===== ICONS ===== */
 const ic=(p,c='w-5 h-5 text-slate-800')=>`<svg viewBox="0 0 24 24" class="${c}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
 const ICONS={
-  truck:ic('<rect x="1" y="3" width="15" height="13" rx="2"/><polygon points="16 8 20 8 23 11 23 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>'),
-  cash:ic('<rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/>'),
-  handloom:ic('<path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M19.07 4.93L4.93 19.07"/>'),
-  upi:ic('<rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/>'),
+  truck:ic('<rect x="1" y="3" width="15" height="13" rx="2"/><polygon points="16 8 20 8 23 11 23 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>','w-6 h-6 text-slate-800'),
+  cash:ic('<rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/>','w-6 h-6 text-slate-800'),
+  handloom:ic('<path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M19.07 4.93L4.93 19.07"/>','w-6 h-6 text-slate-800'),
+  upi:ic('<rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/>','w-6 h-6 text-slate-800'),
+  tag:ic('<path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/>','w-6 h-6 text-slate-800'),
   phone:ic('<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>','w-3.5 h-3.5 inline mr-1 text-gray-400'),
   mail:ic('<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>','w-3.5 h-3.5 inline mr-1 text-gray-400'),
   mapPin:ic('<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>','w-3.5 h-3.5 inline mr-1 text-gray-400'),
@@ -97,7 +98,12 @@ const ICONS={
   star:ic('<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>','w-3.5 h-3.5 text-amber-500 inline fill-amber-500'),
   starEmpty:ic('<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>','w-3.5 h-3.5 text-amber-300 inline')
 };
-const TRUST_ICONS=[ICONS.truck,ICONS.cash,ICONS.handloom,ICONS.upi];
+const TRUST_ICONS=[
+  {icon: ICONS.truck, title: 'Free Delivery', desc: 'Direct to doorstep'},
+  {icon: ICONS.cash, title: 'Cash on Delivery', desc: 'Pay when you receive'},
+  {icon: ICONS.tag, title: 'Wholesale Price', desc: 'Direct weaver rates'},
+  {icon: ICONS.handloom, title: '100% Handloom', desc: 'Pure authentic quality'}
+];
 
 /* ===== HELPERS ===== */
 const $=s=>document.querySelector(s), app=$('#app');
@@ -169,10 +175,12 @@ const stars=n=>{
 const DEF={
   brand:{name:'Thaarai Tex',tagline:'Premium Sarees',logo:''},
   theme:{primary:'#0f172a'},
-  banners:[{image:'',title:'பாரம்பரிய பட்டு & காட்டன் சேலைகள்',subtitle:'நேரடி நெசவாளர் விலை · Cash on Delivery & UPI',btn:'Shop Now',link:'#/shop',c1:'#1e293b',c2:'#0f172a'}],
-  sections:{cats:true,deals:true,fresh:true,trust:true,about:false,catsTitle:'Shop by Category',dealsTitle:'Best Value',freshTitle:'New Arrivals'},
-  trust:[{icon:'',text:'Free Delivery'},{icon:'',text:'Cash on Delivery'},{icon:'',text:'100% Handloom'},{icon:'',text:'UPI Payments'}],
-  about:{title:'Our Story',text:'',image:''},
+  banners:[
+    {image:'',title:'பாரம்பரிய பட்டு & காட்டன் சேலைகள்',subtitle:'நேரடி நெசவாளர் விலை · Cash on Delivery & UPI',btn:'Explore Collection',link:'#/shop',c1:'#1e293b',c2:'#0f172a'},
+    {image:'',title:'Exquisite Handloom Silks',subtitle:'Direct from Master Weavers to Your Doorstep',btn:'Shop Now',link:'#/shop',c1:'#0f172a',c2:'#334155'}
+  ],
+  sections:{cats:true,deals:false,fresh:false,trust:true,about:true,catsTitle:'Featured Collections',dealsTitle:'',freshTitle:''},
+  about:{title:'Crafted with Tradition',text:'Thaarai Tex brings you handpicked, authentic handloom sarees directly from traditional weavers. Every piece reflects meticulous artistry, premium fabrics, and timeless elegance.',image:''},
   footer:{about:'Handloom sarees direct from the weavers.',phone:'',email:'',address:'Melur, Tamil Nadu',whatsapp:'919999999999',upi:'yourname@upi',upiName:'Thaarai Tex',instagram:'',facebook:''}
 };
 const merge=(a,b)=>{if(Array.isArray(b))return b;if(b&&typeof b==='object'){const o={...a};for(const k in b)o[k]=merge(a?.[k],b[k]);return o}return b===undefined?a:b};
@@ -276,28 +284,99 @@ const loginNeeded=msg=>`<div class="max-w-md mx-auto text-center py-14 bg-white 
 
 /* ===== HOME & SHOP ===== */
 async function home(){
-  const sc=SET.sections, bn=SET.banners||[];
-  const [{data:cats},{data:neu,error:e2},{data:deals}]=await Promise.all([
-    sb.from('categories').select('*'),
-    sb.from('products').select('*').eq('active',true).order('created_at',{ascending:false}).limit(8),
-    sb.from('products').select('*').eq('active',true).gt('stock',0).order('price').limit(4)]);
-  if(e2)throw e2;
+  const bn=SET.banners||[];
+  const featuredCats = [
+    { name: 'Sarees', subtitle: 'Exclusive Handloom', icon: '<path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>', query: 'Sarees' },
+    { name: 'Lungies', subtitle: 'Comfort & Heritage', icon: '<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 3v18"/>', query: 'Lungies' },
+    { name: 'Soft Silk', subtitle: 'Royal & Elegant', icon: '<path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>', query: 'Soft Silk' },
+    { name: 'Poonam', subtitle: 'Daily & Party Wear', icon: '<path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"/><path d="M12 6v6l4 2"/>', query: 'Poonam' },
+    { name: 'Pattu', subtitle: 'Traditional Grandeur', icon: '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>', query: 'Pattu' },
+    { name: 'Cotton', subtitle: 'Breathable Pure Weave', icon: '<path d="M20.38 3.46L16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H5v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V10h1.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z"/>', query: 'Cotton' }
+  ];
+
   const slide=(b,i)=>`<div class="slide absolute inset-0 transition-opacity duration-700 ${i?'opacity-0 pointer-events-none':''} flex flex-col justify-end p-6 sm:p-12 text-white" style="background:linear-gradient(110deg,${hx(b.c1,'#1e293b')},${hx(b.c2,'#0f172a')})">
     ${b.image?`<img src="${esc(b.image)}" alt="" class="absolute inset-0 w-full h-full object-cover">`:''}
     <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent"></div>
-    <div class="relative max-w-xl pb-4"><h1 class="text-2xl sm:text-3xl font-extrabold">${esc(b.title)}</h1><p class="mt-1 text-xs sm:text-sm text-gray-200">${esc(b.subtitle)}</p>
-    ${b.btn?`<a href="${esc(safeLink(b.link))}" class="inline-flex items-center gap-2 mt-3 text-xs font-bold border-b border-white/70 pb-0.5">${esc(b.btn)} <span>→</span></a>`:''}</div></div>`;
+    <div class="relative max-w-xl pb-4">
+      <span class="inline-block bg-white/20 backdrop-blur-md text-white text-[10px] font-extrabold uppercase tracking-widest px-3 py-1 rounded-full mb-3">Thaarai Tex Exclusive</span>
+      <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight">${esc(b.title)}</h1>
+      <p class="mt-2 text-xs sm:text-sm text-gray-200">${esc(b.subtitle)}</p>
+      ${b.btn?`<a href="${esc(safeLink(b.link))}" class="inline-flex items-center gap-2 mt-4 px-6 py-3 rounded-full bg-white text-slate-900 font-bold text-xs hover:bg-gray-100 transition shadow-soft">${esc(b.btn)} <span>→</span></a>`:''}
+    </div>
+  </div>`;
+
   app.innerHTML=`
-  ${bn.length?`<section id="car" class="relative rounded-3xl overflow-hidden h-72 sm:h-96 shadow-soft">${bn.map(slide).join('')}${bn.length>1?`<div class="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5 z-10">${bn.map((_,i)=>`<button data-dot="${i}" class="dot w-2 h-2 rounded-full ${i?'bg-white/50':'bg-white'}"></button>`).join('')}</div>`:''}</section>`:''}
-  ${sc.trust?`<div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 my-5">${(SET.trust||[]).filter(t=>t.text).map((t,i)=>`<div class="bg-white rounded-2xl py-3 px-2 text-center text-xs font-semibold border border-gray-100 shadow-soft"><div class="mb-1 flex justify-center">${t.icon?`<span class="text-xl leading-none">${esc(t.icon)}</span>`:(TRUST_ICONS[i]||'')}</div><div class="text-gray-700 font-medium">${esc(t.text)}</div></div>`).join('')}</div>`:''}
-  ${sc.cats&&cats?.length?`<h2 class="font-bold text-sm sm:text-base mt-6 mb-3 text-gray-900">${esc(sc.catsTitle)}</h2><div class="flex gap-4 overflow-x-auto no-scrollbar pb-2">${cats.map(c=>`<a href="#/shop?cat=${c.id}" class="shrink-0 w-20 text-center"><img loading="lazy" src="${esc(c.image||'https://placehold.co/160?text='+encodeURIComponent((c.name||'?')[0]))}" alt="" class="w-16 h-16 rounded-full object-cover border-2 border-white shadow-soft mx-auto"><p class="text-[11px] font-semibold mt-1.5 line-clamp-2 text-gray-700">${esc(c.name)}</p></a>`).join('')}</div>`:''}
-  ${sc.deals?`<h2 class="font-bold text-sm sm:text-base mt-6 mb-3 text-gray-900">${esc(sc.dealsTitle)}</h2>${grid(deals||[])}`:''}
-  ${sc.fresh?`<h2 class="font-bold text-sm sm:text-base mt-8 mb-3 text-gray-900">${esc(sc.freshTitle)}</h2>${grid(neu||[])}`:''}
-  ${sc.about&&SET.about.text?`<section class="bg-white border border-gray-100 rounded-3xl p-6 mt-8 grid ${SET.about.image?'sm:grid-cols-2':''} gap-5 items-center shadow-soft">${SET.about.image?`<img src="${esc(SET.about.image)}" alt="" class="rounded-2xl w-full object-cover max-h-72">`:''}<div><h2 class="font-bold text-lg">${esc(SET.about.title)}</h2><p class="text-xs text-gray-600 mt-2 whitespace-pre-line leading-relaxed">${esc(SET.about.text)}</p></div></section>`:''}`;
+  <!-- Hero Banner Slider -->
+  ${bn.length?`<section id="car" class="relative rounded-3xl overflow-hidden h-80 sm:h-[420px] shadow-soft mb-8">${bn.map(slide).join('')}${bn.length>1?`<div class="absolute bottom-4 left-6 right-6 flex justify-center gap-2 z-10">${bn.map((_,i)=>`<button data-dot="${i}" class="dot w-8 h-1.5 rounded-full transition-all ${i?'bg-white/40':'bg-white'}"></button>`).join('')}</div>`:''}</section>`:''}
+
+  <!-- Super Attractive Professional Categories Grid -->
+  <section class="mb-10">
+    <div class="flex items-center justify-between mb-5 px-1">
+      <div>
+        <h2 class="font-extrabold text-lg sm:text-xl text-gray-900 tracking-tight">Top Categories</h2>
+        <p class="text-xs text-gray-500 mt-0.5">Explore our finest handwoven selections</p>
+      </div>
+      <a href="#/shop" class="text-xs font-bold text-slate-900 hover:underline flex items-center gap-1">View All Shop →</a>
+    </div>
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+      ${featuredCats.map(c=>`
+        <a href="#/shop?q=${encodeURIComponent(c.query)}" class="group bg-white rounded-3xl p-5 text-center border border-gray-100 shadow-soft hover:shadow-lg hover:-translate-y-1 transition duration-300 flex flex-col items-center justify-between">
+          <div class="w-14 h-14 rounded-2xl bg-slate-50 group-hover:bg-slate-900 text-slate-800 group-hover:text-white transition duration-300 flex items-center justify-center mb-3 shadow-inner">
+            <svg viewBox="0 0 24 24" class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${c.icon}</svg>
+          </div>
+          <div>
+            <h3 class="font-bold text-xs sm:text-sm text-gray-900 group-hover:text-slate-900">${esc(c.name)}</h3>
+            <p class="text-[10px] text-gray-400 mt-0.5 font-medium">${esc(c.subtitle)}</p>
+          </div>
+        </a>
+      `).join('')}
+    </div>
+  </section>
+
+  <!-- Trust Badges with Professional Vector Icons -->
+  <section class="mb-8">
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      ${TRUST_ICONS.map(t=>`
+        <div class="bg-white rounded-3xl p-5 text-center border border-gray-100 shadow-soft flex flex-col items-center justify-center">
+          <div class="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center mb-3 text-slate-900 shadow-inner">
+            ${t.icon}
+          </div>
+          <h4 class="font-bold text-xs sm:text-sm text-gray-900">${esc(t.title)}</h4>
+          <p class="text-[11px] text-gray-500 mt-0.5">${esc(t.desc)}</p>
+        </div>
+      `).join('')}
+    </div>
+  </section>
+
+  <!-- About / Brand Story Section -->
+  ${SET.about&&SET.about.text?`
+    <section class="bg-white border border-gray-100 rounded-3xl p-8 mb-6 shadow-soft grid sm:grid-cols-2 gap-8 items-center">
+      <div class="space-y-3">
+        <span class="text-[10px] font-extrabold uppercase tracking-widest text-slate-600 bg-slate-100 px-3 py-1 rounded-full">Authentic Weaves</span>
+        <h2 class="text-xl sm:text-2xl font-extrabold text-gray-900 tracking-tight">${esc(SET.about.title)}</h2>
+        <p class="text-xs sm:text-sm text-gray-600 leading-relaxed">${esc(SET.about.text)}</p>
+        <div class="pt-2"><a href="#/shop" class="${btn} inline-block !py-3">Explore Collections</a></div>
+      </div>
+      <div class="relative aspect-[4/3] rounded-2xl overflow-hidden bg-slate-100 shadow-inner flex items-center justify-center">
+        <div class="absolute inset-0 bg-gradient-to-br from-slate-900/10 to-slate-900/40 z-10"></div>
+        <img src="https://placehold.co/800x600?text=Thaarai+Tex+Handloom" alt="Handloom Weaving" class="w-full h-full object-cover">
+      </div>
+    </section>
+  `:''}
+  `;
+
   const car=$('#car');
-  if(car&&bn.length>1){let i=0;const sl=[...car.querySelectorAll('.slide')],dots=[...car.querySelectorAll('.dot')];
-    const show=n=>{i=n;sl.forEach((x,k)=>{x.classList.toggle('opacity-0',k!==n);x.classList.toggle('pointer-events-none',k!==n)});dots.forEach((d,k)=>{d.classList.toggle('bg-white',k===n);d.classList.toggle('bg-white/50',k!==n)})};
-    dots.forEach((d,k)=>d.onclick=()=>show(k));window._bt=setInterval(()=>show((i+1)%sl.length),5000)}
+  if(car&&bn.length>1){
+    let i=0;
+    const sl=[...car.querySelectorAll('.slide')], dots=[...car.querySelectorAll('.dot')];
+    const show=n=>{
+      i=n;
+      sl.forEach((x,k)=>{x.classList.toggle('opacity-0',k!==n);x.classList.toggle('pointer-events-none',k!==n)});
+      dots.forEach((d,k)=>{d.classList.toggle('bg-white',k===n);d.classList.toggle('bg-white/40',k!==n);d.classList.toggle('w-8',k===n);d.classList.toggle('w-2',k!==n)});
+    };
+    dots.forEach((d,k)=>d.onclick=()=>show(k));
+    window._bt=setInterval(()=>show((i+1)%sl.length),5000);
+  }
 }
 
 async function shop(params){
