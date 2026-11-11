@@ -61,7 +61,7 @@ input,select,textarea{font-size:16px!important}
 </head>
 <body class="text-gray-900 antialiased">
 
-<!-- Header (Announcement Bar Removed) -->
+<!-- Header -->
 <header class="bg-white/95 backdrop-blur sticky top-0 z-40 border-b border-gray-100">
   <div class="max-w-6xl mx-auto px-4 py-3 flex items-center gap-3">
     <a href="#/" id="brand" class="flex flex-col"></a>
@@ -70,7 +70,7 @@ input,select,textarea{font-size:16px!important}
       <button id="msb" aria-label="Search" class="sm:hidden w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-700"><svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></button>
       <a href="#/shop" class="hidden sm:block px-4 py-2 rounded-full hover:bg-gray-100 font-semibold text-xs text-gray-700">Shop</a>
       
-      <!-- Minimalist Vector User Button (No Emoji) -->
+      <!-- Minimalist Vector User Button -->
       <a href="#/account/hub" id="lgn" class="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full hover:bg-gray-100 font-semibold text-xs text-gray-700 transition">
         <svg viewBox="0 0 24 24" class="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
         <span id="lgn-txt">Login</span>
@@ -85,7 +85,7 @@ input,select,textarea{font-size:16px!important}
 <main id="app" class="max-w-6xl mx-auto px-4 pt-5 pb-28 min-h-[75vh]"></main>
 <footer id="foot" class="bg-slate-900 text-gray-300 text-xs pt-8 pb-28 sm:pb-8 mt-10"></footer>
 
-<!-- Tab Bar (Orders Replaces Wishlist, Home, Shop, Bag, Orders, Profile) -->
+<!-- Tab Bar -->
 <nav id="tabbar" class="fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur border-t border-gray-100 grid grid-cols-5 text-[10px] font-semibold max-w-lg mx-auto sm:rounded-t-3xl sm:shadow-soft sm:border-x" style="padding-bottom:env(safe-area-inset-bottom)">
   <a href="#/" data-tb="/" class="tb relative flex flex-col items-center gap-1 py-2 text-gray-400"><svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg><span>Home</span></a>
   <a href="#/shop" data-tb="/shop" class="tb relative flex flex-col items-center gap-1 py-2 text-gray-400"><svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg><span>Shop</span></a>
@@ -104,6 +104,21 @@ let WHATSAPP="919999999999";
 let UPI_ID="yourname@upi", UPI_NAME="Thaarai Tex";
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
 
+/* ===== SVG ICONS SYSTEM ===== */
+const ICONS = {
+  truck: `<svg viewBox="0 0 24 24" class="w-5 h-5 mx-auto text-slate-800" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13" rx="2"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>`,
+  cash: `<svg viewBox="0 0 24 24" class="w-5 h-5 mx-auto text-slate-800" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg>`,
+  handloom: `<svg viewBox="0 0 24 24" class="w-5 h-5 mx-auto text-slate-800" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M19.07 4.93L4.93 19.07"/></svg>`,
+  upi: `<svg viewBox="0 0 24 24" class="w-5 h-5 mx-auto text-slate-800" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>`,
+  returns: `<svg viewBox="0 0 24 24" class="w-5 h-5 mx-auto text-slate-800" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>`,
+  phone: `<svg viewBox="0 0 24 24" class="w-3.5 h-3.5 inline mr-1 text-gray-400" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>`,
+  mail: `<svg viewBox="0 0 24 24" class="w-3.5 h-3.5 inline mr-1 text-gray-400" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>`,
+  mapPin: `<svg viewBox="0 0 24 24" class="w-3.5 h-3.5 inline mr-1 text-gray-400" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>`,
+  whatsapp: `<svg viewBox="0 0 24 24" class="w-3.5 h-3.5 inline mr-1 text-emerald-600" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>`,
+  edit: `<svg viewBox="0 0 24 24" class="w-3 h-3 inline mr-1 text-gray-600" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>`,
+  logout: `<svg viewBox="0 0 24 24" class="w-3.5 h-3.5 inline mr-1 text-rose-500" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>`
+};
+
 /* ===== HELPERS ===== */
 const $=s=>document.querySelector(s), app=$('#app');
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -115,14 +130,14 @@ const off=p=>p.mrp>p.price?Math.round((p.mrp-p.price)/p.mrp*100):0;
 function toast(m){const t=$('#toast');t.textContent=m;t.classList.remove('hidden');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.add('hidden'),2200)}
 function saveCart(){store.set('cart',cart);const n=cart.reduce((s,i)=>s+i.qty,0);document.querySelectorAll('.cc').forEach(e=>{e.textContent=n;e.classList.toggle('hidden',!n)})}
 const heart=a=>`<svg width="17" height="17" viewBox="0 0 24 24" fill="${a?'#e11d48':'none'}" stroke="${a?'#e11d48':'currentColor'}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-8-5.2-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.8-8 11-8 11z"/></svg>`;
-const stars=n=>'★'.repeat(Math.round(n))+'☆'.repeat(5-Math.round(n));
+const stars=n=>`<span class="text-amber-500 font-semibold tracking-wide">${'★'.repeat(Math.round(n))}${'☆'.repeat(5-Math.round(n))}</span>`;
 
 const DEF={
  brand:{name:'Thaarai Tex',tagline:'Premium Sarees',logo:''},
  theme:{primary:'#0f172a'},
  banners:[{image:'',title:'பாரம்பரிய பட்டு & காட்டன் சேலைகள்',subtitle:'நேரடி நெசவாளர் விலை · Cash on Delivery & UPI',btn:'Shop Now',link:'#/shop',c1:'#1e293b',c2:'#0f172a'}],
  sections:{cats:true,deals:true,fresh:true,trust:true,about:false,catsTitle:'Shop by Category',dealsTitle:'Best Value',freshTitle:'New Arrivals'},
- trust:[{icon:'🚚',text:'Free Delivery'},{icon:'💵',text:'Cash on Delivery'},{icon:'🧵',text:'100% Handloom'},{icon:'📲',text:'UPI Payments'}],
+ trust:[{svg:ICONS.truck,text:'Free Delivery'},{svg:ICONS.cash,text:'Cash on Delivery'},{svg:ICONS.handloom,text:'100% Handloom'},{svg:ICONS.upi,text:'UPI Payments'}],
  about:{title:'Our Story',text:'',image:''},
  footer:{about:'Handloom sarees direct from the weavers.',phone:'',email:'',address:'Melur, Tamil Nadu',whatsapp:'919999999999',upi:'yourname@upi',upiName:'Thaarai Tex',instagram:'',facebook:''}
 };
@@ -139,8 +154,8 @@ function applySettings(){
   WHATSAPP=f.whatsapp||WHATSAPP;UPI_ID=f.upi||UPI_ID;UPI_NAME=f.upiName||UPI_NAME;
   const lk=(u,t)=>u?`<a class="underline" target="_blank" rel="noopener" href="${esc(safeLink(u))}">${t}</a> `:'';
   $('#foot').innerHTML=`<div class="max-w-6xl mx-auto px-4 grid sm:grid-cols-3 gap-6 text-left"><div><b class="text-white text-sm">${esc(b.name)}</b><p class="mt-2 leading-relaxed text-gray-400">${esc(f.about)}</p></div>
-   <div><b class="text-white text-sm">Contact</b><p class="mt-2 leading-6 text-gray-400">${f.phone?`📞 <a href="tel:${esc(f.phone)}">${esc(f.phone)}</a><br>`:''}${f.email?`✉️ ${esc(f.email)}<br>`:''}${f.address?`📍 ${esc(f.address)}`:''}</p></div>
-   <div><b class="text-white text-sm">Quick links</b><p class="mt-2 leading-7 text-gray-400"><a href="#/shop" class="underline">Shop</a> · <a href="#/account/orders" class="underline">My Orders</a><br>${f.whatsapp?lk('https://wa.me/'+f.whatsapp,'WhatsApp support'):''}${lk(f.instagram,'Instagram')}${lk(f.facebook,'Facebook')}</p></div></div>
+   <div><b class="text-white text-sm">Contact</b><p class="mt-2 leading-6 text-gray-400">${f.phone?`${ICONS.phone}<a href="tel:${esc(f.phone)}">${esc(f.phone)}</a><br>`:''}${f.email?`${ICONS.mail}${esc(f.email)}<br>`:''}${f.address?`${ICONS.mapPin}${esc(f.address)}`:''}</p></div>
+   <div><b class="text-white text-sm">Quick links</b><p class="mt-2 leading-7 text-gray-400"><a href="#/shop" class="underline">Shop</a> · <a href="#/account/orders" class="underline">My Orders</a><br>${f.whatsapp?lk('https://wa.me/'+f.whatsapp,`${ICONS.whatsapp}WhatsApp support`):''}${lk(f.instagram,'Instagram')}${lk(f.facebook,'Facebook')}</p></div></div>
    <p class="mt-6 text-center text-gray-500 text-[11px]">© ${new Date().getFullYear()} ${esc(b.name)}. All rights reserved.</p>`;
 }
 async function loadSettings(){
@@ -211,7 +226,7 @@ async function home(){
     ${b.btn?`<a href="${esc(safeLink(b.link))}" class="inline-flex items-center gap-2 mt-3 text-xs font-bold border-b border-white/70 pb-0.5">${esc(b.btn)} <span>→</span></a>`:''}</div></div>`;
   app.innerHTML=`
   ${bn.length?`<section id="car" class="relative rounded-3xl overflow-hidden h-72 sm:h-96 shadow-soft">${bn.map(slide).join('')}${bn.length>1?`<div class="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5 z-10">${bn.map((_,i)=>`<button data-dot="${i}" class="dot w-2 h-2 rounded-full ${i?'bg-white/50':'bg-white'}"></button>`).join('')}</div>`:''}</section>`:''}
-  ${sc.trust?`<div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 my-5">${(SET.trust||[]).filter(t=>t.text).map(t=>`<div class="bg-white rounded-2xl py-3 px-2 text-center text-xs font-semibold border border-gray-100 shadow-soft"><div class="text-lg">${esc(t.icon)}</div><div class="mt-0.5 text-gray-700">${esc(t.text)}</div></div>`).join('')}</div>`:''}
+  ${sc.trust?`<div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 my-5">${(DEF.trust).map(t=>`<div class="bg-white rounded-2xl py-3 px-2 text-center text-xs font-semibold border border-gray-100 shadow-soft"><div class="mb-1">${t.svg}</div><div class="text-gray-700 font-medium">${esc(t.text)}</div></div>`).join('')}</div>`:''}
   ${sc.cats&&cats?.length?`<h2 class="font-bold text-sm sm:text-base mt-6 mb-3 text-gray-900">${esc(sc.catsTitle)}</h2><div class="flex gap-4 overflow-x-auto pb-2">${cats.map(c=>`<a href="#/shop?cat=${c.id}" class="shrink-0 w-20 text-center"><img loading="lazy" src="${esc(c.image||'https://placehold.co/160?text='+encodeURIComponent((c.name||'?')[0]))}" alt="" class="w-16 h-16 rounded-full object-cover border-2 border-white shadow-soft mx-auto"><p class="text-[11px] font-semibold mt-1.5 line-clamp-2 text-gray-700">${esc(c.name)}</p></a>`).join('')}</div>`:''}
   ${sc.deals?`<h2 class="font-bold text-sm sm:text-base mt-6 mb-3 text-gray-900">${esc(sc.dealsTitle)}</h2>${grid(deals||[])}`:''}
   ${sc.fresh?`<h2 class="font-bold text-sm sm:text-base mt-8 mb-3 text-gray-900">${esc(sc.freshTitle)}</h2>${grid(neu||[])}`:''}
@@ -272,23 +287,28 @@ async function product(id){
      <div class="flex gap-2 mt-3 overflow-x-auto">${imgs.map(u=>`<img src="${esc(u)}" class="thumb w-16 h-16 shrink-0 object-cover rounded-2xl bg-white cursor-pointer border border-gray-100">`).join('')}</div></div>
     <div class="space-y-4">
      <h1 class="text-xl sm:text-2xl font-extrabold text-gray-900">${esc(p.name)}</h1>
-     <div class="text-xs text-amber-600">${stars(avg)} <span class="text-gray-400">(${rv?.length||0} reviews)</span></div>
+     <div class="text-xs text-amber-600">${stars(avg)} <span class="text-gray-400 font-medium">(${rv?.length||0} reviews)</span></div>
      <div class="flex items-baseline gap-3"><b class="text-2xl sm:text-3xl text-gray-900">${inr(p.price)}</b>${o?`<s class="text-xs text-gray-400">${inr(p.mrp)}</s><span class="text-emerald-700 font-bold text-xs">${o}% off</span>`:''}</div>
      <p class="text-xs font-semibold ${ok?'text-emerald-700':'text-rose-600'}">${ok?(p.stock<5?`Only ${p.stock} left`:'In stock'):'Out of stock'}</p>
      <table class="text-xs"><tbody>${[['Fabric',p.fabric],['Colour',p.color],['Occasion',p.occasion]].filter(r=>r[1]).map(r=>`<tr><td class="pr-6 py-0.5 text-gray-400 font-medium">${r[0]}</td><td class="text-gray-800 font-semibold">${esc(r[1])}</td></tr>`).join('')}</tbody></table>
      <div class="bg-white rounded-3xl p-4 text-xs border border-gray-100 shadow-soft"><b>Delivery check</b>
       <div class="flex gap-2 mt-2"><input id="pin" maxlength="6" inputmode="numeric" placeholder="Pincode" class="border border-gray-200 rounded-xl p-2 w-32 text-xs bg-white"><button id="pinb" class="bg-gray-100 px-3 rounded-xl font-bold">Check</button></div><p id="pinr" class="text-[11px] mt-1"></p></div>
-     <div class="grid grid-cols-3 gap-2 text-center text-[10px] font-semibold bg-white p-3 rounded-2xl border border-gray-100"><div>💵<br>Cash on Delivery</div><div>🚚<br>Free Delivery</div><div>🔄<br>7-day returns</div></div>
+     <div class="grid grid-cols-3 gap-2 text-center text-[10px] font-semibold bg-white p-3 rounded-2xl border border-gray-100">
+       <div><div class="mb-1">${ICONS.cash}</div>Cash on Delivery</div>
+       <div><div class="mb-1">${ICONS.truck}</div>Free Delivery</div>
+       <div><div class="mb-1">${ICONS.returns}</div>7-day returns</div>
+     </div>
      <p class="text-xs text-gray-600 leading-relaxed">${esc(p.description||'')}</p>
      <div class="fixed sm:static inset-x-0 bottom-0 z-40 bg-white/95 backdrop-blur sm:bg-transparent border-t sm:border-0 p-3 sm:p-0 flex gap-2" style="padding-bottom:calc(.75rem + env(safe-area-inset-bottom))"><button id="add" ${ok?'':'disabled'} class="flex-1 border border-slate-900 font-bold py-3.5 rounded-full text-xs text-slate-900 disabled:opacity-40">Add to Bag</button><button id="buy" ${ok?'':'disabled'} class="flex-1 ${btn}">Buy Now</button></div>
-     <div class="flex gap-4 text-xs pt-1"><a class="text-slate-700 font-semibold underline" target="_blank" rel="noopener" href="https://wa.me/?text=${shareTxt}%20${shareUrl}">Share on WhatsApp</a>
-      <a class="text-slate-700 font-semibold underline" target="_blank" rel="noopener" href="https://wa.me/${WHATSAPP}?text=${encodeURIComponent('I want to order: '+p.name)}">Order via WhatsApp</a>
-      <button data-w="${p.id}" class="text-slate-700 font-semibold underline">${wish.has(p.id)?'❤️ Wishlisted':'🤍 Wishlist'}</button></div>
+     <div class="flex gap-4 text-xs pt-1">
+      <a class="text-slate-700 font-semibold underline flex items-center" target="_blank" rel="noopener" href="https://wa.me/?text=${shareTxt}%20${shareUrl}">${ICONS.whatsapp}Share</a>
+      <a class="text-slate-700 font-semibold underline flex items-center" target="_blank" rel="noopener" href="https://wa.me/${WHATSAPP}?text=${encodeURIComponent('I want to order: '+p.name)}">${ICONS.whatsapp}Order via WhatsApp</a>
+      <button data-w="${p.id}" class="text-slate-700 font-semibold underline">${wish.has(p.id)?'Wishlisted':'Wishlist'}</button></div>
     </div></div>
     <section class="bg-white rounded-3xl p-5 mt-8 border border-gray-100 shadow-soft"><h2 class="font-bold text-sm mb-3">Ratings &amp; Reviews</h2>
      ${user?`<div class="border rounded-2xl p-3 mb-4 text-xs space-y-2"><select id="rr" class="border rounded-lg p-1.5">${[5,4,3,2,1].map(n=>`<option>${n}</option>`)}</select> ★
       <textarea id="rb" maxlength="500" rows="2" placeholder="Write your review" class="w-full border rounded-xl p-2.5"></textarea><button id="rs" class="${btn} !py-2">Submit</button></div>`:''}
-     ${(rv||[]).map(r=>`<div class="border-t py-3 text-xs"><span class="text-amber-600">${stars(r.rating)}</span> <b class="text-gray-900">${esc(r.author||'Customer')}</b><p class="text-gray-600 mt-0.5">${esc(r.body)}</p></div>`).join('')||'<p class="text-xs text-gray-400">No reviews yet.</p>'}</section>
+     ${(rv||[]).map(r=>`<div class="border-t py-3 text-xs">${stars(r.rating)} <b class="text-gray-900 ml-1">${esc(r.author||'Customer')}</b><p class="text-gray-600 mt-0.5">${esc(r.body)}</p></div>`).join('')||'<p class="text-xs text-gray-400">No reviews yet.</p>'}</section>
     ${sim?.length?`<h2 class="font-bold text-sm mt-8 mb-3">Similar Products</h2>${grid(sim)}`:''}`;
   const main=$('#main');
   let cur=0;const th=[...document.querySelectorAll('.thumb')];
@@ -352,8 +372,8 @@ async function checkout(){
     <div class="grid grid-cols-2 gap-2">${input('a-city','City / District',`required value="${esc(saved.city||'')}"`)}${input('a-state','State',`required value="${esc(saved.state||'Tamil Nadu')}"`)}</div>
     <label class="block text-xs font-semibold text-gray-700">Door no, street, area<textarea id="a-line" required rows="2" class="mt-1 w-full border border-gray-200 rounded-2xl p-2.5 text-xs outline-none focus:border-slate-900">${esc(saved.line||'')}</textarea></label>
     <h2 class="font-extrabold text-sm pt-2 text-gray-900">Payment Method</h2>
-    <label class="flex items-center gap-2.5 border border-gray-200 rounded-2xl p-3 text-xs cursor-pointer hover:bg-gray-50"><input type="radio" name="pm" value="COD" checked> 💵 Cash on Delivery</label>
-    <label class="flex items-center gap-2.5 border border-gray-200 rounded-2xl p-3 text-xs cursor-pointer hover:bg-gray-50"><input type="radio" name="pm" value="UPI"> 📲 Pay Online (UPI)</label>
+    <label class="flex items-center gap-2.5 border border-gray-200 rounded-2xl p-3 text-xs cursor-pointer hover:bg-gray-50"><input type="radio" name="pm" value="COD" checked> <span class="w-4 h-4 flex items-center">${ICONS.cash}</span> Cash on Delivery</label>
+    <label class="flex items-center gap-2.5 border border-gray-200 rounded-2xl p-3 text-xs cursor-pointer hover:bg-gray-50"><input type="radio" name="pm" value="UPI"> <span class="w-4 h-4 flex items-center">${ICONS.upi}</span> Pay Online (UPI)</label>
     <div id="upi" class="hidden border border-emerald-100 rounded-2xl p-4 bg-emerald-50 text-xs space-y-2.5 text-center">
      <p>Pay exactly <b id="upa" class="text-sm"></b> to this UPI ID</p>
      <p class="font-mono bg-white border rounded-xl py-2 font-bold select-all text-xs">${esc(UPI_ID)}</p>
@@ -393,7 +413,7 @@ async function checkout(){
       <div class="flex justify-between text-xs"><span>Payment</span><b>${method==='UPI'?'UPI · Ref '+esc(utr):'Cash on Delivery'}</b></div>
       <div class="flex justify-between text-xs"><span>Delivery</span><b class="text-emerald-700 font-bold">FREE</b></div>
       <div class="flex justify-between font-extrabold text-sm border-t pt-2"><span>${method==='UPI'?'Amount paid':'Amount to pay on delivery'}</span><span class="text-emerald-700">${inr(sub-d)}</span></div>
-      <div class="flex gap-2 pt-2"><button id="cE" class="flex-1 border border-gray-200 rounded-full py-3 text-xs font-bold text-gray-700">✏️ Edit</button><button id="cO" class="flex-1 ${btn} !py-3 text-xs">✓ Confirm Order</button></div></div>`;
+      <div class="flex gap-2 pt-2"><button id="cE" class="flex-1 border border-gray-200 rounded-full py-3 text-xs font-bold text-gray-700 flex items-center justify-center">${ICONS.edit}Edit</button><button id="cO" class="flex-1 ${btn} !py-3 text-xs">Confirm Order</button></div></div>`;
     document.body.appendChild(ov);
     ov.querySelector('#cE').onclick=()=>ov.remove();
     ov.querySelector('#cO').onclick=async()=>{
@@ -421,7 +441,7 @@ async function checkout(){
         finalId = insData[0].id;
       } else {
         const {data:rpcData, error:rpcErr}=await sb.rpc('place_order_guest',{p_items:cart.map(i=>({id:i.id,qty:i.qty})),p_address:addr,p_coupon:coupon||null,p_method:method,p_ref:utr||null});
-        if(rpcErr){toast(rpcErr.message);b.disabled=false;b.textContent='✓ Confirm Order';return}
+        if(rpcErr){toast(rpcErr.message);b.disabled=false;b.textContent='Confirm Order';return}
         finalId = rpcData;
       }
 
@@ -433,7 +453,6 @@ async function checkout(){
       setNav();
       cart=[];coupon='';saveCart();ov.remove();
 
-      // Animated Green Tick Success Screen
       app.innerHTML=`
       <div class="max-w-md mx-auto text-center py-12 px-6 bg-white rounded-3xl shadow-soft border border-gray-100 my-4 space-y-4">
         <div class="py-2">
@@ -469,7 +488,7 @@ function loginView(){
     ${input('ln','Your Name',`maxlength="60" placeholder="உதாரணம்: Subramani" value="${esc(p?.name||'')}"`)}
     ${input('lp','Mobile Number (10 digits)',`maxlength="10" inputmode="numeric" placeholder="9876543210" value="${esc(p?.phone||'')}"`)}
     <button id="go" class="${btn} w-full">${p?'Save Details':'Continue to Profile'}</button>
-    ${p?'<button id="lo" class="w-full text-rose-600 text-xs font-bold py-1 hover:underline">Logout from this device</button>':''}</div>`;
+    ${p?`<button id="lo" class="w-full text-rose-600 text-xs font-bold py-1 hover:underline flex items-center justify-center">${ICONS.logout}Logout from this device</button>`:''}</div>`;
   $('#go').onclick=()=>{
     const name=$('#ln').value.trim(), phone=$('#lp').value.trim();
     if(name.length<2)return toast('Enter your name');
@@ -478,7 +497,7 @@ function loginView(){
   const lo=$('#lo');if(lo)lo.onclick=()=>{localStorage.removeItem('profile');setNav();toast('Logged out');loginView()};
 }
 
-/* ===== PROFILE HUB & ACCURATE ORDER DETAILS ===== */
+/* ===== PROFILE HUB ===== */
 let ofilter='all', addrEdit=null, OC={list:[],dev:[]};
 function getAddrs(){return store.get('addrs')||[]}
 
@@ -525,7 +544,6 @@ function profileHubHtml(pf){
       <div class="w-9"></div>
     </div>
 
-    <!-- Minimalist Vector User Display -->
     <div class="flex flex-col items-center mt-3">
       <div class="w-24 h-24 rounded-full p-1 border-2 border-slate-200 shadow-soft flex items-center justify-center bg-white">
         <div class="w-full h-full rounded-full bg-slate-900 flex items-center justify-center text-white text-3xl font-extrabold tracking-wider">
@@ -539,7 +557,6 @@ function profileHubHtml(pf){
       </div>
     </div>
 
-    <!-- Menu List -->
     <div class="mt-6 space-y-0.5 divide-y divide-gray-50">
       ${menuRow(
         `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>`,
@@ -575,12 +592,11 @@ function profileHubHtml(pf){
     </div>
 
     <div class="mt-8 pt-4 border-t text-center">
-      <button id="lgo" class="text-xs font-bold text-rose-500 hover:text-rose-700">⏻ Logout Account</button>
+      <button id="lgo" class="text-xs font-bold text-rose-500 hover:text-rose-700 flex items-center justify-center mx-auto">${ICONS.logout}Logout Account</button>
     </div>
   </div>`;
 }
 
-// Order Card on Orders List (Using unique ord.id)
 function orderCardSecondImage(o){
   const d=new Date(o.created_at);
   const dateStr=`${d.getDate()}-${d.getMonth()+1}-${d.getFullYear()}`;
@@ -671,7 +687,6 @@ async function ordersHtml(pf){
       </form>`
     }
 
-    <!-- Pills Filter -->
     <div class="flex gap-2 overflow-x-auto no-scrollbar py-1">
       ${chips.map(c=>`
         <button data-f="${c[0]}" class="shrink-0 px-4 py-2 rounded-full text-xs font-bold transition ${ofilter===c[0]?'bg-slate-900 text-white shadow-soft':'bg-white text-gray-600 hover:bg-gray-100 border border-gray-100'}">
@@ -680,7 +695,6 @@ async function ordersHtml(pf){
       `).join('')}
     </div>
 
-    <!-- Cards -->
     <div class="space-y-4 pt-1">
       ${list.filter(GRP[ofilter]||GRP.all).map(orderCardSecondImage).join('')||`
         <div class="bg-white rounded-3xl p-10 text-center text-gray-400 text-xs border border-gray-100 shadow-soft">
@@ -691,7 +705,6 @@ async function ordersHtml(pf){
   </div>`;
 }
 
-// Dedicated Full Order Details View
 async function orderDetailView(orderId){
   let ord = (OC.list||[]).find(o => String(o.id) === orderId || (String(o.id).slice(0,8).toUpperCase() === orderId.toUpperCase()));
   
@@ -728,7 +741,6 @@ async function orderDetailView(orderId){
 
   app.innerHTML=`
   <div class="max-w-md mx-auto space-y-4 my-2">
-    <!-- Header -->
     <div class="flex items-center justify-between px-1">
       <button onclick="location.hash='#/account/orders'" class="w-9 h-9 rounded-full bg-white flex items-center justify-center text-gray-700 shadow-soft border border-gray-100">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
@@ -737,7 +749,6 @@ async function orderDetailView(orderId){
       <div class="w-9"></div>
     </div>
 
-    <!-- Status Tracking Card -->
     <div class="bg-white rounded-3xl p-5 shadow-soft border border-gray-100 space-y-4">
       <div class="flex justify-between items-start">
         <div>
@@ -748,7 +759,6 @@ async function orderDetailView(orderId){
         <span class="${STL[status]||'bg-gray-100 text-gray-800 text-xs px-3 py-1 rounded-full font-bold'} text-xs">${esc(SLBL[status]||status)}</span>
       </div>
 
-      <!-- Linear Step Indicator -->
       <div class="pt-2">
         <div class="grid grid-cols-4 gap-1.5 text-center">
           ${['Placed','Confirmed','Shipped','Delivered'].map((step, idx)=>`
@@ -761,7 +771,6 @@ async function orderDetailView(orderId){
       </div>
     </div>
 
-    <!-- Purchased Products Card -->
     <div class="bg-white rounded-3xl p-5 shadow-soft border border-gray-100 space-y-3">
       <h3 class="font-extrabold text-xs text-gray-400 uppercase tracking-wider">Items in Order (${items.length})</h3>
       <div class="divide-y divide-gray-100">
@@ -778,7 +787,6 @@ async function orderDetailView(orderId){
       </div>
     </div>
 
-    <!-- Delivery Address Card -->
     <div class="bg-white rounded-3xl p-5 shadow-soft border border-gray-100 space-y-2 text-xs">
       <h3 class="font-extrabold text-gray-400 uppercase tracking-wider text-[11px]">Delivery Address</h3>
       <p class="font-bold text-gray-900 text-sm">${esc(ord.customer_name||ord.address?.name||'Customer')}</p>
@@ -786,7 +794,6 @@ async function orderDetailView(orderId){
       <p class="text-gray-600 leading-relaxed mt-1">${esc(addr)}</p>
     </div>
 
-    <!-- Payment & Total Card -->
     <div class="bg-white rounded-3xl p-5 shadow-soft border border-gray-100 space-y-2 text-xs">
       <h3 class="font-extrabold text-gray-400 uppercase tracking-wider text-[11px]">Payment Summary</h3>
       <div class="flex justify-between text-gray-600 pt-1"><span>Payment Method</span><b class="text-gray-900">${esc(ord.payment_method||'Cash on Delivery')}</b></div>
@@ -797,10 +804,9 @@ async function orderDetailView(orderId){
       </div>
     </div>
 
-    <!-- Support Link -->
     <div class="text-center pt-2">
       <a href="https://wa.me/${WHATSAPP}?text=${encodeURIComponent('Hi, I need assistance regarding my order #'+shortNo)}" target="_blank" rel="noopener" class="text-xs font-bold text-emerald-700 hover:underline inline-flex items-center gap-1">
-        <span>💬 Contact Support on WhatsApp</span>
+        ${ICONS.whatsapp}<span>Contact Support on WhatsApp</span>
       </a>
     </div>
   </div>`;
@@ -861,7 +867,7 @@ function addressesHtml(){
           <p class="text-gray-500 mt-1">${esc(x.phone)}</p>
           <p class="text-gray-700 mt-1 leading-relaxed">${esc(x.line)}, ${esc(x.city)}, ${esc(x.state)} - <b>${esc(x.pincode)}</b></p>
           <div class="mt-3 pt-2 border-t flex gap-4 font-bold text-[11px]">
-            <button data-ae="${esc(x.id)}" class="text-slate-900 underline">Edit</button>
+            <button data-ae="${esc(x.id)}" class="text-slate-900 underline flex items-center">${ICONS.edit}Edit</button>
             <button data-ad="${esc(x.id)}" class="text-rose-600 underline">Delete</button>
             ${x.def?'':`<button data-adef="${esc(x.id)}" class="text-gray-400 underline ml-auto">Set as Default</button>`}
           </div>
