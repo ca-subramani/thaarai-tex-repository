@@ -33,10 +33,34 @@ input,select,textarea{font-size:16px!important}
 @keyframes fill{100%{box-shadow:inset 0 0 0 38px rgba(16,185,129,.12)}}
 .lens-zoom-container{position:relative;overflow:hidden;cursor:crosshair}
 .lens-zoom-container img{transition:transform .15s ease-out;transform-origin:center center;will-change:transform}
+:root{--ink:#243744;--ink-soft:#52636a;--teal:#087f73;--teal-dark:#06665e;--gold:#b58b51;--paper:#f7f5f0;--line:#e8e4dc}
+body{background:var(--paper);color:var(--ink)}
+body>header{background:rgba(255,255,255,.96)!important;border-color:var(--line)!important;box-shadow:0 4px 18px rgba(36,55,68,.045)}
+#brand span:first-child{color:var(--ink)!important;letter-spacing:.04em}
+#app{max-width:1320px;padding-top:1.5rem}
+body>header>div:first-child,#foot>div{max-width:1320px}
+#app h1,#app h2,#app h3{letter-spacing:-.025em}
+#app .group img{transition:transform .55s cubic-bezier(.2,.7,.2,1)}
+#app .group:hover img{transform:scale(1.035)}
+.tb{transition:color .2s ease,transform .2s ease}
+.tb:active{transform:translateY(-2px)}
+#app .bg-white{border-color:var(--line)}
+#app .shadow-soft{box-shadow:0 12px 32px rgba(36,55,68,.07)!important}
+#app a[class*="bg-slate-900"],#app button[class*="bg-slate-900"],#app .bg-slate-900{background-color:var(--ink)!important}
+#app button[class*="bg-emerald-600"],#app a[class*="bg-emerald-600"]{background-color:var(--teal)!important}
+#app button[class*="bg-emerald-600"]:hover,#app a[class*="bg-emerald-600"]:hover{background-color:var(--teal-dark)!important}
+#app .text-emerald-700{color:var(--teal)!important}
+#app input:focus,#app textarea:focus,#app select:focus{border-color:var(--teal)!important;box-shadow:0 0 0 3px rgba(8,127,115,.1)}
+#app img{background-color:#eee9df}
+#fl{box-shadow:0 24px 70px rgba(29,42,50,.18)}
+#sort-sheet>div{padding-bottom:calc(2rem + env(safe-area-inset-bottom))}
+#app .product-card img{transition:transform .45s cubic-bezier(.2,.7,.2,1)}
+#app .product-card:hover img{transform:scale(1.035)}
+@media(max-width:640px){#app{padding-top:1rem}#fl{padding-top:calc(1.25rem + env(safe-area-inset-top));padding-bottom:calc(1.25rem + env(safe-area-inset-bottom))}}
 </style>
 </head>
 <body class="text-gray-900 antialiased selection:bg-slate-900 selection:text-white">
-
+<div class="bg-[#243744] px-3 py-2 text-center text-[10px] font-bold tracking-[.14em] text-white sm:text-[11px]">COMPLIMENTARY DELIVERY ON EVERY ORDER <span class="mx-2 text-white/40">•</span> COD &amp; UPI AVAILABLE</div>
 <header class="bg-white/95 backdrop-blur sticky top-0 z-40 border-b border-gray-100">
   <div class="max-w-6xl mx-auto px-4 py-3.5 flex items-center gap-3">
     <a href="#/" id="brand" class="flex flex-col"></a>
@@ -324,14 +348,21 @@ async function home(){
 
   app.innerHTML=`
   <!-- Hero Banner Slider -->
-  ${bn.length?`<section id="car" class="relative rounded-3xl overflow-hidden h-80 sm:h-[420px] shadow-soft mb-8">${bn.map(slide).join('')}${bn.length>1?`<div class="absolute bottom-4 left-6 right-6 flex justify-center gap-2 z-10">${bn.map((_,i)=>`<button data-dot="${i}" class="dot w-8 h-1.5 rounded-full transition-all ${i?'bg-white/40':'bg-white'}"></button>`).join('')}</div>`:''}</section>`:''}
+  ${bn.length?`<section id="car" class="relative rounded-3xl overflow-hidden h-[420px] sm:h-[560px] shadow-soft mb-7">${bn.map(slide).join('')}${bn.length>1?`<div class="absolute bottom-5 left-6 right-6 flex justify-center gap-2 z-10">${bn.map((_,i)=>`<button data-dot="${i}" aria-label="Show campaign ${i+1}" class="dot w-8 h-1.5 rounded-full transition-all ${i?'bg-white/40':'bg-white'}"></button>`).join('')}</div>`:''}</section>`:''}
 
-  <!-- Super Attractive Professional Categories Grid with Large Image Boxes -->
-  <section class="mb-12">
+  <section class="mb-12 grid grid-cols-1 gap-px overflow-hidden rounded-2xl border border-[#e8e4dc] bg-[#e8e4dc] sm:grid-cols-3">
+    <div class="flex items-center gap-3 bg-white px-5 py-4"><span class="text-[#087f73]">${ICONS.handloom}</span><div><b class="block text-xs text-[#243744]">Woven by artisans</b><span class="text-[10px] text-gray-500">Authentic, thoughtfully sourced</span></div></div>
+    <div class="flex items-center gap-3 bg-white px-5 py-4"><span class="text-[#087f73]">${ICONS.truck}</span><div><b class="block text-xs text-[#243744]">Free delivery, always</b><span class="text-[10px] text-gray-500">No surprise shipping charges</span></div></div>
+    <div class="flex items-center gap-3 bg-white px-5 py-4"><span class="text-[#087f73]">${ICONS.cash}</span><div><b class="block text-xs text-[#243744]">Shop with confidence</b><span class="text-[10px] text-gray-500">Cash on delivery available</span></div></div>
+  </section>
+
+  <!-- Featured collections -->
+  <section class="mb-14">
     <div class="flex items-end justify-between mb-6 px-1">
       <div>
-        <h2 class="font-extrabold text-xl sm:text-2xl text-gray-900 tracking-tight">Featured Categories</h2>
-        <p class="text-xs sm:text-sm text-gray-500 mt-1">Explore our finest handwoven selections</p>
+        <p class="text-[10px] font-bold uppercase tracking-[.22em] text-[#b58b51]">The Thaarai edit</p>
+        <h2 class="mt-1 font-extrabold text-xl sm:text-2xl text-gray-900 tracking-tight">Find your perfect weave</h2>
+        <p class="text-xs sm:text-sm text-gray-500 mt-1">Explore handpicked collections made for every moment.</p>
       </div>
       <a href="#/shop" class="hidden sm:flex items-center gap-1 text-sm font-bold text-slate-900 hover:text-emerald-600 transition-colors">Shop All <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg></a>
     </div>
@@ -1022,7 +1053,7 @@ async function route(){
   const [path,qs]=(location.hash||'#/').slice(1).split('?'), params=new URLSearchParams(qs||'');
   app.innerHTML='<p class="text-center text-gray-400 py-20 text-xs">ஏற்றப்படுகிறது…</p>';
   $('#tabbar').classList.toggle('hidden',path.startsWith('/p/')||path==='/checkout');
-  document.querySelectorAll('.tb').forEach(a=>{const on=a.dataset.tb.split('|').some(k=>k==='/'?(path==='/'||path===''):path.startsWith(k));a.style.color=on?'var(--p)':'#94a3b8'});
+  document.querySelectorAll('.tb').forEach(a=>{const on=a.dataset.tb.split('|').some(k=>k==='/'?(path==='/'||path===''):path.startsWith(k));a.style.color=on?'var(--teal)':'#94a3b8'});
   try{
     if(path==='/'||path==='')await home();
     else if(path==='/shop')await shop(params);
