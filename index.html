@@ -2,7 +2,7 @@
 <html lang="ta">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Thaarai Tex | Pure Sarees & Handloom</title>
 <meta name="description" content="Handloom silk and cotton sarees direct from weavers. Free delivery, Cash on Delivery.">
 <script src="https://cdn.tailwindcss.com/3.4.17"></script>
@@ -781,7 +781,6 @@ async function product(id){
         <div class="flex-1 w-full bg-white rounded-3xl border border-gray-100 shadow-soft p-3 relative">
           <div id="zoom-stage" class="lens-zoom-container aspect-[3/4] sm:aspect-[4/5] rounded-2xl bg-gray-50 flex items-center justify-center relative overflow-hidden select-none">
             <img id="main-product-img" src="${esc(imgs[0])}" alt="${esc(p.name)}" class="w-full h-full object-cover">
-            <button id="toggle-zoom-btn" type="button" aria-label="Zoom in" title="Zoom in" class="absolute top-3 left-3 bg-white/95 backdrop-blur w-10 h-10 rounded-full shadow-sm flex items-center justify-center text-gray-800 hover:bg-white transition"><svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4M11 8v6M8 11h6"/></svg></button>
             <button id="open-lightbox-btn" title="View fullscreen" class="absolute top-3 right-3 bg-white/90 backdrop-blur w-9 h-9 rounded-full shadow-sm flex items-center justify-center hover:bg-slate-900 hover:text-white transition">
               <svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
             </button>
@@ -856,17 +855,10 @@ async function product(id){
     <div class="text-center text-gray-400 text-xs pb-3">Tap anywhere to close</div>
   </div>`;
 
-  const mainImg=$('#main-product-img'), stage=$('#zoom-stage'), thumbs=document.querySelectorAll('.thumb-btn'), zoomBtn=$('#toggle-zoom-btn');
-  let cur=0, zoomed=false;
-  function setZoom(active){
-    zoomed=active;mainImg.style.transform=active?'scale(2.4)':'scale(1)';
-    zoomBtn.setAttribute('aria-label',active?'Zoom out':'Zoom in');
-    zoomBtn.title=active?'Zoom out':'Zoom in';
-    zoomBtn.innerHTML=active?'<svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4M8 11h6"/></svg>':'<svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4M11 8v6M8 11h6"/></svg>';
-  }
-  zoomBtn.onclick=()=>setZoom(!zoomed);
+  const mainImg=$('#main-product-img'), stage=$('#zoom-stage'), thumbs=document.querySelectorAll('.thumb-btn');
+  let cur=0;
   function switchImage(i){
-    cur=(i+imgs.length)%imgs.length;mainImg.src=imgs[cur];setZoom(false);
+    cur=(i+imgs.length)%imgs.length;mainImg.src=imgs[cur];
     thumbs.forEach((t,k)=>{t.classList.toggle('border-slate-900',k===cur);t.classList.toggle('shadow-md',k===cur);t.classList.toggle('border-gray-200',k!==cur);t.classList.toggle('opacity-70',k!==cur)});
   }
   thumbs.forEach(t=>t.onclick=()=>switchImage(Number(t.dataset.idx)));
@@ -874,8 +866,6 @@ async function product(id){
   if($('#img-next'))$('#img-next').onclick=()=>switchImage(cur+1);
   let x0=null;stage.addEventListener('touchstart',e=>x0=e.touches[0].clientX,{passive:true});
   stage.addEventListener('touchend',e=>{if(x0===null||imgs.length<2)return;const dx=e.changedTouches[0].clientX-x0;if(Math.abs(dx)>40)switchImage(cur+(dx<0?1:-1));x0=null});
-  stage.addEventListener('mousemove',e=>{if(!zoomed)return;const r=stage.getBoundingClientRect();mainImg.style.transformOrigin=`${(e.clientX-r.left)/r.width*100}% ${(e.clientY-r.top)/r.height*100}%`});
-  stage.addEventListener('mouseleave',()=>{mainImg.style.transformOrigin='center center'});
   const lb=$('#hd-lightbox'),lbImg=$('#lightbox-img'),closeLb=()=>lb.classList.add('hidden');
   $('#open-lightbox-btn').onclick=()=>{lbImg.src=imgs[cur];lb.classList.remove('hidden')};
   $('#close-lightbox').onclick=closeLb;lb.onclick=e=>{if(e.target===lb||e.target===lbImg)closeLb()};
