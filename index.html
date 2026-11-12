@@ -110,6 +110,8 @@ const TRUST_ICONS=[
 /* ===== HELPERS ===== */
 const $=s=>document.querySelector(s), app=$('#app');
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const hx=(value,fallback)=>/^#[\da-f]{3,8}$/i.test(String(value||''))?value:fallback;
+const safeLink=value=>{const link=String(value||'');return link.startsWith('#/')?link:'#/shop'};
 const inr=n=>'₹'+Number(n||0).toLocaleString('en-IN');
 const img=p=>esc(p.images?.[0]||'https://placehold.co/600x750?text=Thaarai+Tex');
 const store={get:k=>{try{return JSON.parse(localStorage.getItem(k))}catch{return null}},set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}}};
@@ -1021,7 +1023,7 @@ $('#sf').onsubmit=e=>{e.preventDefault();location.hash='#/shop?q='+encodeURIComp
 $('#sf2').onsubmit=e=>{e.preventDefault();location.hash='#/shop?q='+encodeURIComponent($('#q2').value.trim());$('#msearch').classList.add('hidden')};
 $('#msb').onclick=()=>{$('#msearch').classList.toggle('hidden');$('#q2').focus()};
 window.addEventListener('hashchange',route);
-Promise.all([initAuth(),loadSettings()]).then(route);
+Promise.all([initAuth()]).then(route);
 </script>
 </body>
 </html>
