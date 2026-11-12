@@ -709,7 +709,7 @@ async function product(id){
   </div>`;
 
   const mainImg=$('#main-product-img'), stage=$('#zoom-stage'), thumbs=document.querySelectorAll('.thumb-btn');
-  let cur=0;
+  let cur=0,stageScale=1;
   function switchImage(i){
     cur=(i+imgs.length)%imgs.length;mainImg.src=imgs[cur];resetStageZoom();
     thumbs.forEach((t,k)=>{t.classList.toggle('border-slate-900',k===cur);t.classList.toggle('shadow-md',k===cur);t.classList.toggle('border-gray-200',k!==cur);t.classList.toggle('opacity-70',k!==cur)});
@@ -717,17 +717,25 @@ async function product(id){
   thumbs.forEach(t=>t.onclick=()=>switchImage(Number(t.dataset.idx)));
   if($('#img-prev'))$('#img-prev').onclick=()=>switchImage(cur-1);
   if($('#img-next'))$('#img-next').onclick=()=>switchImage(cur+1);
-  let x0=null;stage.addEventListener('touchstart',e=>{x0=e.touches.length===1?e.touches[0].clientX:null},{passive:true});
-  stage.addEventListener('touchend',e=>{if(e.touches.length||x0===null){x0=null;return}const dx=e.changedTouches[0].clientX-x0;if(imgs.length>1&&Math.abs(dx)>40)switchImage(cur+(dx<0?1:-1));x0=null});
-  const attachPinchZoom=(surface,img)=>{
-    let startDistance=0,startScale=1,scale=1;
+  let x0=null;stage.addEventListener('touchstart',e=>{x0=e.touches.length===1&&stageScale===1?e.touches[0].clientX:null},{passive:true});
+  stage.addEventListener('touchend',e=>{if(e.touches.length||x0===null){x0=null;return}const dx=e.changedTouches[0].clientX-x0;if(stageScale===1&&imgs.length>1&&Math.abs(dx)>40)switchImage(cur+(dx<0?1:-1));x0=null});
+  const attachPinchZoom=(surface,img,onScale=()=>{})=>{
+    let startDistance=0,startScale=1,scale=1,offsetX=0,offsetY=0,dragStart=null,baseX=0,baseY=0;
     const distance=touches=>Math.hypot(touches[0].clientX-touches[1].clientX,touches[0].clientY-touches[1].clientY);
-    surface.addEventListener('touchstart',e=>{if(e.touches.length===2){startDistance=distance(e.touches);startScale=scale}},{passive:true});
-    surface.addEventListener('touchmove',e=>{if(e.touches.length!==2||!startDistance)return;e.preventDefault();const rect=surface.getBoundingClientRect(),midX=(e.touches[0].clientX+e.touches[1].clientX)/2,midY=(e.touches[0].clientY+e.touches[1].clientY)/2;scale=Math.max(1,Math.min(4,startScale*distance(e.touches)/startDistance));img.style.transformOrigin=`${(midX-rect.left)/rect.width*100}% ${(midY-rect.top)/rect.height*100}%`;img.style.transform=`scale(${scale})`},{passive:false});
-    surface.addEventListener('touchend',e=>{if(e.touches.length<2)startDistance=0},{passive:true});
-    return()=>{scale=1;startScale=1;startDistance=0;img.style.transform='scale(1)';img.style.transformOrigin='center center'};
+    const render=()=>{img.style.transform=`translate(${offsetX}px, ${offsetY}px) scale(${scale})`;onScale(scale)};
+    surface.addEventListener('touchstart',e=>{
+      if(e.touches.length===2){startDistance=distance(e.touches);startScale=scale;dragStart=null}
+      else if(e.touches.length===1&&scale>1){dragStart={x:e.touches[0].clientX,y:e.touches[0].clientY};baseX=offsetX;baseY=offsetY}
+    },{passive:true});
+    surface.addEventListener('touchmove',e=>{
+      const rect=surface.getBoundingClientRect();
+      if(e.touches.length===2&&startDistance){e.preventDefault();scale=Math.max(1,Math.min(4,startScale*distance(e.touches)/startDistance));const maxX=rect.width*(scale-1)/2,maxY=rect.height*(scale-1)/2;offsetX=Math.max(-maxX,Math.min(maxX,offsetX));offsetY=Math.max(-maxY,Math.min(maxY,offsetY));render()}
+      else if(e.touches.length===1&&dragStart&&scale>1){e.preventDefault();const maxX=rect.width*(scale-1)/2,maxY=rect.height*(scale-1)/2;offsetX=Math.max(-maxX,Math.min(maxX,baseX+e.touches[0].clientX-dragStart.x));offsetY=Math.max(-maxY,Math.min(maxY,baseY+e.touches[0].clientY-dragStart.y));render()}
+    },{passive:false});
+    surface.addEventListener('touchend',e=>{if(e.touches.length<2)startDistance=0;if(e.touches.length===1&&scale>1){dragStart={x:e.touches[0].clientX,y:e.touches[0].clientY};baseX=offsetX;baseY=offsetY}else if(!e.touches.length)dragStart=null},{passive:true});
+    return()=>{scale=1;startScale=1;startDistance=0;offsetX=0;offsetY=0;dragStart=null;img.style.transform='translate(0px, 0px) scale(1)';img.style.transformOrigin='center center';onScale(1)};
   };
-  const resetStageZoom=attachPinchZoom(stage,mainImg);
+  const resetStageZoom=attachPinchZoom(stage,mainImg,value=>stageScale=value);
   const lb=$('#hd-lightbox'),lbImg=$('#lightbox-img'),resetLightboxZoom=attachPinchZoom(lb,lbImg),closeLb=()=>{lb.classList.add('hidden');resetLightboxZoom()};
   $('#open-lightbox-btn').onclick=()=>{lbImg.src=imgs[cur];lb.classList.remove('hidden')};
   $('#close-lightbox').onclick=closeLb;lb.onclick=e=>{if(e.target===lb)closeLb()};
@@ -938,19 +946,30 @@ async function orderDetailView(orderId,pf){
   const ord=list.find(o=>String(o.id)===orderId||String(o.id).slice(0,8).toUpperCase()===String(orderId).toUpperCase());
   if(!ord){app.innerHTML=`<div class="max-w-md mx-auto text-center py-16 bg-white rounded-3xl p-8 border border-gray-100 shadow-soft my-4 space-y-3"><p class="text-xs text-gray-500">This order was not found in your account.</p><a href="#/account/orders" class="${btn} inline-block !py-2.5">Back to Orders</a></div>`;return}
   const items=ord.items||[], status=ord.order_status||'pending', steps=['pending','verified','dispatched','delivered'], cur=steps.indexOf(status);
-  const shortNo=String(ord.id).slice(0,8).toUpperCase();
+  const shortNo=String(ord.id).slice(0,8).toUpperCase(), createdAt=new Date(ord.created_at);
+  const ship=ord.address&&typeof ord.address==='object'?ord.address:{};
+  const deliveryDate=ord.delivered_at||ord.delivery_date||ord.expected_delivery_date||ord.estimated_delivery_date||new Date(createdAt.getTime()+5*864e5);
+  const deliveryDateLabel=ord.delivered_at||ord.delivery_date?'Delivery date':'Estimated delivery';
+  const recipient=ord.name||ord.customer_name||ship.name||'';
+  const phone=ord.phone||ord.mobile_number||ship.phone||pf.phone||'';
+  const addressLine=ord.line||ship.line||ord.address_line||ship.address_line||(typeof ord.address==='string'?ord.address:'');
+  const city=ord.city||ship.city||'';
+  const state=ord.state||ship.state||'';
+  const pincode=ord.pincode||ship.pincode||'';
   app.innerHTML=`<div class="max-w-md mx-auto space-y-4 my-2">
     ${topbar('Order #'+esc(shortNo),'#/account/orders')}
     <div class="bg-white rounded-3xl p-5 shadow-soft border border-gray-100 space-y-4">
-      <div class="flex justify-between items-start"><div><span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Current Status</span><h3 class="font-extrabold text-sm text-gray-900 mt-0.5">${esc(SLBL[status]||status)}</h3><p class="text-[11px] text-gray-500 mt-0.5">${new Date(ord.created_at).toLocaleString('en-IN',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})}</p></div><span class="text-xs ${STL[status]||''}">${esc(SLBL[status]||status)}</span></div>
+      <div class="flex justify-between items-start"><div><span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Current Status</span><h3 class="font-extrabold text-sm text-gray-900 mt-0.5">${esc(SLBL[status]||status)}</h3><p class="text-[11px] text-gray-500 mt-0.5">Placed ${createdAt.toLocaleString('en-IN',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})}</p></div><span class="text-xs ${STL[status]||''}">${esc(SLBL[status]||status)}</span></div>
+      <div class="grid grid-cols-2 gap-3 border-t border-gray-100 pt-3 text-xs"><div><span class="block text-gray-500">${deliveryDateLabel}</span><b class="mt-1 block text-gray-900">${new Date(deliveryDate).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})}</b></div>${ord.tracking_id?`<div><span class="block text-gray-500">Tracking number</span><b class="mt-1 block text-gray-900">${esc(ord.tracking_id)}</b></div>`:''}</div>
       ${status==='cancelled'?'':`<div class="grid grid-cols-4 gap-1.5 text-center">${['Placed','Confirmed','Shipped','Delivered'].map((st,i)=>`<div><div class="h-1.5 rounded-full mb-1.5 ${i<=cur?'bg-slate-900':'bg-gray-200'}"></div><span class="text-[10px] font-bold ${i<=cur?'text-slate-900':'text-gray-400'}">${st}</span></div>`).join('')}</div>`}
-      ${ord.tracking_id?`<p class="text-xs text-gray-500">Tracking number: <b class="text-gray-900">${esc(ord.tracking_id)}</b></p>`:''}
     </div>
-    <div class="bg-white rounded-3xl p-5 shadow-soft border border-gray-100 space-y-3"><h3 class="font-extrabold text-xs text-gray-400 uppercase tracking-wider">Items (${items.length})</h3>
-      <div class="divide-y divide-gray-100">${items.map(i=>`<div class="py-3 flex items-center gap-3.5"><img src="${esc(i.image||'https://placehold.co/100x120?text=Saree')}" alt="" class="w-14 h-16 object-cover rounded-2xl bg-gray-50 border"><div class="flex-1 min-w-0"><h4 class="font-bold text-xs text-gray-900 line-clamp-1">${esc(i.name)}</h4><p class="text-[11px] text-gray-500 mt-0.5">Quantity: ${i.quantity}</p><b class="text-xs text-slate-900 mt-1 block">${inr(i.price*i.quantity)}</b></div></div>`).join('')}</div></div>
-    <div class="bg-white rounded-3xl p-5 shadow-soft border border-gray-100 space-y-2 text-xs"><h3 class="font-extrabold text-gray-400 uppercase tracking-wider text-[11px]">Delivery</h3><p class="text-gray-700">${esc(ord.city||'')}${ord.pincode?' - '+esc(ord.pincode):''}</p></div>
-    <div class="bg-white rounded-3xl p-5 shadow-soft border border-gray-100 space-y-2 text-xs"><h3 class="font-extrabold text-gray-400 uppercase tracking-wider text-[11px]">Payment Summary</h3>
-      <div class="flex justify-between text-gray-600 pt-1"><span>Payment Method</span><b class="text-gray-900">${esc(PAYLBL[ord.payment_method]||ord.payment_method||'')}</b></div>
+    <div class="bg-white rounded-3xl p-5 shadow-soft border border-gray-100 space-y-3"><h3 class="font-extrabold text-xs text-gray-900 uppercase tracking-wider">Ordered products (${items.length})</h3>
+      <div class="divide-y divide-gray-100">${items.map(i=>{const productId=i.product_id??i.id, productHref=productId!==undefined&&productId!==null?'#/p/'+encodeURIComponent(productId):'';return `<div class="py-3 flex items-center gap-3.5"><a ${productHref?`href="${productHref}"`:''} class="shrink-0 ${productHref?'cursor-pointer':''}"><img src="${esc(i.image||'https://placehold.co/100x120?text=Saree')}" alt="${esc(i.name||'Ordered saree')}" class="w-16 h-20 object-cover rounded-2xl bg-gray-50 border"></a><div class="flex-1 min-w-0"><${productHref?'a href="'+productHref+'"':'span'} class="font-bold text-xs text-gray-900 line-clamp-2 block">${esc(i.name||'Saree')}</${productHref?'a':'span'}><p class="text-[11px] text-gray-500 mt-1">Unit price: ${inr(i.price)} · Quantity: ${i.quantity||1}</p><b class="text-xs text-slate-900 mt-1 block">${inr(Number(i.price||0)*Number(i.quantity||1))}</b></div></div>`}).join('')}</div></div>
+    <div class="bg-white rounded-3xl p-5 shadow-soft border border-gray-100 space-y-2 text-xs"><h3 class="font-extrabold text-gray-900 uppercase tracking-wider text-[11px]">Delivery address</h3>${recipient?`<p class="font-bold text-gray-900">${esc(recipient)}</p>`:''}${phone?`<p class="text-gray-700">Mobile: <a href="tel:${esc(phone)}" class="font-semibold underline">${esc(phone)}</a></p>`:''}${addressLine?`<p class="text-gray-700 leading-relaxed">${esc(addressLine)}</p>`:''}<p class="text-gray-700">${esc([city,state].filter(Boolean).join(', '))}${pincode?' - '+esc(pincode):''}</p></div>
+    <div class="bg-white rounded-3xl p-5 shadow-soft border border-gray-100 space-y-2 text-xs"><h3 class="font-extrabold text-gray-900 uppercase tracking-wider text-[11px]">Payment summary</h3>
+      <div class="flex justify-between text-gray-600 pt-1"><span>Payment method</span><b class="text-gray-900">${esc(PAYLBL[ord.payment_method]||ord.payment_method||'')}</b></div>
+      ${ord.coupon?`<div class="flex justify-between text-gray-600"><span>Coupon</span><b class="text-gray-900">${esc(ord.coupon)}</b></div>`:''}
+      ${ord.discount?`<div class="flex justify-between text-gray-600"><span>Discount</span><b class="text-emerald-700">−${inr(ord.discount)}</b></div>`:''}
       <div class="flex justify-between text-gray-600"><span>Delivery</span><b class="text-emerald-700">FREE</b></div>
       <div class="flex justify-between text-sm font-extrabold text-slate-900 border-t pt-2.5 mt-2"><span>Total</span><span>${inr(ord.total)}</span></div></div>
     <div class="text-center pt-2"><a href="https://wa.me/${esc(WHATSAPP)}?text=${encodeURIComponent('Hi, I need help with my order #'+shortNo)}" target="_blank" rel="noopener" class="text-xs font-bold text-emerald-700 hover:underline inline-flex items-center gap-1">${ICONS.whatsapp}<span>Contact support on WhatsApp</span></a></div></div>`;
