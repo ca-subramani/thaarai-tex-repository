@@ -1,0 +1,331 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Thaarai Tex Admin</title>
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Noto+Sans+Tamil:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+html,body{overflow-x:hidden;max-width:100%}
+body{font-family:'Manrope','Noto Sans Tamil',system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
+*{min-width:0}
+h1,h2,h3,p,label,li{overflow-wrap:anywhere}
+.text-xs,.text-sm,.text-base,.text-lg{line-height:1.65!important}
+.text-\[10px\],.text-\[11px\]{line-height:1.5!important}
+.text-2xl,.text-3xl{line-height:1.3!important}
+input,select,textarea{font-size:16px!important}
+.rounded-lg{border-radius:.9rem!important}.rounded-xl{border-radius:1.2rem!important}.rounded-2xl{border-radius:1.5rem!important}
+.shadow,.shadow-sm{box-shadow:0 2px 14px rgba(0,0,0,.06)!important}
+.no-scrollbar::-webkit-scrollbar{display:none}.no-scrollbar{scrollbar-width:none}
+table{width:100%;border-collapse:collapse}th{font-weight:600;padding-bottom:.5rem}
+td,th{padding-right:.75rem}
+</style>
+</head>
+<body class="bg-white text-gray-900 text-sm">
+<header class="bg-white/95 backdrop-blur sticky top-0 z-40 border-b">
+  <div class="max-w-6xl mx-auto px-4 py-3 flex items-center gap-2">
+    <b class="text-base font-extrabold uppercase tracking-tight">Thaarai Tex <span class="text-xs font-semibold text-gray-400 normal-case tracking-normal">Admin</span></b>
+    <a href="index.html" target="_blank" class="ml-auto text-xs font-semibold px-3 py-2 rounded-full bg-[#f3f3f3]">View store</a>
+    <button id="out" class="hidden text-xs font-semibold px-3 py-2 rounded-full bg-[#f3f3f3]">Logout</button>
+  </div>
+  <nav id="tabs" class="hidden gap-2 overflow-x-auto no-scrollbar px-4 pb-3 max-w-6xl mx-auto text-sm">
+    <button data-t="dash" class="tab">Dashboard</button><button data-t="prod" class="tab">Products</button><button data-t="ord" class="tab">Orders</button>
+    <button data-t="cat" class="tab">Categories</button><button data-t="coup" class="tab">Coupons</button><button data-t="site" class="tab">🎨 Site Design</button>
+  </nav>
+</header>
+<main id="app" class="max-w-6xl mx-auto px-4 pt-5 pb-24"></main>
+<div id="toast" class="fixed bottom-4 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-4 py-2 rounded-full hidden z-50"></div>
+
+<script>
+const SUPABASE_URL="https://hjogdvqwwbgzgwtdlrak.supabase.co";
+const SUPABASE_ANON_KEY="sb_publishable_gURnxsEPWoxUqqAqnEtJ_g_EmUlUgUZ";
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+const $=s=>document.querySelector(s), app=$('#app');
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const inr=n=>'₹'+Number(n||0).toLocaleString('en-IN');
+const btn='bg-black hover:bg-gray-800 text-white font-semibold px-5 py-3 rounded-full disabled:opacity-50';
+const inp='border border-gray-200 bg-white rounded-xl p-3 w-full outline-none focus:border-black';
+const card='bg-[#f6f6f6] rounded-3xl p-5';
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.remove('hidden');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.add('hidden'),2500)}
+let tab='dash', editing=null, cats=[];
+
+/* ---------- AUTH ---------- */
+async function boot(){
+  const {data}=await sb.auth.getSession();
+  if(!data.session)return loginView();
+  const {data:p}=await sb.from('profiles').select('is_admin').eq('id',data.session.user.id).maybeSingle();
+  if(!p?.is_admin){app.innerHTML=`<div class="${card} max-w-md mx-auto text-center space-y-2"><b>Not an admin account</b>
+    <p>Logged in as ${esc(data.session.user.email)}</p>
+    <p class="text-xs text-gray-500">Your user ID (give it admin in SQL):</p><code class="block bg-gray-100 p-2 rounded break-all select-all">${esc(data.session.user.id)}</code></div>`;
+    $('#out').classList.remove('hidden');return}
+  $('#tabs').classList.replace('hidden','flex');$('#out').classList.remove('hidden');
+  ({data:cats}=await sb.from('categories').select('*').order('name'));cats=cats||[];
+  render();
+}
+function loginView(){
+  app.innerHTML=`<div class="${card} max-w-sm mx-auto space-y-3"><b>Admin login</b>
+   <div class="grid grid-cols-2 gap-2 text-xs font-semibold"><button id="m1" class="py-2 rounded-lg">📱 Mobile + Password</button><button id="m2" class="py-2 rounded-lg">✉️ Email + OTP</button></div>
+   <div id="pm" class="space-y-3"><input id="mb" maxlength="10" inputmode="numeric" placeholder="Mobile number" class="${inp}">
+    <input id="pw" type="password" placeholder="Password" class="${inp}"><button id="go" class="${btn} w-full">Login</button></div>
+   <div id="em" class="hidden space-y-3"><div id="e1"><input id="le" type="email" placeholder="Email" class="${inp}"><button id="so" class="${btn} w-full mt-3">Send OTP</button></div>
+    <div id="e2" class="hidden"><input id="lo" maxlength="8" placeholder="OTP code" class="${inp}"><button id="vo" class="${btn} w-full mt-3">Verify</button></div></div></div>`;
+  const set=m=>{$('#pm').classList.toggle('hidden',m!=='m');$('#em').classList.toggle('hidden',m!=='e');
+    $('#m1').className='py-2 rounded-lg '+(m==='m'?'bg-slate-900 text-white':'bg-gray-100');$('#m2').className='py-2 rounded-lg '+(m==='e'?'bg-slate-900 text-white':'bg-gray-100')};
+  set('m');$('#m1').onclick=()=>set('m');$('#m2').onclick=()=>set('e');
+  $('#go').onclick=async()=>{const n=$('#mb').value.trim();
+    if(!/^[6-9]\d{9}$/.test(n))return toast('Enter a valid mobile number');
+    const {error}=await sb.auth.signInWithPassword({email:`91${n}@phone.thaaraitex.com`,password:$('#pw').value});
+    if(error)return toast('Login failed: '+error.message);boot()};
+  let email='';
+  $('#so').onclick=async()=>{email=$('#le').value.trim().toLowerCase();
+    const {error}=await sb.auth.signInWithOtp({email});
+    if(error)return toast(error.message);$('#e1').classList.add('hidden');$('#e2').classList.remove('hidden')};
+  $('#vo').onclick=async()=>{const {error}=await sb.auth.verifyOtp({email,token:$('#lo').value.trim(),type:'email'});
+    if(error)return toast('Invalid OTP');boot()};
+}
+$('#out').onclick=async()=>{await sb.auth.signOut();location.reload()};
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{tab=b.dataset.t;editing=null;render()});
+
+function render(){
+  document.querySelectorAll('.tab').forEach(b=>b.className='tab shrink-0 px-4 py-2 rounded-full font-semibold whitespace-nowrap '+(b.dataset.t===tab?'bg-black text-white':'bg-[#f3f3f3] text-gray-600'));
+  app.onclick=null;app.oninput=null;app.onchange=null;
+  app.innerHTML='<p class="text-center py-10 text-gray-500">Loading…</p>';
+  ({dash,prod,ord,coup,cat,site}[tab])().catch(e=>app.innerHTML='<p class="text-red-600 text-center py-10">Error: '+esc(e.message)+'</p>');
+}
+const must=r=>{if(r.error)throw r.error;return r.data};
+
+/* ---------- DASHBOARD ---------- */
+async function dash(){
+  const ords=must(await sb.from('orders').select('total,order_status,created_at'));
+  const low=must(await sb.from('products').select('id,name,stock').lte('stock',5).order('stock'));
+  const live=ords.filter(o=>o.order_status!=='cancelled');
+  const today=new Date().toDateString();
+  const k=(l,v)=>`<div class="${card}"><p class="text-xs text-gray-500">${l}</p><p class="text-2xl font-bold">${v}</p></div>`;
+  app.innerHTML=`<div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+   ${k('Total orders',ords.length)}${k('Pending',ords.filter(o=>o.order_status==='pending').length)}
+   ${k('Revenue (excl. cancelled)',inr(live.reduce((s,o)=>s+Number(o.total),0)))}
+   ${k("Today's sales",inr(live.filter(o=>new Date(o.created_at).toDateString()===today).reduce((s,o)=>s+Number(o.total),0)))}</div>
+   <div class="${card} mt-4"><b>Low stock (5 or fewer)</b>
+   ${low.map(p=>`<div class="flex justify-between border-t py-1.5 mt-1"><span>${esc(p.name)}</span><b class="${p.stock===0?'text-red-600':'text-orange-600'}">${p.stock} left</b></div>`).join('')||'<p class="text-gray-500 mt-2">All products well stocked.</p>'}</div>`;
+}
+
+/* ---------- PRODUCTS ---------- */
+async function prod(){
+  if(editing!==null)return prodForm();
+  const ps=must(await sb.from('products').select('*').order('created_at',{ascending:false}));
+  app.innerHTML=`<div class="flex justify-between mb-3"><b class="text-base">Products (${ps.length})</b><button id="new" class="${btn}">+ Add product</button></div>
+  <div class="${card} overflow-x-auto"><table class="w-full text-left"><thead class="text-xs text-gray-500"><tr><th>Product</th><th>Price</th><th class="hidden sm:table-cell">MRP</th><th>Stock</th><th class="hidden sm:table-cell">Status</th><th></th></tr></thead><tbody>
+  ${ps.map(p=>`<tr class="border-t"><td class="py-3"><div class="flex items-center gap-2"><img src="${esc(p.images?.[0]||'https://placehold.co/40')}" class="w-10 h-10 object-cover rounded">${esc(p.name)} <span class="text-xs text-gray-400">${p.images?.length||0} 📷</span>${p.active?'':'<span class="text-[10px] bg-gray-200 rounded-full px-2 py-0.5">Hidden</span>'}</div></td>
+   <td>${inr(p.price)}</td><td class="hidden sm:table-cell">${inr(p.mrp)}</td><td class="${p.stock<5?'text-orange-600 font-bold':''}">${p.stock}</td>
+   <td class="hidden sm:table-cell">${p.active?'<span class="text-emerald-700">Live</span>':'<span class="text-gray-400">Hidden</span>'}</td>
+   <td class="text-right whitespace-nowrap"><button data-e="${p.id}" class="underline mr-3">Edit</button><button data-d="${p.id}" class="underline text-red-600">Delete</button></td></tr>`).join('')}
+  </tbody></table></div>`;
+  $('#new').onclick=()=>{editing={};render()};
+  app.onclick=async e=>{
+    if(e.target.dataset.e){editing=ps.find(p=>p.id===e.target.dataset.e);render()}
+    if(e.target.dataset.d&&confirm('Delete this product permanently?')){
+      const {error}=await sb.from('products').delete().eq('id',e.target.dataset.d);
+      toast(error?error.message:'Deleted');render()}};
+}
+function shrink(f,max=1400){return new Promise((res,rej)=>{
+  if(!f.type.startsWith('image/'))return rej(new Error('Please choose an image file'));
+  const im=new Image(),u=URL.createObjectURL(f);
+  im.onload=()=>{URL.revokeObjectURL(u);const r=Math.min(1,max/Math.max(im.width,im.height)),c=document.createElement('canvas');
+    c.width=Math.round(im.width*r);c.height=Math.round(im.height*r);const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(im,0,0,c.width,c.height);
+    c.toBlob(b=>b?res(b):rej(new Error('Could not process the image')),'image/jpeg',0.85)};
+  im.onerror=()=>rej(new Error('Could not read this image (use JPG or PNG)'));im.src=u})}
+async function prodImg(f){
+  const blob=await shrink(f);
+  const path=`products/${Date.now()}-${Math.random().toString(36).slice(2,7)}.jpg`;
+  const {error}=await sb.storage.from('product-images').upload(path,blob,{contentType:'image/jpeg'});
+  if(error)throw error;
+  return sb.storage.from('product-images').getPublicUrl(path).data.publicUrl;
+}
+function prodForm(){
+  const p=editing, v=k=>esc(p[k]??'');
+  let imgs=[...(p.images||[])];
+  app.innerHTML=`<form id="pf" class="${card} max-w-2xl space-y-3"><b class="text-base">${p.id?'Edit':'New'} product</b>
+   <input id="n" required placeholder="Name" value="${v('name')}" class="${inp}">
+   <textarea id="d" rows="3" placeholder="Description" class="${inp}">${v('description')}</textarea>
+   <div class="grid grid-cols-3 gap-2"><label>Price ₹<input id="pr" type="number" min="0" required value="${v('price')}" class="${inp}"></label>
+    <label>MRP ₹<input id="mr" type="number" min="0" required value="${v('mrp')}" class="${inp}"></label>
+    <label>Stock<input id="st" type="number" min="0" required value="${v('stock')||0}" class="${inp}"></label></div>
+   <div class="grid grid-cols-3 gap-2"><label>Fabric<input id="fa" value="${v('fabric')}" class="${inp}"></label>
+    <label>Colour<input id="co" value="${v('color')}" class="${inp}"></label><label>Occasion<input id="oc" value="${v('occasion')}" class="${inp}"></label></div>
+   <label class="block">Category<select id="ca" class="${inp}"><option value="">None</option>${cats.map(c=>`<option value="${c.id}" ${c.id===p.category_id?'selected':''}>${esc(c.name)}</option>`).join('')}</select></label>
+   <div><p class="mb-1 font-medium">Product photos <span class="text-xs text-gray-500">(up to 8 · the first photo is the main one)</span></p>
+    <div id="im" class="grid grid-cols-3 sm:grid-cols-4 gap-2 mb-2"></div>
+    <label class="inline-block ${btn} cursor-pointer text-center">＋ Add photos<input id="up" type="file" accept="image/*" multiple class="hidden"></label>
+    <span id="upst" class="text-xs text-gray-500 ml-2"></span></div>
+   <label class="flex items-center gap-2"><input id="ac" type="checkbox" ${p.active!==false?'checked':''}> Visible in store</label>
+   <div class="flex gap-2"><button id="sv" class="${btn}">Save</button><button type="button" id="cn" class="px-4 py-2 border rounded-lg">Cancel</button></div></form>`;
+  const drawImgs=()=>{$('#im').innerHTML=imgs.map((u,i)=>`<div class="border rounded-lg p-1 bg-gray-50 text-center text-[11px]">
+    <div class="relative"><img src="${esc(u)}" class="w-full aspect-square object-cover rounded">${i===0?'<span class="absolute top-1 left-1 bg-emerald-600 text-white px-1.5 rounded">Main</span>':''}</div>
+    <div class="flex justify-between mt-1 px-1"><button type="button" data-l="${i}" ${i===0?'disabled class="opacity-30"':''}>◀</button><button type="button" data-m="${i}" class="${i===0?'hidden':'underline'}">Make main</button><button type="button" data-rt="${i}" ${i===imgs.length-1?'disabled class="opacity-30"':''}>▶</button></div>
+    <div class="flex justify-between mt-1 px-1"><label class="underline cursor-pointer">Replace<input type="file" accept="image/*" data-rp="${i}" class="hidden"></label><button type="button" data-x="${i}" class="text-red-600 underline">Remove</button></div></div>`).join('')};
+  drawImgs();
+  $('#im').onclick=e=>{const d=e.target.dataset;
+    if(d.x!==undefined)imgs.splice(+d.x,1);
+    else if(d.l!==undefined){const i=+d.l;[imgs[i-1],imgs[i]]=[imgs[i],imgs[i-1]]}
+    else if(d.rt!==undefined){const i=+d.rt;[imgs[i+1],imgs[i]]=[imgs[i],imgs[i+1]]}
+    else if(d.m!==undefined)imgs.unshift(imgs.splice(+d.m,1)[0]);
+    else return;
+    drawImgs()};
+  $('#im').onchange=async e=>{const i=e.target.dataset.rp;if(i===undefined||!e.target.files[0])return;
+    toast('Uploading…');try{imgs[+i]=await prodImg(e.target.files[0]);drawImgs();toast('Photo replaced ✓ — click Save')}catch(er){toast(er.message)}};
+  $('#up').onchange=async e=>{const files=[...e.target.files];e.target.value='';
+    if(imgs.length+files.length>8)return toast('Maximum 8 photos per product');
+    for(let k=0;k<files.length;k++){$('#upst').textContent=`Uploading ${k+1} of ${files.length}…`;
+      try{imgs.push(await prodImg(files[k]));drawImgs()}catch(er){toast(er.message);break}}
+    $('#upst').textContent='Done ✓ — click Save to keep changes'};
+  $('#cn').onclick=()=>{editing=null;render()};
+  $('#pf').onsubmit=async e=>{e.preventDefault();
+    const row={name:$('#n').value.trim(),description:$('#d').value.trim(),price:+$('#pr').value,mrp:+$('#mr').value,stock:+$('#st').value,
+      fabric:$('#fa').value.trim()||null,color:$('#co').value.trim()||null,occasion:$('#oc').value.trim()||null,
+      category_id:$('#ca').value||null,images:imgs,active:$('#ac').checked};
+    if(row.mrp<row.price)return toast('MRP must be ≥ price');
+    $('#sv').disabled=true;
+    const {error}=p.id?await sb.from('products').update(row).eq('id',p.id):await sb.from('products').insert(row);
+    if(error){toast(error.message);$('#sv').disabled=false;return}
+    toast('Saved ✓');editing=null;render()};
+}
+
+/* ---------- ORDERS ---------- */
+async function ord(){
+  const os=must(await sb.from('orders').select('*').order('created_at',{ascending:false}));
+  const sts=['pending','verified','dispatched','delivered','cancelled'];
+  app.innerHTML=`<div class="flex justify-between mb-3"><b class="text-base">Orders (${os.length})</b><button id="csv" class="${btn}">Export CSV</button></div>
+  <div class="space-y-3">${os.map(o=>`<div class="${card}"><div class="flex flex-wrap justify-between gap-2">
+   <div><b class="font-mono">#${o.id.slice(0,8).toUpperCase()}</b> <span class="text-gray-500">${new Date(o.created_at).toLocaleString('en-IN')}</span>
+    <p>${esc(o.address.name)} · <a class="underline" href="tel:${esc(o.address.phone)}">${esc(o.address.phone)}</a></p>
+    <p class="text-gray-600">${esc(o.address.line)}, ${esc(o.address.city)}, ${esc(o.address.state)} - ${esc(o.address.pincode)}</p></div>
+   <div class="text-right"><b>${inr(o.total)}</b><p class="text-xs text-gray-500">${o.payment_method==='UPI'?'<b class="text-emerald-700">UPI · Ref '+esc(o.payment_ref||'-')+'</b>':esc(o.payment_method)}${o.coupon?' · '+esc(o.coupon):''}</p></div></div>
+   <div class="border-t mt-2 pt-2">${o.items.map(i=>`<div class="flex justify-between"><span>${esc(i.name)} × ${i.quantity}</span><span>${inr(i.price*i.quantity)}</span></div>`).join('')}</div>
+   <div class="flex flex-wrap gap-2 mt-3 items-center">
+    <select data-s="${o.id}" class="border rounded-lg p-1.5" ${o.order_status==='cancelled'?'disabled':''}>${sts.map(s=>`<option ${s===o.order_status?'selected':''}>${s}</option>`).join('')}</select>
+    <input data-t="${o.id}" placeholder="Tracking ID" value="${esc(o.tracking_id||'')}" class="border rounded-lg p-1.5">
+    <button data-u="${o.id}" class="${btn} !py-1.5">Update</button>
+    <button data-p="${o.id}" class="underline text-xs">Print label</button></div></div>`).join('')}</div>`;
+  app.onclick=async e=>{
+    const id=e.target.dataset.u;
+    if(id){const st=app.querySelector(`[data-s="${id}"]`).value, tr=app.querySelector(`[data-t="${id}"]`).value.trim();
+      if(st==='cancelled'&&!confirm('Cancel and restore stock?'))return;
+      const {error}=await sb.rpc('admin_set_status',{p_id:id,p_status:st,p_tracking:tr});
+      toast(error?error.message:'Updated ✓');if(!error)render()}
+    if(e.target.dataset.p){const o=os.find(x=>x.id===e.target.dataset.p),a=o.address;
+      const w=open('','_blank');w.document.write(`<body style="font:16px sans-serif;padding:24px;border:2px solid #000;max-width:420px"><h3>To:</h3><b>${esc(a.name)}</b><br>${esc(a.line)}<br>${esc(a.city)}, ${esc(a.state)} - <b>${esc(a.pincode)}</b><br>Ph: ${esc(a.phone)}<hr><b>COD: ${inr(o.total)}</b><br>Order #${o.id.slice(0,8).toUpperCase()}<hr>From: Thaarai Tex, Melur, Tamil Nadu<script>print()<\/script>`);w.document.close()}};
+  $('#csv').onclick=()=>{
+    const q=v=>'"'+String(v??'').replace(/"/g,'""').replace(/^([=+\-@])/,"'$1")+'"';
+    const rows=[['Order','Date','Name','Phone','Address','Pincode','Items','Total','Status','Tracking']].concat(os.map(o=>[o.id.slice(0,8),o.created_at,o.address.name,o.address.phone,`${o.address.line}, ${o.address.city}`,o.address.pincode,o.items.map(i=>`${i.name} x${i.quantity}`).join('; '),o.total,o.order_status,o.tracking_id]));
+    const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+rows.map(r=>r.map(q).join(',')).join('\n')],{type:'text/csv'}));a.download='orders.csv';a.click()};
+}
+
+/* ---------- COUPONS ---------- */
+async function coup(){
+  const cs=must(await sb.from('coupons').select('*').order('code'));
+  app.innerHTML=`<div class="${card} max-w-xl space-y-3"><b class="text-base">Coupons</b>
+   <form id="cf" class="grid grid-cols-4 gap-2"><input id="cc" required placeholder="CODE" class="${inp} uppercase"><input id="cp" type="number" min="1" max="90" required placeholder="% off" class="${inp}">
+    <input id="cm" type="number" min="0" placeholder="Min ₹" class="${inp}"><button class="${btn}">Add</button></form>
+   ${cs.map(c=>`<div class="flex justify-between items-center border-t pt-2"><span><b>${esc(c.code)}</b> · ${c.percent}% off · min ${inr(c.min_total)}</span>
+    <span><button data-a="${c.code}" class="underline mr-3">${c.active?'Disable':'Enable'}</button><button data-r="${c.code}" class="underline text-red-600">Delete</button></span></div>`).join('')}</div>`;
+  $('#cf').onsubmit=async e=>{e.preventDefault();
+    const {error}=await sb.from('coupons').insert({code:$('#cc').value.trim().toUpperCase(),percent:+$('#cp').value,min_total:+$('#cm').value||0});
+    toast(error?error.message:'Added ✓');render()};
+  app.onclick=async e=>{const t=e.target.dataset;
+    if(t.a){const c=cs.find(x=>x.code===t.a);await sb.from('coupons').update({active:!c.active}).eq('code',t.a);render()}
+    if(t.r&&confirm('Delete coupon?')){await sb.from('coupons').delete().eq('code',t.r);render()}};
+}
+
+const DEF={
+ brand:{name:'Thaarai Tex',tagline:'Premium Sarees',logo:''},
+ announce:{on:true,text:'✨ இலவச டெலிவரி (Free Delivery) & COD / UPI',bg:'#0f172a',color:'#ffffff'},
+ theme:{primary:'#0f172a'},
+ banners:[{image:'',title:'பாரம்பரிய பட்டு & காட்டன் சேலைகள்',subtitle:'நேரடி நெசவாளர் விலை · Cash on Delivery & UPI',btn:'Shop Now',link:'#/shop',c1:'#b45309',c2:'#0f172a'}],
+ sections:{cats:true,deals:true,fresh:true,trust:true,about:false,catsTitle:'Shop by Category',dealsTitle:'Best Value',freshTitle:'New Arrivals'},
+ trust:[{icon:'🚚',text:'Free Delivery'},{icon:'💵',text:'Cash on Delivery'},{icon:'🧵',text:'100% Handloom'},{icon:'📲',text:'UPI Payments'}],
+ about:{title:'Our Story',text:'',image:''},
+ footer:{about:'Handloom sarees direct from the weavers.',phone:'',email:'',address:'Melur, Tamil Nadu',whatsapp:'919999999999',upi:'yourname@upi',upiName:'Thaarai Tex',instagram:'',facebook:''}
+};
+const merge=(a,b)=>{if(Array.isArray(b))return b;if(b&&typeof b==='object'){const o={...a};for(const k in b)o[k]=merge(a?.[k],b[k]);return o}return b===undefined?a:b};
+const getp=(o,p)=>p.split('.').reduce((a,k)=>a?.[k],o);
+const setp=(o,p,v)=>{const ks=p.split('.'),last=ks.pop();ks.reduce((a,k)=>a[k],o)[last]=v};
+async function uploadImg(f,folder){
+  if(f.size>4*1024*1024)throw new Error('Image must be under 4 MB');
+  const path=`${folder}/${Date.now()}-${Math.random().toString(36).slice(2,7)}-${f.name.replace(/[^\w.-]/g,'_')}`;
+  const {error}=await sb.storage.from('product-images').upload(path,f);
+  if(error)throw error;
+  return sb.storage.from('product-images').getPublicUrl(path).data.publicUrl;
+}
+
+/* ---------- SITE DESIGN ---------- */
+let SS=null;
+async function site(){
+  if(!SS){const {data,error}=await sb.from('site_settings').select('data').eq('id','main').maybeSingle();
+    if(error)throw new Error(error.message+' — run site.sql in Supabase first');
+    SS=merge(DEF,data?.data||{});while(SS.trust.length<4)SS.trust.push({icon:'',text:''})}
+  drawSite();
+}
+function drawSite(){
+  const f=(p,l,type='text')=>`<label class="block text-xs font-medium">${l}<input data-k="${p}" type="${type}" value="${esc(getp(SS,p)??'')}" class="${inp} mt-1"></label>`;
+  const col=(p,l)=>`<label class="block text-xs font-medium">${l}<input data-k="${p}" type="color" value="${esc(getp(SS,p))}" class="mt-1 h-9 w-full border rounded-lg"></label>`;
+  const chk=(p,l)=>`<label class="flex items-center gap-2"><input data-k="${p}" type="checkbox" ${getp(SS,p)?'checked':''}> ${l}</label>`;
+  const img=(p,l)=>`<div><p class="text-xs font-medium mb-1">${l}</p>${getp(SS,p)?`<img src="${esc(getp(SS,p))}" class="h-20 rounded border mb-1 object-contain bg-gray-50">`:''}<div class="flex gap-3 items-center"><input type="file" accept="image/*" data-up="${p}" class="text-xs">${getp(SS,p)?`<button data-clr="${p}" class="text-red-600 text-xs underline">Remove</button>`:''}</div></div>`;
+  const box=(t,b)=>`<div class="${card} space-y-3"><b>${t}</b>${b}</div>`;
+  const bcard=(b,i)=>`<div class="border rounded-xl p-3 space-y-2 bg-gray-50"><div class="flex justify-between items-center"><b>Banner ${i+1}</b><span class="text-xs space-x-3"><button data-bm="${i}:-1" class="underline" ${i===0?'disabled':''}>↑ Up</button><button data-bm="${i}:1" class="underline" ${i===SS.banners.length-1?'disabled':''}>↓ Down</button><button data-bd="${i}" class="underline text-red-600">Delete</button></span></div>
+    <div class="grid sm:grid-cols-2 gap-2">${f(`banners.${i}.title`,'Heading')}${f(`banners.${i}.subtitle`,'Sub text')}${f(`banners.${i}.btn`,'Button text')}${f(`banners.${i}.link`,'Button link')}${col(`banners.${i}.c1`,'Colour 1')}${col(`banners.${i}.c2`,'Colour 2')}</div>
+    ${img(`banners.${i}.image`,'Banner image (wide, about 1600×600). Leave empty to use the colours')}</div>`;
+  app.innerHTML=`<div class="flex justify-between items-center mb-3 py-1 flex-wrap gap-2"><b class="text-base">🎨 Site Design</b>
+    <div class="flex gap-2"><a href="index.html" target="_blank" class="px-4 py-2 border rounded-lg bg-white">Preview store</a><button id="ssave" class="${btn}">Save changes</button></div></div>
+   <div class="grid md:grid-cols-2 gap-4">
+    ${box('Logo & brand',f('brand.name','Store name')+f('brand.tagline','Tagline (shown under the name when no logo)')+img('brand.logo','Logo image (PNG/SVG, transparent background looks best)'))}
+    ${box('Announcement bar (top strip)',chk('announce.on','Show the bar')+f('announce.text','Text')+col('announce.bg','Background colour')+col('announce.color','Text colour'))}
+    ${box('Theme colour',col('theme.primary','Main colour (buttons, header text, footer)'))}
+    ${box('Home page sections',chk('sections.trust','Trust strip (icons)')+chk('sections.cats','Categories row')+f('sections.catsTitle','Categories heading')+chk('sections.deals','Best value products')+f('sections.dealsTitle','Best value heading')+chk('sections.fresh','New arrivals')+f('sections.freshTitle','New arrivals heading')+chk('sections.about','About / story section'))}
+    ${box('Trust strip (4 items)',[0,1,2,3].map(i=>`<div class="grid grid-cols-[70px_1fr] gap-2">${f(`trust.${i}.icon`,'Emoji')}${f(`trust.${i}.text`,'Text')}</div>`).join(''))}
+    ${box('About / story section',f('about.title','Heading')+`<label class="block text-xs font-medium">Text<textarea data-k="about.text" rows="5" class="${inp} mt-1">${esc(SS.about.text)}</textarea></label>`+img('about.image','Image (optional)'))}
+    ${box('Footer, contact & payment',f('footer.about','Short description')+f('footer.phone','Phone')+f('footer.email','Email')+f('footer.address','Address')+f('footer.whatsapp','WhatsApp number with country code (e.g. 919876543210)')+f('footer.instagram','Instagram link (https://…)')+f('footer.facebook','Facebook link (https://…)')+f('footer.upi','UPI ID for online payments')+f('footer.upiName','Name shown in UPI apps'))}
+   </div>
+   <div class="${card} mt-4 space-y-3"><div class="flex justify-between items-center"><b>Hero banners (slideshow on the home page)</b><button id="addb" class="${btn} !py-1.5">+ Add banner</button></div>
+    ${SS.banners.map(bcard).join('')||'<p class="text-gray-500">No banners. The home page will start with the trust strip.</p>'}
+    <details class="text-xs"><summary class="cursor-pointer font-semibold">Link cheat-sheet</summary><p class="mt-1">All products: <code class="select-all">#/shop</code></p>${cats.map(c=>`<p>${esc(c.name)}: <code class="select-all">#/shop?cat=${c.id}</code></p>`).join('')}</details></div>
+   <button id="ssave2" class="${btn} w-full mt-4">Save changes</button>`;
+  app.oninput=e=>{const k=e.target.dataset.k;if(k)setp(SS,k,e.target.type==='checkbox'?e.target.checked:e.target.value)};
+  app.onchange=async e=>{const p=e.target.dataset.up;if(!p||!e.target.files[0])return;toast('Uploading…');
+    try{setp(SS,p,await uploadImg(e.target.files[0],'site'));toast('Uploaded ✓ — click Save changes');drawSite()}catch(er){toast(er.message)}};
+  app.onclick=async e=>{const t=e.target,d=t.dataset;
+    if(d.clr){setp(SS,d.clr,'');drawSite()}
+    if(d.bm){const [i,dir]=d.bm.split(':').map(Number),a=SS.banners;[a[i],a[i+dir]]=[a[i+dir],a[i]];drawSite()}
+    if(d.bd&&confirm('Delete this banner?')){SS.banners.splice(+d.bd,1);drawSite()}
+    if(t.id==='addb'){SS.banners.push({image:'',title:'New banner',subtitle:'',btn:'Shop Now',link:'#/shop',c1:'#b45309',c2:'#0f172a'});drawSite()}
+    if(t.id==='ssave'||t.id==='ssave2'){t.disabled=true;
+      const {error}=await sb.from('site_settings').upsert({id:'main',data:SS,updated_at:new Date().toISOString()});
+      t.disabled=false;toast(error?error.message:'Saved ✓ Open the store and refresh to see it')}};
+}
+
+/* ---------- CATEGORIES ---------- */
+async function cat(){
+  ({data:cats}=await sb.from('categories').select('*').order('name'));cats=cats||[];
+  app.innerHTML=`<div class="${card} max-w-2xl space-y-3"><b class="text-base">Categories</b>
+   <form id="kf" class="flex flex-wrap gap-2 items-center"><input id="kn" required placeholder="New category name" class="${inp} flex-1 min-w-[160px]"><input id="ki" type="file" accept="image/*" class="text-xs"><button class="${btn}">Add</button></form>
+   ${cats.map(c=>`<div class="flex flex-wrap items-center gap-3 border-t pt-3"><img src="${esc(c.image||'https://placehold.co/56?text=+')}" class="w-14 h-14 rounded-full object-cover border">
+     <input data-n="${c.id}" value="${esc(c.name)}" class="${inp} flex-1 min-w-[140px]"><label class="text-xs underline cursor-pointer">Change image<input type="file" accept="image/*" data-ci="${c.id}" class="hidden"></label>
+     <button data-s="${c.id}" class="underline text-xs">Save name</button><button data-r="${c.id}" class="underline text-xs text-red-600">Delete</button></div>`).join('')}</div>`;
+  $('#kf').onsubmit=async e=>{e.preventDefault();const n=$('#kn').value.trim();
+    try{const f=$('#ki').files[0];const image=f?await uploadImg(f,'categories'):null;
+      const {error}=await sb.from('categories').insert({name:n,image,slug:n.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')+'-'+Math.random().toString(36).slice(2,5)});
+      toast(error?error.message:'Added ✓')}catch(er){toast(er.message)}cat()};
+  app.onchange=async e=>{const id=e.target.dataset.ci;if(!id||!e.target.files[0])return;toast('Uploading…');
+    try{const image=await uploadImg(e.target.files[0],'categories');const {error}=await sb.from('categories').update({image}).eq('id',id);toast(error?error.message:'Image updated ✓')}catch(er){toast(er.message)}cat()};
+  app.onclick=async e=>{const d=e.target.dataset;
+    if(d.s){const n=app.querySelector(`[data-n="${d.s}"]`).value.trim();if(!n)return;const {error}=await sb.from('categories').update({name:n}).eq('id',d.s);toast(error?error.message:'Saved ✓')}
+    if(d.r&&confirm('Delete this category? Products stay but lose their category.')){const {error}=await sb.from('categories').delete().eq('id',d.r);toast(error?error.message:'Deleted');cat()}};
+}
+boot();
+</script>
+</body>
+</html>
