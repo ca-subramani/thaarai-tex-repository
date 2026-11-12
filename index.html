@@ -9,7 +9,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+Tamil:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Manrope:wght@400;500;600;700;800&family=Noto+Sans+Tamil:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 html,body{overflow-x:hidden;max-width:100%}
 body{font-family:'Plus Jakarta Sans','Noto Sans Tamil',system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;background-color:#f8fafc}
@@ -33,10 +33,79 @@ input,select,textarea{font-size:16px!important}
 @keyframes fill{100%{box-shadow:inset 0 0 0 38px rgba(16,185,129,.12)}}
 .lens-zoom-container{position:relative;overflow:hidden;cursor:crosshair}
 .lens-zoom-container img{transition:transform .15s ease-out;transform-origin:center center;will-change:transform}
+:root{--ink:#243744;--ink-soft:#52636a;--teal:#087f73;--teal-dark:#06665e;--gold:#b58b51;--paper:#f7f5f0;--line:#e8e4dc}
+body{background:var(--paper);color:var(--ink)}
+body>header{background:rgba(255,255,255,.96)!important;border-color:var(--line)!important;box-shadow:0 4px 18px rgba(36,55,68,.045)}
+#brand span:first-child{color:var(--ink)!important;letter-spacing:.04em}
+#app{max-width:1320px;padding-top:1.5rem}
+body>header>div:first-child,#foot>div{max-width:1320px}
+#app h1,#app h2,#app h3{letter-spacing:-.025em}
+#app .group img{transition:transform .55s cubic-bezier(.2,.7,.2,1)}
+#app .group:hover img{transform:scale(1.035)}
+.tb{transition:color .2s ease,transform .2s ease}
+.tb:active{transform:translateY(-2px)}
+#app .bg-white{border-color:var(--line)}
+#app .shadow-soft{box-shadow:0 12px 32px rgba(36,55,68,.07)!important}
+#app a[class*="bg-slate-900"],#app button[class*="bg-slate-900"],#app .bg-slate-900{background-color:var(--ink)!important}
+#app button[class*="bg-emerald-600"],#app a[class*="bg-emerald-600"]{background-color:var(--teal)!important}
+#app button[class*="bg-emerald-600"]:hover,#app a[class*="bg-emerald-600"]:hover{background-color:var(--teal-dark)!important}
+#app .text-emerald-700{color:var(--teal)!important}
+#app input:focus,#app textarea:focus,#app select:focus{border-color:var(--teal)!important;box-shadow:0 0 0 3px rgba(8,127,115,.1)}
+#app img{background-color:#eee9df}
+#fl{box-shadow:0 24px 70px rgba(29,42,50,.18)}
+#sort-sheet>div{padding-bottom:calc(2rem + env(safe-area-inset-bottom))}
+#app .product-card img{transition:transform .45s cubic-bezier(.2,.7,.2,1)}
+#app .product-card:hover img{transform:scale(1.035)}
+@media(max-width:640px){#app{padding-top:1rem}#fl{padding-top:calc(1.25rem + env(safe-area-inset-top));padding-bottom:calc(1.25rem + env(safe-area-inset-bottom))}}
+:root{--ink:#1d3435;--ink-soft:#637373;--teal:#087f73;--teal-dark:#06675d;--gold:#c39757;--paper:#f5f3ed;--line:#e5e1d7;--card:#fffefa}
+body{font-family:'Manrope','Noto Sans Tamil',sans-serif!important;background:var(--paper)!important;color:var(--ink)!important}
+body>header{position:sticky;top:0;background:rgba(255,254,250,.97)!important;border-color:var(--line)!important;box-shadow:0 8px 28px rgba(25,48,48,.065)!important}
+body>header>div:first-child{min-height:76px;padding-top:14px!important;padding-bottom:14px!important}
+#brand span:first-child{font-family:'DM Serif Display',serif!important;font-size:25px!important;letter-spacing:.09em!important;color:var(--ink)!important}
+#brand span:last-child{font-size:9px!important;letter-spacing:.22em!important;color:#897c65!important}
+#sf input,#sf2 input{background:#f0eee7!important;border-radius:14px!important;padding-top:13px!important;padding-bottom:13px!important}
+body>header nav>a[href="#/shop"]{color:var(--ink)!important;text-transform:uppercase;letter-spacing:.1em}
+body>header nav>a[href="#/cart"]{background:var(--teal)!important;border-radius:14px!important}
+#app{max-width:1360px!important;padding:28px 28px 110px!important}
+#app h1,#app h2,#app h3{letter-spacing:-.035em}
+#app h1,#app h2{font-family:'DM Serif Display',Georgia,serif!important;font-weight:400!important}
+#app .bg-white{background:var(--card)!important;border-color:var(--line)!important}
+#app .shadow-soft{box-shadow:0 16px 42px rgba(29,52,53,.075)!important}
+#app .bg-slate-900,#app a[class*="bg-slate-900"],#app button[class*="bg-slate-900"]{background-color:var(--ink)!important}
+#app .bg-emerald-600,#app button[class*="bg-emerald-600"],#app a[class*="bg-emerald-600"]{background-color:var(--teal)!important}
+#app .text-emerald-700{color:var(--teal)!important}
+#app .rounded-3xl{border-radius:26px!important}
+#app .rounded-full{border-radius:14px!important}
+#app button,#app a{transition:transform .2s ease,box-shadow .2s ease,background-color .2s ease}
+#app button[class*="bg-emerald"],#app a[class*="bg-emerald"],#app button[class*="bg-slate-900"],#app a[class*="bg-slate-900"]{box-shadow:0 7px 18px rgba(8,100,90,.16)}
+#app #car{height:clamp(470px,52vw,650px)!important;border-radius:32px!important;box-shadow:0 24px 70px rgba(24,44,43,.18)!important}
+#car .slide{justify-content:center!important;padding:clamp(28px,7vw,100px)!important}
+#car .slide>div.relative{max-width:690px!important}
+#car .slide h1{font-size:clamp(42px,6.4vw,82px)!important;line-height:1.04!important;max-width:690px;text-wrap:balance}
+#car .slide p{font-size:clamp(14px,1.4vw,18px)!important;max-width:490px;line-height:1.8!important}
+#car .slide img{object-position:center 38%;filter:saturate(.88)}
+#car .slide>div.absolute.bg-gradient-to-t{background:linear-gradient(90deg,rgba(14,35,34,.88),rgba(14,35,34,.58) 48%,rgba(14,35,34,.08))!important}
+#app section.mb-12.grid{margin-top:26px!important;border-radius:20px!important}
+#app .grid.grid-cols-2.md\:grid-cols-3>a{border-radius:22px!important}
+#app a.block.group>div:first-child{border-radius:22px!important;background:#eeeae1!important;box-shadow:0 9px 30px rgba(31,51,50,.09)!important}
+#app a.block.group>div:first-child>img{transition:transform .6s cubic-bezier(.18,.72,.2,1)}
+#app a.block.group:hover>div:first-child>img{transform:scale(1.04)}
+#app a.block.group h3{font-family:'Manrope',sans-serif!important;font-weight:700!important;letter-spacing:-.02em!important}
+#app a.block.group>div:first-child button[data-w]{width:42px;height:42px;border:1px solid rgba(255,255,255,.7);box-shadow:0 5px 16px rgba(0,0,0,.12)}
+#app a.block.group .card-quick-add{position:absolute;inset:auto 10px 10px;width:calc(100% - 20px);padding:12px;border:0;border-radius:12px;background:rgba(255,254,250,.96);color:var(--ink);font-size:11px;font-weight:800;opacity:0;transform:translateY(5px);transition:all .2s ease}
+#app a.block.group:hover .card-quick-add{opacity:1;transform:translateY(0)}
+#app .filter-pill{border-radius:12px!important}
+#app input:focus,#app textarea:focus,#app select:focus{border-color:var(--teal)!important;box-shadow:0 0 0 3px rgba(8,127,115,.12)}
+#app .lens-zoom-container{border-radius:22px!important}
+#app #tabbar{background:rgba(255,254,250,.97)!important;border-color:var(--line)!important;box-shadow:0 -8px 32px rgba(28,48,47,.075)!important}
+#foot{background:#1d3435!important;color:#d4d8cf!important}
+#foot b{color:#fff!important}
+@media(max-width:760px){#app{padding:16px 16px 104px!important}#app #car{height:510px!important;border-radius:22px!important}#car .slide{justify-content:flex-end!important;padding:28px!important}#car .slide h1{font-size:43px!important}#car .slide>div.absolute.bg-gradient-to-t{background:linear-gradient(0deg,rgba(14,35,34,.9),rgba(14,35,34,.52) 55%,rgba(14,35,34,.08))!important}#app a.block.group .card-quick-add{position:static;display:block;width:auto;margin:9px 10px 0;opacity:1;transform:none;border:1px solid var(--line);background:#fffefa;padding:10px}#app .rounded-full{border-radius:13px!important}body>header>div:first-child{min-height:68px!important}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}}
 </style>
 </head>
 <body class="text-gray-900 antialiased selection:bg-slate-900 selection:text-white">
-
+<div class="bg-[#243744] px-3 py-2 text-center text-[10px] font-bold tracking-[.14em] text-white sm:text-[11px]">COMPLIMENTARY DELIVERY ON EVERY ORDER <span class="mx-2 text-white/40">•</span> COD &amp; UPI AVAILABLE</div>
 <header class="bg-white/95 backdrop-blur sticky top-0 z-40 border-b border-gray-100">
   <div class="max-w-6xl mx-auto px-4 py-3.5 flex items-center gap-3">
     <a href="#/" id="brand" class="flex flex-col"></a>
@@ -55,6 +124,7 @@ input,select,textarea{font-size:16px!important}
       </a>
       <a href="#/cart" aria-label="Bag" class="relative w-10 h-10 rounded-full flex items-center justify-center bg-slate-900 text-white sm:w-auto sm:px-4 sm:flex sm:items-center sm:gap-2 shadow-soft hover:bg-slate-800 transition"><svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 7h12l1 13H5z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg><span class="cc absolute -top-1 -right-1 bg-rose-600 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] px-1 grid place-items-center hidden">0</span></a>
     </nav></div>
+  <div class="border-t border-[#e8e4dc] bg-[#fffefa]"><nav class="mx-auto flex max-w-[1320px] items-center gap-2 overflow-x-auto px-4 py-2.5 text-[10px] font-bold uppercase tracking-[.14em] text-[#52636a] no-scrollbar sm:gap-5 sm:px-7"><a class="shrink-0 rounded-full bg-[#1d3435] px-4 py-2 text-white" href="#/shop">Shop all</a><a class="shrink-0 px-2 py-2 hover:text-[#087f73]" href="#/shop?q=Silk">Silk collection</a><a class="shrink-0 px-2 py-2 hover:text-[#087f73]" href="#/shop?q=Cotton">Cotton weaves</a><a class="shrink-0 px-2 py-2 hover:text-[#087f73]" href="#/shop?q=Pattu">Pattu edit</a><a class="shrink-0 px-2 py-2 hover:text-[#087f73]" href="#/shop?sort=new">Just arrived</a><a class="ml-auto hidden shrink-0 text-[#087f73] md:block" href="#/account/orders">Track your order →</a></nav></div>
   <div id="msearch" class="hidden px-4 pb-3 sm:hidden"><form id="sf2"><input id="q2" placeholder="Search sarees…" class="w-full bg-[#f1f5f9] rounded-full py-2.5 px-4 outline-none text-xs"></form></div>
 </header>
 
@@ -189,8 +259,8 @@ const stars=n=>{
 const SET={
   brand:{name:'Thaarai Tex',tagline:'Premium Sarees',logo:''},
   banners:[
-    {image:'',title:'பாரம்பரிய பட்டு & காட்டன் சேலைகள்',subtitle:'நேரடி நெசவாளர் விலை · Cash on Delivery & UPI',btn:'Explore Collection',link:'#/shop',c1:'#1e293b',c2:'#0f172a'},
-    {image:'',title:'Exquisite Handloom Silks',subtitle:'Direct from Master Weavers to Your Doorstep',btn:'Shop Now',link:'#/shop',c1:'#0f172a',c2:'#334155'}
+    {image:'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=2000&q=90',title:'பாரம்பரிய பட்டு & காட்டன் சேலைகள்',subtitle:'நேரடி நெசவாளர் விலை · Cash on Delivery & UPI',btn:'Explore Collection',link:'#/shop',c1:'#1e293b',c2:'#0f172a'},
+    {image:'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=2000&q=90',title:'Exquisite Handloom Silks',subtitle:'Direct from Master Weavers to Your Doorstep',btn:'Shop Now',link:'#/shop',c1:'#0f172a',c2:'#334155'}
   ],
   about:{title:'Crafted with Tradition',text:'Thaarai Tex brings you handpicked, authentic handloom sarees directly from traditional weavers. Every piece reflects meticulous artistry, premium fabrics, and timeless elegance.'},
   footer:{about:'Handloom sarees direct from the weavers.',phone:'',email:'',address:'Melur, Tamil Nadu',whatsapp:'919999999999',upi:'yourname@upi',upiName:'Thaarai Tex'}
@@ -287,6 +357,7 @@ function card(p){
     <img loading="lazy" src="${img(p)}" alt="${esc(p.name)}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
     ${o?`<span class="absolute top-3 left-3 bg-slate-900/90 backdrop-blur text-white text-[10px] font-bold px-2.5 py-1 rounded-full">${o}% OFF</span>`:''}
     <button data-w="${p.id}" aria-label="Wishlist" class="absolute top-3 right-3 bg-white/90 backdrop-blur w-8 h-8 rounded-full shadow-sm grid place-items-center">${heart(wish.has(p.id))}</button>
+    ${p.stock>0?`<button data-card-add="${p.id}" data-max="${p.stock}" class="card-quick-add">Quick add to bag <span aria-hidden="true">＋</span></button>`:''}
     ${p.stock<=0?'<div class="absolute inset-0 bg-white/80 backdrop-blur-sm grid place-items-center text-xs font-bold text-gray-800">Out of stock</div>':''}
    </div>
    <div class="pt-3 px-1.5"><h3 class="font-semibold text-xs sm:text-sm line-clamp-1 text-gray-800">${esc(p.name)}</h3>
@@ -324,14 +395,21 @@ async function home(){
 
   app.innerHTML=`
   <!-- Hero Banner Slider -->
-  ${bn.length?`<section id="car" class="relative rounded-3xl overflow-hidden h-80 sm:h-[420px] shadow-soft mb-8">${bn.map(slide).join('')}${bn.length>1?`<div class="absolute bottom-4 left-6 right-6 flex justify-center gap-2 z-10">${bn.map((_,i)=>`<button data-dot="${i}" class="dot w-8 h-1.5 rounded-full transition-all ${i?'bg-white/40':'bg-white'}"></button>`).join('')}</div>`:''}</section>`:''}
+  ${bn.length?`<section id="car" class="relative rounded-3xl overflow-hidden h-[420px] sm:h-[560px] shadow-soft mb-7">${bn.map(slide).join('')}${bn.length>1?`<div class="absolute bottom-5 left-6 right-6 flex justify-center gap-2 z-10">${bn.map((_,i)=>`<button data-dot="${i}" aria-label="Show campaign ${i+1}" class="dot w-8 h-1.5 rounded-full transition-all ${i?'bg-white/40':'bg-white'}"></button>`).join('')}</div>`:''}</section>`:''}
 
-  <!-- Super Attractive Professional Categories Grid with Large Image Boxes -->
-  <section class="mb-12">
+  <section class="mb-12 grid grid-cols-1 gap-px overflow-hidden rounded-2xl border border-[#e8e4dc] bg-[#e8e4dc] sm:grid-cols-3">
+    <div class="flex items-center gap-3 bg-white px-5 py-4"><span class="text-[#087f73]">${ICONS.handloom}</span><div><b class="block text-xs text-[#243744]">Woven by artisans</b><span class="text-[10px] text-gray-500">Authentic, thoughtfully sourced</span></div></div>
+    <div class="flex items-center gap-3 bg-white px-5 py-4"><span class="text-[#087f73]">${ICONS.truck}</span><div><b class="block text-xs text-[#243744]">Free delivery, always</b><span class="text-[10px] text-gray-500">No surprise shipping charges</span></div></div>
+    <div class="flex items-center gap-3 bg-white px-5 py-4"><span class="text-[#087f73]">${ICONS.cash}</span><div><b class="block text-xs text-[#243744]">Shop with confidence</b><span class="text-[10px] text-gray-500">Cash on delivery available</span></div></div>
+  </section>
+
+  <!-- Featured collections -->
+  <section class="mb-14">
     <div class="flex items-end justify-between mb-6 px-1">
       <div>
-        <h2 class="font-extrabold text-xl sm:text-2xl text-gray-900 tracking-tight">Featured Categories</h2>
-        <p class="text-xs sm:text-sm text-gray-500 mt-1">Explore our finest handwoven selections</p>
+        <p class="text-[10px] font-bold uppercase tracking-[.22em] text-[#b58b51]">The Thaarai edit</p>
+        <h2 class="mt-1 font-extrabold text-xl sm:text-2xl text-gray-900 tracking-tight">Find your perfect weave</h2>
+        <p class="text-xs sm:text-sm text-gray-500 mt-1">Explore handpicked collections made for every moment.</p>
       </div>
       <a href="#/shop" class="hidden sm:flex items-center gap-1 text-sm font-bold text-slate-900 hover:text-emerald-600 transition-colors">Shop All <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg></a>
     </div>
@@ -521,8 +599,9 @@ async function shop(params){
 
     <!-- Product Listing -->
     <section class="min-w-0">
-      <div class="flex items-center justify-between mb-4 px-1">
-         <p class="text-xs font-semibold text-gray-500">Showing <span class="text-gray-900 font-extrabold">${data.length}</span> items${f.q?` for "<span class="text-gray-900">${esc(f.q)}</span>"`:''}</p>
+      <div class="mb-6 flex flex-wrap items-end justify-between gap-3 px-1">
+        <div><p class="text-[10px] font-extrabold uppercase tracking-[.2em] text-[#b58b51]">The Thaarai edit</p><h1 class="mt-1 text-3xl font-extrabold text-[#1d3435]">Shop handloom</h1><p class="mt-1 text-xs text-gray-500">Showing <b class="text-[#1d3435]">${data.length}</b> handpicked pieces${f.q?` for “<b>${esc(f.q)}</b>”`:''}</p></div>
+        <span class="rounded-full border border-[#e5e1d7] bg-white px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-[#52636a]">Complimentary delivery</span>
       </div>
       ${grid(data)}
     </section>
@@ -1022,7 +1101,7 @@ async function route(){
   const [path,qs]=(location.hash||'#/').slice(1).split('?'), params=new URLSearchParams(qs||'');
   app.innerHTML='<p class="text-center text-gray-400 py-20 text-xs">ஏற்றப்படுகிறது…</p>';
   $('#tabbar').classList.toggle('hidden',path.startsWith('/p/')||path==='/checkout');
-  document.querySelectorAll('.tb').forEach(a=>{const on=a.dataset.tb.split('|').some(k=>k==='/'?(path==='/'||path===''):path.startsWith(k));a.style.color=on?'var(--p)':'#94a3b8'});
+  document.querySelectorAll('.tb').forEach(a=>{const on=a.dataset.tb.split('|').some(k=>k==='/'?(path==='/'||path===''):path.startsWith(k));a.style.color=on?'var(--teal)':'#94a3b8'});
   try{
     if(path==='/'||path==='')await home();
     else if(path==='/shop')await shop(params);
@@ -1035,7 +1114,12 @@ async function route(){
   }catch(err){console.error(err);app.innerHTML='<p class="text-center text-rose-600 py-20 text-xs">Error: '+esc(err.message||err)+'</p>';}
   window.scrollTo(0,0);
 }
-document.addEventListener('click',e=>{const b=e.target.closest('[data-w]');if(b){e.preventDefault();e.stopPropagation();toggleWish(b.dataset.w)}},true);
+document.addEventListener('click',e=>{
+  const quick=e.target.closest('[data-card-add]');
+  if(quick){e.preventDefault();e.stopPropagation();addCart(quick.dataset.cardAdd,1,Number(quick.dataset.max));return}
+  const wishButton=e.target.closest('[data-w]');
+  if(wishButton){e.preventDefault();e.stopPropagation();toggleWish(wishButton.dataset.w)}
+},true);
 $('#sf').onsubmit=e=>{e.preventDefault();location.hash='#/shop?q='+encodeURIComponent($('#q').value.trim())};
 $('#sf2').onsubmit=e=>{e.preventDefault();location.hash='#/shop?q='+encodeURIComponent($('#q2').value.trim());$('#msearch').classList.add('hidden')};
 $('#msb').onclick=()=>{$('#msearch').classList.toggle('hidden');$('#q2').focus()};
