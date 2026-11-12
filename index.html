@@ -384,6 +384,202 @@ const stars=n=>{
 /* ===== SITE SETTINGS ===== */
 const SET={
   brand:{name:'Thaarai Tex',tagline:'Premium Sarees',logo:''},
+  banners:[
+    {image:'',title:'பாரம்பரிய பட்டு & காட்டன் சேலைகள்',subtitle:'நேரடி நெசவாளர் விலை · Cash on Delivery & UPI',btn:'Explore Collection',link:'#/shop',c1:'#1e293b',c2:'#0f172a'},
+    {image:'',title:'Exquisite Handloom Silks',subtitle:'Direct from Master Weavers to Your Doorstep',btn:'Shop Now',link:'#/shop',c1:'#0f172a',c2:'#334155'}
+  ],
+  about:{title:'Crafted with Tradition',text:'Thaarai Tex brings you handpicked, authentic handloom sarees directly from traditional weavers. Every piece reflects meticulous artistry, premium fabrics, and timeless elegance.'},
+  footer:{about:'Sarees at Wholesale Prices.',phone:'',email:'Thaaraitex.support@gmail.com',address:'9Th Ward, Tharamangalam, Salem, Tamil Nadu - 636502.',whatsapp:'919361378211',upi:'ThaaraiTex@HDFC',upiName:'Thaarai Tex'}
+};
+
+function applySettings(){
+  const b=SET.brand,f=SET.footer;
+  const brandEl=$('#brand');
+  if(brandEl) brandEl.innerHTML=`<span class="font-extrabold text-xl uppercase tracking-tight text-slate-900">${esc(b.name)}</span><span class="text-[10px] text-gray-400 font-semibold uppercase tracking-wider">${esc(b.tagline)}</span>`;
+  const footEl=$('#foot');
+  if(footEl) footEl.innerHTML=`<div class="max-w-6xl mx-auto px-4 grid sm:grid-cols-3 gap-6 text-left"><div><b class="text-white text-sm">${esc(b.name)}</b><p class="mt-2 leading-relaxed text-gray-400">${esc(f.about)}</p></div>
+   <div><b class="text-white text-sm">Contact</b><p class="mt-2 leading-6 text-gray-400">${f.phone?`${ICONS.phone}<a href="tel:${esc(f.phone)}">${esc(f.phone)}</a><br>`:''}${f.email?`${ICONS.mail}${esc(f.email)}<br>`:''}${f.address?`${ICONS.mapPin}${esc(f.address)}`:''}</p></div>
+   <div><b class="text-white text-sm">Quick links</b><p class="mt-2 leading-7 text-gray-400"><a href="#/shop" class="underline">Shop</a> · <a href="#/account/orders" class="underline">My Orders</a><br><a class="underline" target="_blank" rel="noopener" href="https://wa.me/${esc(f.whatsapp)}">${ICONS.whatsapp}WhatsApp support</a></p></div></div>
+   <p class="mt-6 text-center text-gray-500 text-[11px]">© ${new Date().getFullYear()} ${esc(b.name)}. All rights reserved.</p>`;
+}
+applySettings();
+
+function setNav(){
+  const p=profile(), txt=$('#lgn-txt');
+  if(txt)txt.textContent=p?p.name.split(' ')[0]:'Login';
+  if($('#lgn')) $('#lgn').href=p?'#/account/hub':'#/login';
+  if($('#tbp')) $('#tbp').href=p?'#/account/hub':'#/login';
+}
+async function loadUserData(){
+  wish = new Set();
+  const p = profile();
+  if(!p){await loadCartCloud();return;}
+  try{
+    if(sb){
+      const {data:cData}=await sb.rpc('get_user_cart',{p_phone:p.phone});
+      if(cData&&Array.isArray(cData)){cart=cData;store.set('cart',cart);}
+      else{await saveCartCloud();}
+      const {data:wData}=await sb.rpc('get_wishlist',{p_phone:p.phone});
+      (wData||[]).forEach(x=>wish.add(x));
+    }
+  }catch{}
+  saveCartBadge();
+  setNav();
+}
+async function setProfile(name,phone){
+  store.set('profile',{name,phone});
+  OC={list:[]};ofilter='all';addrEdit=null;
+  await loadUserData();
+  setNav();
+}
+function clearProfile(){
+  localStorage.removeItem('profile');
+  cart=[];saveCart();wish=new Set();OC={list:[]};ofilter='all';addrEdit=null;setNav();
+}
+async function initAuth(){setNav();await loadUserData()}
+async function toggleWish(id){
+  const p=profile();
+  if(!p){toast('Login to save to your wishlist');location.hash='#/login';return}
+  try{
+    if(sb){
+      const {data,error}=await sb.rpc('toggle_wishlist',{p_phone:p.phone,p_product:id});
+      if(error)return toast('Could not update wishlist');
+      data?wish.add(id):wish.delete(id);
+    }
+    document.querySelectorAll(`[data-w="${id}"]`).forEach(b=>{b.innerHTML=heart(wish.has(id))});
+    if((location.hash||'').startsWith('#/account/wishlist'))route();
+  }catch{toast('Could not update wishlist');}
+}
+
+/* ===== CART ===== */
+function addCart(id,qty=1,max=10){
+  const e=cart.find(i=>i.id===id);
+  if(e){if(e.qty+qty>max)return toast('Max stock reached');e.qty+=qty}else cart.push({id,qty});
+  saveCart();toast('Added to bag ✓');
+}
+async function cartLines(){
+  if(!cart.length)return[];
+  try{
+    if(sb){
+      const {data}=await sb.from('products').select('*').in('id',cart.map(i=>i.id));
+      return cart.map(i=>({...i,p:(data||[]).find(p=>p.id===i.id)})).filter(l=>l.p);
+    }
+  }catch{}
+  return [];
+}
+async function couponDiscount(sub){
+  if(!coupon || !sb)return 0;
+  try{
+    const {data}=await sb.rpc('check_coupon',{p_code:coupon,p_subtotal:sub});
+    return Number(data)||0;
+  }catch{return 0;}
+}
+
+/* ===== CARDS & VIEWS ===== */
+function card(p){
+  const o=off(p);
+  return `<a href="#/p/${p.id}" class="block group">
+   <div class="relative aspect-[4/5] bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-soft">
+    <img loading="lazy" src="${img(p)}" alt="${esc(p.name)}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+    ${o?`<span class="absolute top-3 left-3 bg-slate-900/90 backdrop-blur text-white text-[10px] font-bold px-2.5 py-1 rounded-full">${o}% OFF</span>`:-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>','w-3.5 h-3.5 inline mr-1 text-gray-400'),
+  mail:ic('<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>','w-3.5 h-3.5 inline mr-1 text-gray-400'),
+  mapPin:ic('<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>','w-3.5 h-3.5 inline mr-1 text-gray-400'),
+  whatsapp:ic('<path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>','w-4 h-4 inline mr-1.5 text-emerald-600'),
+  edit:ic('<path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>','w-3 h-3 inline mr-1 text-gray-600'),
+  logout:ic('<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>','w-3.5 h-3.5 inline mr-1 text-rose-500'),
+  back:ic('<path d="M15 19l-7-7 7-7"/>','w-5 h-5'),
+  chev:ic('<path d="M9 5l7 7-7 7"/>','w-4 h-4 text-gray-400'),
+  star:ic('<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>','w-3.5 h-3.5 text-amber-500 inline fill-amber-500'),
+  starEmpty:ic('<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>','w-3.5 h-3.5 text-amber-300 inline')
+};
+const TRUST_ICONS=[
+  {icon: ICONS.truck, title: 'Free Delivery', desc: 'Direct to doorstep'},
+  {icon: ICONS.cash, title: 'Cash on Delivery', desc: 'Pay when you receive'},
+  {icon: ICONS.tag, title: 'Wholesale Price', desc: 'Direct weaver rates'},
+  {icon: ICONS.handloom, title: '100% Handloom', desc: 'Pure authentic quality'}
+];
+
+/* ===== HELPERS ===== */
+const $=s=>document.querySelector(s), app=$('#app');
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const hx=(value,fallback)=>/^#[\da-f]{3,8}$/i.test(String(value||''))?value:fallback;
+const safeLink=value=>{const link=String(value||'');return link.startsWith('#/')?link:'#/shop'};
+const inr=n=>'₹'+Number(n||0).toLocaleString('en-IN');
+const img=p=>esc(p.images?.[0]||'https://placehold.co/600x750?text=Thaarai+Tex');
+const store={get:k=>{try{return JSON.parse(localStorage.getItem(k))}catch{return null}},set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}}};
+let coupon='', wish=new Set();
+const off=p=>p.mrp>p.price?Math.round((p.mrp-p.price)/p.mrp*100):0;
+function toast(m){const t=$('#toast');if(!t)return;t.textContent=m;t.classList.remove('hidden');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.add('hidden'),2200)}
+
+/* ===== CUSTOMER IDENTITY & PERSISTENT SYNC ===== */
+let OC={list:[]};
+let ofilter='all', addrEdit=null;
+const profile=()=>store.get('profile');
+
+let cart = [];
+async function loadCartCloud(){
+  try{
+    const p = profile();
+    if(!p) { cart = store.get('cart')||[]; saveCartBadge(); return; }
+    if(sb){
+      const {data} = await sb.rpc('get_user_cart', {p_phone: p.phone});
+      cart = Array.isArray(data) ? data : (store.get('cart')||[]);
+    } else {
+      cart = store.get('cart')||[];
+    }
+  }catch{ cart = store.get('cart')||[]; }
+  saveCartBadge();
+}
+async function saveCartCloud(){
+  const p = profile();
+  store.set('cart', cart);
+  saveCartBadge();
+  if(p && sb) {
+    try{ await sb.rpc('save_user_cart', {p_phone: p.phone, p_items: cart}); }catch{}
+  }
+}
+function saveCart(){ saveCartCloud(); }
+function saveCartBadge(){
+  const n = cart.reduce((s,i)=>s+i.qty,0);
+  document.querySelectorAll('.cc').forEach(e=>{e.textContent=n;e.classList.toggle('hidden',!n)});
+}
+
+async function getAddrs(){
+  try{
+    const p = profile();
+    if(!p) return store.get('addrs:none')||[];
+    if(sb){
+      const {data} = await sb.rpc('get_user_addresses', {p_phone: p.phone});
+      if(data && data.length) return data;
+    }
+    return store.get('addrs:'+p.phone)||[];
+  }catch{ return store.get('addrs:none')||[]; }
+}
+async function setAddrs(L){
+  const p = profile();
+  if(p) {
+    store.set('addrs:'+p.phone, L);
+    if(sb){
+      try{ await sb.rpc('save_user_addresses', {p_phone: p.phone, p_addresses: L}); }catch{}
+    }
+  } else {
+    store.set('addrs:none', L);
+  }
+}
+
+const heart=a=>`<svg width="17" height="17" viewBox="0 0 24 24" fill="${a?'#e11d48':'none'}" stroke="${a?'#e11d48':'currentColor'}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-8-5.2-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.8-8 11-8 11z"/></svg>`;
+const stars=n=>{
+  const filled = Math.round(n);
+  let html = '';
+  for(let i=0; i<5; i++){
+    html += (i < filled) ? ICONS.star : ICONS.starEmpty;
+  }
+  return `<span class="inline-flex items-center gap-0.5">${html}</span>`;
+};
+
+/* ===== SITE SETTINGS ===== */
+const SET={
+  brand:{name:'Thaarai Tex',tagline:'Premium Sarees',logo:''},
   announce:{on:false,text:'',bg:'#0f172a',color:'#ffffff'},
   theme:{primary:'#0f172a'},
   sections:{cats:true,deals:true,fresh:true,trust:true,about:true,catsTitle:'Featured Categories',dealsTitle:'Best Value',freshTitle:'New Arrivals'},
