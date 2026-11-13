@@ -197,7 +197,13 @@ async function setAddrs(L){
   if(p) {
     store.set('addrs:'+p.phone, L);
     if(sb){
-      try{ await sb.rpc('save_user_addresses', {p_phone: p.phone, p_addresses: L}); }catch{}
+      try{
+        await sb.rpc('save_user_addresses', {p_phone: p.phone, p_addresses: L});
+        if(L && L.length){
+          const cleanPhone = String(p.phone).replace(/\D/g, '').slice(-10);
+          sb.from('customers').update({ address: L[0], last_active: new Date().toISOString() }).eq('phone', cleanPhone || p.phone).then();
+        }
+      }catch{}
     }
   } else {
     store.set('addrs:none', L);
@@ -349,6 +355,17 @@ async function loadUserData(){
 async function setProfile(name,phone){
   store.set('profile',{name,phone});
   OC={list:[]};ofilter='all';addrEdit=null;
+  try{
+    if(sb && phone){
+      const cleanPhone = String(phone).replace(/\D/g, '').slice(-10);
+      sb.from('customers').upsert({
+        phone: cleanPhone || phone,
+        name: name,
+        customer_id: 'TT-CUST-' + (cleanPhone ? cleanPhone.slice(-4) : String(Math.floor(1000 + Math.random() * 9000))),
+        last_active: new Date().toISOString()
+      }, { onConflict: 'phone' }).then();
+    }
+  }catch{}
   await loadUserData();
   setNav();
 }
