@@ -2,110 +2,111 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#12231c">
-  <title>Thaarai Tex — Admin Studio</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="theme-color" content="#0f172a">
+  <title>Thaarai Tex — Executive Admin Studio</title>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script defer src="./site-enhancements.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
     #admin-exit-layer section>div:first-child{display:none}
-    :root{font-family:'DM Sans',sans-serif;color:#24342d;background:#f4f5f2}
-    h1,h2,h3,.brand{font-family:Manrope,sans-serif}
+    :root{font-family:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:#0f172a;background:#f8fafc}
+    h1,h2,h3,h4,.brand{font-family:'Plus Jakarta Sans',sans-serif}
     *{box-sizing:border-box}
-    body{margin:0;min-width:320px}
+    body{margin:0;min-width:320px;background:#f8fafc;color:#0f172a;-webkit-tap-highlight-color:transparent}
     button,input,textarea,select{font:inherit}
-    button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid #b9d9ae;outline-offset:2px}
+    button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid #6366f1;outline-offset:2px}
     .scrollbar-hide{scrollbar-width:none}.scrollbar-hide::-webkit-scrollbar{display:none}
-    dialog::backdrop{background:rgba(12,25,18,.55);backdrop-filter:blur(5px)}
-    .fade-in{animation:fade-in .22s ease-out}
-    @keyframes fade-in{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+    dialog::backdrop{background:rgba(15,23,42,.65);backdrop-filter:blur(6px)}
+    .fade-in{animation:fade-in .2s cubic-bezier(.16,1,.3,1)}
+    @keyframes fade-in{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
   </style>
 </head>
-<body>
+<body class="selection:bg-indigo-600 selection:text-white">
+
   <!-- Admin Sign-In Screen -->
-  <div id="login-screen" class="min-h-screen grid lg:grid-cols-[1.1fr_.9fr] bg-[#f5f5f1]">
-    <section class="hidden lg:flex relative overflow-hidden bg-[#12231c] text-white p-14 flex-col justify-between">
-      <div class="absolute -right-32 -top-32 w-[520px] h-[520px] rounded-full border border-white/10"></div>
-      <div class="absolute right-[-70px] top-[-70px] w-[390px] h-[390px] rounded-full border border-white/10"></div>
-      <div class="absolute right-20 bottom-[-220px] w-[500px] h-[500px] rounded-full bg-[#c3a875]/10 blur-3xl"></div>
-      <div class="relative brand text-xl font-extrabold tracking-wide">THAARAI <span class="text-[#c3a875]">TEX</span><div class="text-[10px] tracking-[.28em] text-white/45 mt-1">STORE MANAGEMENT STUDIO</div></div>
+  <div id="login-screen" class="min-h-screen grid lg:grid-cols-[1.1fr_.9fr] bg-slate-950 text-slate-100">
+    <section class="hidden lg:flex relative overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 text-white p-14 flex-col justify-between border-r border-slate-800/80">
+      <div class="absolute -right-32 -top-32 w-[520px] h-[520px] rounded-full border border-indigo-500/10 blur-sm"></div>
+      <div class="absolute right-[-70px] top-[-70px] w-[390px] h-[390px] rounded-full border border-indigo-400/10"></div>
+      <div class="absolute right-20 bottom-[-220px] w-[500px] h-[500px] rounded-full bg-indigo-500/10 blur-3xl"></div>
+      <div class="relative brand text-2xl font-black tracking-wide text-white">THAARAI <span class="text-indigo-400">TEX</span><div class="text-[10px] tracking-[.28em] text-indigo-300/70 mt-1 uppercase font-extrabold">Executive Store Management Studio</div></div>
       <div class="relative max-w-xl">
-        <span class="text-[11px] uppercase tracking-[.24em] text-[#d3bd95] font-bold">Private workspace</span>
-        <h1 class="mt-5 text-5xl font-extrabold leading-[1.1]">Your craft.<br>Your commerce.</h1>
-        <p class="mt-5 text-sm leading-7 text-white/60 max-w-md">Edit your entire storefront, home banner, shop filters, categories, customer orders and branding visually without touching code.</p>
+        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/15 border border-indigo-400/20 text-[11px] uppercase tracking-wider text-indigo-300 font-bold">Authorized Workspace</span>
+        <h1 class="mt-6 text-5xl font-extrabold leading-[1.15] text-white">Your craft.<br>Your commerce.</h1>
+        <p class="mt-4 text-sm leading-relaxed text-slate-400 max-w-md">Edit your entire storefront, home banner, shop filters, categories, customer orders and branding visually without touching code.</p>
       </div>
-      <p class="relative text-xs text-white/35">Secure administrator sign-in · Thaarai Tex</p>
+      <p class="relative text-xs text-slate-500 font-medium">Secure administrator sign-in · Thaarai Tex Studio</p>
     </section>
-    <section class="min-h-screen flex items-center justify-center px-5 py-12">
-      <form id="login-form" class="w-full max-w-md">
-        <a href="/" class="lg:hidden brand text-lg font-extrabold tracking-wide text-[#12231c]">THAARAI <span class="text-[#9a7847]">TEX</span></a>
-        <div class="mt-9 lg:mt-0">
-          <span class="text-[11px] font-bold uppercase tracking-[.2em] text-[#927b58]">Administrator access</span>
-          <h1 class="mt-3 text-3xl font-extrabold tracking-tight text-[#1e2d25]">Welcome back</h1>
-          <p class="mt-2 text-sm text-[#69746d]">Sign in using your authorized store manager account.</p>
+    <section class="min-h-screen flex items-center justify-center px-6 py-12 bg-slate-900">
+      <form id="login-form" class="w-full max-w-md bg-slate-950/80 border border-slate-800/90 rounded-3xl p-8 sm:p-10 shadow-2xl backdrop-blur">
+        <a href="/" class="lg:hidden brand text-xl font-black tracking-wide text-white block mb-6">THAARAI <span class="text-indigo-400">TEX</span></a>
+        <div>
+          <span class="text-[11px] font-bold uppercase tracking-[.2em] text-indigo-400">Private Studio Access</span>
+          <h1 class="mt-2 text-2xl sm:text-3xl font-extrabold tracking-tight text-white">Welcome back</h1>
+          <p class="mt-1.5 text-xs text-slate-400">Sign in to manage catalog, orders, and storefront.</p>
         </div>
-        <label class="block mt-8 text-xs font-bold text-[#34433a]">Email address
-          <input id="login-email" type="email" autocomplete="username" required class="mt-2 w-full rounded-xl border border-[#dce1d9] bg-white px-4 py-3.5 text-sm outline-none focus:border-[#597964]" placeholder="admin@thaaraitex.com">
+        <label class="block mt-7 text-xs font-bold text-slate-300">Email address
+          <input id="login-email" type="email" autocomplete="username" required class="mt-2 w-full rounded-xl border border-slate-700 bg-slate-900 px-4 py-3.5 text-sm text-white placeholder-slate-500 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition" placeholder="admin@thaaraitex.com">
         </label>
-        <label class="block mt-4 text-xs font-bold text-[#34433a]">Password
-          <input id="login-password" type="password" autocomplete="current-password" required class="mt-2 w-full rounded-xl border border-[#dce1d9] bg-white px-4 py-3.5 text-sm outline-none focus:border-[#597964]" placeholder="Enter password">
+        <label class="block mt-4 text-xs font-bold text-slate-300">Password
+          <input id="login-password" type="password" autocomplete="current-password" required class="mt-2 w-full rounded-xl border border-slate-700 bg-slate-900 px-4 py-3.5 text-sm text-white placeholder-slate-500 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition" placeholder="Enter password">
         </label>
-        <button class="mt-6 w-full rounded-xl bg-[#193528] px-4 py-3.5 text-sm font-bold text-white shadow-lg shadow-[#193528]/15 hover:bg-[#254937] transition">Sign in to admin studio</button>
-        <p id="login-error" role="alert" class="min-h-6 mt-3 text-sm text-rose-700"></p>
-        <p class="mt-4 border-t border-[#e3e5df] pt-4 text-xs leading-5 text-[#707a72]">Protected by Supabase Auth and Row Level Security. Public store logins do not grant admin access.</p>
+        <button class="mt-6 w-full rounded-xl bg-indigo-600 hover:bg-indigo-500 px-4 py-3.5 text-sm font-bold text-white shadow-lg shadow-indigo-600/25 transition active:scale-[0.99]">Sign in to Admin Studio</button>
+        <p id="login-error" role="alert" class="min-h-6 mt-3 text-xs text-rose-400 font-semibold"></p>
+        <p class="mt-4 border-t border-slate-800/80 pt-4 text-[11px] leading-5 text-slate-500">Protected by Supabase Auth and Row Level Security. Public store accounts do not grant admin privileges.</p>
       </form>
     </section>
   </div>
 
   <!-- Dashboard Workspace -->
   <div id="dashboard" class="hidden min-h-screen">
-    <!-- Sidebar -->
-    <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 flex w-[264px] -translate-x-full flex-col bg-[#14271e] text-white transition-transform lg:translate-x-0">
-      <div class="flex h-[82px] items-center gap-3 border-b border-white/10 px-6">
-        <div class="grid h-10 w-10 place-items-center rounded-xl bg-[#c4aa7d] text-sm font-extrabold text-[#1b2b22]">TT</div>
-        <div class="brand font-extrabold tracking-wide">THAARAI TEX<span class="mt-0.5 block text-[9px] font-semibold tracking-[.2em] text-white/45">ADMIN STUDIO</span></div>
+    <!-- Sidebar for Desktop -->
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 flex w-[264px] -translate-x-full flex-col bg-slate-950 text-slate-300 border-r border-slate-800/90 transition-transform duration-300 lg:translate-x-0">
+      <div class="flex h-[72px] items-center gap-3 border-b border-slate-800/80 px-6">
+        <div class="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-tr from-indigo-600 to-indigo-400 text-sm font-black text-white shadow-md shadow-indigo-600/30">TT</div>
+        <div class="brand font-extrabold tracking-wide text-white">THAARAI TEX<span class="mt-0.5 block text-[9px] font-bold tracking-[.22em] text-indigo-400">ADMIN STUDIO</span></div>
       </div>
-      <div class="px-4 pt-6">
-        <p class="px-3 text-[9px] font-bold uppercase tracking-[.2em] text-white/35">Store Management</p>
-        <nav id="navigation" class="mt-3 space-y-1"></nav>
+      <div class="px-3 pt-5 overflow-y-auto flex-1">
+        <p class="px-3 text-[9px] font-bold uppercase tracking-[.2em] text-slate-500">Store Management</p>
+        <nav id="navigation" class="mt-2.5 space-y-1"></nav>
       </div>
-      <div class="mt-auto p-4">
-        <a href="/" target="_blank" class="flex items-center gap-3 rounded-xl px-3 py-3 text-xs font-semibold text-white/75 hover:bg-white/10 hover:text-white transition">
-          <span>↗</span> <span>Open Live Storefront</span>
+      <div class="p-3 border-t border-slate-800/80">
+        <a href="/" target="_blank" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-xs font-semibold text-slate-300 hover:bg-slate-900 hover:text-white transition">
+          <span class="text-indigo-400 font-bold">↗</span> <span>Open Live Storefront</span>
         </a>
-        <button id="logout" class="mt-1 flex w-full items-center gap-3 rounded-xl px-3 py-3 text-xs font-semibold text-white/65 hover:bg-white/5 hover:text-white transition">
+        <button id="logout" class="mt-1 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-xs font-semibold text-rose-400 hover:bg-rose-950/30 hover:text-rose-300 transition">
           <span>⏻</span> <span>Sign out</span>
         </button>
-        <div class="mt-3 rounded-xl border border-white/10 bg-white/[.04] p-3">
-          <p class="text-[9px] uppercase tracking-[.16em] text-white/35">Signed in as</p>
-          <p id="admin-email" class="mt-1 truncate text-xs font-semibold text-white/85"></p>
+        <div class="mt-2.5 rounded-xl border border-slate-800 bg-slate-900/60 p-3">
+          <p class="text-[9px] uppercase tracking-[.16em] text-slate-500 font-bold">Signed in as</p>
+          <p id="admin-email" class="mt-0.5 truncate text-xs font-semibold text-slate-200"></p>
         </div>
       </div>
     </aside>
 
-    <div id="sidebar-backdrop" class="fixed inset-0 z-30 hidden bg-black/40 lg:hidden"></div>
+    <div id="sidebar-backdrop" class="fixed inset-0 z-30 hidden bg-slate-950/60 backdrop-blur-sm lg:hidden"></div>
 
     <!-- Main Content Area -->
-    <main class="min-h-screen lg:pl-[264px]">
-      <header class="sticky top-0 z-20 flex h-[74px] items-center justify-between border-b border-[#e5e7e1] bg-[#f8f9f6]/95 px-4 backdrop-blur-md sm:px-7">
+    <main class="min-h-screen lg:pl-[264px] pb-24 lg:pb-10">
+      <header class="sticky top-0 z-20 flex h-[70px] items-center justify-between border-b border-slate-200/80 bg-white/95 px-4 backdrop-blur-md sm:px-7 shadow-xs">
         <div class="flex items-center gap-3">
-          <button id="admin-back" type="button" aria-label="Go back" class="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-[#e1e5dd] bg-white text-lg text-[#536058] shadow-sm hover:bg-[#f2f4f0]" onclick="adminBack()">←</button>
-          <button id="menu-toggle" class="grid h-10 w-10 place-items-center rounded-xl border border-[#e1e5dd] bg-white text-lg lg:hidden" aria-label="Open menu">☰</button>
+          <button id="admin-back" type="button" aria-label="Go back" class="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-slate-200 bg-white text-base text-slate-700 shadow-xs hover:bg-slate-50 transition" onclick="adminBack()">←</button>
+          <button id="menu-toggle" class="grid h-10 w-10 place-items-center rounded-xl border border-slate-200 bg-white text-lg text-slate-800 shadow-xs hover:bg-slate-50 lg:hidden" aria-label="Open menu">☰</button>
           <div>
-            <p id="crumb" class="text-[10px] font-bold uppercase tracking-[.18em] text-[#899188]">WORKSPACE</p>
-            <h1 id="page-title" class="text-base font-extrabold text-[#23352b] sm:text-lg">Overview</h1>
+            <p id="crumb" class="text-[10px] font-black uppercase tracking-[.18em] text-indigo-600">WORKSPACE</p>
+            <h1 id="page-title" class="text-base font-extrabold text-slate-900 sm:text-lg">Overview</h1>
           </div>
         </div>
-        <div class="flex items-center gap-3">
-          <a href="/" target="_blank" class="hidden sm:inline-flex items-center gap-2 rounded-full border border-[#dbe5d8] bg-white px-3.5 py-1.5 text-xs font-bold text-[#274635] shadow-sm hover:bg-[#f5f8f3] transition">
+        <div class="flex items-center gap-2.5">
+          <a href="/" target="_blank" class="inline-flex items-center gap-1.5 rounded-full border border-indigo-200 bg-indigo-50/80 px-3.5 py-1.5 text-xs font-bold text-indigo-700 shadow-xs hover:bg-indigo-100 transition">
             <span>Live Store ↗</span>
           </a>
-          <span id="today" class="hidden text-xs text-[#7d877e] md:block"></span>
-          <div class="grid h-9 w-9 place-items-center rounded-full bg-[#e7e1d4] text-xs font-extrabold text-[#5c4e36]">AD</div>
+          <span id="today" class="hidden text-xs text-slate-500 md:block font-medium"></span>
+          <div class="grid h-9 w-9 place-items-center rounded-full bg-slate-900 text-xs font-black text-white shadow-xs">AD</div>
         </div>
       </header>
 
@@ -115,50 +116,59 @@
     </main>
   </div>
 
+  <!-- Mobile Bottom Quick Navigation Bar -->
+  <nav id="admin-mobile-tabbar" class="fixed bottom-0 inset-x-0 z-30 bg-white/95 backdrop-blur-md border-t border-slate-200/90 grid grid-cols-5 py-1.5 px-1 text-[10px] font-bold text-slate-500 lg:hidden shadow-lg" style="padding-bottom:calc(0.4rem + env(safe-area-inset-bottom))">
+    <button data-m-sec="overview" class="flex flex-col items-center gap-0.5 py-1 text-indigo-600 font-extrabold transition"><span class="text-base leading-none">⌂</span><span>Overview</span></button>
+    <button data-m-sec="storefront" class="flex flex-col items-center gap-0.5 py-1 text-slate-500 hover:text-indigo-600 transition"><span class="text-base leading-none">✎</span><span>Studio</span></button>
+    <button data-m-sec="products" class="flex flex-col items-center gap-0.5 py-1 text-slate-500 hover:text-indigo-600 transition"><span class="text-base leading-none">◇</span><span>Products</span></button>
+    <button data-m-sec="orders" class="flex flex-col items-center gap-0.5 py-1 text-slate-500 hover:text-indigo-600 transition"><span class="text-base leading-none">▣</span><span>Orders</span></button>
+    <button id="m-menu-btn" class="flex flex-col items-center gap-0.5 py-1 text-slate-500 hover:text-indigo-600 transition"><span class="text-base leading-none">☰</span><span>Menu</span></button>
+  </nav>
+
   <!-- Reusable Modal Editor -->
-  <dialog id="editor" class="w-[min(720px,calc(100%-28px))] max-h-[90vh] rounded-2xl border-0 bg-[#fbfcf9] p-0 shadow-2xl">
+  <dialog id="editor" class="w-[min(740px,calc(100%-24px))] max-h-[90vh] rounded-3xl border border-slate-200/80 bg-white p-0 shadow-2xl">
     <form id="editor-form" class="flex max-h-[90vh] flex-col">
-      <div class="flex items-start justify-between border-b border-[#e8ebe5] px-6 py-5">
+      <div class="flex items-start justify-between border-b border-slate-100 px-6 py-5 bg-slate-50/50 rounded-t-3xl">
         <div>
-          <p id="editor-kicker" class="text-[9px] font-bold uppercase tracking-[.2em] text-[#907a56]">RECORD</p>
-          <h2 id="editor-title" class="mt-1 text-xl font-extrabold text-[#24342b]">Edit</h2>
+          <p id="editor-kicker" class="text-[9px] font-black uppercase tracking-[.2em] text-indigo-600">RECORD</p>
+          <h2 id="editor-title" class="mt-0.5 text-xl font-extrabold text-slate-900">Edit</h2>
         </div>
-        <button type="button" id="editor-close" class="grid h-9 w-9 place-items-center rounded-full bg-[#eef0eb] text-xl text-[#536058] hover:bg-[#e4e7e0]" aria-label="Close">×</button>
+        <button type="button" id="editor-close" class="grid h-9 w-9 place-items-center rounded-full bg-slate-100 text-xl font-bold text-slate-700 hover:bg-slate-200 transition" aria-label="Close">×</button>
       </div>
       <div id="editor-fields" class="space-y-4 overflow-y-auto px-6 py-5"></div>
-      <div class="flex justify-end gap-2 border-t border-[#e8ebe5] px-6 py-4">
-        <button type="button" id="editor-cancel" class="rounded-xl border border-[#dce1d9] px-4 py-2.5 text-xs font-bold text-[#5d695f] hover:bg-gray-50">Cancel</button>
-        <button class="rounded-xl bg-[#193528] px-5 py-2.5 text-xs font-bold text-white hover:bg-[#254937]">Save changes</button>
+      <div class="flex justify-end gap-2.5 border-t border-slate-100 bg-slate-50/50 px-6 py-4 rounded-b-3xl">
+        <button type="button" id="editor-cancel" class="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition">Cancel</button>
+        <button class="rounded-xl bg-indigo-600 hover:bg-indigo-700 px-5 py-2.5 text-xs font-bold text-white shadow-sm transition">Save changes</button>
       </div>
     </form>
   </dialog>
 
   <!-- Reusable Media Library Picker Modal -->
-  <dialog id="library-picker-modal" class="w-[min(780px,calc(100%-24px))] max-h-[85vh] rounded-2xl border-0 bg-[#fbfcf9] p-5 shadow-2xl">
-    <div class="flex items-center justify-between border-b pb-4">
+  <dialog id="library-picker-modal" class="w-[min(820px,calc(100%-24px))] max-h-[85vh] rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl">
+    <div class="flex items-center justify-between border-b border-slate-100 pb-4">
       <div>
-        <h3 class="text-lg font-extrabold text-[#24342b]">Choose from Media Library</h3>
-        <p class="mt-1 text-xs text-[#758078]">Click any image to use it in your website section.</p>
+        <h3 class="text-lg font-extrabold text-slate-900">Choose from Media Library</h3>
+        <p class="mt-0.5 text-xs text-slate-500">Tap any photo to select it directly for this section.</p>
       </div>
-      <button type="button" id="library-picker-close" class="grid h-9 w-9 place-items-center rounded-full bg-[#eef0eb] text-xl hover:bg-[#e4e7e0]">×</button>
+      <button type="button" id="library-picker-close" class="grid h-9 w-9 place-items-center rounded-full bg-slate-100 text-xl font-bold text-slate-700 hover:bg-slate-200 transition">×</button>
     </div>
     <div id="library-picker-content" class="mt-4 grid max-h-[62vh] grid-cols-2 sm:grid-cols-4 gap-3 overflow-y-auto">
-      <p class="col-span-full py-10 text-center text-xs text-gray-400">Loading images…</p>
+      <p class="col-span-full py-12 text-center text-xs text-slate-400">Loading images…</p>
     </div>
   </dialog>
 
   <!-- Toast Notification -->
-  <div id="toast" class="fixed bottom-5 left-1/2 z-[60] hidden -translate-x-1/2 rounded-full bg-[#182e22] px-5 py-3 text-xs font-semibold text-white shadow-xl"></div>
+  <div id="toast" class="fixed bottom-20 lg:bottom-5 left-1/2 z-[70] hidden -translate-x-1/2 rounded-full bg-slate-950/95 px-5 py-3 text-xs font-bold text-white shadow-2xl border border-slate-800 backdrop-blur"></div>
 
   <!-- Admin Exit Guard Dialog -->
-  <div id="admin-exit-layer" class="fixed inset-0 z-[100] hidden items-center justify-center bg-[#13241b]/55 p-5" role="presentation">
-    <section role="dialog" aria-modal="true" aria-labelledby="admin-exit-title" class="w-full max-w-sm rounded-3xl bg-[#fbfcf9] p-6 text-center shadow-2xl">
-      <div class="mx-auto grid h-12 w-12 place-items-center rounded-full bg-[#f2eee4] text-xl text-[#8a7045]">?</div>
-      <h2 id="admin-exit-title" class="mt-4 text-lg font-extrabold text-[#24342b]">Leave Admin Studio?</h2>
-      <p class="mt-2 text-sm text-[#69746d]">Are you sure you want to exit the admin workspace?</p>
+  <div id="admin-exit-layer" class="fixed inset-0 z-[100] hidden items-center justify-center bg-slate-950/65 backdrop-blur-sm p-5" role="presentation">
+    <section role="dialog" aria-modal="true" aria-labelledby="admin-exit-title" class="w-full max-w-sm rounded-3xl bg-white p-6 text-center shadow-2xl border border-slate-100">
+      <div class="mx-auto grid h-12 w-12 place-items-center rounded-full bg-indigo-50 text-xl text-indigo-600 font-bold mb-2">?</div>
+      <h2 id="admin-exit-title" class="mt-2 text-lg font-extrabold text-slate-900">Leave Admin Studio?</h2>
+      <p class="mt-1.5 text-xs text-slate-500">Are you sure you want to exit the admin workspace?</p>
       <div class="mt-6 grid grid-cols-2 gap-3">
-        <button id="admin-exit-stay" class="rounded-xl border border-[#dce1d9] px-4 py-3 text-sm font-bold text-[#536058] hover:bg-gray-50">Stay here</button>
-        <button id="admin-exit-confirm" class="rounded-xl bg-[#193528] px-4 py-3 text-sm font-bold text-white hover:bg-[#254937]">Exit</button>
+        <button id="admin-exit-stay" class="rounded-xl border border-slate-200 px-4 py-3 text-xs font-bold text-slate-700 hover:bg-slate-50 transition">Stay here</button>
+        <button id="admin-exit-confirm" class="rounded-xl bg-slate-900 px-4 py-3 text-xs font-bold text-white hover:bg-slate-800 transition">Exit</button>
       </div>
     </section>
   </div>
@@ -171,6 +181,7 @@
     const SUPABASE_URL='https://hjogdvqwwbgzgwtdlrak.supabase.co';
     const SUPABASE_ANON_KEY='sb_publishable_gURnxsEPWoxUqqAqnEtJ_g_EmUlUgUZ';
     const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+    const MEDIA_BUCKET='product-images';
     const $=s=>document.querySelector(s), view=$('#view'), editor=$('#editor');
     const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
     const fmt=n=>'₹'+Number(n||0).toLocaleString('en-IN');
@@ -193,7 +204,7 @@
       return 'TT-' + (clean.slice(0, 6) || 'ITEM');
     }
 
-    /* ===== HUMAN-READABLE ADDRESS FORMATTERS (REPLACES RAW JSON) ===== */
+    /* ===== HUMAN-READABLE ADDRESS FORMATTERS (NO RAW JSON) ===== */
     function parseAddress(raw){
       if(!raw) return null;
       if(typeof raw === 'object') return raw;
@@ -219,7 +230,7 @@
       const pin = a.pincode || a.pin || a.postal_code || '';
 
       const lines = [];
-      if(name || phone) lines.push([name, phone ? `(${phone})` : ''].filter(Boolean).join(' '));
+      if(name || phone) lines.push([name, phone ? `(Phone: ${phone})` : ''].filter(Boolean).join(' '));
       if(line) lines.push(line);
       if(landmark) lines.push('Landmark: ' + landmark);
       const cs = [city, state].filter(Boolean).join(', ');
@@ -229,7 +240,7 @@
 
     function renderAddressHtml(raw){
       const a = parseAddress(raw);
-      if(!a) return typeof raw === 'string' && raw ? `<p class="text-xs text-[#2a382e]">${esc(raw)}</p>` : '<p class="text-xs text-[#89928a]">No address provided</p>';
+      if(!a) return typeof raw === 'string' && raw ? `<p class="text-xs text-slate-700">${esc(raw)}</p>` : '<p class="text-xs text-slate-400">No address provided</p>';
       const name = a.name || a.full_name || a.customer_name || '';
       const phone = a.phone || a.mobile || a.mobile_number || '';
       const line = a.line || a.address || a.street || a.door_no || '';
@@ -239,19 +250,19 @@
       const pin = a.pincode || a.pin || a.postal_code || '';
 
       return `
-        <div class="space-y-2 text-xs text-[#2a382e]">
+        <div class="space-y-2 text-xs text-slate-800">
           ${name || phone ? `
             <div class="flex items-center gap-2 flex-wrap">
-              <span class="font-extrabold text-sm text-[#193528]">${esc(name||'Customer')}</span>
-              ${phone ? `<a href="tel:${esc(phone)}" class="inline-flex items-center gap-1 rounded-full bg-[#edf3ea] px-3 py-1 text-xs font-bold text-[#2a5035] hover:bg-[#dfeada] transition">📞 ${esc(phone)}</a>` : ''}
-              ${phone ? `<a href="https://wa.me/91${esc(phone.replace(/\D/g,''))}" target="_blank" rel="noopener" class="inline-flex items-center gap-1 rounded-full bg-[#e7f7ed] px-3 py-1 text-xs font-bold text-[#15803d] hover:bg-[#d6f2df] transition">💬 WhatsApp</a>` : ''}
+              <span class="font-extrabold text-sm text-slate-900">${esc(name||'Customer')}</span>
+              ${phone ? `<a href="tel:${esc(phone)}" class="inline-flex items-center gap-1 rounded-full bg-indigo-50 px-3 py-1 text-xs font-bold text-indigo-700 hover:bg-indigo-100 transition">📞 ${esc(phone)}</a>` : ''}
+              ${phone ? `<a href="https://wa.me/91${esc(phone.replace(/\D/g,''))}" target="_blank" rel="noopener" class="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition">💬 WhatsApp</a>` : ''}
             </div>` : ''}
-          ${line ? `<p class="text-[#3a493e] font-medium leading-relaxed bg-[#fbfcf9] p-3 rounded-xl border border-[#e8ece5]">${esc(line)}</p>` : ''}
-          ${landmark ? `<p class="text-xs text-[#718073]">Landmark: <span class="font-semibold text-[#3a493e]">${esc(landmark)}</span></p>` : ''}
+          ${line ? `<p class="text-slate-700 font-medium leading-relaxed bg-slate-50 p-3 rounded-xl border border-slate-200/70">${esc(line)}</p>` : ''}
+          ${landmark ? `<p class="text-xs text-slate-500">Landmark: <span class="font-semibold text-slate-800">${esc(landmark)}</span></p>` : ''}
           ${(city || state || pin) ? `
             <div class="flex items-center gap-2 flex-wrap pt-1">
-              <span class="font-semibold text-xs text-[#2b3a30]">${esc([city, state].filter(Boolean).join(', '))}</span>
-              ${pin ? `<span class="font-mono font-black text-xs text-[#193528] bg-[#eef4eb] px-2.5 py-1 rounded-lg border border-[#d2dfcd]">PINCODE: ${esc(pin)}</span>` : ''}
+              <span class="font-semibold text-xs text-slate-700">${esc([city, state].filter(Boolean).join(', '))}</span>
+              ${pin ? `<span class="font-mono font-black text-xs text-indigo-900 bg-indigo-50 px-2.5 py-1 rounded-lg border border-indigo-200/80">PINCODE: ${esc(pin)}</span>` : ''}
             </div>` : ''}
         </div>
       `;
@@ -260,6 +271,8 @@
     let section='overview', products=[], categories=[], orders=[], reviews=[], coupons=[], settings={}, editing={}, mediaItems=[];
     let currentStorefrontSubTab='header';
     let targetImageFieldId = null;
+    let orderFilter = 'all';
+    let productFilter = 'all';
 
     const sectionHistory=['overview'];
     const sections=[
@@ -276,10 +289,10 @@
 
     const nav=$('#navigation');
     nav.innerHTML=sections.map(([id,label,icon])=>`
-      <button data-section="${id}" class="nav-item flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-xs font-semibold text-white/60 transition hover:bg-white/5 hover:text-white">
+      <button data-section="${id}" class="nav-item flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-xs font-semibold text-slate-400 transition hover:bg-slate-900 hover:text-white">
         <span class="grid h-6 w-6 place-items-center text-base">${icon}</span>
         ${label}
-        <span data-count="${id}" class="ml-auto hidden rounded-full bg-white/10 px-2 py-0.5 text-[9px]"></span>
+        <span data-count="${id}" class="ml-auto hidden rounded-full bg-slate-800 text-indigo-300 font-bold px-2 py-0.5 text-[10px]"></span>
       </button>`).join('');
 
     const toast=message=>{
@@ -296,7 +309,6 @@
     }
 
     function setSection(id,fromHistory=false){
-      if(id===section)return;
       if(!fromHistory){
         sectionHistory.push(id);
         history.pushState({adminSection:id},'',location.href);
@@ -305,7 +317,14 @@
       const s=sections.find(x=>x[0]===id)||sections[0];
       $('#page-title').textContent=s[1];
       $('#crumb').textContent=s[1].toUpperCase();
-      nav.querySelectorAll('.nav-item').forEach(b=>b.className=`nav-item flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-xs font-semibold transition ${b.dataset.section===id?'bg-[#294537] text-white shadow-inner':'text-white/60 hover:bg-white/5 hover:text-white'}`);
+      nav.querySelectorAll('.nav-item').forEach(b=>{
+        const on = b.dataset.section === id;
+        b.className=`nav-item flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-xs font-bold transition ${on ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30' : 'text-slate-400 hover:bg-slate-900 hover:text-white'}`;
+      });
+      document.querySelectorAll('#admin-mobile-tabbar button[data-m-sec]').forEach(b=>{
+        const on = b.dataset.mSec === id;
+        b.className = `flex flex-col items-center gap-0.5 py-1 transition ${on ? 'text-indigo-600 font-extrabold' : 'text-slate-500 hover:text-slate-800'}`;
+      });
       closeSidebar();
       render();
     }
@@ -359,14 +378,14 @@
       render();
     }
 
-    const card=(label,value,sub,icon)=>`
-      <div class="rounded-2xl border border-[#e8eae4] bg-white p-5 shadow-[0_8px_24px_rgba(30,49,37,.035)]">
+    const statCard=(label,value,sub,icon,color='text-indigo-600',bg='bg-indigo-50')=>`
+      <div class="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-xs hover:shadow-md transition">
         <div class="flex items-start justify-between">
-          <span class="text-xs font-semibold text-[#778178]">${label}</span>
-          <span class="grid h-9 w-9 place-items-center rounded-xl bg-[#f0f3ed] text-[#536a59]">${icon}</span>
+          <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">${label}</span>
+          <span class="grid h-10 w-10 place-items-center rounded-xl ${bg} ${color} text-base font-extrabold shadow-xs">${icon}</span>
         </div>
-        <p class="mt-4 text-3xl font-extrabold tracking-tight text-[#203429]">${value}</p>
-        <p class="mt-1 text-[11px] text-[#89928a]">${sub}</p>
+        <p class="mt-4 text-3xl font-black tracking-tight text-slate-900">${value}</p>
+        <p class="mt-1 text-[11px] text-slate-500 font-medium">${sub}</p>
       </div>`;
 
     function render(){
@@ -387,65 +406,67 @@
       const revenue=orders.filter(o=>o.order_status!=='cancelled').reduce((s,o)=>s+Number(o.total||0),0);
       const pending=orders.filter(o=>o.order_status==='pending').length;
       const low=products.filter(p=>Number(p.stock||0)<5).length;
+      const live=products.filter(p=>p.active).length;
 
       view.innerHTML=`
         <div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
           <div>
-            <p class="text-[10px] font-bold uppercase tracking-[.19em] text-[#9a8057]">Store pulse</p>
-            <h2 class="mt-2 text-2xl font-extrabold tracking-tight text-[#21342a]">Good day, admin.</h2>
-            <p class="mt-1 text-sm text-[#758078]">Monitor store activity or customize any section of your website.</p>
+            <p class="text-[10px] font-black uppercase tracking-[.2em] text-indigo-600">Store Pulse & Activity</p>
+            <h2 class="mt-1.5 text-2xl font-extrabold tracking-tight text-slate-900">Good day, Administrator.</h2>
+            <p class="mt-1 text-xs sm:text-sm text-slate-500">Live store metrics, incoming customer orders, and quick shortcuts.</p>
           </div>
           <div class="flex gap-2">
-            <button data-go="storefront" class="rounded-xl bg-[#193528] px-4 py-2.5 text-xs font-bold text-white shadow-md hover:bg-[#254937]">✎ Customize Website</button>
-            <button data-action="refresh" class="rounded-xl border border-[#dfe4dc] bg-white px-4 py-2.5 text-xs font-bold text-[#48564d] hover:bg-[#f8faf6]">↻ Refresh</button>
+            <button data-go="storefront" class="rounded-xl bg-indigo-600 hover:bg-indigo-700 px-4 py-2.5 text-xs font-bold text-white shadow-sm transition">✎ Customize Website</button>
+            <button data-action="refresh" class="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition shadow-xs">↻ Refresh</button>
           </div>
         </div>
-        <div class="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          ${card('Gross order value',fmt(revenue),'From loaded orders','₹')}
-          ${card('Orders',orders.length,'Recent 250 orders','▣')}
-          ${card('Needs attention',pending,'Pending confirmation','!')}
-          ${card('Low stock',low,'Products under 5 pcs','◇')}
+        <div class="mt-6 grid gap-3.5 sm:grid-cols-2 xl:grid-cols-4">
+          ${statCard('Gross Sales',fmt(revenue),'From successful orders','₹','text-emerald-700','bg-emerald-50')}
+          ${statCard('Orders Placed',orders.length,'Recent customer orders','▣','text-indigo-600','bg-indigo-50')}
+          ${statCard('Needs Action',pending,'Pending order confirmation','!','text-amber-700','bg-amber-50')}
+          ${statCard('Live Sarees',live,`${low} with low stock`,'◇','text-sky-700','bg-sky-50')}
         </div>
         <div class="mt-6 grid gap-5 xl:grid-cols-[1.4fr_.8fr]">
-          <section class="rounded-2xl border border-[#e8eae4] bg-white p-5">
+          <section class="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-xs">
             <div class="flex items-center justify-between">
               <div>
-                <h3 class="text-sm font-extrabold text-[#25372d]">Recent orders</h3>
-                <p class="mt-1 text-xs text-[#89928a]">Latest activity from your customers</p>
+                <h3 class="text-sm font-extrabold text-slate-900">Recent Customer Orders</h3>
+                <p class="mt-0.5 text-xs text-slate-500">Latest orders placed on your storefront</p>
               </div>
-              <button data-go="orders" class="text-xs font-bold text-[#617864] hover:underline">All orders →</button>
+              <button data-go="orders" class="text-xs font-bold text-indigo-600 hover:text-indigo-800 transition">View all orders →</button>
             </div>
             ${orders.length?`
-              <div class="mt-4 divide-y divide-[#eff0ec]">
+              <div class="mt-4 divide-y divide-slate-100">
                 ${orders.slice(0,6).map(o=>`
                   <div class="flex items-center justify-between gap-3 py-3">
                     <div class="min-w-0">
-                      <p class="truncate text-xs font-bold text-[#28382f]">${esc(o.name||o.customer_name||o.phone||'Customer')}</p>
-                      <p class="mt-1 text-[10px] text-[#8b938c]">#${esc(String(o.id).slice(0,8).toUpperCase())} · ${date(o.created_at)}</p>
+                      <p class="truncate text-xs font-bold text-slate-900">${esc(o.name||o.customer_name||o.phone||'Customer')}</p>
+                      <p class="mt-0.5 text-[10px] text-slate-500 font-mono">#${esc(String(o.id).slice(0,8).toUpperCase())} · ${date(o.created_at)}</p>
                     </div>
                     <div class="text-right">
-                      <b class="text-xs text-[#28382f]">${fmt(o.total)}</b>
-                      <span class="mt-1 block text-[9px] font-bold uppercase tracking-wide text-[#68796c]">${esc(o.order_status||'pending')}</span>
+                      <b class="text-xs font-black text-slate-900">${fmt(o.total)}</b>
+                      <span class="mt-1 block text-[9px] font-black uppercase tracking-wider ${o.order_status==='pending'?'text-amber-600':o.order_status==='delivered'?'text-emerald-600':'text-indigo-600'}">${esc(o.order_status||'pending')}</span>
                     </div>
                   </div>`).join('')}
-              </div>`:'<p class="py-12 text-center text-xs text-[#909990]">No orders found.</p>'}
+              </div>`:'<p class="py-12 text-center text-xs text-slate-400">No orders found.</p>'}
           </section>
 
-          <section class="rounded-2xl border border-[#e8eae4] bg-white p-5">
-            <h3 class="text-sm font-extrabold text-[#25372d]">Website Management Shortcuts</h3>
-            <p class="mt-1 text-xs text-[#89928a]">Jump straight to editing any storefront feature</p>
+          <section class="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-xs">
+            <h3 class="text-sm font-extrabold text-slate-900">Management Shortcuts</h3>
+            <p class="mt-0.5 text-xs text-slate-500">Jump directly to any section</p>
             <div class="mt-4 space-y-2">
               ${[
-                ['storefront','✎','Edit Home Banner & Model Photo'],
-                ['storefront','◈','Edit Featured Categories & Grid'],
+                ['storefront','✎','Customize Hero Banner & Model Image'],
+                ['storefront','◈','Edit 6 Featured Categories Grid'],
                 ['storefront','🛍','Edit Shop Filters & Fabrics'],
                 ['products','＋','Add a New Saree to Catalog'],
-                ['orders','↗','Review Customer Orders & Tracking']
+                ['orders','▣','Review Customer Orders & Tracking Numbers'],
+                ['media','▧','Open Media Library Uploads']
               ].map(([id,ic,label])=>`
-                <button data-go="${id}" class="flex w-full items-center gap-3 rounded-xl border border-[#eef0eb] p-3 text-left hover:bg-[#f8faf6] transition">
-                  <span class="grid h-8 w-8 place-items-center rounded-lg bg-[#eff3ed] text-[#5c705f]">${ic}</span>
-                  <span class="text-xs font-semibold text-[#39483e]">${label}</span>
-                  <span class="ml-auto text-[#9aa199]">→</span>
+                <button data-go="${id}" class="flex w-full items-center gap-3 rounded-xl border border-slate-100 p-3 text-left hover:bg-slate-50 hover:border-slate-200 transition">
+                  <span class="grid h-8 w-8 place-items-center rounded-lg bg-indigo-50 text-indigo-700 text-sm font-bold">${ic}</span>
+                  <span class="text-xs font-semibold text-slate-800">${label}</span>
+                  <span class="ml-auto text-slate-400">→</span>
                 </button>`).join('')}
             </div>
           </section>
@@ -505,45 +526,25 @@
         emptyOrders:'No orders yet. Start shopping'
       },
       footer:{
-        about:'Handloom sarees direct from the weavers.',
-        phone:'',
-        email:'',
-        address:'Melur, Tamil Nadu',
         whatsapp:'919999999999',
         upi:'yourname@upi',
         upiName:'Thaarai Tex',
-        copyright:'© 2026 Thaarai Tex. All rights reserved.'
+        copyright:''
       }
     };
 
-    function imageField(id, label, value, hint=''){
+    function formText(id, label, value, type='text', help=''){
       return `
-        <div class="mt-4">
-          <label class="block text-xs font-bold text-[#34443a]">${label} ${hint?`<span class="font-normal text-[#808d82]">(${hint})</span>`:''}</label>
-          <div class="mt-2 flex flex-col sm:flex-row gap-3 items-start sm:items-center">
-            <div class="h-14 w-14 shrink-0 rounded-xl border border-[#dce2d9] bg-[#f2f4f0] overflow-hidden flex items-center justify-center">
-              <img id="${id}-preview" src="${esc(value||'https://placehold.co/100?text=None')}" alt="Preview" class="h-full w-full object-cover">
-            </div>
-            <input id="${id}" value="${esc(value||'')}" oninput="document.getElementById('${id}-preview').src=this.value.trim()||'https://placehold.co/100?text=None'" placeholder="https://..." class="flex-1 rounded-xl border border-[#dfe4dc] bg-white px-3.5 py-2.5 text-xs outline-none focus:border-[#385844]">
-            <div class="flex gap-1.5 shrink-0">
-              <button type="button" onclick="uploadForField('${id}')" class="rounded-lg bg-[#193528] px-3 py-2 text-[10px] font-bold text-white hover:bg-[#254937]">Upload</button>
-              <button type="button" onclick="pickMediaForField('${id}')" class="rounded-lg border border-[#dce1d9] bg-white px-3 py-2 text-[10px] font-bold text-[#445248] hover:bg-gray-50">Library</button>
-            </div>
-          </div>
-        </div>`;
-    }
-
-    function formText(id, label, value, placeholder=''){
-      return `
-        <label class="block mt-3.5 text-xs font-bold text-[#34443a]">${label}
-          <input id="${id}" value="${esc(value||'')}" placeholder="${esc(placeholder)}" class="mt-1.5 w-full rounded-xl border border-[#dfe4dc] bg-white px-3.5 py-2.5 text-xs outline-none focus:border-[#385844]">
+        <label class="block mt-3.5 text-xs font-bold text-slate-800">${label}
+          ${help ? `<span class="block text-[11px] font-normal text-slate-500 mt-0.5">${help}</span>` : ''}
+          <input id="${id}" type="${type}" value="${esc(value||'')}" class="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs text-slate-900 outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 transition">
         </label>`;
     }
 
     function formArea(id, label, value, rows=3){
       return `
-        <label class="block mt-3.5 text-xs font-bold text-[#34443a]">${label}
-          <textarea id="${id}" rows="${rows}" class="mt-1.5 w-full rounded-xl border border-[#dfe4dc] bg-white px-3.5 py-2.5 text-xs outline-none focus:border-[#385844]">${esc(value||'')}</textarea>
+        <label class="block mt-3.5 text-xs font-bold text-slate-800">${label}
+          <textarea id="${id}" rows="${rows}" class="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs text-slate-900 outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 transition">${esc(value||'')}</textarea>
         </label>`;
     }
 
@@ -560,19 +561,19 @@
       view.innerHTML=`
         <div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
           <div>
-            <p class="text-[10px] font-bold uppercase tracking-[.19em] text-[#9a8057]">Visual Website Customizer</p>
-            <h2 class="mt-2 text-2xl font-extrabold text-[#21342a]">Website Studio</h2>
-            <p class="mt-1 text-sm text-[#758078]">Update any text, button, banner, model photo, or filter in the store without writing code.</p>
+            <p class="text-[10px] font-black uppercase tracking-[.2em] text-indigo-600">Visual Website Customizer</p>
+            <h2 class="mt-1.5 text-2xl font-extrabold text-slate-900">Website Studio</h2>
+            <p class="mt-0.5 text-xs sm:text-sm text-slate-500">Update any text, button, banner, model photo, or category without writing code.</p>
           </div>
           <div class="flex gap-2">
-            <a href="/" target="_blank" class="rounded-xl border border-[#dfe4dc] bg-white px-4 py-2.5 text-xs font-bold text-[#48564d] hover:bg-[#f8faf6]">Preview Live Store ↗</a>
+            <a href="/" target="_blank" class="rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-indigo-600 hover:bg-indigo-50 transition shadow-xs">Preview Live Store ↗</a>
           </div>
         </div>
 
         <!-- Sub Tabs Navigation -->
-        <div class="mt-6 flex gap-2 overflow-x-auto border-b border-[#e5e8e2] pb-2 scrollbar-hide">
+        <div class="mt-6 flex gap-2 overflow-x-auto border-b border-slate-200/80 pb-2.5 scrollbar-hide">
           ${subTabs.map(([id,label,ic])=>`
-            <button onclick="setStorefrontSubTab('${id}')" class="flex shrink-0 items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold transition ${currentStorefrontSubTab===id?'bg-[#193528] text-white shadow':'bg-white text-[#56655a] border border-[#e2e6de] hover:bg-gray-50'}">
+            <button onclick="setStorefrontSubTab('${id}')" class="flex shrink-0 items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold transition ${currentStorefrontSubTab===id?'bg-slate-900 text-white shadow-sm':'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'}">
               <span>${ic}</span> <span>${label}</span>
             </button>`).join('')}
         </div>
@@ -599,276 +600,229 @@
       const badges = Array.isArray(settings.trust_badges) ? settings.trust_badges : defaultSettings.trust_badges;
       const shop = settings.shop_ui || defaultSettings.shop_ui;
       const acc = settings.account_ui || defaultSettings.account_ui;
-      const f = settings.footer || defaultSettings.footer;
+      const foot = settings.footer || defaultSettings.footer;
 
       if(currentStorefrontSubTab==='header'){
         container.innerHTML=`
-          <div class="grid gap-5 xl:grid-cols-2">
-            <section class="rounded-2xl border border-[#e7eae3] bg-white p-6 shadow-sm">
-              <h3 class="text-sm font-extrabold text-[#304137]">Store Identity</h3>
-              <p class="mt-1 text-xs text-[#808d83]">Brand name and tagline displayed on the header and browser tab.</p>
-              ${formText('brand-name','Store Brand Name',b.name,'e.g. Thaarai Tex')}
-              ${formText('brand-tagline','Tagline',b.tagline,'e.g. Pure Sarees & Handloom')}
-              ${imageField('brand-logo','Store Logo Image (Optional)',b.logo,'Shown in header if uploaded')}
-            </section>
-            <section class="rounded-2xl border border-[#e7eae3] bg-white p-6 shadow-sm">
-              <h3 class="text-sm font-extrabold text-[#304137]">Header Search & Navigation</h3>
-              <p class="mt-1 text-xs text-[#808d83]">Search prompt placeholder and header link preferences.</p>
-              ${formText('header-search','Search Input Placeholder',h.searchPlaceholder,'e.g. சேலைகளைத் தேடுங்கள்… Search sarees')}
-              ${formText('header-shop-text','Shop Link Text',h.shopLinkLabel||'Shop')}
-              <label class="mt-4 flex items-center gap-3 rounded-xl bg-[#f2f5ef] p-3.5 text-xs font-bold text-[#35483a] cursor-pointer">
-                <input id="header-shop-show" type="checkbox" ${h.showShopLink!==false?'checked':''} class="h-4 w-4 accent-[#29543b]">
-                Show "Shop" link in desktop top header
-              </label>
-            </section>
-          </div>
-          <button onclick="saveHeaderBrandSettings()" class="mt-6 rounded-xl bg-[#193528] px-6 py-3 text-xs font-bold text-white shadow-md hover:bg-[#254937]">Save Header & Brand</button>`;
+          <div class="max-w-2xl bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs">
+            <h3 class="text-base font-extrabold text-slate-900">Header & Brand Identity</h3>
+            <p class="text-xs text-slate-500 mt-0.5">Control the top logo, brand title, tagline and search bar.</p>
+            ${formText('brand-name','Store / Brand Name',b.name||'Thaarai Tex')}
+            ${formText('brand-tagline','Tagline (e.g. Pure Sarees & Handloom)',b.tagline||'')}
+            ${formText('brand-logo','Custom Brand Logo Image URL',b.logo||'','text','Leave empty to use stylish text brand name.')}
+            ${formText('header-search','Search Input Placeholder Text',h.searchPlaceholder||'சேலைகளைத் தேடுங்கள்… Search sarees')}
+            <label class="flex items-center gap-3 mt-4 text-xs font-bold text-slate-700 cursor-pointer">
+              <input id="header-show-shop" type="checkbox" ${h.showShopLink!==false?'checked':''} class="h-4 w-4 accent-indigo-600 rounded"> Show "Shop" shortcut link in top header
+            </label>
+            ${formText('header-shop-label','Shop Shortcut Label',h.shopLinkLabel||'Shop')}
+            <button onclick="saveHeaderSettings()" class="mt-6 rounded-xl bg-indigo-600 hover:bg-indigo-700 px-6 py-2.5 text-xs font-bold text-white shadow-sm transition">Save Header Settings</button>
+          </div>`;
       }
       else if(currentStorefrontSubTab==='home'){
         container.innerHTML=`
-          <div class="space-y-6">
+          <div class="space-y-6 max-w-4xl">
             <!-- Hero Banner Box -->
-            <section class="rounded-2xl border border-[#e7eae3] bg-white p-6 shadow-sm">
-              <div class="flex items-center justify-between border-b pb-3">
+            <div class="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs">
+              <div class="flex items-center justify-between border-b pb-3 mb-4">
                 <div>
-                  <h3 class="text-sm font-extrabold text-[#304137]">Black Premium Hero Banner</h3>
-                  <p class="mt-0.5 text-xs text-[#808d83]">Main spotlight on the home page with model cutout.</p>
+                  <h3 class="text-base font-extrabold text-slate-900">Home Hero Banner & Model Image</h3>
+                  <p class="text-xs text-slate-500">The black premium hero showcase at the top of the home page.</p>
                 </div>
-                <span class="rounded-full bg-[#f0f4ee] px-3 py-1 text-[10px] font-bold text-[#44664a]">Hero Section</span>
+                <span class="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-bold text-slate-700">Top Showcase</span>
               </div>
-              <div class="grid gap-4 sm:grid-cols-2 mt-2">
-                ${formText('hero-eyebrow','Eyebrow Pill',hero.eyebrow,'THAARAI TEX · HANDLOOM EDITION')}
-                ${formText('hero-badge','Top Right Badge Tagline',hero.badge,'HANDLOOM · EST. WITH CARE')}
-                <div class="sm:col-span-2">
-                  ${formText('hero-title','Headline Title',hero.title,'A legacy woven into every thread')}
-                </div>
-                <div class="sm:col-span-2">
-                  ${formArea('hero-subtitle','Subtitle Description',hero.subtitle,2)}
-                </div>
-                ${formText('hero-button','Primary Button Text',hero.button,'Explore the collection')}
-                ${formText('hero-button-link','Primary Button Link',hero.buttonLink,'#/shop')}
-                ${formText('hero-sec-button','Secondary Button Text',hero.secButton,'View all sarees')}
-                ${formText('hero-sec-button-link','Secondary Button Link',hero.secButtonLink,'#/shop')}
+              <div class="grid gap-3 sm:grid-cols-2">
+                ${formText('hero-eyebrow','Eyebrow Badge Text',hero.eyebrow||'THAARAI TEX · HANDLOOM EDITION')}
+                ${formText('hero-badge','Quality Stamp (e.g. HANDLOOM · EST. WITH CARE)',hero.badge||'HANDLOOM · EST. WITH CARE')}
               </div>
-              ${imageField('hero-image','Person / Model Cutout Image',hero.image,'Direct isolated photo of saree model. Smoothly blended into black banner.')}
-              <button onclick="saveHeroSettings()" class="mt-5 rounded-xl bg-[#193528] px-6 py-2.5 text-xs font-bold text-white shadow-md hover:bg-[#254937]">Save Hero Banner</button>
-            </section>
-
-            <!-- Featured Categories Grid -->
-            <section class="rounded-2xl border border-[#e7eae3] bg-white p-6 shadow-sm">
-              <div class="flex items-center justify-between border-b pb-3">
-                <div>
-                  <h3 class="text-sm font-extrabold text-[#304137]">Featured Categories (Home 6-Card Grid)</h3>
-                  <p class="mt-0.5 text-xs text-[#808d83]">Add, edit, or reorder the category photo cards shoppers see on the home page.</p>
-                </div>
-                <button type="button" onclick="addHomeCategoryCard()" class="rounded-lg bg-[#eff3ee] px-3 py-1.5 text-xs font-bold text-[#35533c] hover:bg-[#e4ede2]">＋ Add Category Card</button>
+              ${formText('hero-title','Hero Main Title Headline',hero.title||'A legacy woven into every thread')}
+              ${formArea('hero-subtitle','Hero Subtitle / Description',hero.subtitle||'')}
+              <div class="grid gap-3 sm:grid-cols-2">
+                ${formText('hero-btn','Primary Button Text',hero.button||'Explore the collection')}
+                ${formText('hero-btn-link','Primary Button Link',hero.buttonLink||'#/shop')}
+                ${formText('hero-sec-btn','Secondary Button Text',hero.secButton||'View all sarees')}
+                ${formText('hero-sec-btn-link','Secondary Button Link',hero.secButtonLink||'#/shop')}
               </div>
-              <div id="home-category-cards" class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                ${cats.map((c,idx)=>`
-                  <div class="home-cat-card rounded-xl border border-[#e4e8e0] bg-[#fafbf9] p-4">
-                    <div class="flex items-center justify-between pb-2 border-b">
-                      <b class="text-xs text-[#344638]">Card ${idx+1}</b>
-                      <button type="button" onclick="removeHomeCategoryCard(${idx})" class="text-[10px] font-bold text-rose-700 hover:underline">Remove</button>
+              <div class="mt-4 border-t pt-4">
+                <span class="block text-xs font-bold text-slate-800">Hero Model Cutout Photo</span>
+                <p class="text-[11px] text-slate-500">Smoothly feathered on the dark hero background with zero white borders.</p>
+                <div class="mt-3 flex flex-col sm:flex-row gap-4 items-center">
+                  <img id="hero-img-preview" src="${esc(hero.image||'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80')}" class="h-28 w-24 object-cover rounded-xl border border-slate-200 bg-slate-950">
+                  <div class="space-y-2 flex-1 w-full">
+                    <input id="hero-image" value="${esc(hero.image||'')}" class="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-xs text-slate-900 outline-none focus:border-indigo-600">
+                    <div class="flex gap-2">
+                      <button onclick="uploadCustomImage('hero-image','hero-img-preview')" class="rounded-xl bg-slate-900 hover:bg-slate-800 px-3 py-2 text-[11px] font-bold text-white transition">Upload Model Photo</button>
+                      <button onclick="pickFromMediaLibrary('hero-image','hero-img-preview')" class="rounded-xl border border-slate-200 bg-white hover:bg-slate-50 px-3 py-2 text-[11px] font-bold text-slate-700 transition">Pick from Media</button>
                     </div>
-                    ${formText(`hcat-${idx}-name`,'Category Name',c.name)}
-                    ${formText(`hcat-${idx}-sub`,'Subtitle',c.subtitle)}
-                    ${formText(`hcat-${idx}-query`,'Search Filter or Link',c.query)}
-                    ${imageField(`hcat-${idx}-img`,'Card Photo',c.image)}
-                  </div>`).join('')}
+                  </div>
+                </div>
               </div>
-              <button onclick="saveHomeCategoryCards()" class="mt-5 rounded-xl bg-[#193528] px-6 py-2.5 text-xs font-bold text-white shadow-md hover:bg-[#254937]">Save Category Cards</button>
-            </section>
+              <button onclick="saveHeroSettings()" class="mt-6 rounded-xl bg-indigo-600 hover:bg-indigo-700 px-6 py-2.5 text-xs font-bold text-white shadow-sm transition">Save Hero Banner</button>
+            </div>
 
-            <!-- Brand Story & Trust Badges -->
-            <div class="grid gap-6 xl:grid-cols-2">
-              <section class="rounded-2xl border border-[#e7eae3] bg-white p-6 shadow-sm">
-                <h3 class="text-sm font-extrabold text-[#304137]">Brand Story Section</h3>
-                <p class="mt-0.5 text-xs text-[#808d83]">Highlights weaver heritage and authenticity.</p>
-                ${formText('about-badge','Eyebrow Badge',about.badge||'Authentic Weaves')}
+            <!-- 6-Category Grid Box -->
+            <div class="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs">
+              <h3 class="text-base font-extrabold text-slate-900">Home 6 Featured Categories Grid</h3>
+              <p class="text-xs text-slate-500 mt-0.5">Edit the 6 visual category tiles shown right below the hero banner.</p>
+              <div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                ${[0,1,2,3,4,5].map(i=>{
+                  const cat = cats[i] || { name: `Category ${i+1}`, subtitle: 'Exclusive Handloom', image: '', query: '' };
+                  return `
+                    <div class="rounded-xl border border-slate-200 p-4 bg-slate-50/50 space-y-2">
+                      <div class="flex items-center justify-between">
+                        <span class="font-bold text-xs text-slate-900">Tile #${i+1}</span>
+                        <img id="cat-img-preview-${i}" src="${esc(cat.image||'https://placehold.co/100x120?text=Tile')}" class="h-10 w-8 object-cover rounded border border-slate-200">
+                      </div>
+                      <input id="cat-name-${i}" value="${esc(cat.name||'')}" placeholder="Category Name (e.g. Sarees)" class="w-full rounded-lg border border-slate-200 px-3 py-1.5 text-xs bg-white">
+                      <input id="cat-sub-${i}" value="${esc(cat.subtitle||'')}" placeholder="Subtitle (e.g. Exclusive Handloom)" class="w-full rounded-lg border border-slate-200 px-3 py-1.5 text-xs bg-white">
+                      <input id="cat-query-${i}" value="${esc(cat.query||cat.name||'')}" placeholder="Filter Query (e.g. Silk, Pattu)" class="w-full rounded-lg border border-slate-200 px-3 py-1.5 text-xs bg-white">
+                      <input id="cat-img-${i}" value="${esc(cat.image||'')}" placeholder="Image URL" class="w-full rounded-lg border border-slate-200 px-3 py-1.5 text-xs bg-white">
+                      <div class="flex gap-1.5 pt-1">
+                        <button onclick="uploadCustomImage('cat-img-${i}','cat-img-preview-${i}')" class="flex-1 rounded-lg bg-slate-900 px-2 py-1 text-[10px] font-bold text-white hover:bg-slate-800">Upload</button>
+                        <button onclick="pickFromMediaLibrary('cat-img-${i}','cat-img-preview-${i}')" class="flex-1 rounded-lg border border-slate-200 bg-white px-2 py-1 text-[10px] font-bold text-slate-700 hover:bg-slate-50">Pick</button>
+                      </div>
+                    </div>`;
+                }).join('')}
+              </div>
+              <button onclick="saveHomeCategoriesSettings()" class="mt-6 rounded-xl bg-indigo-600 hover:bg-indigo-700 px-6 py-2.5 text-xs font-bold text-white shadow-sm transition">Save Categories Grid</button>
+            </div>
+
+            <!-- About Story & Trust Badges -->
+            <div class="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs">
+              <h3 class="text-base font-extrabold text-slate-900">Brand Story & Trust Badges</h3>
+              <p class="text-xs text-slate-500 mt-0.5">Authentic handloom narrative and buyer confidence badges.</p>
+              <div class="grid gap-3 sm:grid-cols-2">
+                ${formText('about-badge','Story Eyebrow Badge',about.badge||'Authentic Weaves')}
                 ${formText('about-title','Story Title',about.title||'Crafted with Tradition')}
-                ${formArea('about-text','Story Text',about.text||'',4)}
+              </div>
+              ${formArea('about-text','Brand Story Paragraph',about.text||'')}
+              <div class="grid gap-3 sm:grid-cols-2">
                 ${formText('about-btn','Button Label',about.button||'Explore Collections')}
                 ${formText('about-btn-link','Button Link',about.buttonLink||'#/shop')}
-                ${imageField('about-image','Story Showcase Image',about.image||'')}
-                <button onclick="saveAboutSettings()" class="mt-5 rounded-xl bg-[#193528] px-6 py-2.5 text-xs font-bold text-white shadow-md hover:bg-[#254937]">Save Brand Story</button>
-              </section>
-
-              <section class="rounded-2xl border border-[#e7eae3] bg-white p-6 shadow-sm">
-                <h3 class="text-sm font-extrabold text-[#304137]">4 Trust Badges</h3>
-                <p class="mt-0.5 text-xs text-[#808d83]">Reassurance icons shown at the bottom of the home page.</p>
-                <div class="mt-3 space-y-3">
-                  ${badges.slice(0,4).map((b,i)=>`
-                    <div class="rounded-xl border border-[#e7ebe3] p-3 bg-[#fafbf9]">
-                      <b class="text-[10px] text-[#6b7b6e]">Badge ${i+1}</b>
-                      <div class="grid grid-cols-2 gap-2 mt-1">
-                        <input id="badge-${i}-title" value="${esc(b.title||'')}" placeholder="Title" class="rounded-lg border border-[#dfe4dc] px-2.5 py-1.5 text-xs">
-                        <input id="badge-${i}-desc" value="${esc(b.desc||'')}" placeholder="Description" class="rounded-lg border border-[#dfe4dc] px-2.5 py-1.5 text-xs">
-                      </div>
-                    </div>`).join('')}
+              </div>
+              <div class="mt-4 border-t pt-4">
+                <span class="block text-xs font-bold text-slate-800">Story Illustration / Photo</span>
+                <div class="mt-2 flex gap-3 items-center">
+                  <img id="about-img-preview" src="${esc(about.image||'')}" class="h-14 w-14 object-cover rounded-xl border border-slate-200 bg-slate-50">
+                  <input id="about-image" value="${esc(about.image||'')}" class="flex-1 rounded-xl border border-slate-200 px-3 py-2 text-xs">
+                  <button onclick="uploadCustomImage('about-image','about-img-preview')" class="rounded-xl bg-slate-900 px-3 py-2 text-xs font-bold text-white hover:bg-slate-800">Upload</button>
                 </div>
-                <button onclick="saveTrustBadges()" class="mt-5 rounded-xl bg-[#193528] px-6 py-2.5 text-xs font-bold text-white shadow-md hover:bg-[#254937]">Save Trust Badges</button>
-              </section>
+              </div>
+              <div class="mt-6 border-t pt-4">
+                <h4 class="text-xs font-extrabold text-slate-900 uppercase tracking-wider mb-2">4 Trust Badges</h4>
+                <div class="grid gap-2 sm:grid-cols-2">
+                  ${[0,1,2,3].map(i=>{
+                    const tb = badges[i] || { title: `Feature ${i+1}`, desc: 'Description' };
+                    return `
+                      <div class="rounded-xl border border-slate-200 p-3 bg-slate-50/50">
+                        <input id="badge-title-${i}" value="${esc(tb.title||'')}" placeholder="Title" class="w-full font-bold rounded-lg border border-slate-200 px-2.5 py-1 text-xs mb-1 bg-white">
+                        <input id="badge-desc-${i}" value="${esc(tb.desc||'')}" placeholder="Subtitle description" class="w-full rounded-lg border border-slate-200 px-2.5 py-1 text-xs bg-white">
+                      </div>`;
+                  }).join('')}
+                </div>
+              </div>
+              <button onclick="saveAboutAndBadgesSettings()" class="mt-6 rounded-xl bg-indigo-600 hover:bg-indigo-700 px-6 py-2.5 text-xs font-bold text-white shadow-sm transition">Save Story & Badges</button>
             </div>
           </div>`;
       }
       else if(currentStorefrontSubTab==='shop'){
-        const fabrics = Array.isArray(shop.fabrics) ? shop.fabrics : ['Silk','Cotton','Semi Silk','Linen'];
+        const fabricsText = (shop.fabrics||['Silk','Cotton','Semi Silk','Linen']).join(', ');
         container.innerHTML=`
-          <div class="grid gap-6 xl:grid-cols-2">
-            <section class="rounded-2xl border border-[#e7eae3] bg-white p-6 shadow-sm">
-              <h3 class="text-sm font-extrabold text-[#304137]">Shop Page Headlines</h3>
-              <p class="mt-0.5 text-xs text-[#808d83]">Labels shown in the filter sidebar and catalog top bar.</p>
-              ${formText('shop-title','Shop Filter Drawer Heading',shop.title||'Filter')}
-              ${formText('shop-subtitle','Shop Subtitle',shop.subtitle||'Explore our finest handwoven selections')}
-              ${formText('shop-empty','Empty Products Notice',shop.emptyText||'பொருட்கள் எதுவும் இல்லை. No products found.')}
-            </section>
-
-            <section class="rounded-2xl border border-[#e7eae3] bg-white p-6 shadow-sm">
-              <h3 class="text-sm font-extrabold text-[#304137]">Fabric Filter Pills</h3>
-              <p class="mt-0.5 text-xs text-[#808d83]">Shoppers click these pills in the shop sidebar to filter by saree fabric.</p>
-              <div id="fabric-pills-list" class="mt-3 flex flex-wrap gap-2">
-                ${fabrics.map((fb,i)=>`
-                  <span class="inline-flex items-center gap-1.5 rounded-full bg-[#f0f4ee] px-3 py-1.5 text-xs font-bold text-[#35523d] border border-[#dbe3d8]">
-                    <span>${esc(fb)}</span>
-                    <button type="button" onclick="removeFabricPill(${i})" class="text-rose-600 hover:text-rose-800 text-sm">×</button>
-                  </span>`).join('')}
-              </div>
-              <div class="mt-4 flex gap-2">
-                <input id="new-fabric-input" placeholder="e.g. Kanchipuram, Banarasi, Tissue" class="flex-1 rounded-xl border border-[#dfe4dc] px-3.5 py-2 text-xs">
-                <button type="button" onclick="addFabricPill()" class="rounded-xl bg-[#193528] px-4 py-2 text-xs font-bold text-white hover:bg-[#254937]">＋ Add Fabric</button>
-              </div>
-            </section>
-
-            <section class="rounded-2xl border border-[#e7eae3] bg-white p-6 shadow-sm xl:col-span-2">
-              <h3 class="text-sm font-extrabold text-[#304137]">Sort Options Display Labels</h3>
-              <div class="mt-3 grid gap-3 sm:grid-cols-3">
-                ${formText('shop-sort-new','Newest Arrivals Label',shop.sortNewest||'Newest Arrivals')}
-                ${formText('shop-sort-low','Price: Low to High Label',shop.sortLow||'Price: Low to High')}
-                ${formText('shop-sort-high','Price: High to Low Label',shop.sortHigh||'Price: High to Low')}
-              </div>
-            </section>
-          </div>
-          <button onclick="saveShopUISettings()" class="mt-6 rounded-xl bg-[#193528] px-6 py-3 text-xs font-bold text-white shadow-md hover:bg-[#254937]">Save Shop Options</button>`;
+          <div class="max-w-2xl bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs">
+            <h3 class="text-base font-extrabold text-slate-900">Shop Catalog & Fabric Filters</h3>
+            <p class="text-xs text-slate-500 mt-0.5">Control the collection headers, filter pills, and sort dropdowns.</p>
+            ${formText('shop-title','Shop Page Title',shop.title||'The collection')}
+            ${formText('shop-subtitle','Shop Page Subtitle',shop.subtitle||'Explore our finest handwoven selections')}
+            ${formText('shop-fabrics','Fabric Filter Pills (Comma-separated)',fabricsText,'text','e.g. Silk, Cotton, Semi Silk, Linen, Soft Silk')}
+            <div class="grid gap-3 sm:grid-cols-3 mt-2">
+              ${formText('shop-sort-newest','Sort: Newest',shop.sortNewest||'Newest Arrivals')}
+              ${formText('shop-sort-low','Sort: Price Low to High',shop.sortLow||'Price: Low to High')}
+              ${formText('shop-sort-high','Sort: Price High to Low',shop.sortHigh||'Price: High to Low')}
+            </div>
+            ${formText('shop-empty','Empty Search Text',shop.emptyText||'பொருட்கள் எதுவும் இல்லை. No products found.')}
+            <button onclick="saveShopSettings()" class="mt-6 rounded-xl bg-indigo-600 hover:bg-indigo-700 px-6 py-2.5 text-xs font-bold text-white shadow-sm transition">Save Shop Settings</button>
+          </div>`;
       }
       else if(currentStorefrontSubTab==='orders_ui'){
         container.innerHTML=`
-          <div class="grid gap-6 xl:grid-cols-2">
-            <section class="rounded-2xl border border-[#e7eae3] bg-white p-6 shadow-sm">
-              <h3 class="text-sm font-extrabold text-[#304137]">Customer Orders & WhatsApp Support</h3>
-              <p class="mt-0.5 text-xs text-[#808d83]">Texts displayed in order history and customer support links.</p>
-              ${formText('order-support-text','WhatsApp Support Button Label',acc.supportText||'Contact support on WhatsApp')}
-              ${formText('order-empty-msg','Empty Orders List Message',acc.emptyOrders||'No orders yet. Start shopping')}
-            </section>
-          </div>
-          <button onclick="saveOrdersUISettings()" class="mt-6 rounded-xl bg-[#193528] px-6 py-3 text-xs font-bold text-white shadow-md hover:bg-[#254937]">Save Orders Settings</button>`;
+          <div class="max-w-2xl bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs">
+            <h3 class="text-base font-extrabold text-slate-900">Orders & Customer Support Messages</h3>
+            <p class="text-xs text-slate-500 mt-0.5">Configure what shoppers see in their order history screen.</p>
+            ${formText('order-support-msg','WhatsApp Order Support Text',acc.supportText||'Contact support on WhatsApp')}
+            ${formText('order-empty-msg','Empty Orders List Message',acc.emptyOrders||'No orders yet. Start shopping')}
+            <button onclick="saveOrdersUISettings()" class="mt-6 rounded-xl bg-indigo-600 hover:bg-indigo-700 px-6 py-2.5 text-xs font-bold text-white shadow-sm transition">Save Orders UI</button>
+          </div>`;
       }
       else if(currentStorefrontSubTab==='profile_ui'){
         container.innerHTML=`
-          <div class="grid gap-6 xl:grid-cols-2">
-            <section class="rounded-2xl border border-[#e7eae3] bg-white p-6 shadow-sm">
-              <h3 class="text-sm font-extrabold text-[#304137]">Customer Login & Profile</h3>
-              <p class="mt-0.5 text-xs text-[#808d83]">Prompt texts displayed when a customer logs in with mobile number.</p>
-              ${formText('acc-title','Login Screen Title',acc.title||'Login')}
-              ${formText('acc-subtitle','Login Screen Subtitle (Tamil/English)',acc.subtitle||'உங்கள் பெயர் மற்றும் மொபைல் எண்ணை உள்ளிடவும்.')}
-            </section>
-          </div>
-          <button onclick="saveProfileUISettings()" class="mt-6 rounded-xl bg-[#193528] px-6 py-3 text-xs font-bold text-white shadow-md hover:bg-[#254937]">Save Profile & Login Settings</button>`;
+          <div class="max-w-2xl bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs">
+            <h3 class="text-base font-extrabold text-slate-900">Customer Profile & Sign-In Prompts</h3>
+            <p class="text-xs text-slate-500 mt-0.5">Text shown to customers when entering phone or managing profile.</p>
+            ${formText('profile-title','Login Screen Title',acc.title||'Your Profile Details')}
+            ${formText('profile-sub','Login Screen Subtitle Prompt',acc.subtitle||'உங்கள் பெயர் மற்றும் மொபைல் எண்ணை உள்ளிடவும்.')}
+            <button onclick="saveProfileUISettings()" class="mt-6 rounded-xl bg-indigo-600 hover:bg-indigo-700 px-6 py-2.5 text-xs font-bold text-white shadow-sm transition">Save Profile UI</button>
+          </div>`;
       }
       else if(currentStorefrontSubTab==='footer'){
         container.innerHTML=`
-          <div class="grid gap-6 xl:grid-cols-2">
-            <section class="rounded-2xl border border-[#e7eae3] bg-white p-6 shadow-sm">
-              <h3 class="text-sm font-extrabold text-[#304137]">Store Contact & Location</h3>
-              <p class="mt-0.5 text-xs text-[#808d83]">Customer support numbers, email and weaver address.</p>
-              ${formArea('footer-about','Footer Brand Blurb',f.about||'',3)}
-              ${formText('footer-phone','Customer Care Phone',f.phone||'')}
-              ${formText('footer-email','Official Email',f.email||'')}
-              ${formText('footer-address','Physical Store / Weaver Address',f.address||'Melur, Tamil Nadu')}
-              ${formText('footer-whatsapp','WhatsApp Order Number (with Country Code)',f.whatsapp||'919999999999','e.g. 919876543210')}
-              ${formText('footer-copyright','Copyright Notice Text',f.copyright||`© ${new Date().getFullYear()} Thaarai Tex. All rights reserved.`)}
-            </section>
-
-            <section class="rounded-2xl border border-[#e7eae3] bg-white p-6 shadow-sm">
-              <h3 class="text-sm font-extrabold text-[#304137]">UPI Payment Details (Instant QR Code)</h3>
-              <p class="mt-0.5 text-xs text-[#808d83]">These are used during checkout to automatically generate the dynamic UPI QR code.</p>
-              ${formText('footer-upi','Store UPI ID (VPA)',f.upi||'yourname@upi','e.g. shopname@okaxis or 9876543210@upi')}
-              ${formText('footer-upiname','UPI Payee Name',f.upiName||'Thaarai Tex','e.g. Thaarai Tex Handlooms')}
-              <div class="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-xs leading-5 text-emerald-900">
-                <b>💡 How it works:</b> During checkout, when a customer picks "Pay Online (UPI)", a QR code is generated using this UPI ID and the exact order total for one-scan payments.
-              </div>
-            </section>
-          </div>
-          <button onclick="saveFooterSettings()" class="mt-6 rounded-xl bg-[#193528] px-6 py-3 text-xs font-bold text-white shadow-md hover:bg-[#254937]">Save Footer & Contacts</button>`;
+          <div class="max-w-2xl bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs">
+            <h3 class="text-base font-extrabold text-slate-900">Footer, WhatsApp & UPI Payment Details</h3>
+            <p class="text-xs text-slate-500 mt-0.5">Configure WhatsApp customer support and online UPI QR receiver accounts.</p>
+            ${formText('footer-whatsapp','Support WhatsApp Number (with country code, e.g. 919876543210)',foot.whatsapp||'919999999999')}
+            ${formText('footer-upi','Store Receiver UPI ID (e.g. thaaraitex@upi)',foot.upi||'yourname@upi')}
+            ${formText('footer-upi-name','Receiver Business Name for UPI',foot.upiName||'Thaarai Tex')}
+            ${formText('footer-copyright','Custom Copyright Text (Leave blank for default auto-year)',foot.copyright||'')}
+            <button onclick="saveFooterSettings()" class="mt-6 rounded-xl bg-indigo-600 hover:bg-indigo-700 px-6 py-2.5 text-xs font-bold text-white shadow-sm transition">Save Footer & Payment</button>
+          </div>`;
       }
     }
 
-    /* Save Handlers for Storefront Customizer */
-    async function persistSetting(key, value){
-      try{
-        const {error}=await db.from('store_settings').upsert({key, value, updated_at:new Date().toISOString()});
-        if(error)throw error;
-        settings[key]=value;
-        toast('Website updated successfully ✓');
-      }catch(err){
-        toast(err.message||'Could not save changes');
-      }
+    async function saveSettingToDB(key, value){
+      const {error}=await db.from('store_settings').upsert({key, value},{onConflict:'key'});
+      if(error){toast('Error saving: '+error.message);return false;}
+      settings[key]=value;
+      toast('Saved successfully ✓');
+      return true;
     }
 
-    async function saveHeaderBrandSettings(){
-      const brand={
-        name:$('#brand-name').value.trim()||defaultSettings.brand.name,
-        tagline:$('#brand-tagline').value.trim()||defaultSettings.brand.tagline,
-        logo:$('#brand-logo').value.trim()
-      };
-      const header={
-        searchPlaceholder:$('#header-search').value.trim()||defaultSettings.header.searchPlaceholder,
-        showShopLink:$('#header-shop-show').checked,
-        shopLinkLabel:$('#header-shop-text').value.trim()||'Shop'
-      };
-      await Promise.all([persistSetting('brand',brand), persistSetting('header',header)]);
+    async function saveHeaderSettings(){
+      const b={...(settings.brand||{}),name:$('#brand-name').value.trim(),tagline:$('#brand-tagline').value.trim(),logo:$('#brand-logo').value.trim()};
+      const h={...(settings.header||{}),searchPlaceholder:$('#header-search').value.trim(),showShopLink:$('#header-show-shop').checked,shopLinkLabel:$('#header-shop-label').value.trim()};
+      await saveSettingToDB('brand',b);
+      await saveSettingToDB('header',h);
     }
 
     async function saveHeroSettings(){
       const hero={
+        ...(settings.hero||{}),
         eyebrow:$('#hero-eyebrow').value.trim(),
         title:$('#hero-title').value.trim(),
         subtitle:$('#hero-subtitle').value.trim(),
-        button:$('#hero-button').value.trim(),
-        buttonLink:$('#hero-button-link').value.trim()||'#/shop',
-        secButton:$('#hero-sec-button').value.trim(),
-        secButtonLink:$('#hero-sec-button-link').value.trim()||'#/shop',
-        image:$('#hero-image').value.trim(),
-        badge:$('#hero-badge').value.trim()
+        badge:$('#hero-badge').value.trim(),
+        button:$('#hero-btn').value.trim(),
+        buttonLink:$('#hero-btn-link').value.trim(),
+        secButton:$('#hero-sec-btn').value.trim(),
+        secButtonLink:$('#hero-sec-btn-link').value.trim(),
+        image:$('#hero-image').value.trim()
       };
-      await persistSetting('hero',hero);
+      await saveSettingToDB('hero',hero);
     }
 
-    function addHomeCategoryCard(){
-      const cats=Array.isArray(settings.home_categories)?settings.home_categories:[...defaultSettings.home_categories];
-      cats.push({name:'New Collection',subtitle:'Handcrafted Weave',image:'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=600&q=80',query:'New'});
-      settings.home_categories=cats;
-      renderStorefrontSubTabContent();
+    async function saveHomeCategoriesSettings(){
+      const cats=[];
+      for(let i=0;i<6;i++){
+        cats.push({
+          name:$(`#cat-name-${i}`)?.value.trim()||`Category ${i+1}`,
+          subtitle:$(`#cat-sub-${i}`)?.value.trim()||'Exclusive Handloom',
+          query:$(`#cat-query-${i}`)?.value.trim()||'',
+          image:$(`#cat-img-${i}`)?.value.trim()||''
+        });
+      }
+      await saveSettingToDB('home_categories',cats);
     }
 
-    function removeHomeCategoryCard(index){
-      const cats=Array.isArray(settings.home_categories)?settings.home_categories:[...defaultSettings.home_categories];
-      cats.splice(index,1);
-      settings.home_categories=cats;
-      renderStorefrontSubTabContent();
-    }
-
-    async function saveHomeCategoryCards(){
-      const cards=[...document.querySelectorAll('.home-cat-card')].map((el,i)=>({
-        name:el.querySelector(`#hcat-${i}-name`)?.value.trim()||'Category',
-        subtitle:el.querySelector(`#hcat-${i}-sub`)?.value.trim()||'',
-        query:el.querySelector(`#hcat-${i}-query`)?.value.trim()||'',
-        image:el.querySelector(`#hcat-${i}-img`)?.value.trim()||''
-      }));
-      await persistSetting('home_categories',cards);
-    }
-
-    async function saveAboutSettings(){
+    async function saveAboutAndBadgesSettings(){
       const about={
+        ...(settings.about||{}),
         badge:$('#about-badge').value.trim(),
         title:$('#about-title').value.trim(),
         text:$('#about-text').value.trim(),
@@ -876,272 +830,360 @@
         buttonLink:$('#about-btn-link').value.trim(),
         image:$('#about-image').value.trim()
       };
-      await persistSetting('about',about);
-    }
-
-    async function saveTrustBadges(){
-      const badges=[0,1,2,3].map(i=>({
-        title:$(`#badge-${i}-title`)?.value.trim()||'',
-        desc:$(`#badge-${i}-desc`)?.value.trim()||''
-      }));
-      await persistSetting('trust_badges',badges);
-    }
-
-    function addFabricPill(){
-      const input=$('#new-fabric-input');
-      const val=input.value.trim();
-      if(!val)return;
-      const shop=settings.shop_ui||defaultSettings.shop_ui;
-      const list=Array.isArray(shop.fabrics)?[...shop.fabrics]:[...defaultSettings.shop_ui.fabrics];
-      if(!list.includes(val)){
-        list.push(val);
-        shop.fabrics=list;
-        settings.shop_ui=shop;
-        renderStorefrontSubTabContent();
+      const badges=[];
+      for(let i=0;i<4;i++){
+        badges.push({
+          title:$(`#badge-title-${i}`)?.value.trim()||`Feature ${i+1}`,
+          desc:$(`#badge-desc-${i}`)?.value.trim()||''
+        });
       }
-      input.value='';
+      await saveSettingToDB('about',about);
+      await saveSettingToDB('trust_badges',badges);
     }
 
-    function removeFabricPill(index){
-      const shop=settings.shop_ui||defaultSettings.shop_ui;
-      const list=Array.isArray(shop.fabrics)?[...shop.fabrics]:[...defaultSettings.shop_ui.fabrics];
-      list.splice(index,1);
-      shop.fabrics=list;
-      settings.shop_ui=shop;
-      renderStorefrontSubTabContent();
-    }
-
-    async function saveShopUISettings(){
-      const shop=settings.shop_ui||defaultSettings.shop_ui;
-      shop.title=$('#shop-title').value.trim();
-      shop.subtitle=$('#shop-subtitle').value.trim();
-      shop.emptyText=$('#shop-empty').value.trim();
-      shop.sortNewest=$('#shop-sort-new').value.trim();
-      shop.sortLow=$('#shop-sort-low').value.trim();
-      shop.sortHigh=$('#shop-sort-high').value.trim();
-      await persistSetting('shop_ui',shop);
+    async function saveShopSettings(){
+      const shop={
+        ...(settings.shop_ui||{}),
+        title:$('#shop-title').value.trim(),
+        subtitle:$('#shop-subtitle').value.trim(),
+        fabrics:$('#shop-fabrics').value.split(',').map(s=>s.trim()).filter(Boolean),
+        sortNewest:$('#shop-sort-newest').value.trim(),
+        sortLow:$('#shop-sort-low').value.trim(),
+        sortHigh:$('#shop-sort-high').value.trim(),
+        emptyText:$('#shop-empty').value.trim()
+      };
+      await saveSettingToDB('shop_ui',shop);
     }
 
     async function saveOrdersUISettings(){
-      const acc=settings.account_ui||defaultSettings.account_ui;
-      acc.supportText=$('#order-support-text').value.trim();
-      acc.emptyOrders=$('#order-empty-msg').value.trim();
-      await persistSetting('account_ui',acc);
+      const acc={
+        ...(settings.account_ui||{}),
+        supportText:$('#order-support-msg').value.trim(),
+        emptyOrders:$('#order-empty-msg').value.trim()
+      };
+      await saveSettingToDB('account_ui',acc);
     }
 
     async function saveProfileUISettings(){
-      const acc=settings.account_ui||defaultSettings.account_ui;
-      acc.title=$('#acc-title').value.trim();
-      acc.subtitle=$('#acc-subtitle').value.trim();
-      await persistSetting('account_ui',acc);
+      const acc={
+        ...(settings.account_ui||{}),
+        title:$('#profile-title').value.trim(),
+        subtitle:$('#profile-sub').value.trim()
+      };
+      await saveSettingToDB('account_ui',acc);
     }
 
     async function saveFooterSettings(){
-      const f={
-        about:$('#footer-about').value.trim(),
-        phone:$('#footer-phone').value.trim(),
-        email:$('#footer-email').value.trim(),
-        address:$('#footer-address').value.trim(),
+      const foot={
+        ...(settings.footer||{}),
         whatsapp:$('#footer-whatsapp').value.trim(),
-        copyright:$('#footer-copyright').value.trim(),
         upi:$('#footer-upi').value.trim(),
-        upiName:$('#footer-upiname').value.trim()
+        upiName:$('#footer-upi-name').value.trim(),
+        copyright:$('#footer-copyright').value.trim()
       };
-      await persistSetting('footer',f);
+      await saveSettingToDB('footer',foot);
     }
 
-    /* Image helpers for customizer fields */
-    function uploadForField(fieldId){
-      targetImageFieldId=fieldId;
-      $('#custom-image-file-input').click();
-    }
-
-    $('#custom-image-file-input').onchange=async e=>{
-      const file=e.target.files[0];
-      e.target.value='';
-      if(!file||!targetImageFieldId)return;
-      if(!file.type.startsWith('image/'))return toast('Please select an image');
-      if(file.size>4*1024*1024)return toast('Image exceeds 4 MB limit');
-
-      const safeName=file.name.replace(/[^\w.-]/g,'_');
-      const path=`site/${Date.now()}-${safeName}`;
-      try{
+    function uploadCustomImage(inputId, previewImgId){
+      targetImageFieldId = inputId;
+      const inp = $('#custom-image-file-input');
+      inp.onchange = async e => {
+        const file = e.target.files[0];
+        if(!file)return;
+        e.target.value = '';
+        if(!file.type.startsWith('image/')){toast('Please select an image file');return;}
         toast('Uploading image…');
-        const {error}=await db.storage.from(MEDIA_BUCKET).upload(path,file,{contentType:file.type});
-        if(error)throw error;
-        const publicUrl=db.storage.from(MEDIA_BUCKET).getPublicUrl(path).data.publicUrl;
-        const input=document.getElementById(targetImageFieldId);
-        if(input){
-          input.value=publicUrl;
-          const preview=document.getElementById(`${targetImageFieldId}-preview`);
-          if(preview)preview.src=publicUrl;
-        }
-        toast('Image uploaded and applied ✓');
-      }catch(err){
-        toast(err.message||'Upload failed');
-      }
-    };
-
-    async function pickMediaForField(fieldId){
-      targetImageFieldId=fieldId;
-      const modal=$('#library-picker-modal');
-      const content=$('#library-picker-content');
-      modal.showModal();
-      content.innerHTML='<p class="col-span-full py-10 text-center text-xs text-gray-400">Loading library images…</p>';
-      try{
-        const files=await loadMedia();
-        content.innerHTML=files.map((x,i)=>`
-          <button type="button" data-pick-media="${i}" class="overflow-hidden rounded-xl border border-[#e5e8e2] text-left hover:border-[#193528] transition">
-            <img src="${esc(x.url)}" alt="${esc(x.name)}" class="aspect-square w-full object-cover">
-            <span class="block truncate p-2 text-[10px] text-gray-700">${esc(x.name)}</span>
-          </button>`).join('')||'<p class="col-span-full py-8 text-center text-xs">No media found. Upload photos in the Media Library tab first.</p>';
-
-        content.onclick=e=>{
-          const btn=e.target.closest('[data-pick-media]');
-          if(!btn)return;
-          const item=files[Number(btn.dataset.pickMedia)];
-          if(item && targetImageFieldId){
-            const input=document.getElementById(targetImageFieldId);
-            if(input){
-              input.value=item.url;
-              const preview=document.getElementById(`${targetImageFieldId}-preview`);
-              if(preview)preview.src=item.url;
-            }
+        const path = `site/${Date.now()}-${file.name.replace(/[^\w.-]/g,'_')}`;
+        try{
+          const {error} = await db.storage.from(MEDIA_BUCKET).upload(path, file, {contentType:file.type});
+          if(error)throw error;
+          const url = db.storage.from(MEDIA_BUCKET).getPublicUrl(path).data.publicUrl;
+          const target = $(`#${targetImageFieldId}`);
+          if(target) target.value = url;
+          if(previewImgId){
+            const prev = $(`#${previewImgId}`);
+            if(prev) prev.src = url;
           }
-          modal.close();
-          toast('Image selected from library ✓');
-        };
-      }catch(err){
-        content.textContent=err.message;
+          toast('Uploaded successfully ✓');
+        }catch(err){toast('Upload error: '+err.message);}
+      };
+      inp.click();
+    }
+
+    async function pickFromMediaLibrary(inputId, previewImgId){
+      const modal = $('#library-picker-modal');
+      const box = $('#library-picker-content');
+      modal.showModal();
+      box.innerHTML = '<p class="col-span-full py-8 text-center text-xs text-slate-400">Loading library images…</p>';
+      try{
+        const {data,error}=await db.storage.from(MEDIA_BUCKET).list('products',{limit:100,sortBy:{column:'created_at',order:'desc'}});
+        const {data:d2}=await db.storage.from(MEDIA_BUCKET).list('site',{limit:100,sortBy:{column:'created_at',order:'desc'}});
+        const all = [
+          ...(data||[]).map(f=>({name:f.name,url:db.storage.from(MEDIA_BUCKET).getPublicUrl('products/'+f.name).data.publicUrl})),
+          ...(d2||[]).map(f=>({name:f.name,url:db.storage.from(MEDIA_BUCKET).getPublicUrl('site/'+f.name).data.publicUrl}))
+        ];
+        if(!all.length){box.innerHTML='<p class="col-span-full py-8 text-center text-xs text-slate-400">No images uploaded yet.</p>';return;}
+        box.innerHTML = all.map(f=>`
+          <button type="button" class="group relative aspect-square overflow-hidden rounded-xl border border-slate-200 bg-slate-50 hover:border-indigo-600 transition" onclick="selectLibraryImage('${esc(f.url)}','${inputId}','${previewImgId||''}')">
+            <img src="${esc(f.url)}" class="h-full w-full object-cover group-hover:scale-105 transition">
+            <span class="absolute inset-0 bg-indigo-900/40 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-xs font-bold transition">Choose</span>
+          </button>`).join('');
+      }catch(e){box.innerHTML='<p class="col-span-full py-8 text-center text-xs text-rose-500">Error: '+esc(e.message)+'</p>';}
+    }
+
+    function selectLibraryImage(url, inputId, previewImgId){
+      const target = $(`#${inputId}`);
+      if(target) target.value = url;
+      if(previewImgId){
+        const prev = $(`#${previewImgId}`);
+        if(prev) prev.src = url;
       }
+      $('#library-picker-modal').close();
+      toast('Image selected ✓');
     }
     $('#library-picker-close').onclick=()=>$('#library-picker-modal').close();
 
     /* ===== CATALOG / PRODUCTS ===== */
-    function tableHead(cols){return `<thead><tr>${cols.map(c=>`<th class="whitespace-nowrap px-4 py-3 text-left text-[9px] font-bold uppercase tracking-[.14em] text-[#818a81]">${c}</th>`).join('')}</tr></thead>`}
+    function tableHead(cols){return `<thead><tr class="border-b border-slate-100 bg-slate-50/70">${cols.map(c=>`<th class="whitespace-nowrap px-4 py-3 text-left text-[10px] font-bold uppercase tracking-[.14em] text-slate-500">${c}</th>`).join('')}</tr></thead>`}
+
     function renderProducts(){
+      const activeCount = products.filter(p=>p.active).length;
+      const hiddenCount = products.filter(p=>!p.active).length;
+      const lowCount = products.filter(p=>Number(p.stock||0)>0 && Number(p.stock||0)<5).length;
+      const outCount = products.filter(p=>Number(p.stock||0)<=0).length;
+
       view.innerHTML=`
         <div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
           <div>
-            <p class="text-[10px] font-bold uppercase tracking-[.19em] text-[#9a8057]">Catalog</p>
-            <h2 class="mt-2 text-2xl font-extrabold text-[#21342a]">Products</h2>
-            <p class="mt-1 text-sm text-[#758078]">Edit pricing, inventory, details and product visibility with fixed auto-generated Product IDs.</p>
+            <p class="text-[10px] font-black uppercase tracking-[.2em] text-indigo-600">Inventory & Catalog</p>
+            <h2 class="mt-1.5 text-2xl font-extrabold text-slate-900">Products</h2>
+            <p class="mt-0.5 text-xs sm:text-sm text-slate-500">Edit pricing, stock, photos, visibility and set the main storefront photo.</p>
           </div>
-          <button data-action="product-new" class="rounded-xl bg-[#193528] px-4 py-3 text-xs font-bold text-white shadow-md hover:bg-[#254937]">＋ Add product</button>
+          <button data-action="product-new" class="rounded-xl bg-indigo-600 hover:bg-indigo-700 px-4 py-2.5 text-xs font-bold text-white shadow-sm transition flex items-center justify-center gap-1.5">
+            <span>＋</span> Add Saree
+          </button>
         </div>
-        <div class="mt-5 overflow-hidden rounded-2xl border border-[#e7eae3] bg-white">
-          <div class="border-b border-[#edf0ea] p-4 flex flex-col sm:flex-row justify-between gap-3">
-            <input id="product-search" placeholder="Search by Product Name or Product ID (e.g. TT-1001)…" class="w-full rounded-xl border border-[#e3e7df] bg-[#fbfcfa] px-4 py-2.5 text-xs sm:max-w-md">
-            <span class="self-center text-[10px] text-[#879087]">${products.length} products total</span>
+
+        <!-- Inventory Quick Filter Chips -->
+        <div class="mt-5 flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+          ${[
+            ['all',`All Sarees (${products.length})`],
+            ['live',`Live on Store (${activeCount})`],
+            ['hidden',`Hidden (${hiddenCount})`],
+            ['low',`Low Stock < 5 (${lowCount})`],
+            ['out',`Out of Stock (${outCount})`]
+          ].map(([f,lbl])=>`
+            <button onclick="filterProducts('${f}')" class="shrink-0 rounded-xl px-3.5 py-1.5 text-xs font-bold transition ${productFilter===f?'bg-slate-900 text-white shadow-xs':'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'}">
+              ${lbl}
+            </button>`).join('')}
+        </div>
+
+        <div class="mt-4 overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-xs">
+          <div class="border-b border-slate-100 p-4 flex flex-col sm:flex-row justify-between gap-3 bg-slate-50/40">
+            <input id="product-search" placeholder="Search by Saree Name, Product ID (e.g. TT-1001), or Fabric…" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs text-slate-900 outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 sm:max-w-md transition">
+            <span class="self-center text-xs font-bold text-slate-400" id="product-count-label">${products.length} products total</span>
           </div>
-          <div class="overflow-x-auto">
-            <table class="w-full min-w-[820px]">${tableHead(['Product ID','Product','Category','Price','Inventory','Visibility',''])}
-              <tbody id="product-rows" class="divide-y divide-[#f0f1ed]">${products.map(productRow).join('')}</tbody>
+
+          <!-- Desktop Table View -->
+          <div class="hidden sm:block overflow-x-auto">
+            <table class="w-full min-w-[840px]">${tableHead(['Product ID','Saree','Category','Price','Stock','Visibility','Actions'])}
+              <tbody id="product-rows" class="divide-y divide-slate-100">${filterProductRows().map(productRow).join('')}</tbody>
             </table>
           </div>
+
+          <!-- Mobile Responsive Cards View -->
+          <div id="product-mobile-cards" class="sm:hidden divide-y divide-slate-100">
+            ${filterProductRows().map(productMobileCard).join('')}
+          </div>
         </div>`;
+
       $('#product-search').oninput=e=>{
         const q=e.target.value.toLowerCase().trim();
-        $('#product-rows').innerHTML=products.filter(p=>(p.name||'').toLowerCase().includes(q)||getProductId(p).toLowerCase().includes(q)||(p.fabric||'').toLowerCase().includes(q)).map(productRow).join('');
+        const filtered = filterProductRows().filter(p=>
+          (p.name||'').toLowerCase().includes(q) ||
+          getProductId(p).toLowerCase().includes(q) ||
+          (p.fabric||'').toLowerCase().includes(q)
+        );
+        $('#product-rows').innerHTML=filtered.map(productRow).join('');
+        $('#product-mobile-cards').innerHTML=filtered.map(productMobileCard).join('');
+        $('#product-count-label').textContent=`${filtered.length} products shown`;
       };
+    }
+
+    function filterProducts(f){
+      productFilter=f;
+      renderProducts();
+    }
+
+    function filterProductRows(){
+      if(productFilter==='live') return products.filter(p=>p.active);
+      if(productFilter==='hidden') return products.filter(p=>!p.active);
+      if(productFilter==='low') return products.filter(p=>Number(p.stock||0)>0 && Number(p.stock||0)<5);
+      if(productFilter==='out') return products.filter(p=>Number(p.stock||0)<=0);
+      return products;
     }
 
     function productRow(p){
       const cat=categories.find(c=>String(c.id)===String(p.category_id));
       const prodId=getProductId(p);
+      const stockNum=Number(p.stock||0);
       return `
-        <tr class="hover:bg-[#fbfcfa]">
+        <tr class="hover:bg-slate-50/70 transition">
           <td class="px-4 py-3 whitespace-nowrap">
-            <span class="inline-flex items-center font-mono text-xs font-black bg-[#edf3ea] text-[#193528] border border-[#d2dfcd] px-2.5 py-1 rounded-lg select-all">
+            <span class="inline-flex items-center font-mono text-xs font-black bg-indigo-50 text-indigo-900 border border-indigo-200/80 px-2.5 py-1 rounded-lg select-all">
               ${esc(prodId)}
             </span>
           </td>
           <td class="px-4 py-3">
             <div class="flex items-center gap-3">
-              <img src="${esc(p.images?.[0]||'https://placehold.co/60x72?text=TT')}" class="h-12 w-10 rounded-lg object-cover" alt="">
-              <div>
-                <p class="max-w-[260px] truncate text-xs font-bold text-[#334238]">${esc(p.name)}</p>
-                <p class="mt-1 text-[10px] text-[#929a92]">${esc(p.fabric||'Handloom')} · ID: <b class="font-mono text-[#193528]">${esc(prodId)}</b></p>
+              <img src="${esc(p.images?.[0]||'https://placehold.co/60x72?text=TT')}" class="h-12 w-10 rounded-lg object-cover border border-slate-200 shrink-0 bg-slate-50" alt="">
+              <div class="min-w-0">
+                <p class="max-w-[260px] truncate text-xs font-bold text-slate-900">${esc(p.name)}</p>
+                <p class="mt-0.5 text-[10px] text-slate-500">${esc(p.fabric||'Handloom')} · ${p.images?.length||0} photos</p>
               </div>
             </div>
           </td>
-          <td class="px-4 py-3 text-xs text-[#66736a]">${esc(cat?.name||'—')}</td>
-          <td class="px-4 py-3 text-xs font-bold text-[#334238]">${fmt(p.price)}</td>
-          <td class="px-4 py-3"><span class="rounded-full px-2.5 py-1 text-[10px] font-bold ${Number(p.stock)>4?'bg-[#eef4eb] text-[#537052]':'bg-[#fbf0e9] text-[#96613d]'}">${Number(p.stock||0)} pcs</span></td>
-          <td class="px-4 py-3"><span class="rounded-full px-2.5 py-1 text-[9px] font-bold ${p.active?'bg-[#eef4eb] text-[#537052]':'bg-[#f0f1ee] text-[#7c847d]'}">${p.active?'LIVE':'HIDDEN'}</span></td>
-          <td class="px-4 py-3 text-right">
-            <button data-edit-product="${esc(p.id)}" class="rounded-lg border border-[#e5e8e2] px-3 py-2 text-[10px] font-bold text-[#58665b] hover:bg-[#f4f6f2]">Edit</button>
+          <td class="px-4 py-3 text-xs text-slate-600">${esc(cat?.name||'—')}</td>
+          <td class="px-4 py-3 text-xs font-black text-slate-900">${fmt(p.price)}</td>
+          <td class="px-4 py-3 whitespace-nowrap">
+            <span class="rounded-full px-2.5 py-1 text-[10px] font-bold ${stockNum>4?'bg-emerald-50 text-emerald-700 border border-emerald-200':stockNum>0?'bg-amber-50 text-amber-700 border border-amber-200':'bg-rose-50 text-rose-700 border border-rose-200'}">
+              ${stockNum} pcs ${stockNum<=0?'(Out)':''}
+            </span>
+          </td>
+          <td class="px-4 py-3 whitespace-nowrap">
+            <span class="rounded-full px-2.5 py-1 text-[9px] font-bold ${p.active?'bg-emerald-50 text-emerald-700 border border-emerald-200':'bg-slate-100 text-slate-600'}">
+              ${p.active?'LIVE':'HIDDEN'}
+            </span>
+          </td>
+          <td class="px-4 py-3 text-right whitespace-nowrap">
+            <button data-edit-product="${esc(p.id)}" class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition shadow-xs">Edit</button>
           </td>
         </tr>`;
     }
 
-    function field(name,label,value,type='text'){return `<label class="block text-xs font-bold text-[#445248]">${label}<input name="${name}" ${type==='number'?'type="number" step="any"':''} value="${esc(value)}" required class="mt-2 w-full rounded-xl border border-[#dfe4dc] bg-white px-3 py-3 text-xs"></label>`}
-
-    async function openProduct(product){
-      editing={type:'product',row:product||{active:true,stock:0,images:[]}};
-      const r=editing.row;
-      const prodId=getProductId(r);
-      $('#editor-kicker').textContent=product?'CATALOG · EDIT':'CATALOG · NEW';
-      $('#editor-title').textContent=product?'Edit product':'Create a product';
-      const images=Array.isArray(r.images)?r.images:[];
-      $('#editor-fields').innerHTML=`
-        <div class="rounded-xl bg-[#eef4eb] p-3 border border-[#d7e5d2] flex items-center justify-between mb-3">
-          <div>
-            <span class="text-[10px] font-bold uppercase tracking-wider text-[#587259]">Product ID (System Reference)</span>
-            <p class="font-mono text-sm font-black text-[#193528]">${esc(prodId)}</p>
-          </div>
-          <span class="rounded-md bg-white px-2.5 py-1 font-mono text-[11px] font-bold text-[#2d523a] border border-[#d3dfcf]">Fixed ID</span>
-        </div>
-        <div class="grid gap-3 sm:grid-cols-2">
-          ${field('name','Product name',r.name||'')}
-          ${field('fabric','Fabric',r.fabric||'')}
-          ${field('price','Price (₹)',r.price||0,'number')}
-          ${field('mrp','MRP (₹)',r.mrp||0,'number')}
-          ${field('stock','Stock quantity',r.stock||0,'number')}
-          <label class="block text-xs font-bold text-[#445248]">Category
-            <select name="category_id" class="mt-2 w-full rounded-xl border border-[#dfe4dc] bg-white px-3 py-3 text-xs">
-              <option value="">No category</option>
-              ${categories.map(c=>`<option value="${esc(c.id)}" ${String(c.id)===String(r.category_id)?'selected':''}>${esc(c.name)}</option>`).join('')}
-            </select>
-          </label>
-          ${field('color','Colour',r.color||'')}
-          ${field('occasion','Occasion',r.occasion||'')}
-        </div>
-        <div>
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-bold text-[#445248]">Product photos</span>
-            <div class="flex gap-2">
-              <button type="button" data-product-local class="rounded-lg bg-[#193528] px-3 py-2 text-[10px] font-bold text-white hover:bg-[#254937]">Upload from device</button>
-              <button type="button" data-product-library class="rounded-lg border border-[#dfe4dc] px-3 py-2 text-[10px] font-bold hover:bg-gray-50">Choose from media library</button>
+    function productMobileCard(p){
+      const cat=categories.find(c=>String(c.id)===String(p.category_id));
+      const prodId=getProductId(p);
+      const stockNum=Number(p.stock||0);
+      return `
+        <div class="p-4 flex gap-3 items-center hover:bg-slate-50/50 transition">
+          <img src="${esc(p.images?.[0]||'https://placehold.co/60x72?text=TT')}" class="h-16 w-14 rounded-xl object-cover border border-slate-200 bg-slate-50 shrink-0">
+          <div class="min-w-0 flex-1 space-y-1">
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <span class="font-mono text-[10px] font-black text-indigo-900 bg-indigo-50 border border-indigo-200 px-1.5 py-0.5 rounded select-all">${esc(prodId)}</span>
+              <span class="text-[9px] font-bold ${p.active?'text-emerald-700':'text-slate-500'}">${p.active?'● LIVE':'○ HIDDEN'}</span>
+            </div>
+            <h4 class="text-xs font-bold text-slate-900 truncate">${esc(p.name)}</h4>
+            <div class="flex items-center justify-between pt-0.5">
+              <span class="text-xs font-black text-slate-900">${fmt(p.price)}</span>
+              <span class="text-[10px] font-bold ${stockNum>4?'text-emerald-700':stockNum>0?'text-amber-700':'text-rose-600'}">${stockNum} in stock</span>
             </div>
           </div>
-          <div id="product-image-grid" class="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-4">
-            ${images.map((url,i)=>`
-              <div class="relative overflow-hidden rounded-xl border border-[#e5e8e2]">
-                <img src="${esc(url)}" alt="Product photo ${i+1}" class="aspect-square w-full object-cover">
-                <button type="button" data-remove-product-image="${i}" class="absolute right-1 top-1 grid h-7 w-7 place-items-center rounded-full bg-white/95 text-sm font-bold text-rose-700 shadow">×</button>
-              </div>`).join('')||'<p class="col-span-full rounded-xl bg-[#f7f8f5] p-5 text-center text-[10px] text-[#89928a]">No product photos yet. Upload from your device or select from the library.</p>'}
+          <button data-edit-product="${esc(p.id)}" class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 shrink-0">Edit</button>
+        </div>`;
+    }
+
+    function field(name,label,value,type='text'){return `<label class="block text-xs font-bold text-slate-800">${label}<input name="${name}" ${type==='number'?'type="number" step="any"':''} value="${esc(value)}" required class="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs text-slate-900 outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 transition"></label>`}
+
+    /* ===== PRODUCT PHOTO RENDERER WITH "SET MAIN COVER" FEATURE ===== */
+    function renderProductImageCards(images){
+      if(!images.length){
+        return '<p class="col-span-full rounded-xl bg-slate-50 border border-slate-200/70 p-6 text-center text-xs text-slate-400">No photos yet. Upload from device or choose from media library.</p>';
+      }
+      return images.map((url, i) => `
+        <div class="group relative overflow-hidden rounded-xl border ${i===0?'border-amber-500 ring-2 ring-amber-400/80 shadow-md':'border-slate-200'} bg-white aspect-square transition">
+          <img src="${esc(url)}" alt="Photo ${i+1}" class="h-full w-full object-cover">
+          
+          <!-- Top Badges / Remove -->
+          <div class="absolute top-1.5 inset-x-1.5 flex items-center justify-between">
+            ${i===0
+              ? '<span class="bg-amber-500 text-slate-950 font-black text-[9px] uppercase px-2 py-0.5 rounded shadow flex items-center gap-0.5">★ Main Front</span>'
+              : `<span class="bg-slate-900/75 backdrop-blur text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow">#${i+1}</span>`
+            }
+            <button type="button" data-remove-product-image="${i}" title="Remove photo" class="grid h-6 w-6 place-items-center rounded-full bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow transition">×</button>
           </div>
-          <textarea name="images" class="hidden">${esc(images.join('\n'))}</textarea>
+
+          <!-- Bottom Set Main / Move Actions -->
+          <div class="absolute bottom-1.5 inset-x-1.5 flex items-center justify-between gap-1">
+            ${i > 0 ? `
+              <button type="button" data-set-main-image="${i}" title="Set as main cover picture" class="flex-1 bg-slate-900/90 hover:bg-indigo-600 text-white font-extrabold text-[9px] py-1 px-1.5 rounded-lg shadow-sm text-center transition flex items-center justify-center gap-1">
+                <span>★</span> Set Main
+              </button>
+            ` : `
+              <span class="flex-1 text-center font-bold text-[9px] text-amber-900 bg-amber-100/90 rounded py-0.5 shadow-xs">Primary Photo</span>
+            `}
+            ${images.length > 1 ? `
+              <div class="flex items-center gap-0.5">
+                ${i > 0 ? `<button type="button" data-move-image="${i}" data-dir="-1" title="Move Left" class="h-5 w-5 bg-white/95 hover:bg-white text-slate-800 font-bold text-[10px] rounded shadow flex items-center justify-center">‹</button>` : ''}
+                ${i < images.length - 1 ? `<button type="button" data-move-image="${i}" data-dir="1" title="Move Right" class="h-5 w-5 bg-white/95 hover:bg-white text-slate-800 font-bold text-[10px] rounded shadow flex items-center justify-center">›</button>` : ''}
+              </div>
+            ` : ''}
+          </div>
         </div>
-        <label class="block text-xs font-bold text-[#445248]">Description
-          <textarea name="description" rows="4" class="mt-2 w-full rounded-xl border border-[#dfe4dc] bg-white px-3 py-3 text-xs">${esc(r.description||'')}</textarea>
-        </label>
-        <label class="flex items-center gap-3 rounded-xl bg-[#f0f3ed] p-3 text-xs font-bold text-[#435248] cursor-pointer">
-          <input name="active" type="checkbox" ${r.active!==false?'checked':''} class="h-4 w-4 accent-[#315841]"> Visible in storefront
-        </label>
-        ${product?'<button type="button" data-action="product-delete" class="text-left text-xs font-bold text-rose-700 hover:underline">Delete this product</button>':''}`;
-      editor.showModal();
+      `).join('');
     }
 
     function updateProductImages(images){
       const area=$('[name="images"]'), grid=$('#product-image-grid');
       area.value=images.join('\n');
-      grid.innerHTML=images.map((url,i)=>`
-        <div class="relative overflow-hidden rounded-xl border border-[#e5e8e2]">
-          <img src="${esc(url)}" alt="Product photo ${i+1}" class="aspect-square w-full object-cover">
-          <button type="button" data-remove-product-image="${i}" class="absolute right-1 top-1 grid h-7 w-7 place-items-center rounded-full bg-white/95 text-sm font-bold text-rose-700 shadow">×</button>
-        </div>`).join('')||'<p class="col-span-full rounded-xl bg-[#f7f8f5] p-5 text-center text-[10px] text-[#89928a]">No product photos yet.</p>';
+      grid.innerHTML=renderProductImageCards(images);
+    }
+
+    async function openProduct(product){
+      editing={type:'product',row:product||{active:true,stock:0,images:[]}};
+      const r=editing.row;
+      const prodId=getProductId(r);
+      $('#editor-kicker').textContent=product?'CATALOG · EDIT SAREE':'CATALOG · NEW SAREE';
+      $('#editor-title').textContent=product?'Edit Product Details':'Add a New Saree';
+      const images=Array.isArray(r.images)?r.images:[];
+      
+      $('#editor-fields').innerHTML=`
+        <div class="rounded-2xl bg-indigo-50/70 p-4 border border-indigo-100 flex items-center justify-between mb-2">
+          <div>
+            <span class="text-[10px] font-black uppercase tracking-wider text-indigo-700">Permanent Product ID</span>
+            <p class="font-mono text-base font-black text-indigo-950 mt-0.5">${esc(prodId)}</p>
+          </div>
+          <span class="rounded-lg bg-white px-3 py-1 font-mono text-xs font-bold text-indigo-700 border border-indigo-200/80 shadow-xs">Auto Fixed ID</span>
+        </div>
+        <div class="grid gap-3 sm:grid-cols-2">
+          ${field('name','Product name',r.name||'')}
+          ${field('fabric','Fabric (e.g. Pure Silk, Cotton, Poonam)',r.fabric||'')}
+          ${field('price','Price (₹)',r.price||0,'number')}
+          ${field('mrp','MRP (₹)',r.mrp||0,'number')}
+          ${field('stock','Stock quantity (Available)',r.stock||0,'number')}
+          <label class="block text-xs font-bold text-slate-800">Category
+            <select name="category_id" class="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs text-slate-900 outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600">
+              <option value="">No category</option>
+              ${categories.map(c=>`<option value="${esc(c.id)}" ${String(c.id)===String(r.category_id)?'selected':''}>${esc(c.name)}</option>`).join('')}
+            </select>
+          </label>
+          ${field('color','Colour',r.color||'')}
+          ${field('occasion','Occasion (e.g. Bridal, Festive, Daily)',r.occasion||'')}
+        </div>
+        <div class="border-t pt-4">
+          <div class="flex items-center justify-between flex-wrap gap-2">
+            <div>
+              <span class="text-xs font-extrabold text-slate-900">Product Photos</span>
+              <p class="text-[11px] text-slate-500">Tap "★ Set Main" to make any photo the primary cover image.</p>
+            </div>
+            <div class="flex gap-2">
+              <button type="button" data-product-local class="rounded-xl bg-slate-900 hover:bg-slate-800 px-3.5 py-2 text-xs font-bold text-white transition shadow-xs">＋ Upload from device</button>
+              <button type="button" data-product-library class="rounded-xl border border-slate-200 bg-white hover:bg-slate-50 px-3.5 py-2 text-xs font-bold text-slate-700 transition">Pick from library</button>
+            </div>
+          </div>
+          <div id="product-image-grid" class="mt-3 grid grid-cols-2 gap-2.5 sm:grid-cols-4">
+            ${renderProductImageCards(images)}
+          </div>
+          <textarea name="images" class="hidden">${esc(images.join('\n'))}</textarea>
+        </div>
+        <label class="block text-xs font-bold text-slate-800">Description
+          <textarea name="description" rows="4" class="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs text-slate-900 outline-none focus:border-indigo-600">${esc(r.description||'')}</textarea>
+        </label>
+        <label class="flex items-center gap-3 rounded-xl bg-slate-50 p-3.5 text-xs font-bold text-slate-800 cursor-pointer border border-slate-200/70">
+          <input name="active" type="checkbox" ${r.active!==false?'checked':''} class="h-4 w-4 accent-indigo-600 rounded"> Active & Visible in Storefront
+        </label>
+        ${product?'<button type="button" data-action="product-delete" class="text-left text-xs font-bold text-rose-600 hover:underline pt-2">Delete this product</button>':''}`;
+      editor.showModal();
     }
 
     function productPayload(form){
@@ -1161,53 +1203,144 @@
       };
     }
 
-    /* ===== ORDERS ===== */
+    /* ===== ORDERS & FULFILLMENT ===== */
     function renderOrders(){
+      const pendingCount = orders.filter(o=>o.order_status==='pending').length;
+      const verifiedCount = orders.filter(o=>o.order_status==='verified').length;
+      const dispatchedCount = orders.filter(o=>o.order_status==='dispatched').length;
+      const deliveredCount = orders.filter(o=>o.order_status==='delivered').length;
+      const cancelledCount = orders.filter(o=>o.order_status==='cancelled').length;
+
       view.innerHTML=`
-        <div>
-          <p class="text-[10px] font-bold uppercase tracking-[.19em] text-[#9a8057]">Fulfillment</p>
-          <h2 class="mt-2 text-2xl font-extrabold text-[#21342a]">Orders</h2>
-          <p class="mt-1 text-sm text-[#758078]">Open any order to view customer details, readable address, and exact ordered product IDs.</p>
+        <div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+          <div>
+            <p class="text-[10px] font-black uppercase tracking-[.2em] text-indigo-600">Customer Fulfillment</p>
+            <h2 class="mt-1.5 text-2xl font-extrabold text-slate-900">Orders</h2>
+            <p class="mt-0.5 text-xs sm:text-sm text-slate-500">Track shipments, view readable customer addresses, and see exact ordered product IDs.</p>
+          </div>
         </div>
-        <div class="mt-5 overflow-hidden rounded-2xl border border-[#e7eae3] bg-white">
-          <div class="overflow-x-auto">
-            <table class="w-full min-w-[980px]">${tableHead(['Order','Customer','Delivery Area','Placed','Payment','Amount','Status','Tracking','Details',''])}
-              <tbody class="divide-y divide-[#f0f1ed]">
-                ${orders.map(o=>{
-                  const a=parseAddress(o.address||o.shipping_address);
-                  const locText=a?[a.city,a.pincode?`(${a.pincode})`:''].filter(Boolean).join(' '):'—';
-                  return `
-                  <tr class="hover:bg-[#fbfcfa]">
-                    <td class="px-4 py-3 text-xs font-bold font-mono">#${esc(String(o.id).slice(0,8).toUpperCase())}</td>
-                    <td class="px-4 py-3 text-xs">
-                      <span class="font-bold text-[#223328]">${esc(o.name||o.customer_name||a?.name||'Customer')}</span>
-                      <span class="block text-[10px] text-[#879087]">📞 ${esc(o.phone||o.mobile_number||a?.phone||'—')}</span>
-                    </td>
-                    <td class="px-4 py-3 text-xs text-[#526356]">
-                      <span class="block font-semibold text-[#2b3a30]">${esc(locText||'—')}</span>
-                      ${a?.state?`<span class="block text-[10px] text-[#869287]">${esc(a.state)}</span>`:''}
-                    </td>
-                    <td class="px-4 py-3 text-[10px]">${date(o.created_at)}</td>
-                    <td class="px-4 py-3 text-[10px]"><span class="font-semibold text-[#324538]">${esc(o.payment_method||'—')}</span></td>
-                    <td class="px-4 py-3 text-xs font-bold">${fmt(o.total)}</td>
-                    <td class="px-4 py-3">
-                      <select data-order-status="${esc(o.id)}" class="rounded-lg border px-2 py-2 text-[10px]">
-                        ${['pending','verified','dispatched','delivered','cancelled'].map(s=>`<option ${o.order_status===s?'selected':''} value="${s}">${s}</option>`).join('')}
-                      </select>
-                    </td>
-                    <td class="px-4 py-3">
-                      <input data-tracking="${esc(o.id)}" value="${esc(o.tracking_id||'')}" placeholder="Tracking ID" class="w-28 rounded-lg border px-2 py-2 text-[10px]">
-                    </td>
-                    <td class="px-4 py-3">
-                      <button data-order-details="${esc(o.id)}" class="rounded-lg border px-3 py-2 text-[10px] font-bold hover:bg-gray-50">View details</button>
-                    </td>
-                    <td class="px-4 py-3">
-                      <button data-save-order="${esc(o.id)}" class="rounded-lg bg-[#edf2ec] px-3 py-2 text-[10px] font-bold hover:bg-[#e0e8de]">Save</button>
-                    </td>
-                  </tr>`;
-                }).join('')}
+
+        <!-- Orders Status Quick Filter Chips -->
+        <div class="mt-5 flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+          ${[
+            ['all',`All Orders (${orders.length})`],
+            ['pending',`Pending (${pendingCount})`],
+            ['verified',`Processing (${verifiedCount})`],
+            ['dispatched',`Shipped (${dispatchedCount})`],
+            ['delivered',`Delivered (${deliveredCount})`],
+            ['cancelled',`Cancelled (${cancelledCount})`]
+          ].map(([f,lbl])=>`
+            <button onclick="filterOrders('${f}')" class="shrink-0 rounded-xl px-3.5 py-1.5 text-xs font-bold transition ${orderFilter===f?'bg-slate-900 text-white shadow-xs':'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'}">
+              ${lbl}
+            </button>`).join('')}
+        </div>
+
+        <div class="mt-4 overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-xs">
+          <div class="border-b border-slate-100 p-4 flex flex-col sm:flex-row justify-between gap-3 bg-slate-50/40">
+            <input id="order-search" placeholder="Search by Customer Name, Phone, Order #, or City…" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs text-slate-900 outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 sm:max-w-md transition">
+            <span class="self-center text-xs font-bold text-slate-400" id="order-count-label">${orders.length} orders total</span>
+          </div>
+
+          <!-- Desktop Table -->
+          <div class="hidden sm:block overflow-x-auto">
+            <table class="w-full min-w-[980px]">${tableHead(['Order #','Customer','Delivery Destination','Placed','Payment','Total','Status','Tracking ID','Details',''])}
+              <tbody id="order-rows" class="divide-y divide-slate-100">
+                ${filterOrderRows().map(orderTableRow).join('')}
               </tbody>
             </table>
+          </div>
+
+          <!-- Mobile Responsive Order Cards -->
+          <div id="order-mobile-cards" class="sm:hidden divide-y divide-slate-100">
+            ${filterOrderRows().map(orderMobileCard).join('')}
+          </div>
+        </div>`;
+
+      $('#order-search').oninput=e=>{
+        const q=e.target.value.toLowerCase().trim();
+        const filtered = filterOrderRows().filter(o=>{
+          const a=parseAddress(o.address||o.shipping_address);
+          return (o.name||o.customer_name||a?.name||'').toLowerCase().includes(q) ||
+                 (o.phone||o.mobile_number||a?.phone||'').includes(q) ||
+                 String(o.id).toLowerCase().includes(q) ||
+                 (a?.city||'').toLowerCase().includes(q) ||
+                 (a?.pincode||'').includes(q);
+        });
+        $('#order-rows').innerHTML=filtered.map(orderTableRow).join('');
+        $('#order-mobile-cards').innerHTML=filtered.map(orderMobileCard).join('');
+        $('#order-count-label').textContent=`${filtered.length} orders shown`;
+      };
+    }
+
+    function filterOrders(f){
+      orderFilter=f;
+      renderOrders();
+    }
+
+    function filterOrderRows(){
+      if(orderFilter==='all') return orders;
+      return orders.filter(o=>o.order_status===orderFilter);
+    }
+
+    function orderTableRow(o){
+      const a=parseAddress(o.address||o.shipping_address);
+      const locText=a?[a.city,a.pincode?`(${a.pincode})`:''].filter(Boolean).join(' '):'—';
+      return `
+        <tr class="hover:bg-slate-50/70 transition">
+          <td class="px-4 py-3 text-xs font-bold font-mono text-indigo-900">#${esc(String(o.id).slice(0,8).toUpperCase())}</td>
+          <td class="px-4 py-3 text-xs">
+            <span class="font-bold text-slate-900">${esc(o.name||o.customer_name||a?.name||'Customer')}</span>
+            <span class="block text-[10px] text-slate-500">📞 ${esc(o.phone||o.mobile_number||a?.phone||'—')}</span>
+          </td>
+          <td class="px-4 py-3 text-xs text-slate-700">
+            <span class="block font-semibold text-slate-800">${esc(locText||'—')}</span>
+            ${a?.state?`<span class="block text-[10px] text-slate-500">${esc(a.state)}</span>`:''}
+          </td>
+          <td class="px-4 py-3 text-[11px] text-slate-500">${date(o.created_at)}</td>
+          <td class="px-4 py-3 text-[11px]"><span class="font-semibold text-slate-700">${esc(o.payment_method||'COD')}</span></td>
+          <td class="px-4 py-3 text-xs font-black text-slate-900">${fmt(o.total)}</td>
+          <td class="px-4 py-3">
+            <select data-order-status="${esc(o.id)}" class="rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-[11px] font-bold text-slate-800 outline-none focus:border-indigo-600">
+              ${['pending','verified','dispatched','delivered','cancelled'].map(s=>`<option ${o.order_status===s?'selected':''} value="${s}">${s.toUpperCase()}</option>`).join('')}
+            </select>
+          </td>
+          <td class="px-4 py-3">
+            <input data-tracking="${esc(o.id)}" value="${esc(o.tracking_id||'')}" placeholder="Tracking ID" class="w-28 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-[11px] font-mono outline-none focus:border-indigo-600">
+          </td>
+          <td class="px-4 py-3 whitespace-nowrap">
+            <button data-order-details="${esc(o.id)}" class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition shadow-xs">Details</button>
+          </td>
+          <td class="px-4 py-3 whitespace-nowrap">
+            <button data-save-order="${esc(o.id)}" class="rounded-lg bg-indigo-600 hover:bg-indigo-700 px-3.5 py-1.5 text-xs font-bold text-white transition shadow-xs">Save</button>
+          </td>
+        </tr>`;
+    }
+
+    function orderMobileCard(o){
+      const a=parseAddress(o.address||o.shipping_address);
+      const locText=a?[a.city,a.pincode?`(${a.pincode})`:''].filter(Boolean).join(' '):'—';
+      return `
+        <div class="p-4 space-y-3 hover:bg-slate-50/50 transition">
+          <div class="flex items-center justify-between">
+            <span class="font-mono text-xs font-black text-indigo-900 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded">#${esc(String(o.id).slice(0,8).toUpperCase())}</span>
+            <span class="text-xs font-black text-slate-900">${fmt(o.total)}</span>
+          </div>
+          <div class="flex items-start justify-between text-xs">
+            <div>
+              <p class="font-bold text-slate-900">${esc(o.name||o.customer_name||a?.name||'Customer')}</p>
+              <p class="text-[11px] text-slate-500">📞 ${esc(o.phone||o.mobile_number||a?.phone||'—')} · 📍 ${esc(locText)}</p>
+            </div>
+            <span class="text-[10px] text-slate-400 font-medium">${date(o.created_at)}</span>
+          </div>
+          <div class="grid grid-cols-2 gap-2 pt-1">
+            <select data-order-status="${esc(o.id)}" class="rounded-lg border border-slate-200 bg-white p-2 text-xs font-bold text-slate-800">
+              ${['pending','verified','dispatched','delivered','cancelled'].map(s=>`<option ${o.order_status===s?'selected':''} value="${s}">${s.toUpperCase()}</option>`).join('')}
+            </select>
+            <input data-tracking="${esc(o.id)}" value="${esc(o.tracking_id||'')}" placeholder="Tracking ID" class="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-mono">
+          </div>
+          <div class="flex gap-2 pt-1">
+            <button data-order-details="${esc(o.id)}" class="flex-1 rounded-xl border border-slate-200 bg-white py-2 text-xs font-bold text-slate-700 hover:bg-slate-50">View Details</button>
+            <button data-save-order="${esc(o.id)}" class="flex-1 rounded-xl bg-indigo-600 hover:bg-indigo-700 py-2 text-xs font-bold text-white">Save Changes</button>
           </div>
         </div>`;
     }
@@ -1219,37 +1352,37 @@
       const entries=Object.entries(order).filter(([k])=>!excludedKeys.includes(k)&&!k.startsWith('_'));
 
       const d=document.createElement('dialog');
-      d.className='w-[min(740px,calc(100%-24px))] max-h-[90vh] rounded-2xl border-0 bg-[#fbfcf9] p-0 shadow-2xl';
+      d.className='w-[min(760px,calc(100%-24px))] max-h-[92vh] rounded-3xl border border-slate-200 bg-white p-0 shadow-2xl';
       d.innerHTML=`
-        <div class="flex items-start justify-between border-b border-[#e9ede6] p-5 bg-white rounded-t-2xl">
+        <div class="flex items-start justify-between border-b border-slate-100 p-6 bg-slate-50/60 rounded-t-3xl">
           <div>
-            <p class="text-[10px] font-bold uppercase tracking-[.18em] text-[#907a56]">Order Fulfillment Details</p>
-            <h3 class="mt-1 text-xl font-extrabold text-[#193528] font-mono">#${esc(String(order.id).toUpperCase())}</h3>
-            <p class="mt-1 text-xs text-[#758078]">Placed on ${date(order.created_at)} · Total: <b class="text-[#193528]">${fmt(order.total)}</b></p>
+            <p class="text-[10px] font-black uppercase tracking-[.2em] text-indigo-600">Order Fulfillment Details</p>
+            <h3 class="mt-1 text-xl font-black text-slate-900 font-mono">#${esc(String(order.id).toUpperCase())}</h3>
+            <p class="mt-0.5 text-xs text-slate-500">Placed on ${date(order.created_at)} · Total Value: <b class="text-slate-900 font-black">${fmt(order.total)}</b></p>
           </div>
-          <button class="close-order grid h-9 w-9 place-items-center rounded-full bg-[#eef0eb] text-xl font-bold text-gray-700 hover:bg-gray-200">×</button>
+          <button class="close-order grid h-9 w-9 place-items-center rounded-full bg-slate-100 text-xl font-bold text-slate-700 hover:bg-slate-200 transition">×</button>
         </div>
-        <div class="max-h-[75vh] overflow-y-auto p-5 space-y-5">
-          <!-- 1. HUMAN-READABLE DELIVERY ADDRESS (NO JSON FILE) -->
-          <section class="rounded-2xl border border-[#dce5da] bg-white p-5 shadow-sm">
-            <div class="flex items-center justify-between pb-3 border-b border-[#edf2ec] mb-3">
+        <div class="max-h-[75vh] overflow-y-auto p-6 space-y-5">
+          <!-- 1. HUMAN-READABLE DELIVERY ADDRESS (NO JSON) -->
+          <section class="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
               <div class="flex items-center gap-2">
-                <span class="grid h-7 w-7 place-items-center rounded-lg bg-[#eef4eb] text-sm text-[#23452f]">📍</span>
-                <h4 class="text-xs font-extrabold uppercase tracking-wider text-[#213527]">Delivery Address (Readable Simple Text)</h4>
+                <span class="grid h-7 w-7 place-items-center rounded-lg bg-indigo-50 text-indigo-600 text-sm font-bold">📍</span>
+                <h4 class="text-xs font-extrabold uppercase tracking-wider text-slate-900">Delivery Address (Simple Readable Text)</h4>
               </div>
-              <span class="rounded-full bg-[#eef4eb] px-2.5 py-1 text-[10px] font-bold text-[#35583f]">Customer Destination</span>
+              <span class="rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-0.5 text-[10px] font-bold">Verified Destination</span>
             </div>
             ${renderAddressHtml(addressRaw)}
           </section>
 
           <!-- 2. ORDERED PRODUCTS BREAKDOWN WITH PROMINENT PRODUCT ID -->
-          <section class="rounded-2xl border border-[#dce5da] bg-white p-5 shadow-sm">
-            <div class="flex items-center justify-between pb-3 border-b border-[#edf2ec] mb-3">
+          <section class="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
               <div class="flex items-center gap-2">
-                <span class="grid h-7 w-7 place-items-center rounded-lg bg-[#eef4eb] text-sm text-[#23452f]">📦</span>
-                <h4 class="text-xs font-extrabold uppercase tracking-wider text-[#213527]">Ordered Products (${items.length})</h4>
+                <span class="grid h-7 w-7 place-items-center rounded-lg bg-indigo-50 text-indigo-600 text-sm font-bold">📦</span>
+                <h4 class="text-xs font-extrabold uppercase tracking-wider text-slate-900">Ordered Products (${items.length})</h4>
               </div>
-              <span class="text-[10px] text-[#718274]">Exact product codes & inventory</span>
+              <span class="text-[10px] text-slate-500 font-medium">Cross-referenced with live inventory</span>
             </div>
             <div class="space-y-3">
               ${Array.isArray(items)&&items.length?items.map(item=>{
@@ -1261,38 +1394,38 @@
                 const lineTotal=Number(unitPrice)*Number(qty);
 
                 return `
-                  <div class="flex flex-col sm:flex-row sm:items-center gap-3.5 rounded-xl border border-[#edf1ea] bg-[#fafbf9] p-3.5 hover:bg-white transition">
-                    <img src="${esc(imgUrl)}" alt="" class="h-20 w-16 rounded-xl object-cover border border-[#e2e7df] bg-white shrink-0">
+                  <div class="flex flex-col sm:flex-row sm:items-center gap-3.5 rounded-xl border border-slate-100 bg-slate-50/50 p-3.5 hover:bg-slate-50 transition">
+                    <img src="${esc(imgUrl)}" alt="" class="h-20 w-16 rounded-xl object-cover border border-slate-200 bg-white shrink-0">
                     <div class="min-w-0 flex-1 space-y-1">
                       <div class="flex items-center gap-2 flex-wrap">
-                        <span class="inline-flex items-center font-mono text-xs font-black bg-[#e5efe3] text-[#193528] border border-[#c1d6bd] px-2.5 py-0.5 rounded-md select-all">
+                        <span class="inline-flex items-center font-mono text-xs font-black bg-indigo-50 text-indigo-900 border border-indigo-200 px-2.5 py-0.5 rounded-md select-all">
                           Product ID: ${esc(prodId)}
                         </span>
-                        ${catalogProd?`<span class="rounded-md bg-white px-2 py-0.5 text-[10px] font-bold text-[#556b59] border border-[#e1e6de]">Stock Remaining: ${catalogProd.stock} pcs</span>`:''}
+                        ${catalogProd?`<span class="rounded-md bg-white px-2 py-0.5 text-[10px] font-bold text-slate-600 border border-slate-200">Live Stock: ${catalogProd.stock} pcs</span>`:''}
                       </div>
-                      <h5 class="text-sm font-bold text-[#203126] truncate">${esc(item.name||item.product_name||catalogProd?.name||'Handloom Saree')}</h5>
-                      <p class="text-[11px] text-[#69796c]">
+                      <h5 class="text-sm font-bold text-slate-900 truncate">${esc(item.name||item.product_name||catalogProd?.name||'Handloom Saree')}</h5>
+                      <p class="text-[11px] text-slate-600">
                         ${esc(catalogProd?.fabric||item.variant||item.fabric||'Pure Handloom')} · 
-                        Unit Price: <b class="text-[#203126]">${fmt(unitPrice)}</b> · 
-                        Quantity: <b class="text-[#193528] text-xs font-black">${qty} pcs</b>
+                        Unit Price: <b class="text-slate-900">${fmt(unitPrice)}</b> · 
+                        Quantity: <b class="text-slate-900 text-xs font-black">${qty} pcs</b>
                       </p>
                     </div>
-                    <div class="sm:text-right border-t sm:border-t-0 pt-2 sm:pt-0 border-[#edf0ea]">
-                      <b class="text-sm font-black text-[#193528] block">${fmt(lineTotal)}</b>
-                      ${catalogProd?`<button type="button" onclick="document.querySelector('dialog[open]').close(); openProduct(products.find(p=>String(p.id)==='${esc(catalogProd.id)}'))" class="mt-1 text-[10px] font-bold text-[#355c43] hover:underline block">Edit Product in Catalog →</button>`:''}
+                    <div class="sm:text-right border-t sm:border-t-0 pt-2 sm:pt-0 border-slate-200/60">
+                      <b class="text-sm font-black text-slate-900 block">${fmt(lineTotal)}</b>
+                      ${catalogProd?`<button type="button" onclick="document.querySelector('dialog[open]').close(); openProduct(products.find(p=>String(p.id)==='${esc(catalogProd.id)}'))" class="mt-1 text-[10px] font-bold text-indigo-600 hover:text-indigo-800 hover:underline block">Edit Product in Catalog →</button>`:''}
                     </div>
                   </div>
                 `;
-              }).join(''):'<p class="rounded-xl bg-[#f8faf6] p-4 text-xs text-[#89928a]">No items attached to this order.</p>'}
+              }).join(''):'<p class="rounded-xl bg-slate-50 p-4 text-xs text-slate-400">No items attached to this order.</p>'}
             </div>
           </section>
 
-          <!-- 3. PAYMENT & SYSTEM METADATA -->
+          <!-- 3. PAYMENT & METADATA -->
           <section class="grid gap-3 sm:grid-cols-2">
-            <div class="rounded-xl bg-white p-3.5 border border-[#edf0ea]">
-              <p class="text-[9px] font-bold uppercase tracking-wide text-[#89928a]">Payment Summary</p>
-              <p class="mt-1 text-xs font-bold text-[#1e3224]">${esc(order.payment_method||'Cash on Delivery')} · Status: <span class="uppercase font-mono">${esc(order.order_status||'pending')}</span></p>
-              ${order.tracking_id?`<p class="mt-1 text-[11px] text-[#556957]">Tracking ID: <b class="font-mono text-[#193528]">${esc(order.tracking_id)}</b></p>`:''}
+            <div class="rounded-xl bg-white p-4 border border-slate-200/80 shadow-xs">
+              <p class="text-[9px] font-black uppercase tracking-wider text-slate-400">Payment Summary</p>
+              <p class="mt-1 text-xs font-bold text-slate-900">${esc(order.payment_method||'Cash on Delivery')} · Status: <span class="uppercase font-mono text-indigo-600">${esc(order.order_status||'pending')}</span></p>
+              ${order.tracking_id?`<p class="mt-1 text-[11px] text-slate-600 font-medium">Tracking ID: <b class="font-mono text-slate-900">${esc(order.tracking_id)}</b></p>`:''}
             </div>
             ${entries.map(([k,v])=>{
               let valDisplay=v;
@@ -1300,9 +1433,9 @@
                 valDisplay=formatAddressSimple(v);
               }
               return `
-                <div class="rounded-xl bg-white p-3.5 border border-[#edf0ea]">
-                  <p class="text-[9px] font-bold uppercase tracking-wide text-[#89928a]">${esc(k.replace(/_/g,' '))}</p>
-                  <p class="mt-1 break-words text-xs font-semibold text-[#34443a]">${esc(valDisplay??'—')}</p>
+                <div class="rounded-xl bg-white p-4 border border-slate-200/80 shadow-xs">
+                  <p class="text-[9px] font-black uppercase tracking-wider text-slate-400">${esc(k.replace(/_/g,' '))}</p>
+                  <p class="mt-1 break-words text-xs font-semibold text-slate-800">${esc(valDisplay??'—')}</p>
                 </div>
               `;
             }).join('')}
@@ -1320,7 +1453,7 @@
       const {error}=await db.from('orders').update({order_status,tracking_id}).eq('id',id);
       if(error){toast(error.message);return}
       await loadAll();
-      toast('Order updated');
+      toast('Order updated ✓');
     }
 
     /* ===== CATEGORIES ===== */
@@ -1328,57 +1461,73 @@
       view.innerHTML=`
         <div class="flex items-end justify-between gap-3">
           <div>
-            <p class="text-[10px] font-bold uppercase tracking-[.19em] text-[#9a8057]">Merchandising</p>
-            <h2 class="mt-2 text-2xl font-extrabold text-[#21342a]">Categories</h2>
-            <p class="mt-1 text-sm text-[#758078]">Organize the collections shoppers browse.</p>
+            <p class="text-[10px] font-black uppercase tracking-[.2em] text-indigo-600">Store Merchandising</p>
+            <h2 class="mt-1.5 text-2xl font-extrabold text-slate-900">Categories</h2>
+            <p class="mt-0.5 text-xs sm:text-sm text-slate-500">Organize your saree catalog by collections.</p>
           </div>
-          <button data-action="category-new" class="rounded-xl bg-[#193528] px-4 py-3 text-xs font-bold text-white hover:bg-[#254937]">＋ New category</button>
+          <button data-action="category-new" class="rounded-xl bg-indigo-600 hover:bg-indigo-700 px-4 py-2.5 text-xs font-bold text-white shadow-xs transition">＋ New Category</button>
         </div>
-        <div class="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        <div class="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           ${categories.map(c=>`
-            <article class="rounded-2xl border border-[#e7eae3] bg-white p-5">
+            <article class="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-xs hover:shadow-md transition">
               <div class="flex items-start justify-between">
-                <span class="grid h-10 w-10 place-items-center rounded-xl bg-[#f0f3ed] text-lg text-[#627963]">◈</span>
-                <div class="flex gap-2">
-                  <button data-edit-category="${esc(c.id)}" class="rounded-lg border border-[#e5e8e2] px-3 py-2 text-[10px] font-bold hover:bg-gray-50">Edit</button>
-                  <button data-delete-category="${esc(c.id)}" class="rounded-lg border border-[#f0dfdc] px-3 py-2 text-[10px] font-bold text-[#9b5147] hover:bg-rose-50">Delete</button>
+                <div>
+                  <h3 class="text-base font-extrabold text-slate-900">${esc(c.name)}</h3>
+                  <p class="text-[11px] font-mono text-slate-400 mt-0.5">/${esc(c.slug||'')}</p>
                 </div>
+                <span class="rounded-full bg-indigo-50 border border-indigo-100 px-2.5 py-1 text-[10px] font-bold text-indigo-700">
+                  ${products.filter(p=>String(p.category_id)===String(c.id)).length} sarees
+                </span>
               </div>
-              <h3 class="mt-4 text-base font-extrabold text-[#304137]">${esc(c.name)}</h3>
-              <p class="mt-1 text-[10px] text-[#8c958d]">ID · ${esc(c.id)}</p>
-            </article>`).join('')||'<p class="rounded-xl bg-white p-8 text-center text-xs text-[#89928a]">No categories yet.</p>'}
+              <p class="mt-3 text-xs text-slate-600 leading-relaxed">${esc(c.description||'No description provided.')}</p>
+              <div class="mt-5 flex gap-2 border-t border-slate-100 pt-3">
+                <button data-edit-category="${esc(c.id)}" class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50">Edit</button>
+                <button data-delete-category="${esc(c.id)}" class="rounded-lg px-3 py-1.5 text-xs font-bold text-rose-600 hover:bg-rose-50">Delete</button>
+              </div>
+            </article>`).join('')||'<p class="col-span-full py-16 text-center text-xs text-slate-400">No categories created yet.</p>'}
         </div>`;
     }
 
-    function openCategory(category){
+    async function openCategory(category){
       editing={type:'category',row:category||{}};
-      $('#editor-kicker').textContent='MERCHANDISING';
-      $('#editor-title').textContent=category?'Edit category':'Create category';
-      $('#editor-fields').innerHTML=field('name','Category name',category?.name||'');
+      const r=editing.row;
+      $('#editor-kicker').textContent=category?'MERCHANDISING · EDIT':'MERCHANDISING · NEW';
+      $('#editor-title').textContent=category?'Edit Category':'Create Category';
+      $('#editor-fields').innerHTML=`
+        ${field('name','Category name',r.name||'')}
+        ${field('slug','Slug (URL path)',r.slug||'')}
+        <label class="block text-xs font-bold text-slate-800">Description
+          <textarea name="description" rows="3" class="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs text-slate-900 outline-none focus:border-indigo-600">${esc(r.description||'')}</textarea>
+        </label>`;
       editor.showModal();
+    }
+
+    function categoryPayload(form){
+      const fd=new FormData(form);
+      return {name:String(fd.get('name')).trim(),slug:String(fd.get('slug')).trim(),description:String(fd.get('description')||'').trim()};
     }
 
     /* ===== REVIEWS ===== */
     function renderReviews(){
       view.innerHTML=`
         <div>
-          <p class="text-[10px] font-bold uppercase tracking-[.19em] text-[#9a8057]">Customer voice</p>
-          <h2 class="mt-2 text-2xl font-extrabold text-[#21342a]">Reviews</h2>
-          <p class="mt-1 text-sm text-[#758078]">Moderate reviews shown on product pages.</p>
+          <p class="text-[10px] font-black uppercase tracking-[.2em] text-indigo-600">Customer Feedback</p>
+          <h2 class="mt-1.5 text-2xl font-extrabold text-slate-900">Reviews</h2>
+          <p class="mt-0.5 text-xs sm:text-sm text-slate-500">Moderate customer ratings and review submissions.</p>
         </div>
-        <div class="mt-5 grid gap-3 lg:grid-cols-2">
+        <div class="mt-6 divide-y divide-slate-100 rounded-2xl border border-slate-200/80 bg-white shadow-xs">
           ${reviews.map(r=>`
-            <article class="rounded-2xl border border-[#e7eae3] bg-white p-5">
-              <div class="flex items-start justify-between gap-4">
-                <div>
-                  <p class="text-xs font-bold text-[#334238]">${esc(r.author||'Customer')}</p>
-                  <p class="mt-1 text-[10px] text-[#89928a]">${date(r.created_at)} · Product ${esc(r.product_id||'')}</p>
+            <article class="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-slate-50/50 transition">
+              <div class="space-y-1">
+                <div class="flex items-center gap-2">
+                  <span class="font-extrabold text-xs text-slate-900">${esc(r.author||'Customer')}</span>
+                  <span class="rounded bg-amber-50 px-2 py-0.5 text-[10px] font-black text-amber-700 border border-amber-200/70">★ ${Number(r.rating||5)}/5</span>
+                  <span class="text-[10px] text-slate-400">${date(r.created_at)}</span>
                 </div>
-                <span class="rounded-full bg-[#f7f0e2] px-3 py-1 text-[10px] font-bold text-[#896d3c]">${'★'.repeat(Math.max(0,Math.min(5,Number(r.rating)||0)))}</span>
+                <p class="text-xs text-slate-700 leading-relaxed">${esc(r.body||'')}</p>
               </div>
-              <p class="mt-4 text-xs leading-6 text-[#657168]">${esc(r.body||'')}</p>
-              <button data-delete-review="${esc(r.id)}" class="mt-4 rounded-lg border border-[#f0dfdc] px-3 py-2 text-[10px] font-bold text-[#9b5147] hover:bg-rose-50">Remove review</button>
-            </article>`).join('')||'<p class="rounded-xl bg-white p-8 text-center text-xs text-[#89928a]">No reviews found.</p>'}
+              <button data-delete-review="${esc(r.id)}" class="rounded-xl border border-rose-200 px-3.5 py-2 text-xs font-bold text-rose-600 hover:bg-rose-50 self-start sm:self-auto transition">Delete</button>
+            </article>`).join('')||'<p class="p-12 text-center text-xs text-slate-400">No customer reviews found.</p>'}
         </div>`;
     }
 
@@ -1387,246 +1536,196 @@
       view.innerHTML=`
         <div class="flex items-end justify-between gap-3">
           <div>
-            <p class="text-[10px] font-bold uppercase tracking-[.19em] text-[#9a8057]">Promotions</p>
-            <h2 class="mt-2 text-2xl font-extrabold text-[#21342a]">Coupons</h2>
-            <p class="mt-1 text-sm text-[#758078]">Manage discount codes with simple fields.</p>
+            <p class="text-[10px] font-black uppercase tracking-[.2em] text-indigo-600">Promotions & Discounts</p>
+            <h2 class="mt-1.5 text-2xl font-extrabold text-slate-900">Coupons</h2>
+            <p class="mt-0.5 text-xs sm:text-sm text-slate-500">Configure promotional discount codes for your customers.</p>
           </div>
-          <button data-action="coupon-new" class="rounded-xl bg-[#193528] px-4 py-3 text-xs font-bold text-white hover:bg-[#254937]">＋ New coupon</button>
+          <button data-action="coupon-new" class="rounded-xl bg-indigo-600 hover:bg-indigo-700 px-4 py-2.5 text-xs font-bold text-white shadow-xs transition">＋ New Coupon</button>
         </div>
-        <div class="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        <div class="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           ${coupons.map(c=>`
-            <article class="rounded-2xl border border-[#e7eae3] bg-white p-5">
+            <article class="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-xs hover:shadow-md transition">
               <div class="flex items-start justify-between">
-                <span class="rounded-lg bg-[#f0f3ed] px-3 py-2 text-sm font-extrabold text-[#405943]">${esc(c.code||c.name||'Coupon')}</span>
-                <span class="text-[10px] font-bold ${c.active===false?'text-[#89928a]':'text-[#537052]'}">${c.active===false?'INACTIVE':'ACTIVE'}</span>
+                <div>
+                  <span class="font-mono text-sm font-black text-indigo-900 bg-indigo-50 border border-indigo-200 px-2.5 py-1 rounded-lg">${esc(c.code)}</span>
+                  <p class="mt-2 text-2xl font-black text-slate-900">${c.discount_type==='flat'?fmt(c.discount_value):`${c.discount_value}% OFF`}</p>
+                </div>
+                <button data-edit-coupon="${esc(c.id)}" class="rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-bold text-slate-700 hover:bg-slate-50">Edit</button>
               </div>
-              <p class="mt-4 text-xs text-[#66736a]">${esc(c.discount??c.discount_percent??c.percentage??'—')} ${esc(c.discount_type||c.type||'%')} discount</p>
-              <p class="mt-1 text-[10px] text-[#89928a]">${c.expires_at?'Expires '+date(c.expires_at):'No expiry date'}</p>
-              <button data-edit-coupon="${esc(c.id)}" class="mt-4 rounded-lg border border-[#e5e8e2] px-3 py-2 text-[10px] font-bold hover:bg-gray-50">Edit coupon</button>
-            </article>`).join('')||'<p class="rounded-xl bg-white p-8 text-center text-xs text-[#89928a]">No coupons found.</p>'}
+              <p class="mt-2 text-xs text-slate-500 font-medium">Min order value: ${fmt(c.min_order_amount||0)}</p>
+            </article>`).join('')||'<p class="col-span-full py-16 text-center text-xs text-slate-400">No coupons active.</p>'}
         </div>`;
     }
 
-    function openCoupon(coupon){
-      editing={type:'coupon',row:coupon||{}};
-      $('#editor-kicker').textContent='PROMOTIONS';
-      $('#editor-title').textContent=coupon?'Edit coupon':'New coupon';
-      const row=editing.row;
+    async function openCoupon(coupon){
+      editing={type:'coupon',row:coupon||{code:'',discount_type:'percentage',discount_value:10,min_order_amount:0}};
+      const r=editing.row;
+      $('#editor-kicker').textContent=coupon?'PROMOTIONS · EDIT':'PROMOTIONS · NEW';
+      $('#editor-title').textContent=coupon?'Edit Coupon':'Create Coupon';
       $('#editor-fields').innerHTML=`
-        ${field('code','Coupon code',row.code||row.name||'')}
-        ${field('discount','Discount amount or percent',row.discount??row.discount_percent??row.percentage??'','number')}
-        <label class="block text-xs font-bold text-[#445248]">Discount type
-          <select name="discount_type" class="mt-2 w-full rounded-xl border border-[#dfe4dc] bg-white px-3 py-3 text-xs">
-            <option value="percent" ${(row.discount_type||row.type||'%')==='percent'||(row.discount_type||row.type)==='%'?'selected':''}>Percentage (%)</option>
-            <option value="fixed" ${(row.discount_type||row.type)==='fixed'?'selected':''}>Fixed amount (₹)</option>
+        ${field('code','Coupon code (UPPERCASE)',r.code||'')}
+        <label class="block text-xs font-bold text-slate-800">Discount type
+          <select name="discount_type" class="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs text-slate-900 outline-none focus:border-indigo-600">
+            <option value="percentage" ${r.discount_type==='percentage'?'selected':''}>Percentage (%)</option>
+            <option value="flat" ${r.discount_type==='flat'?'selected':''}>Flat Amount (₹)</option>
           </select>
         </label>
-        ${field('minimum_order','Minimum order amount (₹)',row.minimum_order||0,'number')}
-        ${field('expires_at','Expiry date',row.expires_at?String(row.expires_at).slice(0,10):'','date')}
-        <label class="flex items-center gap-3 rounded-xl bg-[#f0f3ed] p-3 text-xs font-bold text-[#435248] cursor-pointer">
-          <input name="active" type="checkbox" ${row.active!==false?'checked':''} class="h-4 w-4 accent-[#315841]"> Coupon is active
-        </label>`;
+        ${field('discount_value','Discount amount or percentage',r.discount_value||0,'number')}
+        ${field('min_order_amount','Minimum order value (₹)',r.min_order_amount||0,'number')}`;
       editor.showModal();
     }
 
-    /* ===== MEDIA LIBRARY ===== */
-    const MEDIA_BUCKET='product-images';
-    const MEDIA_FOLDERS=['products','site','categories','library'];
-    async function loadMedia(){
-      const files=[];
-      for(const folder of MEDIA_FOLDERS){
-        const {data,error}=await db.storage.from(MEDIA_BUCKET).list(folder,{limit:1000,sortBy:{column:'created_at',order:'desc'}});
-        if(error)continue;
-        for(const file of data||[])if(file.name&&file.id)files.push({name:file.name,folder,path:`${folder}/${file.name}`,url:db.storage.from(MEDIA_BUCKET).getPublicUrl(`${folder}/${file.name}`).data.publicUrl,created_at:file.created_at||file.updated_at||''});
-      }
-      return files.sort((a,b)=>String(b.created_at).localeCompare(String(a.created_at)));
+    function couponPayload(form){
+      const fd=new FormData(form);
+      return {
+        code:String(fd.get('code')).trim().toUpperCase(),
+        discount_type:fd.get('discount_type'),
+        discount_value:Number(fd.get('discount_value')),
+        min_order_amount:Number(fd.get('min_order_amount')||0)
+      };
     }
 
+    /* ===== MEDIA LIBRARY ===== */
     async function renderMedia(){
       view.innerHTML=`
         <div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
           <div>
-            <p class="text-[10px] font-bold uppercase tracking-[.19em] text-[#9a8057]">Asset studio</p>
-            <h2 class="mt-2 text-2xl font-extrabold text-[#21342a]">Media library</h2>
-            <p class="mt-1 text-sm text-[#758078]">Upload once, reuse product photos and copy their public URLs.</p>
+            <p class="text-[10px] font-black uppercase tracking-[.2em] text-indigo-600">Cloud Storage</p>
+            <h2 class="mt-1.5 text-2xl font-extrabold text-slate-900">Media Library</h2>
+            <p class="mt-0.5 text-xs sm:text-sm text-slate-500">Upload, copy public image links, or inspect cloud assets in your storage bucket.</p>
           </div>
-          <label class="cursor-pointer rounded-xl bg-[#193528] px-4 py-3 text-xs font-bold text-white hover:bg-[#254937]">
-            ＋ Upload images
-            <input id="media-upload" type="file" accept="image/*" multiple class="hidden">
-          </label>
+          <button id="media-upload-btn" class="rounded-xl bg-indigo-600 hover:bg-indigo-700 px-4 py-2.5 text-xs font-bold text-white shadow-xs transition">＋ Upload Photos</button>
         </div>
-        <section class="mt-5 rounded-2xl border border-[#e7eae3] bg-white p-5">
-          <div class="flex flex-col justify-between gap-3 sm:flex-row">
-            <input id="media-search" placeholder="Search image names…" class="rounded-xl border border-[#e3e7df] bg-[#fbfcfa] px-4 py-2.5 text-xs sm:max-w-sm">
-            <button id="media-refresh" class="rounded-xl border border-[#dfe4dc] px-4 py-2 text-xs font-bold text-[#536157]">↻ Refresh</button>
-          </div>
-          <p id="media-count" class="mt-4 text-[10px] text-[#89928a]">Loading images…</p>
-          <div id="media-grid" class="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-            <p class="col-span-full py-10 text-center text-xs text-[#89928a]">Loading your Supabase media…</p>
-          </div>
-        </section>`;
+        <div id="media-grid" class="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6">
+          <p class="col-span-full py-16 text-center text-xs text-slate-400">Loading media files…</p>
+        </div>`;
 
-      const draw=async()=>{
-        const grid=$('#media-grid');
-        grid.innerHTML='<p class="col-span-full py-10 text-center text-xs text-[#89928a]">Loading images…</p>';
+      $('#media-upload-btn').onclick=()=>$('#custom-image-file-input').click();
+      $('#custom-image-file-input').onchange=async e=>{
+        const file=e.target.files[0];
+        if(!file)return;
+        e.target.value='';
+        if(!file.type.startsWith('image/')){toast('Please select an image');return}
+        toast('Uploading…');
+        const path=`products/${Date.now()}-${file.name.replace(/[^\w.-]/g,'_')}`;
         try{
-          mediaItems=await loadMedia();
-          const term=$('#media-search').value.trim().toLowerCase(),items=mediaItems.filter(x=>`${x.name} ${x.folder}`.toLowerCase().includes(term));
-          $('#media-count').textContent=`${items.length} images in bucket ${MEDIA_BUCKET}`;
-          grid.innerHTML=items.map((x,i)=>`
-            <article class="overflow-hidden rounded-xl border border-[#e7eae3] bg-white">
-              <img src="${esc(x.url)}" loading="lazy" alt="${esc(x.name)}" class="aspect-square w-full object-cover bg-[#f3f4f1]">
-              <div class="p-3">
-                <p class="truncate text-[10px] font-bold text-[#34443a]" title="${esc(x.name)}">${esc(x.name)}</p>
-                <p class="mt-1 text-[9px] text-[#89928a]">${esc(x.folder)}</p>
-                <button data-copy-media="${i}" class="mt-3 w-full rounded-lg bg-[#eff3ed] py-2 text-[10px] font-bold text-[#445d49] hover:bg-[#e0eade]">Copy image URL</button>
-              </div>
-            </article>`).join('')||'<p class="col-span-full py-10 text-center text-xs text-[#89928a]">No images found in these folders.</p>';
-        }catch(error){
-          $('#media-count').textContent='Media could not be loaded';
-          grid.innerHTML=`<div class="col-span-full rounded-xl border border-amber-200 bg-amber-50 p-5 text-xs leading-5 text-amber-900">${esc(error.message)}</div>`;
-        }
+          const {error}=await db.storage.from(MEDIA_BUCKET).upload(path,file,{contentType:file.type});
+          if(error)throw error;
+          toast('Uploaded successfully ✓');
+          renderMedia();
+        }catch(err){toast('Upload error: '+err.message);}
       };
 
-      $('#media-search').oninput=draw;
-      $('#media-refresh').onclick=draw;
-      $('#media-upload').onchange=async e=>{
-        const files=[...e.target.files];e.target.value='';
-        for(let i=0;i<files.length;i++){
-          const file=files[i];
-          if(!file.type.startsWith('image/')){toast(`${file.name} is not an image`);continue}
-          if(file.size>4*1024*1024){toast(`${file.name} exceeds the 4 MB limit`);continue}
-          const safeName=file.name.replace(/[^\w.-]/g,'_'),path=`library/${Date.now()}-${safeName}`;
-          try{
-            toast(`Uploading ${i+1} of ${files.length}…`);
-            const {error}=await db.storage.from(MEDIA_BUCKET).upload(path,file,{contentType:file.type});
-            if(error)throw error;
-          }catch(error){
-            toast(error.message);
-            break;
-          }
-        }
-        await draw();
-        toast('Media library updated');
-      };
-      $('#media-grid').onclick=async e=>{
-        const button=e.target.closest('[data-copy-media]');
-        if(!button)return;
-        const item=mediaItems.filter(x=>`${x.name} ${x.folder}`.toLowerCase().includes($('#media-search').value.trim().toLowerCase()))[Number(button.dataset.copyMedia)];
-        if(!item)return;
-        try{
-          await navigator.clipboard.writeText(item.url);
-          toast('Image URL copied to clipboard ✓');
-        }catch{
-          toast('Copied: '+item.url);
-        }
-      };
-      await draw();
+      try{
+        const {data:pData}=await db.storage.from(MEDIA_BUCKET).list('products',{limit:100,sortBy:{column:'created_at',order:'desc'}});
+        const {data:sData}=await db.storage.from(MEDIA_BUCKET).list('site',{limit:100,sortBy:{column:'created_at',order:'desc'}});
+        const all=[
+          ...(pData||[]).map(f=>({path:'products/'+f.name,url:db.storage.from(MEDIA_BUCKET).getPublicUrl('products/'+f.name).data.publicUrl})),
+          ...(sData||[]).map(f=>({path:'site/'+f.name,url:db.storage.from(MEDIA_BUCKET).getPublicUrl('site/'+f.name).data.publicUrl}))
+        ];
+        if(!all.length){$('#media-grid').innerHTML='<p class="col-span-full py-16 text-center text-xs text-slate-400">No media uploaded yet.</p>';return}
+        $('#media-grid').innerHTML=all.map(f=>`
+          <div class="group relative aspect-square overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xs">
+            <img src="${esc(f.url)}" alt="" class="h-full w-full object-cover">
+            <div class="absolute inset-0 bg-slate-950/70 opacity-0 group-hover:opacity-100 transition flex flex-col items-center justify-center gap-2 p-2">
+              <button onclick="navigator.clipboard.writeText('${esc(f.url)}');toast('Image URL copied ✓')" class="rounded-lg bg-white px-3 py-1.5 text-[10px] font-bold text-slate-900 shadow-xs">Copy URL</button>
+              <button onclick="deleteMediaFile('${esc(f.path)}')" class="rounded-lg bg-rose-600 px-3 py-1.5 text-[10px] font-bold text-white shadow-xs">Delete</button>
+            </div>
+          </div>`).join('');
+      }catch(err){$('#media-grid').innerHTML=`<p class="col-span-full py-16 text-center text-xs text-rose-500">Error loading media: ${esc(err.message)}</p>`;}
+    }
+
+    async function deleteMediaFile(path){
+      if(!confirm('Permanently delete this image?'))return;
+      const {error}=await db.storage.from(MEDIA_BUCKET).remove([path]);
+      if(error){toast(error.message);return}
+      toast('Image deleted ✓');
+      renderMedia();
     }
 
     /* ===== DATA MANAGER ===== */
     function renderData(){
       view.innerHTML=`
         <div>
-          <p class="text-[10px] font-bold uppercase tracking-[.19em] text-[#9a8057]">Friendly workspace</p>
-          <h2 class="mt-2 text-2xl font-extrabold text-[#21342a]">Data manager</h2>
-          <p class="mt-1 text-sm text-[#758078]">Navigate and manage your store using simple visual tools.</p>
+          <p class="text-[10px] font-black uppercase tracking-[.2em] text-indigo-600">Database Tools</p>
+          <h2 class="mt-1.5 text-2xl font-extrabold text-slate-900">Data Manager & Backups</h2>
+          <p class="mt-0.5 text-xs sm:text-sm text-slate-500">Export backups of your products, orders, and storefront settings.</p>
         </div>
-        <div class="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          ${[
-            ['storefront','✎','Website Studio','Edit home banners, category grid, shop filters & contacts'],
-            ['products','◇','Products','Edit catalog pricing, stock and photos'],
-            ['orders','▣','Orders','Review customer orders & update shipping numbers'],
-            ['categories','◈','Categories','Organize and manage saree collections'],
-            ['reviews','☆','Reviews','Moderate and delete customer feedback'],
-            ['coupons','％','Coupons','Manage discount codes and expiry dates'],
-            ['media','▧','Media library','Upload and copy image URLs']
-          ].map(([id,icon,title,desc])=>`
-            <button data-go="${id}" class="rounded-2xl border border-[#e7eae3] bg-white p-5 text-left hover:border-[#cbd8ca] transition">
-              <span class="grid h-10 w-10 place-items-center rounded-xl bg-[#f0f3ed] text-lg text-[#536a59]">${icon}</span>
-              <h3 class="mt-4 text-sm font-extrabold text-[#304137]">${title}</h3>
-              <p class="mt-1 text-xs text-[#758078]">${desc}</p>
-              <span class="mt-4 block text-[10px] font-bold text-[#617864]">Open section →</span>
-            </button>`).join('')}
+        <div class="mt-6 grid gap-5 sm:grid-cols-2 max-w-2xl">
+          <div class="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-xs space-y-3">
+            <h3 class="text-base font-extrabold text-slate-900">Export Store Backup (JSON)</h3>
+            <p class="text-xs text-slate-500 leading-relaxed">Download a complete snapshot of your catalog, categories, orders, and visual settings.</p>
+            <button onclick="exportBackupData()" class="rounded-xl bg-slate-900 hover:bg-slate-800 px-5 py-2.5 text-xs font-bold text-white transition shadow-xs">Download Backup File</button>
+          </div>
         </div>`;
     }
 
-    /* Editor Submit Handling */
-    async function saveEditor(event){
-      event.preventDefault();
-      const form=event.currentTarget;
-      try{
-        if(editing.type==='product'){
-          const payload=productPayload(form);
-          const q=editing.row.id?db.from('products').update(payload).eq('id',editing.row.id):db.from('products').insert(payload);
-          const {error}=await q;
-          if(error)throw error;
-        }else if(editing.type==='category'){
-          const name=new FormData(form).get('name').toString().trim();
-          const q=editing.row.id?db.from('categories').update({name}).eq('id',editing.row.id):db.from('categories').insert({name});
-          const {error}=await q;
-          if(error)throw error;
-        }else if(editing.type==='coupon'){
-          const fd=new FormData(form);
-          const old=editing.row;
-          const code=String(fd.get('code')).trim();
-          const discount=Number(fd.get('discount'));
-          const payload={};
-          if('code'in old||!old.id)payload.code=code;
-          if('name'in old)payload.name=code;
-          if('discount'in old||!old.id)payload.discount=discount;
-          if('discount_percent'in old)payload.discount_percent=discount;
-          if('percentage'in old)payload.percentage=discount;
-          if('discount_type'in old||!old.id)payload.discount_type=fd.get('discount_type');
-          if('type'in old)payload.type=fd.get('discount_type');
-          if('minimum_order'in old||!old.id)payload.minimum_order=Number(fd.get('minimum_order'));
-          if('expires_at'in old||!old.id)payload.expires_at=fd.get('expires_at')||null;
-          if('active'in old||!old.id)payload.active=fd.has('active');
-          const q=old.id?db.from('coupons').update(payload).eq('id',old.id):db.from('coupons').insert(payload);
-          const {error}=await q;
-          if(error)throw error;
-        }
-        editor.close();
-        await loadAll();
-        toast('Saved successfully ✓');
-      }catch(error){
-        toast(error.message||'Could not save changes');
+    function exportBackupData(){
+      const data={products,categories,orders,reviews,coupons,settings,exported_at:new Date().toISOString()};
+      const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+      const a=document.createElement('a');
+      a.href=URL.createObjectURL(blob);
+      a.download=`thaarai-tex-backup-${new Date().toISOString().slice(0,10)}.json`;
+      a.click();
+      toast('Backup file exported ✓');
+    }
+
+    /* ===== SAVE EDITOR MODAL ===== */
+    async function saveEditor(e){
+      e.preventDefault();
+      const form=e.target;
+      let payload;
+      if(editing.type==='product')payload=productPayload(form);
+      if(editing.type==='category')payload=categoryPayload(form);
+      if(editing.type==='coupon')payload=couponPayload(form);
+
+      let res;
+      if(editing.row.id){
+        res=await db.from(editing.type==='product'?'products':editing.type==='category'?'categories':'coupons').update(payload).eq('id',editing.row.id);
+      }else{
+        res=await db.from(editing.type==='product'?'products':editing.type==='category'?'categories':'coupons').insert(payload);
       }
+      if(res.error){toast('Error: '+res.error.message);return}
+      editor.close();
+      toast('Saved successfully ✓');
+      await loadAll();
     }
 
     async function deleteRow(table,id){
-      if(!confirm('Delete this record? This cannot be undone.'))return;
+      if(!confirm(`Delete this item permanently?`))return;
       const {error}=await db.from(table).delete().eq('id',id);
       if(error){toast(error.message);return}
+      toast('Deleted successfully ✓');
       await loadAll();
-      toast('Record deleted ✓');
     }
 
-    /* Modal dialog helpers for product photos */
+    /* ===== MEDIA PICKER MODAL IN PRODUCT EDITOR ===== */
     async function showProductLibrary(){
       const d=document.createElement('dialog');
-      d.className='w-[min(760px,calc(100%-24px))] max-h-[85vh] rounded-2xl border-0 bg-[#fbfcf9] p-5 shadow-2xl';
+      d.className='w-[min(720px,calc(100%-24px))] max-h-[85vh] rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl';
       d.innerHTML=`
         <div class="flex items-center justify-between border-b pb-4">
-          <div>
-            <h3 class="text-lg font-extrabold text-[#24342b]">Choose from media library</h3>
-            <p class="mt-1 text-xs text-[#758078]">Select a photo to add it to this product.</p>
-          </div>
-          <button class="close-media grid h-9 w-9 place-items-center rounded-full bg-[#eef0eb] text-xl hover:bg-gray-200">×</button>
+          <h3 class="text-base font-extrabold text-slate-900">Select Photo from Media Library</h3>
+          <button class="close-library grid h-8 w-8 place-items-center rounded-full bg-slate-100 font-bold hover:bg-slate-200">×</button>
         </div>
-        <div class="library-grid mt-4 grid max-h-[65vh] grid-cols-2 gap-3 overflow-y-auto sm:grid-cols-4">Loading images…</div>`;
+        <div class="library-grid mt-4 grid max-h-[60vh] grid-cols-2 gap-3 sm:grid-cols-4 overflow-y-auto">
+          <p class="col-span-full py-8 text-center text-xs text-slate-400">Loading…</p>
+        </div>`;
       document.body.append(d);
       d.showModal();
-      d.querySelector('.close-media').onclick=()=>d.close();
+      d.querySelector('.close-library').onclick=()=>d.close();
       d.addEventListener('close',()=>d.remove());
+
       try{
-        const files=await loadMedia();
+        const {data}=await db.storage.from(MEDIA_BUCKET).list('products',{limit:100,sortBy:{column:'created_at',order:'desc'}});
+        const files=(data||[]).map(f=>({name:f.name,url:db.storage.from(MEDIA_BUCKET).getPublicUrl('products/'+f.name).data.publicUrl}));
         const grid=d.querySelector('.library-grid');
-        grid.innerHTML=files.map((x,i)=>`
-          <button type="button" data-library-select="${i}" class="overflow-hidden rounded-xl border border-[#e5e8e2] text-left hover:border-[#193528] transition">
-            <img src="${esc(x.url)}" alt="${esc(x.name)}" class="aspect-square w-full object-cover">
-            <span class="block truncate p-2 text-[10px] text-gray-700">${esc(x.name)}</span>
-          </button>`).join('')||'<p class="col-span-full p-8 text-center text-xs">No images found. Upload photos in the Media Library first.</p>';
+        if(!files.length){grid.innerHTML='<p class="col-span-full py-8 text-center text-xs text-slate-400">No photos found.</p>';return}
+        grid.innerHTML=files.map((f,i)=>`
+          <button type="button" data-library-select="${i}" class="group relative aspect-square overflow-hidden rounded-xl border border-slate-200 hover:border-indigo-600 transition">
+            <img src="${esc(f.url)}" class="h-full w-full object-cover group-hover:scale-105 transition">
+            <span class="absolute inset-0 bg-indigo-900/40 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-xs font-bold transition">Choose</span>
+          </button>`).join('');
         grid.onclick=e=>{
           const b=e.target.closest('[data-library-select]');
           if(!b)return;
@@ -1646,6 +1745,9 @@
       const go=e.target.closest('[data-go]');
       if(go){setSection(go.dataset.go);return}
 
+      const mSec=e.target.closest('[data-m-sec]');
+      if(mSec){setSection(mSec.dataset.mSec);return}
+
       const action=e.target.closest('[data-action]')?.dataset.action;
       if(action==='refresh'){await loadAll();toast('Dashboard refreshed ✓')}
       if(action==='product-new')openProduct(null);
@@ -1664,6 +1766,37 @@
       if(e.target.closest('[data-product-local]')){$('#product-local-files').click();return}
       if(e.target.closest('[data-product-library]')){showProductLibrary();return}
 
+      /* FEATURE: SET MAIN COVER / FRONT IMAGE */
+      const setMain=e.target.closest('[data-set-main-image]');
+      if(setMain){
+        const idx=Number(setMain.dataset.setMainImage);
+        const list=$('[name="images"]').value.split('\n').filter(Boolean);
+        if(idx>0 && idx<list.length){
+          const selected=list.splice(idx,1)[0];
+          list.unshift(selected); // Put to position 0 as primary cover photo
+          updateProductImages(list);
+          toast('Cover photo updated! This photo is now the main front image ✓');
+        }
+        return;
+      }
+
+      /* FEATURE: MOVE IMAGE LEFT / RIGHT */
+      const moveImg=e.target.closest('[data-move-image]');
+      if(moveImg){
+        const idx=Number(moveImg.dataset.moveImage);
+        const dir=Number(moveImg.dataset.dir);
+        const list=$('[name="images"]').value.split('\n').filter(Boolean);
+        const targetIdx=idx+dir;
+        if(targetIdx>=0 && targetIdx<list.length){
+          const temp=list[idx];
+          list[idx]=list[targetIdx];
+          list[targetIdx]=temp;
+          updateProductImages(list);
+        }
+        return;
+      }
+
+      /* FEATURE: REMOVE PRODUCT IMAGE */
       const imageRemove=e.target.closest('[data-remove-product-image]');
       if(imageRemove){
         const list=$('[name="images"]').value.split('\n').filter(Boolean);
@@ -1677,7 +1810,7 @@
       const current=$('[name="images"]')?.value.split('\n').filter(Boolean)||[];
       for(const file of files){
         if(!file.type.startsWith('image/')){toast(`${file.name} is not an image`);continue}
-        if(file.size>4*1024*1024){toast(`${file.name} exceeds 4 MB limit`);continue}
+        if(file.size>6*1024*1024){toast(`${file.name} exceeds 6 MB limit`);continue}
         const path=`products/${Date.now()}-${file.name.replace(/[^\w.-]/g,'_')}`;
         try{
           const {error}=await db.storage.from(MEDIA_BUCKET).upload(path,file,{contentType:file.type});
@@ -1725,10 +1858,11 @@
     $('#editor-close').onclick=()=>editor.close();
     $('#editor-cancel').onclick=()=>editor.close();
     $('#menu-toggle').onclick=()=>{$('#sidebar').classList.remove('-translate-x-full');$('#sidebar-backdrop').classList.remove('hidden')};
+    $('#m-menu-btn').onclick=()=>{$('#sidebar').classList.remove('-translate-x-full');$('#sidebar-backdrop').classList.remove('hidden')};
     $('#sidebar-backdrop').onclick=closeSidebar;
     nav.onclick=e=>{const b=e.target.closest('[data-section]');if(b)setSection(b.dataset.section)};
 
-    $('#today').textContent=new Date().toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long'});
+    $('#today').textContent=new Date().toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short'});
     db.auth.getSession().then(({data})=>{if(data.session)saveAdminSession(data.session)});
   </script>
 </body>
