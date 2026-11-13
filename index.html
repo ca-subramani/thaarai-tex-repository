@@ -322,7 +322,6 @@ const loginNeeded=msg=>`<div class="max-w-md mx-auto text-center py-14 bg-white 
 
 /* ===== HOME & SHOP ===== */
 async function home(){
-  const bn=SET.banners||[];
   const featuredCats = [
     { name: 'Sarees', subtitle: 'Exclusive Handloom', image: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=600&q=80', query: 'Sarees' },
     { name: 'Lungies', subtitle: 'Comfort & Heritage', image: 'https://images.unsplash.com/photo-1583394838336-acd977736f90?auto=format&fit=crop&w=600&q=80', query: 'Lungies' },
@@ -332,22 +331,72 @@ async function home(){
     { name: 'Cotton', subtitle: 'Breathable Pure Weave', image: 'https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?auto=format&fit=crop&w=600&q=80', query: 'Cotton' }
   ];
 
-  const slide=(b,i)=>`<div class="slide absolute inset-0 transition-opacity duration-700 ${i?'opacity-0 pointer-events-none':''} flex flex-col justify-end p-6 sm:p-12 text-white" style="background:linear-gradient(110deg,${hx(b.c1,'#1e293b')},${hx(b.c2,'#0f172a')})">
-    ${b.image?`<img src="${esc(b.image)}" alt="" class="absolute inset-0 w-full h-full object-cover">`:''}
-    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent"></div>
-    <div class="relative max-w-xl pb-4">
-      <span class="inline-block bg-white/20 backdrop-blur-md text-white text-[10px] font-extrabold uppercase tracking-widest px-3 py-1 rounded-full mb-3">Thaarai Tex Exclusive</span>
-      <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight">${esc(b.title||'')}</h1>
-      <p class="mt-2 text-xs sm:text-sm text-gray-200">${esc(b.subtitle||'')}</p>
-      ${b.btn?`<a href="${esc(safeLink(b.link))}" class="inline-flex items-center gap-2 mt-4 px-6 py-3 rounded-full bg-white text-slate-900 font-bold text-xs hover:bg-gray-100 transition shadow-soft">${esc(b.btn)} <span>→</span></a>`:''}
-    </div>
-  </div>`;
-
-  app.innerHTML=`
-  <!-- Hero Banner Slider -->
-  ${bn.length?`<section id="car" class="relative rounded-3xl overflow-hidden h-80 sm:h-[420px] shadow-soft mb-8">${bn.map(slide).join('')}${bn.length>1?`<div class="absolute bottom-4 left-6 right-6 flex justify-center gap-2 z-10">${bn.map((_,i)=>`<button data-dot="${i}" class="dot w-8 h-1.5 rounded-full transition-all ${i?'bg-white/40':'bg-white'}"></button>`).join('')}</div>`:''}</section>`:''}
-
-  <!-- Super Attractive Professional Categories Grid with Large Image Boxes -->
+  let featured = null;
+    if (sb) {
+      try {
+        const { data } = await sb.from('products').select('*').eq('active', true).order('created_at', { ascending: false }).limit(1).maybeSingle();
+        featured = data;
+      } catch {}
+    }
+  
+    const homeSettings = {
+      eyebrow: (SET.site_ui?.home?.eyebrow) || 'THAARAI TEX · HANDLOOM EDITION',
+      title: (SET.site_ui?.home?.title) || 'A legacy woven into every thread',
+      subtitle: (SET.site_ui?.home?.subtitle) || 'Discover handpicked sarees, crafted with the art and patience of generations.',
+      button: (SET.site_ui?.home?.button) || 'Explore the collection',
+      image: (SET.site_ui?.home?.image) || ''
+    };
+  
+    const photo = homeSettings.image || featured?.images?.[0] || 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=1000&q=85';
+    const title = homeSettings.title;
+    const firstWord = title.trim().split(/\s+/)[0] || 'THAARAI';
+    const restTitle = title.trim().split(/\s+/).slice(1).join(' ');
+    const productHref = featured ? `#/p/${encodeURIComponent(featured.id)}` : '#/shop';
+  
+    app.innerHTML=`
+    <!-- Black Premium Hero -->
+    <section class="relative mb-8 min-h-[440px] overflow-hidden rounded-[1.7rem] bg-[#080909] text-white shadow-[0_28px_70px_rgba(8,9,9,.25)] sm:min-h-[520px]">
+      <div class="absolute inset-0 opacity-25" style="background:radial-gradient(ellipse at 66% 48%,#5b171b 0%,transparent 42%),linear-gradient(120deg,#090a0a 20%,#171818 100%)"></div>
+      <div class="absolute -right-12 top-12 select-none text-[clamp(5rem,19vw,15rem)] font-black uppercase leading-none tracking-[-.09em] text-white/[.035]">WEAVE</div>
+      <div class="absolute left-0 top-1/3 h-px w-full rotate-[-16deg] bg-[#e32938]/30"></div>
+      <div class="relative z-10 flex min-h-[440px] flex-col justify-between p-5 sm:min-h-[520px] sm:p-9 lg:p-11">
+        <div class="flex items-center justify-between border-b border-white/10 pb-4">
+          <a href="#/" class="text-[10px] font-black tracking-[.28em] text-white">THAARAI <span class="text-[#e42636]">TEX</span></a>
+          <div class="hidden items-center gap-7 text-[9px] font-bold uppercase tracking-[.28em] text-white/65 sm:flex">
+            <a href="#/" class="text-white">Home</a>
+            <a href="#/shop" class="hover:text-white">Sarees</a>
+            <a href="#/account/orders" class="hover:text-white">My orders</a>
+          </div>
+          <span class="text-[9px] font-bold uppercase tracking-[.25em] text-[#ff3544]">HANDLOOM · EST. WITH CARE</span>
+        </div>
+        <div class="grid flex-1 items-center gap-0 lg:grid-cols-[.9fr_1.1fr]">
+          <div class="relative z-20 order-2 mt-[-1.5rem] max-w-lg lg:order-1 lg:mt-0">
+            <p class="text-[9px] font-extrabold uppercase tracking-[.34em] text-[#ff3645]">${esc(homeSettings.eyebrow)}</p>
+                      <h1 class="mt-4 max-w-xl text-[clamp(2.7rem,7.3vw,6.6rem)] font-black uppercase leading-[.85] tracking-[-.065em]">
+                        <span class="text-[#f52638]">${esc(firstWord)}</span>
+                        ${restTitle ? `<span class="mt-2 block text-white">${esc(restTitle)}</span>` : ''}
+                      </h1>
+                      <p class="mt-5 max-w-sm text-xs leading-6 text-white/65 sm:text-sm">${esc(homeSettings.subtitle)}</p>
+                      <div class="mt-5 flex flex-wrap items-center gap-3">
+                        <a href="${esc(productHref)}" class="rounded-sm bg-white px-5 py-3 text-[10px] font-black uppercase tracking-[.14em] text-[#111] transition hover:bg-[#f4c3c6]">${esc(homeSettings.button)}</a>
+                        <a href="#/shop" class="rounded-sm border border-white/35 px-5 py-3 text-[10px] font-black uppercase tracking-[.14em] text-white">View all sarees</a>
+                      </div>
+                      ${featured ? `<p class="mt-6 text-[10px] font-bold uppercase tracking-[.2em] text-white/50">Featured weave <span class="ml-2 text-white">${esc(featured.name)}</span> <span class="ml-3 text-[#ff3544]">${inr(featured.price)}</span></p>` : ''}
+                    </div>
+                    <a href="${esc(productHref)}" class="relative order-1 flex h-[255px] items-center justify-center lg:order-2 lg:h-full">
+                      <div class="absolute h-[68%] w-[65%] rounded-full bg-[#9b101a]/20 blur-3xl"></div>
+                      <img src="${esc(photo)}" alt="${esc(featured?.name || 'Handwoven saree collection')}" class="relative z-10 max-h-[300px] w-full object-contain drop-shadow-[0_28px_38px_rgba(0,0,0,.65)] sm:max-h-[380px] lg:max-h-[420px] lg:rotate-[-5deg]" loading="eager">
+            <span class="absolute right-2 top-8 z-20 hidden text-[10px] font-black uppercase tracking-[.35em] text-[#ff3544] sm:block">PURE · HANDWOVEN</span>
+          </a>
+        </div>
+        <div class="flex items-center justify-between border-t border-white/10 pt-4 text-[8px] font-bold uppercase tracking-[.24em] text-white/45">
+          <span>Woven by hand · Made to be remembered</span>
+          <span>01 / THE HANDLOOM EDITION</span>
+        </div>
+      </div>
+    </section>
+  
+    <!-- Super Attractive Professional Categories Grid with Large Image Boxes -->
   <section class="mb-12">
     <div class="flex items-end justify-between mb-6 px-1">
       <div>
@@ -408,18 +457,6 @@ async function home(){
   </section>
   `;
 
-  const car=$('#car');
-  if(car&&bn.length>1){
-    let i=0;
-    const sl=[...car.querySelectorAll('.slide')], dots=[...car.querySelectorAll('.dot')];
-    const show=n=>{
-      i=n;
-      sl.forEach((x,k)=>{if(x){x.classList.toggle('opacity-0',k!==n);x.classList.toggle('pointer-events-none',k!==n)}});
-      dots.forEach((d,k)=>{if(d){d.classList.toggle('bg-white',k===n);d.classList.toggle('bg-white/40',k!==n);d.classList.toggle('w-8',k===n);d.classList.toggle('w-2',k!==n)}});
-    };
-    dots.forEach((d,k)=>d.onclick=()=>show(k));
-    window._bt=setInterval(()=>show((i+1)%sl.length),5000);
-  }
 }
 
 async function shop(params){
