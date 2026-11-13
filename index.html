@@ -8,6 +8,7 @@
 <script src="https://cdn.tailwindcss.com/3.4.17"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script defer src="/site-enhancements.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+Tamil:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -80,7 +81,7 @@ input,select,textarea{font-size:16px!important}
 </div>
 
 <script>
-history.pushState({storefrontEntry:true},'',location.href);
+history.replaceState({storefrontEntry:true},'',location.href);
 /* ===== CONFIG ===== */
 const SUPABASE_URL="https://hjogdvqwwbgzgwtdlrak.supabase.co";
 const SUPABASE_ANON_KEY="sb_publishable_gURnxsEPWoxUqqAqnEtJ_g_EmUlUgUZ";
@@ -202,7 +203,8 @@ const SET={
     {image:'',title:'Exquisite Handloom Silks',subtitle:'Direct from Master Weavers to Your Doorstep',btn:'Shop Now',link:'#/shop',c1:'#0f172a',c2:'#334155'}
   ],
   about:{title:'Crafted with Tradition',text:'Thaarai Tex brings you handpicked, authentic handloom sarees directly from traditional weavers. Every piece reflects meticulous artistry, premium fabrics, and timeless elegance.'},
-  footer:{about:'Handloom sarees direct from the weavers.',phone:'',email:'',address:'Melur, Tamil Nadu',whatsapp:'919999999999',upi:'yourname@upi',upiName:'Thaarai Tex'}
+  footer:{about:'Handloom sarees direct from the weavers.',phone:'',email:'',address:'Melur, Tamil Nadu',whatsapp:'919999999999',upi:'yourname@upi',upiName:'Thaarai Tex'},
+  site_ui:{home:{eyebrow:'THAARAI TEX · HANDLOOM EDITION',title:'A legacy woven into every thread',subtitle:'Discover handpicked sarees, crafted with the art and patience of generations.',button:'Explore the collection',image:''},shop:{title:'The collection',filter:'Filter',sort:'Sort by',categories:'Categories',fabric:'Fabric',fabrics:['Silk','Cotton','Semi Silk','Linen'],price:'Price range',sortHeading:'Sort by',stock:'Show only in stock',apply:'Apply filters',reset:'Reset filters'},account:{profile:'Your account',editProfile:'Edit profile',address:'Shopping address',wishlist:'Wishlist',orders:'Order history',saveProfile:'Save changes'}}
 };
 
 function applySettings(){
@@ -221,7 +223,7 @@ function applySettings(){
    try{
      const {data,error}=await sb.from('store_settings').select('key,value');
      if(error)throw error;
-     for(const row of data||[])if(['brand','banners','about','footer'].includes(row.key))SET[row.key]=row.value;
+     for(const row of data||[])if(['brand','banners','about','footer','site_ui'].includes(row.key))SET[row.key]=row.value;
      WHATSAPP=SET.footer.whatsapp||WHATSAPP;UPI_ID=SET.footer.upi||UPI_ID;UPI_NAME=SET.footer.upiName||UPI_NAME;
      applySettings();
    }catch{}
@@ -1087,43 +1089,32 @@ $('#sf').onsubmit=e=>{e.preventDefault();location.hash='#/shop?q='+encodeURIComp
 $('#sf2').onsubmit=e=>{e.preventDefault();location.hash='#/shop?q='+encodeURIComponent($('#q2').value.trim());$('#msearch').classList.add('hidden')};
 $('#msb').onclick=()=>{$('#msearch').classList.toggle('hidden');$('#q2').focus()};
 let routeStack=[location.hash||'#/'];
-let exitFromShop=(location.hash||'').startsWith('#/shop'),exitApproved=false;
-document.addEventListener('click',e=>{if(e.target.closest('a[href="#/shop"]'))exitFromShop=false});
-function syncHomeGuard(){
-  const atHome=!location.hash||location.hash==='#/'||location.hash==='#';
-  if(atHome&&!history.state?.exitGuard)history.pushState({exitGuard:true},'',location.href);
-}
-function moveToShopForExit(){
-  exitFromShop=true;routeStack=['#/shop'];
-  history.replaceState({exitGuard:false},'','#/shop');
-  history.pushState({exitGuard:true},'',location.href);
-  route();
-}
-window.addEventListener('hashchange',()=>{if(exitApproved)return;if(!(exitFromShop&&(location.hash||'').startsWith('#/shop')))exitFromShop=false;
+let exitApproved=false,exitFromPop=false;
+const isHomeRoute=()=>!location.hash||location.hash==='#/'||location.hash==='#';
+function armExitGuard(){if(!history.state?.exitGuard)history.pushState({exitGuard:true},'',location.href)}
+function syncHomeGuard(){if(isHomeRoute())armExitGuard()}
+window.addEventListener('hashchange',()=>{
+  if(exitApproved)return;
   const next=location.hash||'#/';
   if(routeStack.length>1&&next===routeStack[routeStack.length-2])routeStack.pop();
   else if(next!==routeStack[routeStack.length-1])routeStack.push(next);
   route();
 });
-function showExitConfirm(){$('#exit-confirm').classList.remove('hidden');$('#exit-stay').focus();if(!history.state?.exitGuard)history.pushState({exitGuard:true},'',location.href)}
-$('#exit-stay').onclick=()=>{$('#exit-confirm').classList.add('hidden');route()};
-$('#exit-leave').onclick=()=>{exitApproved=true;$('#exit-confirm').classList.add('hidden');history.back()};
+function showExitConfirm(fromPop=false){exitFromPop=fromPop;$('#exit-confirm').classList.remove('hidden');$('#exit-stay').focus()}
+$('#exit-stay').onclick=()=>{$('#exit-confirm').classList.add('hidden');if(exitFromPop)armExitGuard();exitFromPop=false};
+$('#exit-leave').onclick=()=>{const steps=exitFromPop?1:2;exitApproved=true;$('#exit-confirm').classList.add('hidden');history.go(-steps)};
 window.addEventListener('popstate',event=>{
-  if(exitApproved){history.back();return}
-  const destination=location.hash||'#/';
-  const atShop=destination.startsWith('#/shop');
-  if(event.state?.storefrontEntry){if(atShop){exitFromShop=true;showExitConfirm()}else moveToShopForExit();return}
-  if(event.state?.exitGuard===false&&atShop&&exitFromShop)showExitConfirm();
+  if(exitApproved)return;
+  const lastRoute=routeStack[routeStack.length-1]||'#/';
+  if(isHomeRoute()&&(lastRoute==='#/'||lastRoute==='#')&&event.state?.exitGuard!==true){showExitConfirm(true);return}
 });
 $('#nav-back').onclick=()=>{
-  const atHome=!location.hash||location.hash==='#/'||location.hash==='#';
-  if(atHome){moveToShopForExit();return}
-  if(exitFromShop&&(location.hash||'').startsWith('#/shop')){history.back();return}
+  if(isHomeRoute()){showExitConfirm(false);return}
   if(routeStack.length>1){history.back();return}
   location.hash='#/';
 };
 const originalRoute=route;
-route=async function(){await originalRoute();syncHomeGuard();if(exitFromShop&&(location.hash||'').startsWith('#/shop')&&!history.state?.exitGuard)history.pushState({exitGuard:true},'',location.href)};
+route=async function(){await originalRoute();syncHomeGuard()};
 Promise.all([initAuth(),loadSiteSettings()]).then(route);
 </script>
 </body>
