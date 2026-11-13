@@ -73,14 +73,14 @@ input,select,textarea{font-size:16px!important}
 <div id="toast" class="fixed bottom-24 sm:bottom-4 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-xs px-4 py-2.5 rounded-full shadow-soft hidden z-50"></div>
 <div id="exit-confirm" class="hidden fixed inset-0 z-[100] grid place-items-center bg-slate-950/50 p-5" role="presentation">
   <section role="dialog" aria-modal="true" aria-labelledby="exit-title" class="w-full max-w-sm rounded-3xl bg-white p-6 text-center shadow-2xl">
-    <div class="mx-auto grid h-12 w-12 place-items-center rounded-full bg-amber-50 text-xl text-amber-700">?</div>
-    <h2 id="exit-title" class="mt-4 text-lg font-extrabold text-slate-900">Leave Thaarai Tex?</h2>
+    <h2 id="exit-title" class="text-lg font-extrabold text-slate-900">Leave Thaarai Tex?</h2>
     <p class="mt-2 text-sm text-slate-600">Are you sure you want to exit?</p>
     <div class="mt-6 grid grid-cols-2 gap-3"><button id="exit-stay" class="rounded-xl border border-slate-200 px-4 py-3 text-sm font-bold text-slate-700">Stay here</button><button id="exit-leave" class="rounded-xl bg-slate-900 px-4 py-3 text-sm font-bold text-white">Exit</button></div>
   </section>
 </div>
 
 <script>
+history.pushState({storefrontEntry:true},'',location.href);
 /* ===== CONFIG ===== */
 const SUPABASE_URL="https://hjogdvqwwbgzgwtdlrak.supabase.co";
 const SUPABASE_ANON_KEY="sb_publishable_gURnxsEPWoxUqqAqnEtJ_g_EmUlUgUZ";
@@ -1111,7 +1111,7 @@ window.addEventListener('popstate',()=>{
   const atHome=!location.hash||location.hash==='#/'||location.hash==='#';
   const atShop=(location.hash||'').startsWith('#/shop');
   if(atHome&&routeStack.length===1&&homeGuardArmed){moveToShopForExit();return}
-  if(atShop&&exitFromShop)showExitConfirm();
+  if(atShop&&(exitFromShop||routeStack.length===1)){exitFromShop=true;showExitConfirm()}
 });
 $('#nav-back').onclick=()=>{
   const atHome=!location.hash||location.hash==='#/'||location.hash==='#';
