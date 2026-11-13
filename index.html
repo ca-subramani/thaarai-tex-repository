@@ -1087,7 +1087,6 @@ $('#sf').onsubmit=e=>{e.preventDefault();location.hash='#/shop?q='+encodeURIComp
 $('#sf2').onsubmit=e=>{e.preventDefault();location.hash='#/shop?q='+encodeURIComponent($('#q2').value.trim());$('#msearch').classList.add('hidden')};
 $('#msb').onclick=()=>{$('#msearch').classList.toggle('hidden');$('#q2').focus()};
 let routeStack=[location.hash||'#/'];
-let currentRouteHash=location.hash||'#/';
 let exitFromShop=(location.hash||'').startsWith('#/shop'),exitApproved=false;
 document.addEventListener('click',e=>{if(e.target.closest('a[href="#/shop"]'))exitFromShop=false});
 function syncHomeGuard(){
@@ -1102,7 +1101,6 @@ function moveToShopForExit(){
 }
 window.addEventListener('hashchange',()=>{if(exitApproved)return;if(!(exitFromShop&&(location.hash||'').startsWith('#/shop')))exitFromShop=false;
   const next=location.hash||'#/';
-  currentRouteHash=next;
   if(routeStack.length>1&&next===routeStack[routeStack.length-2])routeStack.pop();
   else if(next!==routeStack[routeStack.length-1])routeStack.push(next);
   route();
@@ -1110,16 +1108,12 @@ window.addEventListener('hashchange',()=>{if(exitApproved)return;if(!(exitFromSh
 function showExitConfirm(){$('#exit-confirm').classList.remove('hidden');$('#exit-stay').focus();if(!history.state?.exitGuard)history.pushState({exitGuard:true},'',location.href)}
 $('#exit-stay').onclick=()=>{$('#exit-confirm').classList.add('hidden');route()};
 $('#exit-leave').onclick=()=>{exitApproved=true;$('#exit-confirm').classList.add('hidden');history.back()};
-window.addEventListener('popstate',()=>{
+window.addEventListener('popstate',event=>{
   if(exitApproved){history.back();return}
   const destination=location.hash||'#/';
-  const wasHome=!currentRouteHash||currentRouteHash==='#/'||currentRouteHash==='#';
-  const atHome=!destination||destination==='#/'||destination==='#';
   const atShop=destination.startsWith('#/shop');
-  if(wasHome&&atShop&&destination!==currentRouteHash){exitFromShop=true;return}
-  if(destination!==currentRouteHash)return;
-  if(atHome){moveToShopForExit();return}
-  if(atShop&&exitFromShop)showExitConfirm()
+  if(event.state?.storefrontEntry){if(atShop){exitFromShop=true;showExitConfirm()}else moveToShopForExit();return}
+  if(event.state?.exitGuard===false&&atShop&&exitFromShop)showExitConfirm();
 });
 $('#nav-back').onclick=()=>{
   const atHome=!location.hash||location.hash==='#/'||location.hash==='#';
@@ -1129,7 +1123,7 @@ $('#nav-back').onclick=()=>{
   location.hash='#/';
 };
 const originalRoute=route;
-route=async function(){await originalRoute();currentRouteHash=location.hash||'#/';syncHomeGuard();if(exitFromShop&&(location.hash||'').startsWith('#/shop')&&!history.state?.exitGuard)history.pushState({exitGuard:true},'',location.href)};
+route=async function(){await originalRoute();syncHomeGuard();if(exitFromShop&&(location.hash||'').startsWith('#/shop')&&!history.state?.exitGuard)history.pushState({exitGuard:true},'',location.href)};
 Promise.all([initAuth(),loadSiteSettings()]).then(route);
 </script>
 </body>
