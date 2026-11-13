@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#12231c">
-  <title>Thaarai Tex — Admin</title>
+  <title>Thaarai Tex — Admin Studio</title>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script defer src="./site-enhancements.js"></script>
@@ -13,82 +13,159 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     #admin-exit-layer section>div:first-child{display:none}
-    :root{font-family:'DM Sans',sans-serif;color:#24342d;background:#f4f5f2}h1,h2,h3,.brand{font-family:Manrope,sans-serif}*{box-sizing:border-box}body{margin:0;min-width:320px}button,input,textarea,select{font:inherit}button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid #b9d9ae;outline-offset:2px}.scrollbar-hide{scrollbar-width:none}.scrollbar-hide::-webkit-scrollbar{display:none}dialog::backdrop{background:rgba(12,25,18,.55);backdrop-filter:blur(5px)}.fade-in{animation:fade-in .22s ease-out}@keyframes fade-in{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+    :root{font-family:'DM Sans',sans-serif;color:#24342d;background:#f4f5f2}
+    h1,h2,h3,.brand{font-family:Manrope,sans-serif}
+    *{box-sizing:border-box}
+    body{margin:0;min-width:320px}
+    button,input,textarea,select{font:inherit}
+    button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid #b9d9ae;outline-offset:2px}
+    .scrollbar-hide{scrollbar-width:none}.scrollbar-hide::-webkit-scrollbar{display:none}
+    dialog::backdrop{background:rgba(12,25,18,.55);backdrop-filter:blur(5px)}
+    .fade-in{animation:fade-in .22s ease-out}
+    @keyframes fade-in{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
   </style>
 </head>
 <body>
+  <!-- Admin Sign-In Screen -->
   <div id="login-screen" class="min-h-screen grid lg:grid-cols-[1.1fr_.9fr] bg-[#f5f5f1]">
     <section class="hidden lg:flex relative overflow-hidden bg-[#12231c] text-white p-14 flex-col justify-between">
-      <div class="absolute -right-32 -top-32 w-[520px] h-[520px] rounded-full border border-white/10"></div><div class="absolute right-[-70px] top-[-70px] w-[390px] h-[390px] rounded-full border border-white/10"></div><div class="absolute right-20 bottom-[-220px] w-[500px] h-[500px] rounded-full bg-[#c3a875]/10 blur-3xl"></div>
-      <div class="relative brand text-xl font-extrabold tracking-wide">THAARAI <span class="text-[#c3a875]">TEX</span><div class="text-[10px] tracking-[.28em] text-white/45 mt-1">STORE MANAGEMENT</div></div>
-      <div class="relative max-w-xl"><span class="text-[11px] uppercase tracking-[.24em] text-[#d3bd95] font-bold">Private workspace</span><h1 class="mt-5 text-5xl font-extrabold leading-[1.1]">Your craft.<br>Your commerce.</h1><p class="mt-5 text-sm leading-7 text-white/60 max-w-md">Manage the Thaarai Tex storefront, orders and collections from one secure place.</p></div>
+      <div class="absolute -right-32 -top-32 w-[520px] h-[520px] rounded-full border border-white/10"></div>
+      <div class="absolute right-[-70px] top-[-70px] w-[390px] h-[390px] rounded-full border border-white/10"></div>
+      <div class="absolute right-20 bottom-[-220px] w-[500px] h-[500px] rounded-full bg-[#c3a875]/10 blur-3xl"></div>
+      <div class="relative brand text-xl font-extrabold tracking-wide">THAARAI <span class="text-[#c3a875]">TEX</span><div class="text-[10px] tracking-[.28em] text-white/45 mt-1">STORE MANAGEMENT STUDIO</div></div>
+      <div class="relative max-w-xl">
+        <span class="text-[11px] uppercase tracking-[.24em] text-[#d3bd95] font-bold">Private workspace</span>
+        <h1 class="mt-5 text-5xl font-extrabold leading-[1.1]">Your craft.<br>Your commerce.</h1>
+        <p class="mt-5 text-sm leading-7 text-white/60 max-w-md">Edit your entire storefront, home banner, shop filters, categories, customer orders and branding visually without touching code.</p>
+      </div>
       <p class="relative text-xs text-white/35">Secure administrator sign-in · Thaarai Tex</p>
     </section>
     <section class="min-h-screen flex items-center justify-center px-5 py-12">
       <form id="login-form" class="w-full max-w-md">
         <a href="/" class="lg:hidden brand text-lg font-extrabold tracking-wide text-[#12231c]">THAARAI <span class="text-[#9a7847]">TEX</span></a>
-        <div class="mt-9 lg:mt-0"><span class="text-[11px] font-bold uppercase tracking-[.2em] text-[#927b58]">Administrator access</span><h1 class="mt-3 text-3xl font-extrabold tracking-tight text-[#1e2d25]">Welcome back</h1><p class="mt-2 text-sm text-[#69746d]">Sign in using your authorized admin account.</p></div>
-        <label class="block mt-8 text-xs font-bold text-[#34433a]">Email address<input id="login-email" type="email" autocomplete="username" required class="mt-2 w-full rounded-xl border border-[#dce1d9] bg-white px-4 py-3.5 text-sm outline-none focus:border-[#597964]" placeholder="you@yourstore.com"></label>
-        <label class="block mt-4 text-xs font-bold text-[#34433a]">Password<input id="login-password" type="password" autocomplete="current-password" required class="mt-2 w-full rounded-xl border border-[#dce1d9] bg-white px-4 py-3.5 text-sm outline-none focus:border-[#597964]" placeholder="Enter your password"></label>
-        <button class="mt-6 w-full rounded-xl bg-[#193528] px-4 py-3.5 text-sm font-bold text-white shadow-lg shadow-[#193528]/15 hover:bg-[#254937] transition">Sign in to admin</button>
+        <div class="mt-9 lg:mt-0">
+          <span class="text-[11px] font-bold uppercase tracking-[.2em] text-[#927b58]">Administrator access</span>
+          <h1 class="mt-3 text-3xl font-extrabold tracking-tight text-[#1e2d25]">Welcome back</h1>
+          <p class="mt-2 text-sm text-[#69746d]">Sign in using your authorized store manager account.</p>
+        </div>
+        <label class="block mt-8 text-xs font-bold text-[#34433a]">Email address
+          <input id="login-email" type="email" autocomplete="username" required class="mt-2 w-full rounded-xl border border-[#dce1d9] bg-white px-4 py-3.5 text-sm outline-none focus:border-[#597964]" placeholder="admin@thaaraitex.com">
+        </label>
+        <label class="block mt-4 text-xs font-bold text-[#34433a]">Password
+          <input id="login-password" type="password" autocomplete="current-password" required class="mt-2 w-full rounded-xl border border-[#dce1d9] bg-white px-4 py-3.5 text-sm outline-none focus:border-[#597964]" placeholder="Enter password">
+        </label>
+        <button class="mt-6 w-full rounded-xl bg-[#193528] px-4 py-3.5 text-sm font-bold text-white shadow-lg shadow-[#193528]/15 hover:bg-[#254937] transition">Sign in to admin studio</button>
         <p id="login-error" role="alert" class="min-h-6 mt-3 text-sm text-rose-700"></p>
-        <p class="mt-4 border-t border-[#e3e5df] pt-4 text-xs leading-5 text-[#707a72]">Admin access is controlled by Supabase Auth and database Row Level Security. Public storefront logins do not grant admin access.</p>
+        <p class="mt-4 border-t border-[#e3e5df] pt-4 text-xs leading-5 text-[#707a72]">Protected by Supabase Auth and Row Level Security. Public store logins do not grant admin access.</p>
       </form>
     </section>
   </div>
 
+  <!-- Dashboard Workspace -->
   <div id="dashboard" class="hidden min-h-screen">
+    <!-- Sidebar -->
     <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 flex w-[264px] -translate-x-full flex-col bg-[#14271e] text-white transition-transform lg:translate-x-0">
-      <div class="flex h-[82px] items-center gap-3 border-b border-white/10 px-6"><div class="grid h-10 w-10 place-items-center rounded-xl bg-[#c4aa7d] text-sm font-extrabold text-[#1b2b22]">TT</div><div class="brand font-extrabold tracking-wide">THAARAI TEX<span class="mt-0.5 block text-[9px] font-semibold tracking-[.2em] text-white/45">ADMIN STUDIO</span></div></div>
-      <div class="px-4 pt-6"><p class="px-3 text-[9px] font-bold uppercase tracking-[.2em] text-white/35">Workspace</p><nav id="navigation" class="mt-3 space-y-1"></nav></div>
-      <div class="mt-auto p-4"><a href="/" class="flex items-center gap-3 rounded-xl px-3 py-3 text-xs font-semibold text-white/65 hover:bg-white/5 hover:text-white">← <span>View storefront</span></a><button id="logout" class="mt-1 flex w-full items-center gap-3 rounded-xl px-3 py-3 text-xs font-semibold text-white/65 hover:bg-white/5 hover:text-white">↗ <span>Sign out</span></button><div class="mt-3 rounded-xl border border-white/10 bg-white/[.04] p-3"><p class="text-[9px] uppercase tracking-[.16em] text-white/35">Signed in as</p><p id="admin-email" class="mt-1 truncate text-xs font-semibold text-white/85"></p></div></div>
+      <div class="flex h-[82px] items-center gap-3 border-b border-white/10 px-6">
+        <div class="grid h-10 w-10 place-items-center rounded-xl bg-[#c4aa7d] text-sm font-extrabold text-[#1b2b22]">TT</div>
+        <div class="brand font-extrabold tracking-wide">THAARAI TEX<span class="mt-0.5 block text-[9px] font-semibold tracking-[.2em] text-white/45">ADMIN STUDIO</span></div>
+      </div>
+      <div class="px-4 pt-6">
+        <p class="px-3 text-[9px] font-bold uppercase tracking-[.2em] text-white/35">Store Management</p>
+        <nav id="navigation" class="mt-3 space-y-1"></nav>
+      </div>
+      <div class="mt-auto p-4">
+        <a href="/" target="_blank" class="flex items-center gap-3 rounded-xl px-3 py-3 text-xs font-semibold text-white/75 hover:bg-white/10 hover:text-white transition">
+          <span>↗</span> <span>Open Live Storefront</span>
+        </a>
+        <button id="logout" class="mt-1 flex w-full items-center gap-3 rounded-xl px-3 py-3 text-xs font-semibold text-white/65 hover:bg-white/5 hover:text-white transition">
+          <span>⏻</span> <span>Sign out</span>
+        </button>
+        <div class="mt-3 rounded-xl border border-white/10 bg-white/[.04] p-3">
+          <p class="text-[9px] uppercase tracking-[.16em] text-white/35">Signed in as</p>
+          <p id="admin-email" class="mt-1 truncate text-xs font-semibold text-white/85"></p>
+        </div>
+      </div>
     </aside>
+
     <div id="sidebar-backdrop" class="fixed inset-0 z-30 hidden bg-black/40 lg:hidden"></div>
+
+    <!-- Main Content Area -->
     <main class="min-h-screen lg:pl-[264px]">
       <header class="sticky top-0 z-20 flex h-[74px] items-center justify-between border-b border-[#e5e7e1] bg-[#f8f9f6]/95 px-4 backdrop-blur-md sm:px-7">
-        <div class="flex items-center gap-3"><button id="admin-back" type="button" aria-label="Go back" class="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-[#e1e5dd] bg-white text-lg text-[#536058] shadow-sm" onclick="adminBack()">←</button><button id="menu-toggle" class="grid h-10 w-10 place-items-center rounded-xl border border-[#e1e5dd] bg-white text-lg lg:hidden" aria-label="Open menu">☰</button><div><p id="crumb" class="text-[10px] font-bold uppercase tracking-[.18em] text-[#899188]">OVERVIEW</p><h1 id="page-title" class="text-base font-extrabold text-[#23352b] sm:text-lg">Overview</h1></div></div>
-        <div class="flex items-center gap-3"><span class="hidden rounded-full border border-[#dbe5d8] bg-[#eef4ea] px-3 py-1.5 text-[10px] font-bold text-[#47654f] sm:inline-flex">● Secure session</span><span id="today" class="hidden text-xs text-[#7d877e] md:block"></span><div class="grid h-9 w-9 place-items-center rounded-full bg-[#e7e1d4] text-xs font-extrabold text-[#5c4e36]">AD</div></div>
+        <div class="flex items-center gap-3">
+          <button id="admin-back" type="button" aria-label="Go back" class="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-[#e1e5dd] bg-white text-lg text-[#536058] shadow-sm hover:bg-[#f2f4f0]" onclick="adminBack()">←</button>
+          <button id="menu-toggle" class="grid h-10 w-10 place-items-center rounded-xl border border-[#e1e5dd] bg-white text-lg lg:hidden" aria-label="Open menu">☰</button>
+          <div>
+            <p id="crumb" class="text-[10px] font-bold uppercase tracking-[.18em] text-[#899188]">WORKSPACE</p>
+            <h1 id="page-title" class="text-base font-extrabold text-[#23352b] sm:text-lg">Overview</h1>
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <a href="/" target="_blank" class="hidden sm:inline-flex items-center gap-2 rounded-full border border-[#dbe5d8] bg-white px-3.5 py-1.5 text-xs font-bold text-[#274635] shadow-sm hover:bg-[#f5f8f3] transition">
+            <span>Live Store ↗</span>
+          </a>
+          <span id="today" class="hidden text-xs text-[#7d877e] md:block"></span>
+          <div class="grid h-9 w-9 place-items-center rounded-full bg-[#e7e1d4] text-xs font-extrabold text-[#5c4e36]">AD</div>
+        </div>
       </header>
-      <div class="mx-auto max-w-[1440px] px-4 py-6 sm:px-7 sm:py-8"><div id="view" class="fade-in"></div></div>
+
+      <div class="mx-auto max-w-[1440px] px-4 py-6 sm:px-7 sm:py-8">
+        <div id="view" class="fade-in"></div>
+      </div>
     </main>
   </div>
 
-  <dialog id="editor" class="w-[min(680px,calc(100%-28px))] max-h-[90vh] rounded-2xl border-0 bg-[#fbfcf9] p-0 shadow-2xl">
-    <form id="editor-form" class="flex max-h-[90vh] flex-col"><div class="flex items-start justify-between border-b border-[#e8ebe5] px-6 py-5"><div><p id="editor-kicker" class="text-[9px] font-bold uppercase tracking-[.2em] text-[#907a56]">RECORD</p><h2 id="editor-title" class="mt-1 text-xl font-extrabold text-[#24342b]">Edit</h2></div><button type="button" id="editor-close" class="grid h-9 w-9 place-items-center rounded-full bg-[#eef0eb] text-xl text-[#536058]" aria-label="Close">×</button></div><div id="editor-fields" class="space-y-4 overflow-y-auto px-6 py-5"></div><div class="flex justify-end gap-2 border-t border-[#e8ebe5] px-6 py-4"><button type="button" id="editor-cancel" class="rounded-xl border border-[#dce1d9] px-4 py-2.5 text-xs font-bold text-[#5d695f]">Cancel</button><button class="rounded-xl bg-[#193528] px-5 py-2.5 text-xs font-bold text-white">Save changes</button></div></form>
+  <!-- Reusable Modal Editor -->
+  <dialog id="editor" class="w-[min(720px,calc(100%-28px))] max-h-[90vh] rounded-2xl border-0 bg-[#fbfcf9] p-0 shadow-2xl">
+    <form id="editor-form" class="flex max-h-[90vh] flex-col">
+      <div class="flex items-start justify-between border-b border-[#e8ebe5] px-6 py-5">
+        <div>
+          <p id="editor-kicker" class="text-[9px] font-bold uppercase tracking-[.2em] text-[#907a56]">RECORD</p>
+          <h2 id="editor-title" class="mt-1 text-xl font-extrabold text-[#24342b]">Edit</h2>
+        </div>
+        <button type="button" id="editor-close" class="grid h-9 w-9 place-items-center rounded-full bg-[#eef0eb] text-xl text-[#536058] hover:bg-[#e4e7e0]" aria-label="Close">×</button>
+      </div>
+      <div id="editor-fields" class="space-y-4 overflow-y-auto px-6 py-5"></div>
+      <div class="flex justify-end gap-2 border-t border-[#e8ebe5] px-6 py-4">
+        <button type="button" id="editor-cancel" class="rounded-xl border border-[#dce1d9] px-4 py-2.5 text-xs font-bold text-[#5d695f] hover:bg-gray-50">Cancel</button>
+        <button class="rounded-xl bg-[#193528] px-5 py-2.5 text-xs font-bold text-white hover:bg-[#254937]">Save changes</button>
+      </div>
+    </form>
   </dialog>
+
+  <!-- Reusable Media Library Picker Modal -->
+  <dialog id="library-picker-modal" class="w-[min(780px,calc(100%-24px))] max-h-[85vh] rounded-2xl border-0 bg-[#fbfcf9] p-5 shadow-2xl">
+    <div class="flex items-center justify-between border-b pb-4">
+      <div>
+        <h3 class="text-lg font-extrabold text-[#24342b]">Choose from Media Library</h3>
+        <p class="mt-1 text-xs text-[#758078]">Click any image to use it in your website section.</p>
+      </div>
+      <button type="button" id="library-picker-close" class="grid h-9 w-9 place-items-center rounded-full bg-[#eef0eb] text-xl hover:bg-[#e4e7e0]">×</button>
+    </div>
+    <div id="library-picker-content" class="mt-4 grid max-h-[62vh] grid-cols-2 sm:grid-cols-4 gap-3 overflow-y-auto">
+      <p class="col-span-full py-10 text-center text-xs text-gray-400">Loading images…</p>
+    </div>
+  </dialog>
+
+  <!-- Toast Notification -->
   <div id="toast" class="fixed bottom-5 left-1/2 z-[60] hidden -translate-x-1/2 rounded-full bg-[#182e22] px-5 py-3 text-xs font-semibold text-white shadow-xl"></div>
-  <div id="admin-exit-layer" class="fixed inset-0 z-[100] hidden items-center justify-center bg-[#13241b]/55 p-5" role="presentation"><section role="dialog" aria-modal="true" aria-labelledby="admin-exit-title" class="w-full max-w-sm rounded-3xl bg-[#fbfcf9] p-6 text-center shadow-2xl"><div class="mx-auto grid h-12 w-12 place-items-center rounded-full bg-[#f2eee4] text-xl text-[#8a7045]">?</div><h2 id="admin-exit-title" class="mt-4 text-lg font-extrabold text-[#24342b]">Leave admin?</h2><p class="mt-2 text-sm text-[#69746d]">Are you sure you want to exit the admin workspace?</p><div class="mt-6 grid grid-cols-2 gap-3"><button id="admin-exit-stay" class="rounded-xl border border-[#dce1d9] px-4 py-3 text-sm font-bold text-[#536058]">Stay here</button><button id="admin-exit-confirm" class="rounded-xl bg-[#193528] px-4 py-3 text-sm font-bold text-white">Exit</button></div></section></div>
+
+  <!-- Admin Exit Guard Dialog -->
+  <div id="admin-exit-layer" class="fixed inset-0 z-[100] hidden items-center justify-center bg-[#13241b]/55 p-5" role="presentation">
+    <section role="dialog" aria-modal="true" aria-labelledby="admin-exit-title" class="w-full max-w-sm rounded-3xl bg-[#fbfcf9] p-6 text-center shadow-2xl">
+      <div class="mx-auto grid h-12 w-12 place-items-center rounded-full bg-[#f2eee4] text-xl text-[#8a7045]">?</div>
+      <h2 id="admin-exit-title" class="mt-4 text-lg font-extrabold text-[#24342b]">Leave Admin Studio?</h2>
+      <p class="mt-2 text-sm text-[#69746d]">Are you sure you want to exit the admin workspace?</p>
+      <div class="mt-6 grid grid-cols-2 gap-3">
+        <button id="admin-exit-stay" class="rounded-xl border border-[#dce1d9] px-4 py-3 text-sm font-bold text-[#536058] hover:bg-gray-50">Stay here</button>
+        <button id="admin-exit-confirm" class="rounded-xl bg-[#193528] px-4 py-3 text-sm font-bold text-white hover:bg-[#254937]">Exit</button>
+      </div>
+    </section>
+  </div>
+
+  <!-- Hidden global upload inputs -->
   <input id="product-local-files" type="file" accept="image/*" multiple class="hidden">
-  <script>
-    document.addEventListener('change',async e=>{
-      if(e.target.id!=='product-local-files')return;
-      e.stopImmediatePropagation();
-      const files=[...e.target.files];e.target.value='';
-      const area=document.querySelector('[name="images"]');
-      if(!area)return;
-      const current=area.value.split('\n').filter(Boolean);
-      for(const file of files){
-        if(!file.type.startsWith('image/')){alert(`${file.name} is not an image`);continue}
-        if(file.size>4*1024*1024){alert(`${file.name} exceeds the 4 MB limit`);continue}
-        const path=`products/${Date.now()}-${Math.random().toString(36).slice(2,8)}-${files.indexOf(file)}`;
-        try{const {error}=await db.storage.from('product-images').upload(path,file,{contentType:file.type});if(error)throw error;current.push(db.storage.from('product-images').getPublicUrl(path).data.publicUrl)}catch(error){alert(error.message);break}
-      }
-      area.value=current.join('\n');
-      const grid=document.querySelector('#product-image-grid');
-      if(grid)grid.innerHTML=current.map((url,i)=>`<div class="relative overflow-hidden rounded-xl border"><img src="${esc(url)}" alt="Product photo ${i+1}" class="aspect-square w-full object-cover"><button type="button" data-remove-product-image="${i}" class="absolute right-1 top-1 rounded-full bg-white px-2 py-1 text-rose-700">×</button></div>`).join('');
-    },true);
-    document.addEventListener('click',e=>{
-      const button=e.target.closest('[data-remove-product-image]');
-      if(!button)return;
-      e.stopImmediatePropagation();
-      const area=document.querySelector('[name="images"]');
-      const images=area.value.split('\n').filter(Boolean);
-      images.splice(Number(button.dataset.removeProductImage),1);
-      area.value=images.join('\n');
-      const grid=document.querySelector('#product-image-grid');
-      grid.innerHTML=images.map((url,i)=>`<div class="relative overflow-hidden rounded-xl border"><img src="${esc(url)}" alt="Product photo ${i+1}" class="aspect-square w-full object-cover"><button type="button" data-remove-product-image="${i}" class="absolute right-1 top-1 rounded-full bg-white px-2 py-1 text-rose-700">×</button></div>`).join('')||'<p class="col-span-full p-5 text-center text-xs">No product photos yet.</p>';
-    },true);
-  </script>
+  <input id="custom-image-file-input" type="file" accept="image/*" class="hidden">
 
   <script>
     const SUPABASE_URL='https://hjogdvqwwbgzgwtdlrak.supabase.co';
@@ -98,16 +175,61 @@
     const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
     const fmt=n=>'₹'+Number(n||0).toLocaleString('en-IN');
     const date=v=>v?new Date(v).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}):'—';
-    let section='overview',products=[],categories=[],orders=[],reviews=[],coupons=[],settings={},editing={},mediaItems=[];
+
+    let section='overview', products=[], categories=[], orders=[], reviews=[], coupons=[], settings={}, editing={}, mediaItems=[];
+    let currentStorefrontSubTab='header';
+    let targetImageFieldId = null;
+
     const sectionHistory=['overview'];
-    let restoringAdminHistory=false;
-    const sections=[['overview','Overview','⌂'],['products','Products','◇'],['orders','Orders','▣'],['categories','Categories','◈'],['reviews','Reviews','☆'],['coupons','Coupons','％'],['content','Store content','▤'],['media','Media library','▧'],['data','Data manager','⌘']];
+    const sections=[
+      ['overview','Overview','⌂'],
+      ['storefront','Website Studio','✎'],
+      ['products','Products','◇'],
+      ['orders','Orders','▣'],
+      ['categories','Categories','◈'],
+      ['reviews','Reviews','☆'],
+      ['coupons','Coupons','％'],
+      ['media','Media library','▧'],
+      ['data','Data manager','⌘']
+    ];
+
     const nav=$('#navigation');
-    nav.innerHTML=sections.map(([id,label,icon])=>`<button data-section="${id}" class="nav-item flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-xs font-semibold text-white/60 transition hover:bg-white/5 hover:text-white"><span class="grid h-6 w-6 place-items-center text-base">${icon}</span>${label}<span data-count="${id}" class="ml-auto hidden rounded-full bg-white/10 px-2 py-0.5 text-[9px]"></span></button>`).join('');
-    const toast=message=>{const el=$('#toast');el.textContent=message;el.classList.remove('hidden');clearTimeout(el._timer);el._timer=setTimeout(()=>el.classList.add('hidden'),2600)};
-    function closeSidebar(){$('#sidebar').classList.add('-translate-x-full');$('#sidebar-backdrop').classList.add('hidden')}
-    function setSection(id,fromHistory=false){if(id===section)return;if(!fromHistory){sectionHistory.push(id);history.pushState({adminSection:id},'',location.href)}section=id;const s=sections.find(x=>x[0]===id)||sections[0];$('#page-title').textContent=s[1];$('#crumb').textContent=s[1].toUpperCase();nav.querySelectorAll('.nav-item').forEach(b=>b.className=`nav-item flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-xs font-semibold transition ${b.dataset.section===id?'bg-[#294537] text-white shadow-inner':'text-white/60 hover:bg-white/5 hover:text-white'}`);closeSidebar();render()}
-    let adminExitFromPop=false,adminGuardReady=false;
+    nav.innerHTML=sections.map(([id,label,icon])=>`
+      <button data-section="${id}" class="nav-item flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-xs font-semibold text-white/60 transition hover:bg-white/5 hover:text-white">
+        <span class="grid h-6 w-6 place-items-center text-base">${icon}</span>
+        ${label}
+        <span data-count="${id}" class="ml-auto hidden rounded-full bg-white/10 px-2 py-0.5 text-[9px]"></span>
+      </button>`).join('');
+
+    const toast=message=>{
+      const el=$('#toast');
+      el.textContent=message;
+      el.classList.remove('hidden');
+      clearTimeout(el._timer);
+      el._timer=setTimeout(()=>el.classList.add('hidden'),2600);
+    };
+
+    function closeSidebar(){
+      $('#sidebar').classList.add('-translate-x-full');
+      $('#sidebar-backdrop').classList.add('hidden');
+    }
+
+    function setSection(id,fromHistory=false){
+      if(id===section)return;
+      if(!fromHistory){
+        sectionHistory.push(id);
+        history.pushState({adminSection:id},'',location.href);
+      }
+      section=id;
+      const s=sections.find(x=>x[0]===id)||sections[0];
+      $('#page-title').textContent=s[1];
+      $('#crumb').textContent=s[1].toUpperCase();
+      nav.querySelectorAll('.nav-item').forEach(b=>b.className=`nav-item flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-xs font-semibold transition ${b.dataset.section===id?'bg-[#294537] text-white shadow-inner':'text-white/60 hover:bg-white/5 hover:text-white'}`);
+      closeSidebar();
+      render();
+    }
+
+    let adminExitFromPop=false, adminGuardReady=false;
     function armAdminExitGuard(){if(!history.state?.adminGuard)history.pushState({adminSection:section,adminGuard:true},'',location.href)}
     function showAdminExit(fromPop=false){adminExitFromPop=fromPop;const dialog=$('#admin-exit-layer');dialog.classList.remove('hidden');dialog.classList.add('flex');$('#admin-exit-stay').focus()}
     function hideAdminExit(){const dialog=$('#admin-exit-layer');dialog.classList.add('hidden');dialog.classList.remove('flex')}
@@ -115,7 +237,21 @@
     $('#admin-exit-stay').onclick=()=>{hideAdminExit();if(adminExitFromPop)armAdminExitGuard();adminExitFromPop=false};
     $('#admin-exit-layer').onclick=e=>{if(e.target===e.currentTarget)$('#admin-exit-stay').click()};
     $('#admin-exit-confirm').onclick=()=>{const steps=adminExitFromPop?1:2;hideAdminExit();history.go(-steps)};
-    window.addEventListener('popstate',event=>{if(sectionHistory.length>1){if(event.state?.adminSection){if(sectionHistory[sectionHistory.length-2]===event.state.adminSection)sectionHistory.pop();else sectionHistory.push(event.state.adminSection);setSection(event.state.adminSection,true)}else{sectionHistory.pop();setSection(sectionHistory[sectionHistory.length-1],true)}return}showAdminExit(true)});
+    window.addEventListener('popstate',event=>{
+      if(sectionHistory.length>1){
+        if(event.state?.adminSection){
+          if(sectionHistory[sectionHistory.length-2]===event.state.adminSection)sectionHistory.pop();
+          else sectionHistory.push(event.state.adminSection);
+          setSection(event.state.adminSection,true);
+        }else{
+          sectionHistory.pop();
+          setSection(sectionHistory[sectionHistory.length-1],true);
+        }
+        return;
+      }
+      showAdminExit(true);
+    });
+
     async function loadAll(){
       const [pr,ca,or,re,co,se]=await Promise.all([
         db.from('products').select('*').order('created_at',{ascending:false}),
@@ -125,109 +261,1306 @@
         db.from('coupons').select('*').limit(200),
         db.from('store_settings').select('*')
       ]);
-      products=pr.error?[]:pr.data||[];categories=ca.error?[]:ca.data||[];orders=or.error?[]:or.data||[];reviews=re.error?[]:re.data||[];coupons=co.error?[]:co.data||[];settings=Object.fromEntries((se.data||[]).map(x=>[x.key,x.value]));
-      [['products',products],['orders',orders],['categories',categories],['reviews',reviews],['coupons',coupons]].forEach(([id,rows])=>{const badge=document.querySelector(`[data-count="${id}"]`);if(badge){badge.textContent=rows.length;badge.classList.toggle('hidden',!rows.length)}});
+      products=pr.error?[]:pr.data||[];
+      categories=ca.error?[]:ca.data||[];
+      orders=or.error?[]:or.data||[];
+      reviews=re.error?[]:re.data||[];
+      coupons=co.error?[]:co.data||[];
+      settings=Object.fromEntries((se.data||[]).map(x=>[x.key,x.value]));
+
+      [['products',products],['orders',orders],['categories',categories],['reviews',reviews],['coupons',coupons]].forEach(([id,rows])=>{
+        const badge=document.querySelector(`[data-count="${id}"]`);
+        if(badge){
+          badge.textContent=rows.length;
+          badge.classList.toggle('hidden',!rows.length);
+        }
+      });
       render();
     }
-    const card=(label,value,sub,icon)=>`<div class="rounded-2xl border border-[#e8eae4] bg-white p-5 shadow-[0_8px_24px_rgba(30,49,37,.035)]"><div class="flex items-start justify-between"><span class="text-xs font-semibold text-[#778178]">${label}</span><span class="grid h-9 w-9 place-items-center rounded-xl bg-[#f0f3ed] text-[#536a59]">${icon}</span></div><p class="mt-4 text-3xl font-extrabold tracking-tight text-[#203429]">${value}</p><p class="mt-1 text-[11px] text-[#89928a]">${sub}</p></div>`;
+
+    const card=(label,value,sub,icon)=>`
+      <div class="rounded-2xl border border-[#e8eae4] bg-white p-5 shadow-[0_8px_24px_rgba(30,49,37,.035)]">
+        <div class="flex items-start justify-between">
+          <span class="text-xs font-semibold text-[#778178]">${label}</span>
+          <span class="grid h-9 w-9 place-items-center rounded-xl bg-[#f0f3ed] text-[#536a59]">${icon}</span>
+        </div>
+        <p class="mt-4 text-3xl font-extrabold tracking-tight text-[#203429]">${value}</p>
+        <p class="mt-1 text-[11px] text-[#89928a]">${sub}</p>
+      </div>`;
+
     function render(){
       view.className='fade-in';
-      if(section==='overview')renderOverview();else if(section==='products')renderProducts();else if(section==='orders')renderOrders();else if(section==='categories')renderCategories();else if(section==='reviews')renderReviews();else if(section==='coupons')renderCoupons();else if(section==='content')renderContent();else if(section==='media')renderMedia();else renderData();
+      if(section==='overview')renderOverview();
+      else if(section==='storefront')renderStorefrontCMS();
+      else if(section==='products')renderProducts();
+      else if(section==='orders')renderOrders();
+      else if(section==='categories')renderCategories();
+      else if(section==='reviews')renderReviews();
+      else if(section==='coupons')renderCoupons();
+      else if(section==='media')renderMedia();
+      else renderData();
     }
+
+    /* ===== OVERVIEW ===== */
+    function renderOverview(){
+      const revenue=orders.filter(o=>o.order_status!=='cancelled').reduce((s,o)=>s+Number(o.total||0),0);
+      const pending=orders.filter(o=>o.order_status==='pending').length;
+      const low=products.filter(p=>Number(p.stock||0)<5).length;
+
+      view.innerHTML=`
+        <div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+          <div>
+            <p class="text-[10px] font-bold uppercase tracking-[.19em] text-[#9a8057]">Store pulse</p>
+            <h2 class="mt-2 text-2xl font-extrabold tracking-tight text-[#21342a]">Good day, admin.</h2>
+            <p class="mt-1 text-sm text-[#758078]">Monitor store activity or customize any section of your website.</p>
+          </div>
+          <div class="flex gap-2">
+            <button data-go="storefront" class="rounded-xl bg-[#193528] px-4 py-2.5 text-xs font-bold text-white shadow-md hover:bg-[#254937]">✎ Customize Website</button>
+            <button data-action="refresh" class="rounded-xl border border-[#dfe4dc] bg-white px-4 py-2.5 text-xs font-bold text-[#48564d] hover:bg-[#f8faf6]">↻ Refresh</button>
+          </div>
+        </div>
+        <div class="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          ${card('Gross order value',fmt(revenue),'From loaded orders','₹')}
+          ${card('Orders',orders.length,'Recent 250 orders','▣')}
+          ${card('Needs attention',pending,'Pending confirmation','!')}
+          ${card('Low stock',low,'Products under 5 pcs','◇')}
+        </div>
+        <div class="mt-6 grid gap-5 xl:grid-cols-[1.4fr_.8fr]">
+          <section class="rounded-2xl border border-[#e8eae4] bg-white p-5">
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="text-sm font-extrabold text-[#25372d]">Recent orders</h3>
+                <p class="mt-1 text-xs text-[#89928a]">Latest activity from your customers</p>
+              </div>
+              <button data-go="orders" class="text-xs font-bold text-[#617864] hover:underline">All orders →</button>
+            </div>
+            ${orders.length?`
+              <div class="mt-4 divide-y divide-[#eff0ec]">
+                ${orders.slice(0,6).map(o=>`
+                  <div class="flex items-center justify-between gap-3 py-3">
+                    <div class="min-w-0">
+                      <p class="truncate text-xs font-bold text-[#28382f]">${esc(o.name||o.customer_name||o.phone||'Customer')}</p>
+                      <p class="mt-1 text-[10px] text-[#8b938c]">#${esc(String(o.id).slice(0,8).toUpperCase())} · ${date(o.created_at)}</p>
+                    </div>
+                    <div class="text-right">
+                      <b class="text-xs text-[#28382f]">${fmt(o.total)}</b>
+                      <span class="mt-1 block text-[9px] font-bold uppercase tracking-wide text-[#68796c]">${esc(o.order_status||'pending')}</span>
+                    </div>
+                  </div>`).join('')}
+              </div>`:'<p class="py-12 text-center text-xs text-[#909990]">No orders found.</p>'}
+          </section>
+
+          <section class="rounded-2xl border border-[#e8eae4] bg-white p-5">
+            <h3 class="text-sm font-extrabold text-[#25372d]">Website Management Shortcuts</h3>
+            <p class="mt-1 text-xs text-[#89928a]">Jump straight to editing any storefront feature</p>
+            <div class="mt-4 space-y-2">
+              ${[
+                ['storefront','✎','Edit Home Banner & Model Photo'],
+                ['storefront','◈','Edit Featured Categories & Grid'],
+                ['storefront','🛍','Edit Shop Filters & Fabrics'],
+                ['products','＋','Add a New Saree to Catalog'],
+                ['orders','↗','Review Customer Orders & Tracking']
+              ].map(([id,ic,label])=>`
+                <button data-go="${id}" class="flex w-full items-center gap-3 rounded-xl border border-[#eef0eb] p-3 text-left hover:bg-[#f8faf6] transition">
+                  <span class="grid h-8 w-8 place-items-center rounded-lg bg-[#eff3ed] text-[#5c705f]">${ic}</span>
+                  <span class="text-xs font-semibold text-[#39483e]">${label}</span>
+                  <span class="ml-auto text-[#9aa199]">→</span>
+                </button>`).join('')}
+            </div>
+          </section>
+        </div>`;
+    }
+
+    /* ===== WEBSITE STUDIO / FULL CMS (USER FRIENDLY - NO CODE) ===== */
+    const defaultSettings={
+      brand:{name:'Thaarai Tex',tagline:'Pure Sarees & Handloom',logo:''},
+      header:{searchPlaceholder:'சேலைகளைத் தேடுங்கள்… Search sarees',showShopLink:true,shopLinkLabel:'Shop'},
+      hero:{
+        eyebrow:'THAARAI TEX · HANDLOOM EDITION',
+        title:'A legacy woven into every thread',
+        subtitle:'Discover handpicked authentic sarees, crafted with the art and patience of master weavers.',
+        button:'Explore the collection',
+        buttonLink:'#/shop',
+        secButton:'View all sarees',
+        secButtonLink:'#/shop',
+        image:'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80',
+        badge:'HANDLOOM · EST. WITH CARE'
+      },
+      home_categories:[
+        { name: 'Sarees', subtitle: 'Exclusive Handloom', image: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=600&q=80', query: 'Sarees' },
+        { name: 'Lungies', subtitle: 'Comfort & Heritage', image: 'https://images.unsplash.com/photo-1583394838336-acd977736f90?auto=format&fit=crop&w=600&q=80', query: 'Lungies' },
+        { name: 'Soft Silk', subtitle: 'Royal & Elegant', image: 'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=600&q=80', query: 'Soft Silk' },
+        { name: 'Poonam', subtitle: 'Daily & Party Wear', image: 'https://images.unsplash.com/photo-1606760227091-3dd870d97f1d?auto=format&fit=crop&w=600&q=80', query: 'Poonam' },
+        { name: 'Pattu', subtitle: 'Traditional Grandeur', image: 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=600&q=80', query: 'Pattu' },
+        { name: 'Cotton', subtitle: 'Breathable Pure Weave', image: 'https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?auto=format&fit=crop&w=600&q=80', query: 'Cotton' }
+      ],
+      about:{
+        badge:'Authentic Weaves',
+        title:'Crafted with Tradition',
+        text:'Thaarai Tex brings you handpicked, authentic handloom sarees directly from traditional weavers. Every piece reflects meticulous artistry, premium fabrics, and timeless elegance.',
+        button:'Explore Collections',
+        buttonLink:'#/shop',
+        image:'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80'
+      },
+      trust_badges:[
+        {title: 'Free Delivery', desc: 'Direct to doorstep'},
+        {title: 'Cash on Delivery', desc: 'Pay when you receive'},
+        {title: 'Wholesale Price', desc: 'Direct weaver rates'},
+        {title: '100% Handloom', desc: 'Pure authentic quality'}
+      ],
+      shop_ui:{
+        title:'The collection',
+        subtitle:'Explore our finest handwoven selections',
+        fabrics:['Silk','Cotton','Semi Silk','Linen'],
+        sortNewest:'Newest Arrivals',
+        sortLow:'Price: Low to High',
+        sortHigh:'Price: High to Low',
+        emptyText:'பொருட்கள் எதுவும் இல்லை. No products found.'
+      },
+      account_ui:{
+        title:'Your Profile Details',
+        subtitle:'உங்கள் பெயர் மற்றும் மொபைல் எண்ணை உள்ளிடவும்.',
+        supportText:'Contact support on WhatsApp',
+        emptyOrders:'No orders yet. Start shopping'
+      },
+      footer:{
+        about:'Handloom sarees direct from the weavers.',
+        phone:'',
+        email:'',
+        address:'Melur, Tamil Nadu',
+        whatsapp:'919999999999',
+        upi:'yourname@upi',
+        upiName:'Thaarai Tex',
+        copyright:'© 2026 Thaarai Tex. All rights reserved.'
+      }
+    };
+
+    function imageField(id, label, value, hint=''){
+      return `
+        <div class="mt-4">
+          <label class="block text-xs font-bold text-[#34443a]">${label} ${hint?`<span class="font-normal text-[#808d82]">(${hint})</span>`:''}</label>
+          <div class="mt-2 flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+            <div class="h-14 w-14 shrink-0 rounded-xl border border-[#dce2d9] bg-[#f2f4f0] overflow-hidden flex items-center justify-center">
+              <img id="${id}-preview" src="${esc(value||'https://placehold.co/100?text=None')}" alt="Preview" class="h-full w-full object-cover">
+            </div>
+            <input id="${id}" value="${esc(value||'')}" oninput="document.getElementById('${id}-preview').src=this.value.trim()||'https://placehold.co/100?text=None'" placeholder="https://..." class="flex-1 rounded-xl border border-[#dfe4dc] bg-white px-3.5 py-2.5 text-xs outline-none focus:border-[#385844]">
+            <div class="flex gap-1.5 shrink-0">
+              <button type="button" onclick="uploadForField('${id}')" class="rounded-lg bg-[#193528] px-3 py-2 text-[10px] font-bold text-white hover:bg-[#254937]">Upload</button>
+              <button type="button" onclick="pickMediaForField('${id}')" class="rounded-lg border border-[#dce1d9] bg-white px-3 py-2 text-[10px] font-bold text-[#445248] hover:bg-gray-50">Library</button>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    function formText(id, label, value, placeholder=''){
+      return `
+        <label class="block mt-3.5 text-xs font-bold text-[#34443a]">${label}
+          <input id="${id}" value="${esc(value||'')}" placeholder="${esc(placeholder)}" class="mt-1.5 w-full rounded-xl border border-[#dfe4dc] bg-white px-3.5 py-2.5 text-xs outline-none focus:border-[#385844]">
+        </label>`;
+    }
+
+    function formArea(id, label, value, rows=3){
+      return `
+        <label class="block mt-3.5 text-xs font-bold text-[#34443a]">${label}
+          <textarea id="${id}" rows="${rows}" class="mt-1.5 w-full rounded-xl border border-[#dfe4dc] bg-white px-3.5 py-2.5 text-xs outline-none focus:border-[#385844]">${esc(value||'')}</textarea>
+        </label>`;
+    }
+
+    function renderStorefrontCMS(){
+      const subTabs = [
+        ['header','Header & Brand','🏷️'],
+        ['home','Home Page','🏠'],
+        ['shop','Shop Page','🛍️'],
+        ['orders_ui','Orders & Support','📦'],
+        ['profile_ui','Profile & Login','👤'],
+        ['footer','Footer & Contacts','📞']
+      ];
+
+      view.innerHTML=`
+        <div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+          <div>
+            <p class="text-[10px] font-bold uppercase tracking-[.19em] text-[#9a8057]">Visual Website Customizer</p>
+            <h2 class="mt-2 text-2xl font-extrabold text-[#21342a]">Website Studio</h2>
+            <p class="mt-1 text-sm text-[#758078]">Update any text, button, banner, model photo, or filter in the store without writing code.</p>
+          </div>
+          <div class="flex gap-2">
+            <a href="/" target="_blank" class="rounded-xl border border-[#dfe4dc] bg-white px-4 py-2.5 text-xs font-bold text-[#48564d] hover:bg-[#f8faf6]">Preview Live Store ↗</a>
+          </div>
+        </div>
+
+        <!-- Sub Tabs Navigation -->
+        <div class="mt-6 flex gap-2 overflow-x-auto border-b border-[#e5e8e2] pb-2 scrollbar-hide">
+          ${subTabs.map(([id,label,ic])=>`
+            <button onclick="setStorefrontSubTab('${id}')" class="flex shrink-0 items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold transition ${currentStorefrontSubTab===id?'bg-[#193528] text-white shadow':'bg-white text-[#56655a] border border-[#e2e6de] hover:bg-gray-50'}">
+              <span>${ic}</span> <span>${label}</span>
+            </button>`).join('')}
+        </div>
+
+        <div id="storefront-content" class="mt-6"></div>`;
+
+      renderStorefrontSubTabContent();
+    }
+
+    function setStorefrontSubTab(tab){
+      currentStorefrontSubTab=tab;
+      renderStorefrontCMS();
+    }
+
+    function renderStorefrontSubTabContent(){
+      const container=$('#storefront-content');
+      if(!container)return;
+
+      const b = settings.brand || defaultSettings.brand;
+      const h = settings.header || defaultSettings.header;
+      const hero = settings.hero || defaultSettings.hero;
+      const cats = Array.isArray(settings.home_categories) ? settings.home_categories : defaultSettings.home_categories;
+      const about = settings.about || defaultSettings.about;
+      const badges = Array.isArray(settings.trust_badges) ? settings.trust_badges : defaultSettings.trust_badges;
+      const shop = settings.shop_ui || defaultSettings.shop_ui;
+      const acc = settings.account_ui || defaultSettings.account_ui;
+      const f = settings.footer || defaultSettings.footer;
+
+      if(currentStorefrontSubTab==='header'){
+        container.innerHTML=`
+          <div class="grid gap-5 xl:grid-cols-2">
+            <section class="rounded-2xl border border-[#e7eae3] bg-white p-6 shadow-sm">
+              <h3 class="text-sm font-extrabold text-[#304137]">Store Identity</h3>
+              <p class="mt-1 text-xs text-[#808d83]">Brand name and tagline displayed on the header and browser tab.</p>
+              ${formText('brand-name','Store Brand Name',b.name,'e.g. Thaarai Tex')}
+              ${formText('brand-tagline','Tagline',b.tagline,'e.g. Pure Sarees & Handloom')}
+              ${imageField('brand-logo','Store Logo Image (Optional)',b.logo,'Shown in header if uploaded')}
+            </section>
+            <section class="rounded-2xl border border-[#e7eae3] bg-white p-6 shadow-sm">
+              <h3 class="text-sm font-extrabold text-[#304137]">Header Search & Navigation</h3>
+              <p class="mt-1 text-xs text-[#808d83]">Search prompt placeholder and header link preferences.</p>
+              ${formText('header-search','Search Input Placeholder',h.searchPlaceholder,'e.g. சேலைகளைத் தேடுங்கள்… Search sarees')}
+              ${formText('header-shop-text','Shop Link Text',h.shopLinkLabel||'Shop')}
+              <label class="mt-4 flex items-center gap-3 rounded-xl bg-[#f2f5ef] p-3.5 text-xs font-bold text-[#35483a] cursor-pointer">
+                <input id="header-shop-show" type="checkbox" ${h.showShopLink!==false?'checked':''} class="h-4 w-4 accent-[#29543b]">
+                Show "Shop" link in desktop top header
+              </label>
+            </section>
+          </div>
+          <button onclick="saveHeaderBrandSettings()" class="mt-6 rounded-xl bg-[#193528] px-6 py-3 text-xs font-bold text-white shadow-md hover:bg-[#254937]">Save Header & Brand</button>`;
+      }
+      else if(currentStorefrontSubTab==='home'){
+        container.innerHTML=`
+          <div class="space-y-6">
+            <!-- Hero Banner Box -->
+            <section class="rounded-2xl border border-[#e7eae3] bg-white p-6 shadow-sm">
+              <div class="flex items-center justify-between border-b pb-3">
+                <div>
+                  <h3 class="text-sm font-extrabold text-[#304137]">Black Premium Hero Banner</h3>
+                  <p class="mt-0.5 text-xs text-[#808d83]">Main spotlight on the home page with model cutout.</p>
+                </div>
+                <span class="rounded-full bg-[#f0f4ee] px-3 py-1 text-[10px] font-bold text-[#44664a]">Hero Section</span>
+              </div>
+              <div class="grid gap-4 sm:grid-cols-2 mt-2">
+                ${formText('hero-eyebrow','Eyebrow Pill',hero.eyebrow,'THAARAI TEX · HANDLOOM EDITION')}
+                ${formText('hero-badge','Top Right Badge Tagline',hero.badge,'HANDLOOM · EST. WITH CARE')}
+                <div class="sm:col-span-2">
+                  ${formText('hero-title','Headline Title',hero.title,'A legacy woven into every thread')}
+                </div>
+                <div class="sm:col-span-2">
+                  ${formArea('hero-subtitle','Subtitle Description',hero.subtitle,2)}
+                </div>
+                ${formText('hero-button','Primary Button Text',hero.button,'Explore the collection')}
+                ${formText('hero-button-link','Primary Button Link',hero.buttonLink,'#/shop')}
+                ${formText('hero-sec-button','Secondary Button Text',hero.secButton,'View all sarees')}
+                ${formText('hero-sec-button-link','Secondary Button Link',hero.secButtonLink,'#/shop')}
+              </div>
+              ${imageField('hero-image','Person / Model Cutout Image',hero.image,'Direct isolated photo of saree model. Smoothly blended into black banner.')}
+              <button onclick="saveHeroSettings()" class="mt-5 rounded-xl bg-[#193528] px-6 py-2.5 text-xs font-bold text-white shadow-md hover:bg-[#254937]">Save Hero Banner</button>
+            </section>
+
+            <!-- Featured Categories Grid -->
+            <section class="rounded-2xl border border-[#e7eae3] bg-white p-6 shadow-sm">
+              <div class="flex items-center justify-between border-b pb-3">
+                <div>
+                  <h3 class="text-sm font-extrabold text-[#304137]">Featured Categories (Home 6-Card Grid)</h3>
+                  <p class="mt-0.5 text-xs text-[#808d83]">Add, edit, or reorder the category photo cards shoppers see on the home page.</p>
+                </div>
+                <button type="button" onclick="addHomeCategoryCard()" class="rounded-lg bg-[#eff3ee] px-3 py-1.5 text-xs font-bold text-[#35533c] hover:bg-[#e4ede2]">＋ Add Category Card</button>
+              </div>
+              <div id="home-category-cards" class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                ${cats.map((c,idx)=>`
+                  <div class="home-cat-card rounded-xl border border-[#e4e8e0] bg-[#fafbf9] p-4">
+                    <div class="flex items-center justify-between pb-2 border-b">
+                      <b class="text-xs text-[#344638]">Card ${idx+1}</b>
+                      <button type="button" onclick="removeHomeCategoryCard(${idx})" class="text-[10px] font-bold text-rose-700 hover:underline">Remove</button>
+                    </div>
+                    ${formText(`hcat-${idx}-name`,'Category Name',c.name)}
+                    ${formText(`hcat-${idx}-sub`,'Subtitle',c.subtitle)}
+                    ${formText(`hcat-${idx}-query`,'Search Filter or Link',c.query)}
+                    ${imageField(`hcat-${idx}-img`,'Card Photo',c.image)}
+                  </div>`).join('')}
+              </div>
+              <button onclick="saveHomeCategoryCards()" class="mt-5 rounded-xl bg-[#193528] px-6 py-2.5 text-xs font-bold text-white shadow-md hover:bg-[#254937]">Save Category Cards</button>
+            </section>
+
+            <!-- Brand Story & Trust Badges -->
+            <div class="grid gap-6 xl:grid-cols-2">
+              <section class="rounded-2xl border border-[#e7eae3] bg-white p-6 shadow-sm">
+                <h3 class="text-sm font-extrabold text-[#304137]">Brand Story Section</h3>
+                <p class="mt-0.5 text-xs text-[#808d83]">Highlights weaver heritage and authenticity.</p>
+                ${formText('about-badge','Eyebrow Badge',about.badge||'Authentic Weaves')}
+                ${formText('about-title','Story Title',about.title||'Crafted with Tradition')}
+                ${formArea('about-text','Story Text',about.text||'',4)}
+                ${formText('about-btn','Button Label',about.button||'Explore Collections')}
+                ${formText('about-btn-link','Button Link',about.buttonLink||'#/shop')}
+                ${imageField('about-image','Story Showcase Image',about.image||'')}
+                <button onclick="saveAboutSettings()" class="mt-5 rounded-xl bg-[#193528] px-6 py-2.5 text-xs font-bold text-white shadow-md hover:bg-[#254937]">Save Brand Story</button>
+              </section>
+
+              <section class="rounded-2xl border border-[#e7eae3] bg-white p-6 shadow-sm">
+                <h3 class="text-sm font-extrabold text-[#304137]">4 Trust Badges</h3>
+                <p class="mt-0.5 text-xs text-[#808d83]">Reassurance icons shown at the bottom of the home page.</p>
+                <div class="mt-3 space-y-3">
+                  ${badges.slice(0,4).map((b,i)=>`
+                    <div class="rounded-xl border border-[#e7ebe3] p-3 bg-[#fafbf9]">
+                      <b class="text-[10px] text-[#6b7b6e]">Badge ${i+1}</b>
+                      <div class="grid grid-cols-2 gap-2 mt-1">
+                        <input id="badge-${i}-title" value="${esc(b.title||'')}" placeholder="Title" class="rounded-lg border border-[#dfe4dc] px-2.5 py-1.5 text-xs">
+                        <input id="badge-${i}-desc" value="${esc(b.desc||'')}" placeholder="Description" class="rounded-lg border border-[#dfe4dc] px-2.5 py-1.5 text-xs">
+                      </div>
+                    </div>`).join('')}
+                </div>
+                <button onclick="saveTrustBadges()" class="mt-5 rounded-xl bg-[#193528] px-6 py-2.5 text-xs font-bold text-white shadow-md hover:bg-[#254937]">Save Trust Badges</button>
+              </section>
+            </div>
+          </div>`;
+      }
+      else if(currentStorefrontSubTab==='shop'){
+        const fabrics = Array.isArray(shop.fabrics) ? shop.fabrics : ['Silk','Cotton','Semi Silk','Linen'];
+        container.innerHTML=`
+          <div class="grid gap-6 xl:grid-cols-2">
+            <section class="rounded-2xl border border-[#e7eae3] bg-white p-6 shadow-sm">
+              <h3 class="text-sm font-extrabold text-[#304137]">Shop Page Headlines</h3>
+              <p class="mt-0.5 text-xs text-[#808d83]">Labels shown in the filter sidebar and catalog top bar.</p>
+              ${formText('shop-title','Shop Filter Drawer Heading',shop.title||'Filter')}
+              ${formText('shop-subtitle','Shop Subtitle',shop.subtitle||'Explore our finest handwoven selections')}
+              ${formText('shop-empty','Empty Products Notice',shop.emptyText||'பொருட்கள் எதுவும் இல்லை. No products found.')}
+            </section>
+
+            <section class="rounded-2xl border border-[#e7eae3] bg-white p-6 shadow-sm">
+              <h3 class="text-sm font-extrabold text-[#304137]">Fabric Filter Pills</h3>
+              <p class="mt-0.5 text-xs text-[#808d83]">Shoppers click these pills in the shop sidebar to filter by saree fabric.</p>
+              <div id="fabric-pills-list" class="mt-3 flex flex-wrap gap-2">
+                ${fabrics.map((fb,i)=>`
+                  <span class="inline-flex items-center gap-1.5 rounded-full bg-[#f0f4ee] px-3 py-1.5 text-xs font-bold text-[#35523d] border border-[#dbe3d8]">
+                    <span>${esc(fb)}</span>
+                    <button type="button" onclick="removeFabricPill(${i})" class="text-rose-600 hover:text-rose-800 text-sm">×</button>
+                  </span>`).join('')}
+              </div>
+              <div class="mt-4 flex gap-2">
+                <input id="new-fabric-input" placeholder="e.g. Kanchipuram, Banarasi, Tissue" class="flex-1 rounded-xl border border-[#dfe4dc] px-3.5 py-2 text-xs">
+                <button type="button" onclick="addFabricPill()" class="rounded-xl bg-[#193528] px-4 py-2 text-xs font-bold text-white hover:bg-[#254937]">＋ Add Fabric</button>
+              </div>
+            </section>
+
+            <section class="rounded-2xl border border-[#e7eae3] bg-white p-6 shadow-sm xl:col-span-2">
+              <h3 class="text-sm font-extrabold text-[#304137]">Sort Options Display Labels</h3>
+              <div class="mt-3 grid gap-3 sm:grid-cols-3">
+                ${formText('shop-sort-new','Newest Arrivals Label',shop.sortNewest||'Newest Arrivals')}
+                ${formText('shop-sort-low','Price: Low to High Label',shop.sortLow||'Price: Low to High')}
+                ${formText('shop-sort-high','Price: High to Low Label',shop.sortHigh||'Price: High to Low')}
+              </div>
+            </section>
+          </div>
+          <button onclick="saveShopUISettings()" class="mt-6 rounded-xl bg-[#193528] px-6 py-3 text-xs font-bold text-white shadow-md hover:bg-[#254937]">Save Shop Options</button>`;
+      }
+      else if(currentStorefrontSubTab==='orders_ui'){
+        container.innerHTML=`
+          <div class="grid gap-6 xl:grid-cols-2">
+            <section class="rounded-2xl border border-[#e7eae3] bg-white p-6 shadow-sm">
+              <h3 class="text-sm font-extrabold text-[#304137]">Customer Orders & WhatsApp Support</h3>
+              <p class="mt-0.5 text-xs text-[#808d83]">Texts displayed in order history and customer support links.</p>
+              ${formText('order-support-text','WhatsApp Support Button Label',acc.supportText||'Contact support on WhatsApp')}
+              ${formText('order-empty-msg','Empty Orders List Message',acc.emptyOrders||'No orders yet. Start shopping')}
+            </section>
+          </div>
+          <button onclick="saveOrdersUISettings()" class="mt-6 rounded-xl bg-[#193528] px-6 py-3 text-xs font-bold text-white shadow-md hover:bg-[#254937]">Save Orders Settings</button>`;
+      }
+      else if(currentStorefrontSubTab==='profile_ui'){
+        container.innerHTML=`
+          <div class="grid gap-6 xl:grid-cols-2">
+            <section class="rounded-2xl border border-[#e7eae3] bg-white p-6 shadow-sm">
+              <h3 class="text-sm font-extrabold text-[#304137]">Customer Login & Profile</h3>
+              <p class="mt-0.5 text-xs text-[#808d83]">Prompt texts displayed when a customer logs in with mobile number.</p>
+              ${formText('acc-title','Login Screen Title',acc.title||'Login')}
+              ${formText('acc-subtitle','Login Screen Subtitle (Tamil/English)',acc.subtitle||'உங்கள் பெயர் மற்றும் மொபைல் எண்ணை உள்ளிடவும்.')}
+            </section>
+          </div>
+          <button onclick="saveProfileUISettings()" class="mt-6 rounded-xl bg-[#193528] px-6 py-3 text-xs font-bold text-white shadow-md hover:bg-[#254937]">Save Profile & Login Settings</button>`;
+      }
+      else if(currentStorefrontSubTab==='footer'){
+        container.innerHTML=`
+          <div class="grid gap-6 xl:grid-cols-2">
+            <section class="rounded-2xl border border-[#e7eae3] bg-white p-6 shadow-sm">
+              <h3 class="text-sm font-extrabold text-[#304137]">Store Contact & Location</h3>
+              <p class="mt-0.5 text-xs text-[#808d83]">Customer support numbers, email and weaver address.</p>
+              ${formArea('footer-about','Footer Brand Blurb',f.about||'',3)}
+              ${formText('footer-phone','Customer Care Phone',f.phone||'')}
+              ${formText('footer-email','Official Email',f.email||'')}
+              ${formText('footer-address','Physical Store / Weaver Address',f.address||'Melur, Tamil Nadu')}
+              ${formText('footer-whatsapp','WhatsApp Order Number (with Country Code)',f.whatsapp||'919999999999','e.g. 919876543210')}
+              ${formText('footer-copyright','Copyright Notice Text',f.copyright||`© ${new Date().getFullYear()} Thaarai Tex. All rights reserved.`)}
+            </section>
+
+            <section class="rounded-2xl border border-[#e7eae3] bg-white p-6 shadow-sm">
+              <h3 class="text-sm font-extrabold text-[#304137]">UPI Payment Details (Instant QR Code)</h3>
+              <p class="mt-0.5 text-xs text-[#808d83]">These are used during checkout to automatically generate the dynamic UPI QR code.</p>
+              ${formText('footer-upi','Store UPI ID (VPA)',f.upi||'yourname@upi','e.g. shopname@okaxis or 9876543210@upi')}
+              ${formText('footer-upiname','UPI Payee Name',f.upiName||'Thaarai Tex','e.g. Thaarai Tex Handlooms')}
+              <div class="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-xs leading-5 text-emerald-900">
+                <b>💡 How it works:</b> During checkout, when a customer picks "Pay Online (UPI)", a QR code is generated using this UPI ID and the exact order total for one-scan payments.
+              </div>
+            </section>
+          </div>
+          <button onclick="saveFooterSettings()" class="mt-6 rounded-xl bg-[#193528] px-6 py-3 text-xs font-bold text-white shadow-md hover:bg-[#254937]">Save Footer & Contacts</button>`;
+      }
+    }
+
+    /* Save Handlers for Storefront Customizer */
+    async function persistSetting(key, value){
+      try{
+        const {error}=await db.from('store_settings').upsert({key, value, updated_at:new Date().toISOString()});
+        if(error)throw error;
+        settings[key]=value;
+        toast('Website updated successfully ✓');
+      }catch(err){
+        toast(err.message||'Could not save changes');
+      }
+    }
+
+    async function saveHeaderBrandSettings(){
+      const brand={
+        name:$('#brand-name').value.trim()||defaultSettings.brand.name,
+        tagline:$('#brand-tagline').value.trim()||defaultSettings.brand.tagline,
+        logo:$('#brand-logo').value.trim()
+      };
+      const header={
+        searchPlaceholder:$('#header-search').value.trim()||defaultSettings.header.searchPlaceholder,
+        showShopLink:$('#header-shop-show').checked,
+        shopLinkLabel:$('#header-shop-text').value.trim()||'Shop'
+      };
+      await Promise.all([persistSetting('brand',brand), persistSetting('header',header)]);
+    }
+
+    async function saveHeroSettings(){
+      const hero={
+        eyebrow:$('#hero-eyebrow').value.trim(),
+        title:$('#hero-title').value.trim(),
+        subtitle:$('#hero-subtitle').value.trim(),
+        button:$('#hero-button').value.trim(),
+        buttonLink:$('#hero-button-link').value.trim()||'#/shop',
+        secButton:$('#hero-sec-button').value.trim(),
+        secButtonLink:$('#hero-sec-button-link').value.trim()||'#/shop',
+        image:$('#hero-image').value.trim(),
+        badge:$('#hero-badge').value.trim()
+      };
+      await persistSetting('hero',hero);
+    }
+
+    function addHomeCategoryCard(){
+      const cats=Array.isArray(settings.home_categories)?settings.home_categories:[...defaultSettings.home_categories];
+      cats.push({name:'New Collection',subtitle:'Handcrafted Weave',image:'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=600&q=80',query:'New'});
+      settings.home_categories=cats;
+      renderStorefrontSubTabContent();
+    }
+
+    function removeHomeCategoryCard(index){
+      const cats=Array.isArray(settings.home_categories)?settings.home_categories:[...defaultSettings.home_categories];
+      cats.splice(index,1);
+      settings.home_categories=cats;
+      renderStorefrontSubTabContent();
+    }
+
+    async function saveHomeCategoryCards(){
+      const cards=[...document.querySelectorAll('.home-cat-card')].map((el,i)=>({
+        name:el.querySelector(`#hcat-${i}-name`)?.value.trim()||'Category',
+        subtitle:el.querySelector(`#hcat-${i}-sub`)?.value.trim()||'',
+        query:el.querySelector(`#hcat-${i}-query`)?.value.trim()||'',
+        image:el.querySelector(`#hcat-${i}-img`)?.value.trim()||''
+      }));
+      await persistSetting('home_categories',cards);
+    }
+
+    async function saveAboutSettings(){
+      const about={
+        badge:$('#about-badge').value.trim(),
+        title:$('#about-title').value.trim(),
+        text:$('#about-text').value.trim(),
+        button:$('#about-btn').value.trim(),
+        buttonLink:$('#about-btn-link').value.trim(),
+        image:$('#about-image').value.trim()
+      };
+      await persistSetting('about',about);
+    }
+
+    async function saveTrustBadges(){
+      const badges=[0,1,2,3].map(i=>({
+        title:$(`#badge-${i}-title`)?.value.trim()||'',
+        desc:$(`#badge-${i}-desc`)?.value.trim()||''
+      }));
+      await persistSetting('trust_badges',badges);
+    }
+
+    function addFabricPill(){
+      const input=$('#new-fabric-input');
+      const val=input.value.trim();
+      if(!val)return;
+      const shop=settings.shop_ui||defaultSettings.shop_ui;
+      const list=Array.isArray(shop.fabrics)?[...shop.fabrics]:[...defaultSettings.shop_ui.fabrics];
+      if(!list.includes(val)){
+        list.push(val);
+        shop.fabrics=list;
+        settings.shop_ui=shop;
+        renderStorefrontSubTabContent();
+      }
+      input.value='';
+    }
+
+    function removeFabricPill(index){
+      const shop=settings.shop_ui||defaultSettings.shop_ui;
+      const list=Array.isArray(shop.fabrics)?[...shop.fabrics]:[...defaultSettings.shop_ui.fabrics];
+      list.splice(index,1);
+      shop.fabrics=list;
+      settings.shop_ui=shop;
+      renderStorefrontSubTabContent();
+    }
+
+    async function saveShopUISettings(){
+      const shop=settings.shop_ui||defaultSettings.shop_ui;
+      shop.title=$('#shop-title').value.trim();
+      shop.subtitle=$('#shop-subtitle').value.trim();
+      shop.emptyText=$('#shop-empty').value.trim();
+      shop.sortNewest=$('#shop-sort-new').value.trim();
+      shop.sortLow=$('#shop-sort-low').value.trim();
+      shop.sortHigh=$('#shop-sort-high').value.trim();
+      await persistSetting('shop_ui',shop);
+    }
+
+    async function saveOrdersUISettings(){
+      const acc=settings.account_ui||defaultSettings.account_ui;
+      acc.supportText=$('#order-support-text').value.trim();
+      acc.emptyOrders=$('#order-empty-msg').value.trim();
+      await persistSetting('account_ui',acc);
+    }
+
+    async function saveProfileUISettings(){
+      const acc=settings.account_ui||defaultSettings.account_ui;
+      acc.title=$('#acc-title').value.trim();
+      acc.subtitle=$('#acc-subtitle').value.trim();
+      await persistSetting('account_ui',acc);
+    }
+
+    async function saveFooterSettings(){
+      const f={
+        about:$('#footer-about').value.trim(),
+        phone:$('#footer-phone').value.trim(),
+        email:$('#footer-email').value.trim(),
+        address:$('#footer-address').value.trim(),
+        whatsapp:$('#footer-whatsapp').value.trim(),
+        copyright:$('#footer-copyright').value.trim(),
+        upi:$('#footer-upi').value.trim(),
+        upiName:$('#footer-upiname').value.trim()
+      };
+      await persistSetting('footer',f);
+    }
+
+    /* Image helpers for customizer fields */
+    function uploadForField(fieldId){
+      targetImageFieldId=fieldId;
+      $('#custom-image-file-input').click();
+    }
+
+    $('#custom-image-file-input').onchange=async e=>{
+      const file=e.target.files[0];
+      e.target.value='';
+      if(!file||!targetImageFieldId)return;
+      if(!file.type.startsWith('image/'))return toast('Please select an image');
+      if(file.size>4*1024*1024)return toast('Image exceeds 4 MB limit');
+
+      const safeName=file.name.replace(/[^\w.-]/g,'_');
+      const path=`site/${Date.now()}-${safeName}`;
+      try{
+        toast('Uploading image…');
+        const {error}=await db.storage.from(MEDIA_BUCKET).upload(path,file,{contentType:file.type});
+        if(error)throw error;
+        const publicUrl=db.storage.from(MEDIA_BUCKET).getPublicUrl(path).data.publicUrl;
+        const input=document.getElementById(targetImageFieldId);
+        if(input){
+          input.value=publicUrl;
+          const preview=document.getElementById(`${targetImageFieldId}-preview`);
+          if(preview)preview.src=publicUrl;
+        }
+        toast('Image uploaded and applied ✓');
+      }catch(err){
+        toast(err.message||'Upload failed');
+      }
+    };
+
+    async function pickMediaForField(fieldId){
+      targetImageFieldId=fieldId;
+      const modal=$('#library-picker-modal');
+      const content=$('#library-picker-content');
+      modal.showModal();
+      content.innerHTML='<p class="col-span-full py-10 text-center text-xs text-gray-400">Loading library images…</p>';
+      try{
+        const files=await loadMedia();
+        content.innerHTML=files.map((x,i)=>`
+          <button type="button" data-pick-media="${i}" class="overflow-hidden rounded-xl border border-[#e5e8e2] text-left hover:border-[#193528] transition">
+            <img src="${esc(x.url)}" alt="${esc(x.name)}" class="aspect-square w-full object-cover">
+            <span class="block truncate p-2 text-[10px] text-gray-700">${esc(x.name)}</span>
+          </button>`).join('')||'<p class="col-span-full py-8 text-center text-xs">No media found. Upload photos in the Media Library tab first.</p>';
+
+        content.onclick=e=>{
+          const btn=e.target.closest('[data-pick-media]');
+          if(!btn)return;
+          const item=files[Number(btn.dataset.pickMedia)];
+          if(item && targetImageFieldId){
+            const input=document.getElementById(targetImageFieldId);
+            if(input){
+              input.value=item.url;
+              const preview=document.getElementById(`${targetImageFieldId}-preview`);
+              if(preview)preview.src=item.url;
+            }
+          }
+          modal.close();
+          toast('Image selected from library ✓');
+        };
+      }catch(err){
+        content.textContent=err.message;
+      }
+    }
+    $('#library-picker-close').onclick=()=>$('#library-picker-modal').close();
+
+    /* ===== CATALOG / PRODUCTS ===== */
+    function tableHead(cols){return `<thead><tr>${cols.map(c=>`<th class="whitespace-nowrap px-4 py-3 text-left text-[9px] font-bold uppercase tracking-[.14em] text-[#818a81]">${c}</th>`).join('')}</tr></thead>`}
+    function renderProducts(){
+      view.innerHTML=`
+        <div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+          <div>
+            <p class="text-[10px] font-bold uppercase tracking-[.19em] text-[#9a8057]">Catalog</p>
+            <h2 class="mt-2 text-2xl font-extrabold text-[#21342a]">Products</h2>
+            <p class="mt-1 text-sm text-[#758078]">Edit pricing, inventory, details and product visibility.</p>
+          </div>
+          <button data-action="product-new" class="rounded-xl bg-[#193528] px-4 py-3 text-xs font-bold text-white shadow-md hover:bg-[#254937]">＋ Add product</button>
+        </div>
+        <div class="mt-5 overflow-hidden rounded-2xl border border-[#e7eae3] bg-white">
+          <div class="border-b border-[#edf0ea] p-4 flex flex-col sm:flex-row justify-between gap-3">
+            <input id="product-search" placeholder="Search products…" class="w-full rounded-xl border border-[#e3e7df] bg-[#fbfcfa] px-4 py-2.5 text-xs sm:max-w-sm">
+            <span class="self-center text-[10px] text-[#879087]">${products.length} products total</span>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full min-w-[760px]">${tableHead(['Product','Category','Price','Inventory','Visibility',''])}
+              <tbody id="product-rows" class="divide-y divide-[#f0f1ed]">${products.map(productRow).join('')}</tbody>
+            </table>
+          </div>
+        </div>`;
+      $('#product-search').oninput=e=>$('#product-rows').innerHTML=products.filter(p=>(p.name||'').toLowerCase().includes(e.target.value.toLowerCase())).map(productRow).join('');
+    }
+
+    function productRow(p){
+      const cat=categories.find(c=>String(c.id)===String(p.category_id));
+      return `
+        <tr class="hover:bg-[#fbfcfa]">
+          <td class="px-4 py-3">
+            <div class="flex items-center gap-3">
+              <img src="${esc(p.images?.[0]||'https://placehold.co/60x72?text=TT')}" class="h-12 w-10 rounded-lg object-cover" alt="">
+              <div>
+                <p class="max-w-[260px] truncate text-xs font-bold text-[#334238]">${esc(p.name)}</p>
+                <p class="mt-1 text-[10px] text-[#929a92]">${esc(p.fabric||'Handloom')} · #${esc(String(p.id).slice(0,8))}</p>
+              </div>
+            </div>
+          </td>
+          <td class="px-4 py-3 text-xs text-[#66736a]">${esc(cat?.name||'—')}</td>
+          <td class="px-4 py-3 text-xs font-bold text-[#334238]">${fmt(p.price)}</td>
+          <td class="px-4 py-3"><span class="rounded-full px-2.5 py-1 text-[10px] font-bold ${Number(p.stock)>4?'bg-[#eef4eb] text-[#537052]':'bg-[#fbf0e9] text-[#96613d]'}">${Number(p.stock||0)} pcs</span></td>
+          <td class="px-4 py-3"><span class="rounded-full px-2.5 py-1 text-[9px] font-bold ${p.active?'bg-[#eef4eb] text-[#537052]':'bg-[#f0f1ee] text-[#7c847d]'}">${p.active?'LIVE':'HIDDEN'}</span></td>
+          <td class="px-4 py-3 text-right">
+            <button data-edit-product="${esc(p.id)}" class="rounded-lg border border-[#e5e8e2] px-3 py-2 text-[10px] font-bold text-[#58665b] hover:bg-[#f4f6f2]">Edit</button>
+          </td>
+        </tr>`;
+    }
+
+    function field(name,label,value,type='text'){return `<label class="block text-xs font-bold text-[#445248]">${label}<input name="${name}" ${type==='number'?'type="number" step="any"':''} value="${esc(value)}" required class="mt-2 w-full rounded-xl border border-[#dfe4dc] bg-white px-3 py-3 text-xs"></label>`}
+
+    async function openProduct(product){
+      editing={type:'product',row:product||{active:true,stock:0,images:[]}};
+      const r=editing.row;
+      $('#editor-kicker').textContent=product?'CATALOG · EDIT':'CATALOG · NEW';
+      $('#editor-title').textContent=product?'Edit product':'Create a product';
+      const images=Array.isArray(r.images)?r.images:[];
+      $('#editor-fields').innerHTML=`
+        <div class="grid gap-3 sm:grid-cols-2">
+          ${field('name','Product name',r.name||'')}
+          ${field('fabric','Fabric',r.fabric||'')}
+          ${field('price','Price (₹)',r.price||0,'number')}
+          ${field('mrp','MRP (₹)',r.mrp||0,'number')}
+          ${field('stock','Stock quantity',r.stock||0,'number')}
+          <label class="block text-xs font-bold text-[#445248]">Category
+            <select name="category_id" class="mt-2 w-full rounded-xl border border-[#dfe4dc] bg-white px-3 py-3 text-xs">
+              <option value="">No category</option>
+              ${categories.map(c=>`<option value="${esc(c.id)}" ${String(c.id)===String(r.category_id)?'selected':''}>${esc(c.name)}</option>`).join('')}
+            </select>
+          </label>
+          ${field('color','Colour',r.color||'')}
+          ${field('occasion','Occasion',r.occasion||'')}
+        </div>
+        <div>
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-[#445248]">Product photos</span>
+            <div class="flex gap-2">
+              <button type="button" data-product-local class="rounded-lg bg-[#193528] px-3 py-2 text-[10px] font-bold text-white hover:bg-[#254937]">Upload from device</button>
+              <button type="button" data-product-library class="rounded-lg border border-[#dfe4dc] px-3 py-2 text-[10px] font-bold hover:bg-gray-50">Choose from media library</button>
+            </div>
+          </div>
+          <div id="product-image-grid" class="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-4">
+            ${images.map((url,i)=>`
+              <div class="relative overflow-hidden rounded-xl border border-[#e5e8e2]">
+                <img src="${esc(url)}" alt="Product photo ${i+1}" class="aspect-square w-full object-cover">
+                <button type="button" data-remove-product-image="${i}" class="absolute right-1 top-1 grid h-7 w-7 place-items-center rounded-full bg-white/95 text-sm font-bold text-rose-700 shadow">×</button>
+              </div>`).join('')||'<p class="col-span-full rounded-xl bg-[#f7f8f5] p-5 text-center text-[10px] text-[#89928a]">No product photos yet. Upload from your device or select from the library.</p>'}
+          </div>
+          <textarea name="images" class="hidden">${esc(images.join('\n'))}</textarea>
+        </div>
+        <label class="block text-xs font-bold text-[#445248]">Description
+          <textarea name="description" rows="4" class="mt-2 w-full rounded-xl border border-[#dfe4dc] bg-white px-3 py-3 text-xs">${esc(r.description||'')}</textarea>
+        </label>
+        <label class="flex items-center gap-3 rounded-xl bg-[#f0f3ed] p-3 text-xs font-bold text-[#435248] cursor-pointer">
+          <input name="active" type="checkbox" ${r.active!==false?'checked':''} class="h-4 w-4 accent-[#315841]"> Visible in storefront
+        </label>
+        ${product?'<button type="button" data-action="product-delete" class="text-left text-xs font-bold text-rose-700 hover:underline">Delete this product</button>':''}`;
+      editor.showModal();
+    }
+
+    function updateProductImages(images){
+      const area=$('[name="images"]'), grid=$('#product-image-grid');
+      area.value=images.join('\n');
+      grid.innerHTML=images.map((url,i)=>`
+        <div class="relative overflow-hidden rounded-xl border border-[#e5e8e2]">
+          <img src="${esc(url)}" alt="Product photo ${i+1}" class="aspect-square w-full object-cover">
+          <button type="button" data-remove-product-image="${i}" class="absolute right-1 top-1 grid h-7 w-7 place-items-center rounded-full bg-white/95 text-sm font-bold text-rose-700 shadow">×</button>
+        </div>`).join('')||'<p class="col-span-full rounded-xl bg-[#f7f8f5] p-5 text-center text-[10px] text-[#89928a]">No product photos yet.</p>';
+    }
+
+    function productPayload(form){
+      const fd=new FormData(form);
+      return {
+        name:String(fd.get('name')).trim(),
+        fabric:String(fd.get('fabric')||'').trim(),
+        price:Number(fd.get('price')),
+        mrp:Number(fd.get('mrp')),
+        stock:Number(fd.get('stock')),
+        category_id:fd.get('category_id')||null,
+        color:String(fd.get('color')||'').trim(),
+        occasion:String(fd.get('occasion')||'').trim(),
+        images:String(fd.get('images')||'').split('\n').map(s=>s.trim()).filter(Boolean),
+        description:String(fd.get('description')||'').trim(),
+        active:fd.has('active')
+      };
+    }
+
+    /* ===== ORDERS ===== */
+    function renderOrders(){
+      view.innerHTML=`
+        <div>
+          <p class="text-[10px] font-bold uppercase tracking-[.19em] text-[#9a8057]">Fulfillment</p>
+          <h2 class="mt-2 text-2xl font-extrabold text-[#21342a]">Orders</h2>
+          <p class="mt-1 text-sm text-[#758078]">Open any order to see customer, item, payment and delivery details.</p>
+        </div>
+        <div class="mt-5 overflow-hidden rounded-2xl border border-[#e7eae3] bg-white">
+          <div class="overflow-x-auto">
+            <table class="w-full min-w-[960px]">${tableHead(['Order','Customer','Placed','Payment','Amount','Status','Tracking','Details',''])}
+              <tbody class="divide-y divide-[#f0f1ed]">
+                ${orders.map(o=>`
+                  <tr class="hover:bg-[#fbfcfa]">
+                    <td class="px-4 py-3 text-xs font-bold">#${esc(String(o.id).slice(0,8).toUpperCase())}</td>
+                    <td class="px-4 py-3 text-xs">${esc(o.name||o.customer_name||'Customer')}<span class="block text-[10px] text-[#879087]">${esc(o.phone||o.mobile_number||'')}</span></td>
+                    <td class="px-4 py-3 text-[10px]">${date(o.created_at)}</td>
+                    <td class="px-4 py-3 text-[10px]">${esc(o.payment_method||'—')}</td>
+                    <td class="px-4 py-3 text-xs font-bold">${fmt(o.total)}</td>
+                    <td class="px-4 py-3">
+                      <select data-order-status="${esc(o.id)}" class="rounded-lg border px-2 py-2 text-[10px]">
+                        ${['pending','verified','dispatched','delivered','cancelled'].map(s=>`<option ${o.order_status===s?'selected':''} value="${s}">${s}</option>`).join('')}
+                      </select>
+                    </td>
+                    <td class="px-4 py-3">
+                      <input data-tracking="${esc(o.id)}" value="${esc(o.tracking_id||'')}" placeholder="Tracking ID" class="w-28 rounded-lg border px-2 py-2 text-[10px]">
+                    </td>
+                    <td class="px-4 py-3">
+                      <button data-order-details="${esc(o.id)}" class="rounded-lg border px-3 py-2 text-[10px] font-bold hover:bg-gray-50">View details</button>
+                    </td>
+                    <td class="px-4 py-3">
+                      <button data-save-order="${esc(o.id)}" class="rounded-lg bg-[#edf2ec] px-3 py-2 text-[10px] font-bold hover:bg-[#e0e8de]">Save</button>
+                    </td>
+                  </tr>`).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>`;
+    }
+
+    function showOrderDetails(order){
+      const entries=Object.entries(order).filter(([k])=>!['id','items','order_items'].includes(k));
+      const items=order.items||order.order_items||[];
+      const d=document.createElement('dialog');
+      d.className='w-[min(720px,calc(100%-24px))] max-h-[88vh] rounded-2xl border-0 bg-[#fbfcf9] p-0 shadow-2xl';
+      d.innerHTML=`
+        <div class="flex items-start justify-between border-b p-5">
+          <div>
+            <p class="text-[10px] font-bold uppercase tracking-[.18em] text-[#907a56]">Order details</p>
+            <h3 class="mt-1 text-xl font-extrabold">#${esc(String(order.id).toUpperCase())}</h3>
+            <p class="mt-1 text-xs text-[#758078]">Placed ${date(order.created_at)}</p>
+          </div>
+          <button class="close-order grid h-9 w-9 place-items-center rounded-full bg-[#eef0eb] text-xl hover:bg-gray-200">×</button>
+        </div>
+        <div class="max-h-[70vh] overflow-y-auto p-5">
+          <section class="grid gap-3 sm:grid-cols-2">
+            ${entries.map(([k,v])=>`
+              <div class="rounded-xl bg-white p-3 border border-[#edf0ea]">
+                <p class="text-[9px] font-bold uppercase tracking-wide text-[#89928a]">${esc(k.replace(/_/g,' '))}</p>
+                <p class="mt-1 break-words text-xs font-semibold text-[#34443a]">${esc(typeof v==='object'&&v!==null?JSON.stringify(v):v??'—')}</p>
+              </div>`).join('')}
+          </section>
+          ${Array.isArray(items)?`
+            <h4 class="mt-5 text-sm font-extrabold text-[#2a382e]">Items in this order</h4>
+            <div class="mt-2 space-y-2">
+              ${items.map(item=>`
+                <div class="flex items-center gap-3 rounded-xl bg-white p-3 border border-[#edf0ea]">
+                  ${item.image||item.image_url?`<img src="${esc(item.image||item.image_url)}" alt="" class="h-14 w-12 rounded-lg object-cover">`:''}
+                  <div class="min-w-0 flex-1">
+                    <p class="text-xs font-bold">${esc(item.name||item.product_name||item.title||'Item')}</p>
+                    <p class="mt-1 text-[10px] text-[#758078]">${esc(item.variant||item.size||item.color||'')} · Qty ${esc(item.quantity||item.qty||1)}</p>
+                  </div>
+                  <b class="text-xs">${fmt(item.price||item.total||0)}</b>
+                </div>`).join('')||'<p class="rounded-xl bg-white p-4 text-xs text-[#89928a]">No item list is attached to this order.</p>'}
+            </div>`:''}
+        </div>`;
+      document.body.append(d);
+      d.showModal();
+      d.querySelector('.close-order').onclick=()=>d.close();
+      d.addEventListener('close',()=>d.remove());
+    }
+
+    async function saveOrder(id){
+      const order_status=$(`[data-order-status="${CSS.escape(id)}"]`).value;
+      const tracking_id=$(`[data-tracking="${CSS.escape(id)}"]`).value.trim();
+      const {error}=await db.from('orders').update({order_status,tracking_id}).eq('id',id);
+      if(error){toast(error.message);return}
+      await loadAll();
+      toast('Order updated');
+    }
+
+    /* ===== CATEGORIES ===== */
+    function renderCategories(){
+      view.innerHTML=`
+        <div class="flex items-end justify-between gap-3">
+          <div>
+            <p class="text-[10px] font-bold uppercase tracking-[.19em] text-[#9a8057]">Merchandising</p>
+            <h2 class="mt-2 text-2xl font-extrabold text-[#21342a]">Categories</h2>
+            <p class="mt-1 text-sm text-[#758078]">Organize the collections shoppers browse.</p>
+          </div>
+          <button data-action="category-new" class="rounded-xl bg-[#193528] px-4 py-3 text-xs font-bold text-white hover:bg-[#254937]">＋ New category</button>
+        </div>
+        <div class="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          ${categories.map(c=>`
+            <article class="rounded-2xl border border-[#e7eae3] bg-white p-5">
+              <div class="flex items-start justify-between">
+                <span class="grid h-10 w-10 place-items-center rounded-xl bg-[#f0f3ed] text-lg text-[#627963]">◈</span>
+                <div class="flex gap-2">
+                  <button data-edit-category="${esc(c.id)}" class="rounded-lg border border-[#e5e8e2] px-3 py-2 text-[10px] font-bold hover:bg-gray-50">Edit</button>
+                  <button data-delete-category="${esc(c.id)}" class="rounded-lg border border-[#f0dfdc] px-3 py-2 text-[10px] font-bold text-[#9b5147] hover:bg-rose-50">Delete</button>
+                </div>
+              </div>
+              <h3 class="mt-4 text-base font-extrabold text-[#304137]">${esc(c.name)}</h3>
+              <p class="mt-1 text-[10px] text-[#8c958d]">ID · ${esc(c.id)}</p>
+            </article>`).join('')||'<p class="rounded-xl bg-white p-8 text-center text-xs text-[#89928a]">No categories yet.</p>'}
+        </div>`;
+    }
+
+    function openCategory(category){
+      editing={type:'category',row:category||{}};
+      $('#editor-kicker').textContent='MERCHANDISING';
+      $('#editor-title').textContent=category?'Edit category':'Create category';
+      $('#editor-fields').innerHTML=field('name','Category name',category?.name||'');
+      editor.showModal();
+    }
+
+    /* ===== REVIEWS ===== */
+    function renderReviews(){
+      view.innerHTML=`
+        <div>
+          <p class="text-[10px] font-bold uppercase tracking-[.19em] text-[#9a8057]">Customer voice</p>
+          <h2 class="mt-2 text-2xl font-extrabold text-[#21342a]">Reviews</h2>
+          <p class="mt-1 text-sm text-[#758078]">Moderate reviews shown on product pages.</p>
+        </div>
+        <div class="mt-5 grid gap-3 lg:grid-cols-2">
+          ${reviews.map(r=>`
+            <article class="rounded-2xl border border-[#e7eae3] bg-white p-5">
+              <div class="flex items-start justify-between gap-4">
+                <div>
+                  <p class="text-xs font-bold text-[#334238]">${esc(r.author||'Customer')}</p>
+                  <p class="mt-1 text-[10px] text-[#89928a]">${date(r.created_at)} · Product ${esc(r.product_id||'')}</p>
+                </div>
+                <span class="rounded-full bg-[#f7f0e2] px-3 py-1 text-[10px] font-bold text-[#896d3c]">${'★'.repeat(Math.max(0,Math.min(5,Number(r.rating)||0)))}</span>
+              </div>
+              <p class="mt-4 text-xs leading-6 text-[#657168]">${esc(r.body||'')}</p>
+              <button data-delete-review="${esc(r.id)}" class="mt-4 rounded-lg border border-[#f0dfdc] px-3 py-2 text-[10px] font-bold text-[#9b5147] hover:bg-rose-50">Remove review</button>
+            </article>`).join('')||'<p class="rounded-xl bg-white p-8 text-center text-xs text-[#89928a]">No reviews found.</p>'}
+        </div>`;
+    }
+
+    /* ===== COUPONS ===== */
+    function renderCoupons(){
+      view.innerHTML=`
+        <div class="flex items-end justify-between gap-3">
+          <div>
+            <p class="text-[10px] font-bold uppercase tracking-[.19em] text-[#9a8057]">Promotions</p>
+            <h2 class="mt-2 text-2xl font-extrabold text-[#21342a]">Coupons</h2>
+            <p class="mt-1 text-sm text-[#758078]">Manage discount codes with simple fields.</p>
+          </div>
+          <button data-action="coupon-new" class="rounded-xl bg-[#193528] px-4 py-3 text-xs font-bold text-white hover:bg-[#254937]">＋ New coupon</button>
+        </div>
+        <div class="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          ${coupons.map(c=>`
+            <article class="rounded-2xl border border-[#e7eae3] bg-white p-5">
+              <div class="flex items-start justify-between">
+                <span class="rounded-lg bg-[#f0f3ed] px-3 py-2 text-sm font-extrabold text-[#405943]">${esc(c.code||c.name||'Coupon')}</span>
+                <span class="text-[10px] font-bold ${c.active===false?'text-[#89928a]':'text-[#537052]'}">${c.active===false?'INACTIVE':'ACTIVE'}</span>
+              </div>
+              <p class="mt-4 text-xs text-[#66736a]">${esc(c.discount??c.discount_percent??c.percentage??'—')} ${esc(c.discount_type||c.type||'%')} discount</p>
+              <p class="mt-1 text-[10px] text-[#89928a]">${c.expires_at?'Expires '+date(c.expires_at):'No expiry date'}</p>
+              <button data-edit-coupon="${esc(c.id)}" class="mt-4 rounded-lg border border-[#e5e8e2] px-3 py-2 text-[10px] font-bold hover:bg-gray-50">Edit coupon</button>
+            </article>`).join('')||'<p class="rounded-xl bg-white p-8 text-center text-xs text-[#89928a]">No coupons found.</p>'}
+        </div>`;
+    }
+
+    function openCoupon(coupon){
+      editing={type:'coupon',row:coupon||{}};
+      $('#editor-kicker').textContent='PROMOTIONS';
+      $('#editor-title').textContent=coupon?'Edit coupon':'New coupon';
+      const row=editing.row;
+      $('#editor-fields').innerHTML=`
+        ${field('code','Coupon code',row.code||row.name||'')}
+        ${field('discount','Discount amount or percent',row.discount??row.discount_percent??row.percentage??'','number')}
+        <label class="block text-xs font-bold text-[#445248]">Discount type
+          <select name="discount_type" class="mt-2 w-full rounded-xl border border-[#dfe4dc] bg-white px-3 py-3 text-xs">
+            <option value="percent" ${(row.discount_type||row.type||'%')==='percent'||(row.discount_type||row.type)==='%'?'selected':''}>Percentage (%)</option>
+            <option value="fixed" ${(row.discount_type||row.type)==='fixed'?'selected':''}>Fixed amount (₹)</option>
+          </select>
+        </label>
+        ${field('minimum_order','Minimum order amount (₹)',row.minimum_order||0,'number')}
+        ${field('expires_at','Expiry date',row.expires_at?String(row.expires_at).slice(0,10):'','date')}
+        <label class="flex items-center gap-3 rounded-xl bg-[#f0f3ed] p-3 text-xs font-bold text-[#435248] cursor-pointer">
+          <input name="active" type="checkbox" ${row.active!==false?'checked':''} class="h-4 w-4 accent-[#315841]"> Coupon is active
+        </label>`;
+      editor.showModal();
+    }
+
+    /* ===== MEDIA LIBRARY ===== */
     const MEDIA_BUCKET='product-images';
     const MEDIA_FOLDERS=['products','site','categories','library'];
     async function loadMedia(){
       const files=[];
       for(const folder of MEDIA_FOLDERS){
         const {data,error}=await db.storage.from(MEDIA_BUCKET).list(folder,{limit:1000,sortBy:{column:'created_at',order:'desc'}});
-        if(error)throw error;
+        if(error)continue;
         for(const file of data||[])if(file.name&&file.id)files.push({name:file.name,folder,path:`${folder}/${file.name}`,url:db.storage.from(MEDIA_BUCKET).getPublicUrl(`${folder}/${file.name}`).data.publicUrl,created_at:file.created_at||file.updated_at||''});
       }
       return files.sort((a,b)=>String(b.created_at).localeCompare(String(a.created_at)));
     }
+
     async function renderMedia(){
-      view.innerHTML=`<div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-end"><div><p class="text-[10px] font-bold uppercase tracking-[.19em] text-[#9a8057]">Asset studio</p><h2 class="mt-2 text-2xl font-extrabold text-[#21342a]">Media library</h2><p class="mt-1 text-sm text-[#758078]">Upload once, reuse product photos and copy their public URLs.</p></div><label class="cursor-pointer rounded-xl bg-[#193528] px-4 py-3 text-xs font-bold text-white">＋ Upload images<input id="media-upload" type="file" accept="image/*" multiple class="hidden"></label></div><section class="mt-5 rounded-2xl border border-[#e7eae3] bg-white p-5"><div class="flex flex-col justify-between gap-3 sm:flex-row"><input id="media-search" placeholder="Search image names…" class="rounded-xl border border-[#e3e7df] bg-[#fbfcfa] px-4 py-2.5 text-xs sm:max-w-sm"><button id="media-refresh" class="rounded-xl border border-[#dfe4dc] px-4 py-2 text-xs font-bold text-[#536157]">↻ Refresh</button></div><p id="media-count" class="mt-4 text-[10px] text-[#89928a]">Loading images…</p><div id="media-grid" class="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5"><p class="col-span-full py-10 text-center text-xs text-[#89928a]">Loading your Supabase media…</p></div></section>`;
-      const draw=async()=>{const grid=$('#media-grid');grid.innerHTML='<p class="col-span-full py-10 text-center text-xs text-[#89928a]">Loading images…</p>';try{mediaItems=await loadMedia();const term=$('#media-search').value.trim().toLowerCase(),items=mediaItems.filter(x=>`${x.name} ${x.folder}`.toLowerCase().includes(term));$('#media-count').textContent=`${items.length} images · bucket ${MEDIA_BUCKET}`;grid.innerHTML=items.map((x,i)=>`<article class="overflow-hidden rounded-xl border border-[#e7eae3] bg-white"><img src="${esc(x.url)}" loading="lazy" alt="${esc(x.name)}" class="aspect-square w-full object-cover bg-[#f3f4f1]"><div class="p-3"><p class="truncate text-[10px] font-bold text-[#34443a]" title="${esc(x.name)}">${esc(x.name)}</p><p class="mt-1 text-[9px] text-[#89928a]">${esc(x.folder)}</p><button data-copy-media="${i}" class="mt-3 w-full rounded-lg bg-[#eff3ed] py-2 text-[10px] font-bold text-[#445d49]">Copy image URL</button></div></article>`).join('')||'<p class="col-span-full py-10 text-center text-xs text-[#89928a]">No images found in these folders.</p>'}catch(error){$('#media-count').textContent='Media could not be loaded';grid.innerHTML=`<div class="col-span-full rounded-xl border border-amber-200 bg-amber-50 p-5 text-xs leading-5 text-amber-900">${esc(error.message)}<br>Confirm the <b>${MEDIA_BUCKET}</b> bucket exists and that admin Storage policies are installed.</div>`}};
-      $('#media-search').oninput=draw;$('#media-refresh').onclick=draw;
-      $('#media-upload').onchange=async e=>{const files=[...e.target.files];e.target.value='';for(let i=0;i<files.length;i++){const file=files[i];if(!file.type.startsWith('image/')){toast(`${file.name} is not an image`);continue}if(file.size>4*1024*1024){toast(`${file.name} exceeds the 4 MB limit`);continue}const safeName=file.name.replace(/[^\w.-]/g,'_'),path=`library/${Date.now()}-${Math.random().toString(36).slice(2,8)}-${safeName}`;try{toast(`Uploading ${i+1} of ${files.length}…`);const {error}=await db.storage.from(MEDIA_BUCKET).upload(path,file,{contentType:file.type});if(error)throw error}catch(error){toast(error.message);break}}await draw();toast('Media library updated')};
-      $('#media-grid').onclick=async e=>{const button=e.target.closest('[data-copy-media]');if(!button)return;const item=mediaItems.filter(x=>`${x.name} ${x.folder}`.toLowerCase().includes($('#media-search').value.trim().toLowerCase()))[Number(button.dataset.copyMedia)];if(!item)return;try{await navigator.clipboard.writeText(item.url);toast('Image URL copied')}catch{toast('Clipboard access is unavailable; open the image and copy its URL')}};
+      view.innerHTML=`
+        <div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+          <div>
+            <p class="text-[10px] font-bold uppercase tracking-[.19em] text-[#9a8057]">Asset studio</p>
+            <h2 class="mt-2 text-2xl font-extrabold text-[#21342a]">Media library</h2>
+            <p class="mt-1 text-sm text-[#758078]">Upload once, reuse product photos and copy their public URLs.</p>
+          </div>
+          <label class="cursor-pointer rounded-xl bg-[#193528] px-4 py-3 text-xs font-bold text-white hover:bg-[#254937]">
+            ＋ Upload images
+            <input id="media-upload" type="file" accept="image/*" multiple class="hidden">
+          </label>
+        </div>
+        <section class="mt-5 rounded-2xl border border-[#e7eae3] bg-white p-5">
+          <div class="flex flex-col justify-between gap-3 sm:flex-row">
+            <input id="media-search" placeholder="Search image names…" class="rounded-xl border border-[#e3e7df] bg-[#fbfcfa] px-4 py-2.5 text-xs sm:max-w-sm">
+            <button id="media-refresh" class="rounded-xl border border-[#dfe4dc] px-4 py-2 text-xs font-bold text-[#536157]">↻ Refresh</button>
+          </div>
+          <p id="media-count" class="mt-4 text-[10px] text-[#89928a]">Loading images…</p>
+          <div id="media-grid" class="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+            <p class="col-span-full py-10 text-center text-xs text-[#89928a]">Loading your Supabase media…</p>
+          </div>
+        </section>`;
+
+      const draw=async()=>{
+        const grid=$('#media-grid');
+        grid.innerHTML='<p class="col-span-full py-10 text-center text-xs text-[#89928a]">Loading images…</p>';
+        try{
+          mediaItems=await loadMedia();
+          const term=$('#media-search').value.trim().toLowerCase(),items=mediaItems.filter(x=>`${x.name} ${x.folder}`.toLowerCase().includes(term));
+          $('#media-count').textContent=`${items.length} images in bucket ${MEDIA_BUCKET}`;
+          grid.innerHTML=items.map((x,i)=>`
+            <article class="overflow-hidden rounded-xl border border-[#e7eae3] bg-white">
+              <img src="${esc(x.url)}" loading="lazy" alt="${esc(x.name)}" class="aspect-square w-full object-cover bg-[#f3f4f1]">
+              <div class="p-3">
+                <p class="truncate text-[10px] font-bold text-[#34443a]" title="${esc(x.name)}">${esc(x.name)}</p>
+                <p class="mt-1 text-[9px] text-[#89928a]">${esc(x.folder)}</p>
+                <button data-copy-media="${i}" class="mt-3 w-full rounded-lg bg-[#eff3ed] py-2 text-[10px] font-bold text-[#445d49] hover:bg-[#e0eade]">Copy image URL</button>
+              </div>
+            </article>`).join('')||'<p class="col-span-full py-10 text-center text-xs text-[#89928a]">No images found in these folders.</p>';
+        }catch(error){
+          $('#media-count').textContent='Media could not be loaded';
+          grid.innerHTML=`<div class="col-span-full rounded-xl border border-amber-200 bg-amber-50 p-5 text-xs leading-5 text-amber-900">${esc(error.message)}</div>`;
+        }
+      };
+
+      $('#media-search').oninput=draw;
+      $('#media-refresh').onclick=draw;
+      $('#media-upload').onchange=async e=>{
+        const files=[...e.target.files];e.target.value='';
+        for(let i=0;i<files.length;i++){
+          const file=files[i];
+          if(!file.type.startsWith('image/')){toast(`${file.name} is not an image`);continue}
+          if(file.size>4*1024*1024){toast(`${file.name} exceeds the 4 MB limit`);continue}
+          const safeName=file.name.replace(/[^\w.-]/g,'_'),path=`library/${Date.now()}-${safeName}`;
+          try{
+            toast(`Uploading ${i+1} of ${files.length}…`);
+            const {error}=await db.storage.from(MEDIA_BUCKET).upload(path,file,{contentType:file.type});
+            if(error)throw error;
+          }catch(error){
+            toast(error.message);
+            break;
+          }
+        }
+        await draw();
+        toast('Media library updated');
+      };
+      $('#media-grid').onclick=async e=>{
+        const button=e.target.closest('[data-copy-media]');
+        if(!button)return;
+        const item=mediaItems.filter(x=>`${x.name} ${x.folder}`.toLowerCase().includes($('#media-search').value.trim().toLowerCase()))[Number(button.dataset.copyMedia)];
+        if(!item)return;
+        try{
+          await navigator.clipboard.writeText(item.url);
+          toast('Image URL copied to clipboard ✓');
+        }catch{
+          toast('Copied: '+item.url);
+        }
+      };
       await draw();
     }
-    function renderOverview(){
-      const revenue=orders.filter(o=>o.order_status!=='cancelled').reduce((s,o)=>s+Number(o.total||0),0),pending=orders.filter(o=>o.order_status==='pending').length,low=products.filter(p=>Number(p.stock||0)<5).length;
-      view.innerHTML=`<div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-end"><div><p class="text-[10px] font-bold uppercase tracking-[.19em] text-[#9a8057]">Store pulse</p><h2 class="mt-2 text-2xl font-extrabold tracking-tight text-[#21342a]">Good day, admin.</h2><p class="mt-1 text-sm text-[#758078]">A clear view of what’s happening across your storefront.</p></div><button data-action="refresh" class="rounded-xl border border-[#dfe4dc] bg-white px-4 py-2.5 text-xs font-bold text-[#48564d] hover:bg-[#f8faf6]">↻ Refresh data</button></div>
-        <div class="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">${card('Gross order value',fmt(revenue),'From loaded orders','₹')}${card('Orders',orders.length,'Recent 250 orders','▣')}${card('Needs attention',pending,'Pending confirmation','!')}${card('Low stock',low,'Products with fewer than 5 pieces','◇')}</div>
-        <div class="mt-6 grid gap-5 xl:grid-cols-[1.4fr_.8fr]"><section class="rounded-2xl border border-[#e8eae4] bg-white p-5"><div class="flex items-center justify-between"><div><h3 class="text-sm font-extrabold text-[#25372d]">Recent orders</h3><p class="mt-1 text-xs text-[#89928a]">Latest activity from your customers</p></div><button data-go="orders" class="text-xs font-bold text-[#617864]">All orders →</button></div>${orders.length?`<div class="mt-4 divide-y divide-[#eff0ec]">${orders.slice(0,6).map(o=>`<div class="flex items-center justify-between gap-3 py-3"><div class="min-w-0"><p class="truncate text-xs font-bold text-[#28382f]">${esc(o.name||o.customer_name||o.phone||'Customer')}</p><p class="mt-1 text-[10px] text-[#8b938c]">#${esc(String(o.id).slice(0,8).toUpperCase())} · ${date(o.created_at)}</p></div><div class="text-right"><b class="text-xs text-[#28382f]">${fmt(o.total)}</b><span class="mt-1 block text-[9px] font-bold uppercase tracking-wide text-[#68796c]">${esc(o.order_status||'pending')}</span></div></div>`).join('')}</div>`:'<p class="py-12 text-center text-xs text-[#909990]">No order data could be loaded. Check database policies.</p>'}</section>
-        <section class="rounded-2xl border border-[#e8eae4] bg-white p-5"><h3 class="text-sm font-extrabold text-[#25372d]">Store checklist</h3><p class="mt-1 text-xs text-[#89928a]">Fast links to common admin tasks</p><div class="mt-4 space-y-2">${[['products','＋','Add a product'],['orders','↗','Review pending orders'],['content','✎','Update home page content'],['categories','◈','Manage collections']].map(([id,ic,label])=>`<button data-go="${id}" class="flex w-full items-center gap-3 rounded-xl border border-[#eef0eb] p-3 text-left hover:bg-[#f8faf6]"><span class="grid h-8 w-8 place-items-center rounded-lg bg-[#eff3ed] text-[#5c705f]">${ic}</span><span class="text-xs font-semibold text-[#39483e]">${label}</span><span class="ml-auto text-[#9aa199]">→</span></button>`).join('')}</div></section></div>`;
+
+    /* ===== DATA MANAGER ===== */
+    function renderData(){
+      view.innerHTML=`
+        <div>
+          <p class="text-[10px] font-bold uppercase tracking-[.19em] text-[#9a8057]">Friendly workspace</p>
+          <h2 class="mt-2 text-2xl font-extrabold text-[#21342a]">Data manager</h2>
+          <p class="mt-1 text-sm text-[#758078]">Navigate and manage your store using simple visual tools.</p>
+        </div>
+        <div class="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          ${[
+            ['storefront','✎','Website Studio','Edit home banners, category grid, shop filters & contacts'],
+            ['products','◇','Products','Edit catalog pricing, stock and photos'],
+            ['orders','▣','Orders','Review customer orders & update shipping numbers'],
+            ['categories','◈','Categories','Organize and manage saree collections'],
+            ['reviews','☆','Reviews','Moderate and delete customer feedback'],
+            ['coupons','％','Coupons','Manage discount codes and expiry dates'],
+            ['media','▧','Media library','Upload and copy image URLs']
+          ].map(([id,icon,title,desc])=>`
+            <button data-go="${id}" class="rounded-2xl border border-[#e7eae3] bg-white p-5 text-left hover:border-[#cbd8ca] transition">
+              <span class="grid h-10 w-10 place-items-center rounded-xl bg-[#f0f3ed] text-lg text-[#536a59]">${icon}</span>
+              <h3 class="mt-4 text-sm font-extrabold text-[#304137]">${title}</h3>
+              <p class="mt-1 text-xs text-[#758078]">${desc}</p>
+              <span class="mt-4 block text-[10px] font-bold text-[#617864]">Open section →</span>
+            </button>`).join('')}
+        </div>`;
     }
-    function tableHead(cols){return `<thead><tr>${cols.map(c=>`<th class="whitespace-nowrap px-4 py-3 text-left text-[9px] font-bold uppercase tracking-[.14em] text-[#818a81]">${c}</th>`).join('')}</tr></thead>`}
-    function renderProducts(){view.innerHTML=`<div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-end"><div><p class="text-[10px] font-bold uppercase tracking-[.19em] text-[#9a8057]">Catalog</p><h2 class="mt-2 text-2xl font-extrabold text-[#21342a]">Products</h2><p class="mt-1 text-sm text-[#758078]">Edit pricing, inventory, details and product visibility.</p></div><button data-action="product-new" class="rounded-xl bg-[#193528] px-4 py-3 text-xs font-bold text-white shadow-md">＋ Add product</button></div><div class="mt-5 overflow-hidden rounded-2xl border border-[#e7eae3] bg-white"><div class="flex flex-col gap-3 border-b border-[#edf0ea] p-4 sm:flex-row"><input id="product-search" placeholder="Search products…" class="w-full rounded-xl border border-[#e3e7df] bg-[#fbfcfa] px-4 py-2.5 text-xs sm:max-w-sm"><span class="self-center text-[10px] text-[#879087]">${products.length} products</span></div><div class="overflow-x-auto"><table class="w-full min-w-[760px]">${tableHead(['Product','Category','Price','Inventory','Visibility',''])}<tbody id="product-rows" class="divide-y divide-[#f0f1ed]">${products.map(productRow).join('')}</tbody></table></div></div>`;$('#product-search').oninput=e=>{$('#product-rows').innerHTML=products.filter(p=>(p.name||'').toLowerCase().includes(e.target.value.toLowerCase())).map(productRow).join('')}}
-    function productRow(p){const cat=categories.find(c=>String(c.id)===String(p.category_id));return `<tr class="hover:bg-[#fbfcfa]"><td class="px-4 py-3"><div class="flex items-center gap-3"><img src="${esc(p.images?.[0]||'https://placehold.co/60x72?text=TT')}" class="h-12 w-10 rounded-lg object-cover" alt=""><div><p class="max-w-[260px] truncate text-xs font-bold text-[#334238]">${esc(p.name)}</p><p class="mt-1 text-[10px] text-[#929a92]">${esc(p.fabric||'Handloom')} · #${esc(String(p.id).slice(0,8))}</p></div></div></td><td class="px-4 py-3 text-xs text-[#66736a]">${esc(cat?.name||'—')}</td><td class="px-4 py-3 text-xs font-bold text-[#334238]">${fmt(p.price)}</td><td class="px-4 py-3"><span class="rounded-full px-2.5 py-1 text-[10px] font-bold ${Number(p.stock)>4?'bg-[#eef4eb] text-[#537052]':'bg-[#fbf0e9] text-[#96613d]'}">${Number(p.stock||0)} pcs</span></td><td class="px-4 py-3"><span class="rounded-full px-2.5 py-1 text-[9px] font-bold ${p.active?'bg-[#eef4eb] text-[#537052]':'bg-[#f0f1ee] text-[#7c847d]'}">${p.active?'LIVE':'HIDDEN'}</span></td><td class="px-4 py-3 text-right"><button data-edit-product="${esc(p.id)}" class="rounded-lg border border-[#e5e8e2] px-3 py-2 text-[10px] font-bold text-[#58665b] hover:bg-[#f4f6f2]">Edit</button></td></tr>`}
-    function renderOrders(){view.innerHTML=`<div><p class="text-[10px] font-bold uppercase tracking-[.19em] text-[#9a8057]">Fulfillment</p><h2 class="mt-2 text-2xl font-extrabold text-[#21342a]">Orders</h2><p class="mt-1 text-sm text-[#758078]">Review customer orders, update fulfillment and tracking.</p></div><div class="mt-5 overflow-hidden rounded-2xl border border-[#e7eae3] bg-white"><div class="overflow-x-auto"><table class="w-full min-w-[860px]">${tableHead(['Order','Customer','Placed','Payment','Amount','Status','Tracking',''])}<tbody class="divide-y divide-[#f0f1ed]">${orders.map(o=>`<tr class="align-middle hover:bg-[#fbfcfa]"><td class="px-4 py-3 text-xs font-bold text-[#34443a]">#${esc(String(o.id).slice(0,8).toUpperCase())}</td><td class="px-4 py-3"><p class="text-xs font-semibold text-[#34443a]">${esc(o.name||o.customer_name||'Customer')}</p><p class="mt-1 text-[10px] text-[#879087]">${esc(o.phone||o.mobile_number||'')}</p></td><td class="px-4 py-3 text-[10px] text-[#758078]">${date(o.created_at)}</td><td class="px-4 py-3 text-[10px] text-[#758078]">${esc(o.payment_method||'')}</td><td class="px-4 py-3 text-xs font-bold text-[#34443a]">${fmt(o.total)}</td><td class="px-4 py-3"><select data-order-status="${esc(o.id)}" class="rounded-lg border border-[#e1e5dd] bg-white px-2 py-2 text-[10px] font-semibold text-[#435147]">${['pending','verified','dispatched','delivered','cancelled'].map(s=>`<option ${o.order_status===s?'selected':''} value="${s}">${s}</option>`).join('')}</select></td><td class="px-4 py-3"><input data-tracking="${esc(o.id)}" value="${esc(o.tracking_id||'')}" placeholder="Tracking ID" class="w-28 rounded-lg border border-[#e4e7e1] px-2 py-2 text-[10px]"></td><td class="px-4 py-3"><button data-save-order="${esc(o.id)}" class="rounded-lg bg-[#edf2ec] px-3 py-2 text-[10px] font-bold text-[#435d49]">Save</button></td></tr>`).join('')}</tbody></table></div></div>`}
-    function renderCategories(){view.innerHTML=`<div class="flex items-end justify-between gap-3"><div><p class="text-[10px] font-bold uppercase tracking-[.19em] text-[#9a8057]">Merchandising</p><h2 class="mt-2 text-2xl font-extrabold text-[#21342a]">Categories</h2><p class="mt-1 text-sm text-[#758078]">Organize the collections shoppers browse.</p></div><button data-action="category-new" class="rounded-xl bg-[#193528] px-4 py-3 text-xs font-bold text-white">＋ New category</button></div><div class="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">${categories.map(c=>`<article class="rounded-2xl border border-[#e7eae3] bg-white p-5"><div class="flex items-start justify-between"><span class="grid h-10 w-10 place-items-center rounded-xl bg-[#f0f3ed] text-lg text-[#627963]">◈</span><div class="flex gap-2"><button data-edit-category="${esc(c.id)}" class="rounded-lg border border-[#e5e8e2] px-3 py-2 text-[10px] font-bold">Edit</button><button data-delete-category="${esc(c.id)}" class="rounded-lg border border-[#f0dfdc] px-3 py-2 text-[10px] font-bold text-[#9b5147]">Delete</button></div></div><h3 class="mt-4 text-base font-extrabold text-[#304137]">${esc(c.name)}</h3><p class="mt-1 text-[10px] text-[#8c958d]">ID · ${esc(c.id)}</p></article>`).join('')||'<p class="rounded-xl bg-white p-8 text-center text-xs text-[#89928a]">No categories yet.</p>'}</div>`}
-    function renderReviews(){view.innerHTML=`<div><p class="text-[10px] font-bold uppercase tracking-[.19em] text-[#9a8057]">Customer voice</p><h2 class="mt-2 text-2xl font-extrabold text-[#21342a]">Reviews</h2><p class="mt-1 text-sm text-[#758078]">Moderate reviews shown on product pages.</p></div><div class="mt-5 grid gap-3 lg:grid-cols-2">${reviews.map(r=>`<article class="rounded-2xl border border-[#e7eae3] bg-white p-5"><div class="flex items-start justify-between gap-4"><div><p class="text-xs font-bold text-[#334238]">${esc(r.author||'Customer')}</p><p class="mt-1 text-[10px] text-[#89928a]">${date(r.created_at)} · Product ${esc(r.product_id||'')}</p></div><span class="rounded-full bg-[#f7f0e2] px-3 py-1 text-[10px] font-bold text-[#896d3c]">${'★'.repeat(Math.max(0,Math.min(5,Number(r.rating)||0)))}</span></div><p class="mt-4 text-xs leading-6 text-[#657168]">${esc(r.body||'')}</p><button data-delete-review="${esc(r.id)}" class="mt-4 rounded-lg border border-[#f0dfdc] px-3 py-2 text-[10px] font-bold text-[#9b5147]">Remove review</button></article>`).join('')||'<p class="rounded-xl bg-white p-8 text-center text-xs text-[#89928a]">No reviews found.</p>'}</div>`}
-    function renderCoupons(){view.innerHTML=`<div><p class="text-[10px] font-bold uppercase tracking-[.19em] text-[#9a8057]">Promotions</p><h2 class="mt-2 text-2xl font-extrabold text-[#21342a]">Coupons & data records</h2><p class="mt-1 text-sm text-[#758078]">Coupon schema varies by installation. Edit records as JSON to preserve all existing fields.</p></div><div class="mt-5 overflow-hidden rounded-2xl border border-[#e7eae3] bg-white"><div class="overflow-x-auto"><table class="w-full min-w-[680px]">${tableHead(['Coupon record','Fields','Preview',''])}<tbody class="divide-y divide-[#f0f1ed]">${coupons.map((r,i)=>`<tr><td class="px-4 py-4 text-xs font-bold text-[#36463b]">${esc(r.code||r.name||'Coupon '+(i+1))}</td><td class="px-4 py-4 text-[10px] text-[#7c877e]">${Object.keys(r).length} fields</td><td class="max-w-[300px] truncate px-4 py-4 font-mono text-[9px] text-[#788279]">${esc(JSON.stringify(r))}</td><td class="px-4 py-4 text-right"><button data-edit-json="coupons:${esc(r.id)}" class="rounded-lg border border-[#e5e8e2] px-3 py-2 text-[10px] font-bold">Edit JSON</button></td></tr>`).join('')}</tbody></table></div>${coupons.length?'':'<p class="p-10 text-center text-xs text-[#89928a]">Coupon records are not visible. Check that the coupons table exists and admin SQL policies are installed.</p>'}</div>`}
-    function renderContent(){const keys=['brand','banners','about','footer'];view.innerHTML=`<div><p class="text-[10px] font-bold uppercase tracking-[.19em] text-[#9a8057]">Brand studio</p><h2 class="mt-2 text-2xl font-extrabold text-[#21342a]">Store content</h2><p class="mt-1 text-sm text-[#758078]">Edit your storefront identity, home banners, brand story and contact details. Values are stored as JSON.</p></div><div class="mt-5 grid gap-4 xl:grid-cols-2">${keys.map(key=>`<section class="rounded-2xl border border-[#e7eae3] bg-white p-5"><div class="flex items-center justify-between"><div><h3 class="text-sm font-extrabold capitalize text-[#304137]">${key==='about'?'Brand story':key==='footer'?'Footer & contact':key==='banners'?'Home banners':'Brand identity'}</h3><p class="mt-1 text-[10px] text-[#89928a]">${key==='banners'?'Edit slide content, image URLs and shop links.':'Update the store display values.'}</p></div><span class="rounded-full bg-[#f0f3ed] px-2.5 py-1 text-[9px] font-bold text-[#657962]">${settings[key]?'SAVED':'DEFAULT'}</span></div><textarea data-setting="${key}" spellcheck="false" class="mt-4 min-h-[180px] w-full rounded-xl border border-[#e0e5dc] bg-[#fafbf9] p-3 font-mono text-[10px] leading-5 text-[#425147]">${esc(JSON.stringify(settings[key]??defaultSettings[key],null,2))}</textarea><button data-save-setting="${key}" class="mt-3 rounded-xl bg-[#193528] px-4 py-2.5 text-[10px] font-bold text-white">Save ${key}</button></section>`).join('')}</div>`}
-    const defaultSettings={brand:{name:'Thaarai Tex',tagline:'Premium Sarees',logo:''},banners:[],about:{title:'Crafted with Tradition',text:''},footer:{about:'',phone:'',email:'',address:'',whatsapp:'',upi:'',upiName:''}};
-    function renderData(){view.innerHTML=`<div><p class="text-[10px] font-bold uppercase tracking-[.19em] text-[#9a8057]">Advanced tools</p><h2 class="mt-2 text-2xl font-extrabold text-[#21342a]">Data manager</h2><p class="mt-1 text-sm text-[#758078]">Inspect and edit a complete record without hiding fields your schema may add later.</p></div><div class="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">${[['products',products],['categories',categories],['orders',orders],['reviews',reviews],['coupons',coupons]].map(([name,rows])=>`<section class="rounded-2xl border border-[#e7eae3] bg-white p-5"><p class="text-[10px] font-bold uppercase tracking-[.15em] text-[#879087]">${name}</p><p class="mt-2 text-2xl font-extrabold text-[#26382d]">${rows.length}</p><div class="mt-4 space-y-2">${rows.slice(0,8).map((r,i)=>`<div class="flex items-center justify-between gap-2 rounded-lg bg-[#f7f8f5] p-2"><span class="truncate font-mono text-[9px] text-[#718076]">${esc(r.name||r.code||r.id||'Record '+(i+1))}</span><button data-edit-json="${name}:${esc(r.id)}" class="shrink-0 text-[9px] font-bold text-[#54705a]">Edit JSON</button></div>`).join('')||'<p class="text-[10px] text-[#9aa198]">No records loaded.</p>'}</div></section>`).join('')}</div><div class="mt-5 rounded-2xl border border-[#dfe5db] bg-[#eef3eb] p-5"><h3 class="text-xs font-extrabold text-[#354a39]">Store security</h3><p class="mt-2 text-xs leading-5 text-[#5f6f61]">Only users whose Supabase Auth app_metadata contains <code class="rounded bg-white px-1.5 py-0.5">role: admin</code> should receive administrator access. Row Level Security remains the final authorization check.</p></div>`}
-    async function openProduct(product){editing={type:'product',row:product||{active:true,stock:0,images:[]}};$('#editor-kicker').textContent=product?'CATALOG · EDIT':'CATALOG · NEW';$('#editor-title').textContent=product?'Edit product':'Create a product';$('#editor-fields').innerHTML=`<div class="grid gap-3 sm:grid-cols-2">${field('name','Product name',editing.row.name||'')}${field('fabric','Fabric',editing.row.fabric||'')}${field('price','Price (₹)',editing.row.price||0,'number')}${field('mrp','MRP (₹)',editing.row.mrp||0,'number')}${field('stock','Stock quantity',editing.row.stock||0,'number')}<label class="block text-xs font-bold text-[#445248]">Category<select name="category_id" class="mt-2 w-full rounded-xl border border-[#dfe4dc] bg-white px-3 py-3 text-xs"><option value="">No category</option>${categories.map(c=>`<option value="${esc(c.id)}" ${String(c.id)===String(editing.row.category_id)?'selected':''}>${esc(c.name)}</option>`).join('')}</select></label>${field('color','Colour',editing.row.color||'')}${field('occasion','Occasion',editing.row.occasion||'')}</div><label class="block text-xs font-bold text-[#445248]">Product images <span class="font-normal text-[#879087]">(one URL per line)</span><textarea name="images" rows="3" class="mt-2 w-full rounded-xl border border-[#dfe4dc] bg-white px-3 py-3 font-mono text-[10px]">${esc((editing.row.images||[]).join('\n'))}</textarea></label><label class="block text-xs font-bold text-[#445248]">Description<textarea name="description" rows="4" class="mt-2 w-full rounded-xl border border-[#dfe4dc] bg-white px-3 py-3 text-xs">${esc(editing.row.description||'')}</textarea></label><label class="flex items-center gap-3 rounded-xl bg-[#f0f3ed] p-3 text-xs font-bold text-[#435248]"><input name="active" type="checkbox" ${editing.row.active!==false?'checked':''} class="h-4 w-4 accent-[#315841]"> Visible in storefront</label>${product?'<button type="button" data-action="product-delete" class="text-left text-xs font-bold text-rose-700">Delete this product</button>':''}`;editor.showModal()}
-    function field(name,label,value,type='text'){return `<label class="block text-xs font-bold text-[#445248]">${label}<input name="${name}" ${type==='number'?'type="number" step="any"':''} value="${esc(value)}" required class="mt-2 w-full rounded-xl border border-[#dfe4dc] bg-white px-3 py-3 text-xs"></label>`}
-    function openCategory(category){editing={type:'category',row:category||{}};$('#editor-kicker').textContent='MERCHANDISING';$('#editor-title').textContent=category?'Edit category':'Create category';$('#editor-fields').innerHTML=field('name','Category name',category?.name||'');editor.showModal()}
-    function openJson(table,row){editing={type:'json',table,row};$('#editor-kicker').textContent=table.toUpperCase()+' · RAW RECORD';$('#editor-title').textContent='Edit complete record';$('#editor-fields').innerHTML=`<p class="text-xs leading-5 text-[#79847a]">All fields are preserved. The record is validated as JSON before saving.</p><textarea name="record" spellcheck="false" required class="min-h-[360px] w-full rounded-xl border border-[#dfe4dc] bg-white p-4 font-mono text-[11px] leading-6 text-[#34453a]">${esc(JSON.stringify(row,null,2))}</textarea>`;editor.showModal()}
-    function productPayload(form){const fd=new FormData(form);return {name:String(fd.get('name')).trim(),fabric:String(fd.get('fabric')||'').trim(),price:Number(fd.get('price')),mrp:Number(fd.get('mrp')),stock:Number(fd.get('stock')),category_id:fd.get('category_id')||null,color:String(fd.get('color')||'').trim(),occasion:String(fd.get('occasion')||'').trim(),images:String(fd.get('images')||'').split('\n').map(s=>s.trim()).filter(Boolean),description:String(fd.get('description')||'').trim(),active:fd.has('active')}}
-    async function saveEditor(event){event.preventDefault();const form=event.currentTarget;
+
+    /* Editor Submit Handling */
+    async function saveEditor(event){
+      event.preventDefault();
+      const form=event.currentTarget;
       try{
-        if(editing.type==='product'){const payload=productPayload(form),q=editing.row.id?db.from('products').update(payload).eq('id',editing.row.id):db.from('products').insert(payload);const {error}=await q;if(error)throw error}
-        else if(editing.type==='category'){const name=new FormData(form).get('name').toString().trim(),q=editing.row.id?db.from('categories').update({name}).eq('id',editing.row.id):db.from('categories').insert({name});const {error}=await q;if(error)throw error}
-        else if(editing.type==='json'){const row=JSON.parse(new FormData(form).get('record'));if(!row||typeof row!=='object'||Array.isArray(row))throw new Error('Record must be a JSON object');const q=editing.table==='coupons'?(editing.row.id?db.from('coupons').update(row).eq('id',editing.row.id):db.from('coupons').insert(row)):db.from(editing.table).update(row).eq('id',editing.row.id);const {error}=await q;if(error)throw error}
-        editor.close();await loadAll();toast('Saved successfully');
-      }catch(error){toast(error.message||'Could not save changes')}
+        if(editing.type==='product'){
+          const payload=productPayload(form);
+          const q=editing.row.id?db.from('products').update(payload).eq('id',editing.row.id):db.from('products').insert(payload);
+          const {error}=await q;
+          if(error)throw error;
+        }else if(editing.type==='category'){
+          const name=new FormData(form).get('name').toString().trim();
+          const q=editing.row.id?db.from('categories').update({name}).eq('id',editing.row.id):db.from('categories').insert({name});
+          const {error}=await q;
+          if(error)throw error;
+        }else if(editing.type==='coupon'){
+          const fd=new FormData(form);
+          const old=editing.row;
+          const code=String(fd.get('code')).trim();
+          const discount=Number(fd.get('discount'));
+          const payload={};
+          if('code'in old||!old.id)payload.code=code;
+          if('name'in old)payload.name=code;
+          if('discount'in old||!old.id)payload.discount=discount;
+          if('discount_percent'in old)payload.discount_percent=discount;
+          if('percentage'in old)payload.percentage=discount;
+          if('discount_type'in old||!old.id)payload.discount_type=fd.get('discount_type');
+          if('type'in old)payload.type=fd.get('discount_type');
+          if('minimum_order'in old||!old.id)payload.minimum_order=Number(fd.get('minimum_order'));
+          if('expires_at'in old||!old.id)payload.expires_at=fd.get('expires_at')||null;
+          if('active'in old||!old.id)payload.active=fd.has('active');
+          const q=old.id?db.from('coupons').update(payload).eq('id',old.id):db.from('coupons').insert(payload);
+          const {error}=await q;
+          if(error)throw error;
+        }
+        editor.close();
+        await loadAll();
+        toast('Saved successfully ✓');
+      }catch(error){
+        toast(error.message||'Could not save changes');
+      }
     }
-    async function saveSetting(key){try{const value=JSON.parse(document.querySelector(`[data-setting="${key}"]`).value);const {error}=await db.from('store_settings').upsert({key,value,updated_at:new Date().toISOString()});if(error)throw error;settings[key]=value;toast('Store content saved');renderContent()}catch(error){toast(error instanceof SyntaxError?'Please fix the JSON format first':error.message||'Could not save setting')}}
-    async function deleteRow(table,id){if(!confirm('Delete this record? This cannot be undone.'))return;const {error}=await db.from(table).delete().eq('id',id);if(error){toast(error.message);return}await loadAll();toast('Record deleted')}
-    async function saveOrder(id){const order_status=$(`[data-order-status="${CSS.escape(id)}"]`).value,tracking_id=$(`[data-tracking="${CSS.escape(id)}"]`).value.trim();const {error}=await db.from('orders').update({order_status,tracking_id}).eq('id',id);if(error){toast(error.message);return}await loadAll();toast('Order updated')}
-    async function saveAdminSession(session){if(!session)return false;const {data,error}=await db.auth.getUser();if(error||data.user?.app_metadata?.role!=='admin'){await db.auth.signOut();return false}if(!adminGuardReady){history.replaceState({adminSection:'overview',adminRoot:true},'',location.href);history.pushState({adminSection:'overview',adminGuard:true},'',location.href);adminGuardReady=true}$('#login-screen').classList.add('hidden');$('#dashboard').classList.remove('hidden');$('#admin-email').textContent=data.user.email||'';await loadAll();return true}
-    $('#login-form').onsubmit=async e=>{e.preventDefault();const msg=$('#login-error');msg.textContent='';const {data,error}=await db.auth.signInWithPassword({email:$('#login-email').value.trim(),password:$('#login-password').value});if(error){msg.textContent=error.message;return}if(!await saveAdminSession(data.session))msg.textContent='This account is not authorized for admin access.'};
-    $('#logout').onclick=async()=>{await db.auth.signOut();location.reload()};
-    $('#editor-form').onsubmit=saveEditor;$('#editor-close').onclick=()=>editor.close();$('#editor-cancel').onclick=()=>editor.close();
-    $('#menu-toggle').onclick=()=>{$('#sidebar').classList.remove('-translate-x-full');$('#sidebar-backdrop').classList.remove('hidden')};$('#sidebar-backdrop').onclick=closeSidebar;
-    nav.onclick=e=>{const b=e.target.closest('[data-section]');if(b)setSection(b.dataset.section)};
+
+    async function deleteRow(table,id){
+      if(!confirm('Delete this record? This cannot be undone.'))return;
+      const {error}=await db.from(table).delete().eq('id',id);
+      if(error){toast(error.message);return}
+      await loadAll();
+      toast('Record deleted ✓');
+    }
+
+    /* Modal dialog helpers for product photos */
+    async function showProductLibrary(){
+      const d=document.createElement('dialog');
+      d.className='w-[min(760px,calc(100%-24px))] max-h-[85vh] rounded-2xl border-0 bg-[#fbfcf9] p-5 shadow-2xl';
+      d.innerHTML=`
+        <div class="flex items-center justify-between border-b pb-4">
+          <div>
+            <h3 class="text-lg font-extrabold text-[#24342b]">Choose from media library</h3>
+            <p class="mt-1 text-xs text-[#758078]">Select a photo to add it to this product.</p>
+          </div>
+          <button class="close-media grid h-9 w-9 place-items-center rounded-full bg-[#eef0eb] text-xl hover:bg-gray-200">×</button>
+        </div>
+        <div class="library-grid mt-4 grid max-h-[65vh] grid-cols-2 gap-3 overflow-y-auto sm:grid-cols-4">Loading images…</div>`;
+      document.body.append(d);
+      d.showModal();
+      d.querySelector('.close-media').onclick=()=>d.close();
+      d.addEventListener('close',()=>d.remove());
+      try{
+        const files=await loadMedia();
+        const grid=d.querySelector('.library-grid');
+        grid.innerHTML=files.map((x,i)=>`
+          <button type="button" data-library-select="${i}" class="overflow-hidden rounded-xl border border-[#e5e8e2] text-left hover:border-[#193528] transition">
+            <img src="${esc(x.url)}" alt="${esc(x.name)}" class="aspect-square w-full object-cover">
+            <span class="block truncate p-2 text-[10px] text-gray-700">${esc(x.name)}</span>
+          </button>`).join('')||'<p class="col-span-full p-8 text-center text-xs">No images found. Upload photos in the Media Library first.</p>';
+        grid.onclick=e=>{
+          const b=e.target.closest('[data-library-select]');
+          if(!b)return;
+          const current=$('[name="images"]').value.split('\n').filter(Boolean);
+          const image=files[Number(b.dataset.librarySelect)].url;
+          if(!current.includes(image))current.push(image);
+          updateProductImages(current);
+          d.close();
+        };
+      }catch(error){
+        d.querySelector('.library-grid').textContent=error.message;
+      }
+    }
+
+    /* Event delegation for all dashboard buttons */
     document.addEventListener('click',async e=>{
-      const go=e.target.closest('[data-go]');if(go){setSection(go.dataset.go);return}
+      const go=e.target.closest('[data-go]');
+      if(go){setSection(go.dataset.go);return}
+
       const action=e.target.closest('[data-action]')?.dataset.action;
-      if(action==='refresh'){await loadAll();toast('Dashboard refreshed')}
+      if(action==='refresh'){await loadAll();toast('Dashboard refreshed ✓')}
       if(action==='product-new')openProduct(null);
       if(action==='product-delete')deleteRow('products',editing.row.id).then(()=>editor.close());
       if(action==='category-new')openCategory(null);
+      if(action==='coupon-new')openCoupon(null);
+
       const ep=e.target.closest('[data-edit-product]');if(ep)openProduct(products.find(p=>String(p.id)===ep.dataset.editProduct));
       const ec=e.target.closest('[data-edit-category]');if(ec)openCategory(categories.find(c=>String(c.id)===ec.dataset.editCategory));
       const dc=e.target.closest('[data-delete-category]');if(dc)deleteRow('categories',dc.dataset.deleteCategory);
       const dr=e.target.closest('[data-delete-review]');if(dr)deleteRow('reviews',dr.dataset.deleteReview);
       const so=e.target.closest('[data-save-order]');if(so)saveOrder(so.dataset.saveOrder);
-      const ss=e.target.closest('[data-save-setting]');if(ss)saveSetting(ss.dataset.saveSetting);
-      const ej=e.target.closest('[data-edit-json]');if(ej){const [table,id]=ej.dataset.editJson.split(':'),rows={products,categories,orders,reviews,coupons}[table]||[];openJson(table,rows.find(r=>String(r.id)===id))}
+      const ecp=e.target.closest('[data-edit-coupon]');if(ecp)openCoupon(coupons.find(c=>String(c.id)===ecp.dataset.editCoupon));
+      const ordDet=e.target.closest('[data-order-details]');if(ordDet)showOrderDetails(orders.find(o=>String(o.id)===ordDet.dataset.orderDetails));
+
+      if(e.target.closest('[data-product-local]')){$('#product-local-files').click();return}
+      if(e.target.closest('[data-product-library]')){showProductLibrary();return}
+
+      const imageRemove=e.target.closest('[data-remove-product-image]');
+      if(imageRemove){
+        const list=$('[name="images"]').value.split('\n').filter(Boolean);
+        list.splice(Number(imageRemove.dataset.removeProductImage),1);
+        updateProductImages(list);
+      }
     });
-    document.addEventListener('click',e=>{const b=e.target.closest('[data-section]');if(b)setSection(b.dataset.section)});
+
+    $('#product-local-files').onchange=async e=>{
+      const files=[...e.target.files];e.target.value='';
+      const current=$('[name="images"]')?.value.split('\n').filter(Boolean)||[];
+      for(const file of files){
+        if(!file.type.startsWith('image/')){toast(`${file.name} is not an image`);continue}
+        if(file.size>4*1024*1024){toast(`${file.name} exceeds 4 MB limit`);continue}
+        const path=`products/${Date.now()}-${file.name.replace(/[^\w.-]/g,'_')}`;
+        try{
+          const {error}=await db.storage.from(MEDIA_BUCKET).upload(path,file,{contentType:file.type});
+          if(error)throw error;
+          current.push(db.storage.from(MEDIA_BUCKET).getPublicUrl(path).data.publicUrl);
+        }catch(error){
+          toast(error.message);
+          break;
+        }
+      }
+      if($('#editor').open)updateProductImages(current);
+    };
+
+    /* ===== AUTH & INITIALIZATION ===== */
+    async function saveAdminSession(session){
+      if(!session)return false;
+      const {data,error}=await db.auth.getUser();
+      if(error||data.user?.app_metadata?.role!=='admin'){
+        await db.auth.signOut();
+        return false;
+      }
+      if(!adminGuardReady){
+        history.replaceState({adminSection:'overview',adminRoot:true},'',location.href);
+        history.pushState({adminSection:'overview',adminGuard:true},'',location.href);
+        adminGuardReady=true;
+      }
+      $('#login-screen').classList.add('hidden');
+      $('#dashboard').classList.remove('hidden');
+      $('#admin-email').textContent=data.user.email||'';
+      await loadAll();
+      return true;
+    }
+
+    $('#login-form').onsubmit=async e=>{
+      e.preventDefault();
+      const msg=$('#login-error');
+      msg.textContent='';
+      const {data,error}=await db.auth.signInWithPassword({email:$('#login-email').value.trim(),password:$('#login-password').value});
+      if(error){msg.textContent=error.message;return}
+      if(!await saveAdminSession(data.session))msg.textContent='This account is not authorized for admin access.';
+    };
+
+    $('#logout').onclick=async()=>{await db.auth.signOut();location.reload()};
+    $('#editor-form').onsubmit=saveEditor;
+    $('#editor-close').onclick=()=>editor.close();
+    $('#editor-cancel').onclick=()=>editor.close();
+    $('#menu-toggle').onclick=()=>{$('#sidebar').classList.remove('-translate-x-full');$('#sidebar-backdrop').classList.remove('hidden')};
+    $('#sidebar-backdrop').onclick=closeSidebar;
+    nav.onclick=e=>{const b=e.target.closest('[data-section]');if(b)setSection(b.dataset.section)};
+
     $('#today').textContent=new Date().toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long'});
     db.auth.getSession().then(({data})=>{if(data.session)saveAdminSession(data.session)});
-
-    renderData=function(){view.innerHTML=`<div><p class="text-[10px] font-bold uppercase tracking-[.19em] text-[#9a8057]">Friendly workspace</p><h2 class="mt-2 text-2xl font-extrabold text-[#21342a]">Data manager</h2><p class="mt-1 text-sm text-[#758078]">Manage everything using simple forms—no code or JSON editing.</p></div><div class="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">${[['products','◇','Products','Edit product details and photos'],['orders','▣','Orders','View complete customer and delivery details'],['categories','◈','Categories','Organize your collections'],['reviews','☆','Reviews','Review and remove customer feedback'],['coupons','％','Coupons','Manage discount codes with simple fields'],['content','▤','Store content','Update brand, banners and contact details'],['media','▧','Media library','Upload and reuse your photos']].map(([id,icon,title,desc])=>`<button data-go="${id}" class="rounded-2xl border border-[#e7eae3] bg-white p-5 text-left hover:border-[#cbd8ca]"><span class="grid h-10 w-10 place-items-center rounded-xl bg-[#f0f3ed] text-lg text-[#536a59]">${icon}</span><h3 class="mt-4 text-sm font-extrabold text-[#304137]">${title}</h3><p class="mt-1 text-xs text-[#758078]">${desc}</p><span class="mt-4 block text-[10px] font-bold text-[#617864]">Open section →</span></button>`).join('')}</div>`};
-    renderCoupons=function(){view.innerHTML=`<div class="flex items-end justify-between gap-3"><div><p class="text-[10px] font-bold uppercase tracking-[.19em] text-[#9a8057]">Promotions</p><h2 class="mt-2 text-2xl font-extrabold text-[#21342a]">Coupons</h2><p class="mt-1 text-sm text-[#758078]">Edit coupon details using simple fields.</p></div><button data-action="coupon-new" class="rounded-xl bg-[#193528] px-4 py-3 text-xs font-bold text-white">＋ New coupon</button></div><div class="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">${coupons.map(c=>`<article class="rounded-2xl border border-[#e7eae3] bg-white p-5"><div class="flex items-start justify-between"><span class="rounded-lg bg-[#f0f3ed] px-3 py-2 text-sm font-extrabold text-[#405943]">${esc(c.code||c.name||'Coupon')}</span><span class="text-[10px] font-bold ${c.active===false?'text-[#89928a]':'text-[#537052]'}">${c.active===false?'INACTIVE':'ACTIVE'}</span></div><p class="mt-4 text-xs text-[#66736a]">${esc(c.discount??c.discount_percent??c.percentage??'—')} ${esc(c.discount_type||c.type||'%')} discount</p><p class="mt-1 text-[10px] text-[#89928a]">${c.expires_at?'Expires '+date(c.expires_at):'No expiry date'}</p><button data-edit-coupon="${esc(c.id)}" class="mt-4 rounded-lg border border-[#e5e8e2] px-3 py-2 text-[10px] font-bold">Edit coupon</button></article>`).join('')||'<p class="rounded-xl bg-white p-8 text-center text-xs text-[#89928a]">No coupons found.</p>'}</div>`};
-    renderContent=function(){const b=settings.brand||defaultSettings.brand,a=settings.about||defaultSettings.about,f=settings.footer||defaultSettings.footer,banners=Array.isArray(settings.banners)?settings.banners:defaultSettings.banners;view.innerHTML=`<div><p class="text-[10px] font-bold uppercase tracking-[.19em] text-[#9a8057]">Brand studio</p><h2 class="mt-2 text-2xl font-extrabold text-[#21342a]">Store content</h2><p class="mt-1 text-sm text-[#758078]">Update your storefront using familiar text fields.</p></div><div class="mt-5 grid gap-4 xl:grid-cols-2"><section class="rounded-2xl border border-[#e7eae3] bg-white p-5"><h3 class="text-sm font-extrabold text-[#304137]">Brand identity</h3>${textField('brand-name','Store name',b.name)}${textField('brand-tagline','Tagline',b.tagline)}${textField('brand-logo','Logo image URL',b.logo)}<button data-save-setting="brand" class="mt-4 rounded-xl bg-[#193528] px-4 py-2.5 text-[10px] font-bold text-white">Save brand</button></section><section class="rounded-2xl border border-[#e7eae3] bg-white p-5"><h3 class="text-sm font-extrabold text-[#304137]">Brand story</h3>${textField('about-title','Heading',a.title)}<label class="mt-3 block text-xs font-bold text-[#445248]">Story<textarea id="about-text" rows="5" class="mt-2 w-full rounded-xl border border-[#dfe4dc] bg-white px-3 py-3 text-xs">${esc(a.text||'')}</textarea></label><button data-save-setting="about" class="mt-4 rounded-xl bg-[#193528] px-4 py-2.5 text-[10px] font-bold text-white">Save story</button></section><section class="rounded-2xl border border-[#e7eae3] bg-white p-5"><h3 class="text-sm font-extrabold text-[#304137]">Footer & contact</h3><div class="grid gap-1 sm:grid-cols-2">${[['about','Footer text'],['phone','Phone'],['email','Email'],['address','Address'],['whatsapp','WhatsApp number'],['upi','UPI ID'],['upiName','UPI account name']].map(([k,l])=>textField('footer-'+k,l,f[k])).join('')}</div><button data-save-setting="footer" class="mt-4 rounded-xl bg-[#193528] px-4 py-2.5 text-[10px] font-bold text-white">Save contact details</button></section><section class="rounded-2xl border border-[#e7eae3] bg-white p-5"><div class="flex items-center justify-between"><div><h3 class="text-sm font-extrabold text-[#304137]">Home banners</h3><p class="mt-1 text-[10px] text-[#89928a]">Add and edit slide content and image links.</p></div><button data-banner-add class="rounded-lg bg-[#eff3ed] px-3 py-2 text-[10px] font-bold">＋ Add banner</button></div><div id="banner-fields" class="mt-4 space-y-4">${banners.map((x,i)=>bannerForm(x,i)).join('')}</div><button data-save-setting="banners" class="mt-4 rounded-xl bg-[#193528] px-4 py-2.5 text-[10px] font-bold text-white">Save banners</button></section></div>`};
-    function textField(id,label,value){return `<label class="mt-3 block text-xs font-bold text-[#445248]">${label}<input id="${id}" value="${esc(value||'')}" class="mt-2 w-full rounded-xl border border-[#dfe4dc] bg-white px-3 py-3 text-xs"></label>`}
-    function bannerForm(x,i){return `<div class="banner-card rounded-xl border border-[#e8ebe5] bg-[#fafbf9] p-4"><div class="mb-3 flex items-center justify-between"><b class="text-[10px] text-[#536157]">Slide ${i+1}</b><button type="button" data-banner-remove="${i}" class="text-[10px] font-bold text-rose-700">Remove</button></div><div class="grid gap-1 sm:grid-cols-2">${[['title','Heading'],['subtitle','Subheading'],['image','Image URL'],['btn','Button label'],['link','Button link']].map(([k,l])=>textField(`banner-${i}-${k}`,l,x[k])).join('')}</div></div>`}
-    saveSetting=async function(key){try{let value;if(key==='brand')value={name:$('#brand-name').value.trim(),tagline:$('#brand-tagline').value.trim(),logo:$('#brand-logo').value.trim()};else if(key==='about')value={title:$('#about-title').value.trim(),text:$('#about-text').value.trim()};else if(key==='footer'){value={};['about','phone','email','address','whatsapp','upi','upiName'].forEach(k=>value[k]=$(`#footer-${k}`).value.trim())}else value=[...document.querySelectorAll('.banner-card')].map((el,i)=>{const item={};['title','subtitle','image','btn','link'].forEach(k=>item[k]=el.querySelector(`#banner-${i}-${k}`)?.value.trim()||'');return item});const {error}=await db.from('store_settings').upsert({key,value,updated_at:new Date().toISOString()});if(error)throw error;settings[key]=value;toast('Store content saved');renderContent()}catch(error){toast(error.message||'Could not save content')}};
-    openCoupon=function(coupon){editing={type:'coupon',row:coupon||{}};$('#editor-kicker').textContent='PROMOTIONS';$('#editor-title').textContent=coupon?'Edit coupon':'New coupon';const row=editing.row;$('#editor-fields').innerHTML=`${field('code','Coupon code',row.code||row.name||'')}${field('discount','Discount amount or percent',row.discount??row.discount_percent??row.percentage??'','number')}<label class="block text-xs font-bold text-[#445248]">Discount type<select name="discount_type" class="mt-2 w-full rounded-xl border border-[#dfe4dc] bg-white px-3 py-3 text-xs"><option value="percent" ${(row.discount_type||row.type||'%')==='percent'||(row.discount_type||row.type)==='%'?'selected':''}>Percentage</option><option value="fixed" ${(row.discount_type||row.type)==='fixed'?'selected':''}>Fixed amount</option></select></label>${field('minimum_order','Minimum order (₹)',row.minimum_order||0,'number')}${field('expires_at','Expiry date',row.expires_at?String(row.expires_at).slice(0,10):'','date')}<label class="flex items-center gap-3 rounded-xl bg-[#f0f3ed] p-3 text-xs font-bold text-[#435248]"><input name="active" type="checkbox" ${row.active!==false?'checked':''} class="h-4 w-4 accent-[#315841]"> Coupon is active</label>`;editor.showModal()};
-    openJson=()=>toast('Raw record editing is disabled. Use the matching admin section form.');
-    renderProducts=function(){view.innerHTML=`<div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-end"><div><p class="text-[10px] font-bold uppercase tracking-[.19em] text-[#9a8057]">Catalog</p><h2 class="mt-2 text-2xl font-extrabold text-[#21342a]">Products</h2><p class="mt-1 text-sm text-[#758078]">Manage product details and photos with previews.</p></div><button data-action="product-new" class="rounded-xl bg-[#193528] px-4 py-3 text-xs font-bold text-white">＋ Add product</button></div><div class="mt-5 overflow-hidden rounded-2xl border border-[#e7eae3] bg-white"><div class="border-b border-[#edf0ea] p-4"><input id="product-search" placeholder="Search products…" class="w-full rounded-xl border border-[#e3e7df] bg-[#fbfcfa] px-4 py-2.5 text-xs sm:max-w-sm"></div><div class="overflow-x-auto"><table class="w-full min-w-[760px]">${tableHead(['Product','Category','Price','Inventory','Visibility',''])}<tbody id="product-rows" class="divide-y divide-[#f0f1ed]">${products.map(productRow).join('')}</tbody></table></div></div>`;$('#product-search').oninput=e=>$('#product-rows').innerHTML=products.filter(p=>(p.name||'').toLowerCase().includes(e.target.value.toLowerCase())).map(productRow).join('')};
-    openProduct=async function(product){editing={type:'product',row:product||{active:true,stock:0,images:[]}};const r=editing.row;$('#editor-kicker').textContent=product?'CATALOG · EDIT':'CATALOG · NEW';$('#editor-title').textContent=product?'Edit product':'Create a product';const images=Array.isArray(r.images)?r.images:[];$('#editor-fields').innerHTML=`<div class="grid gap-3 sm:grid-cols-2">${field('name','Product name',r.name||'')}${field('fabric','Fabric',r.fabric||'')}${field('price','Price (₹)',r.price||0,'number')}${field('mrp','MRP (₹)',r.mrp||0,'number')}${field('stock','Stock quantity',r.stock||0,'number')}<label class="block text-xs font-bold text-[#445248]">Category<select name="category_id" class="mt-2 w-full rounded-xl border border-[#dfe4dc] bg-white px-3 py-3 text-xs"><option value="">No category</option>${categories.map(c=>`<option value="${esc(c.id)}" ${String(c.id)===String(r.category_id)?'selected':''}>${esc(c.name)}</option>`).join('')}</select></label>${field('color','Colour',r.color||'')}${field('occasion','Occasion',r.occasion||'')}</div><div><div class="flex items-center justify-between"><span class="text-xs font-bold text-[#445248]">Product photos</span><div class="flex gap-2"><button type="button" data-product-local class="rounded-lg bg-[#193528] px-3 py-2 text-[10px] font-bold text-white">Upload from device</button><button type="button" data-product-library class="rounded-lg border border-[#dfe4dc] px-3 py-2 text-[10px] font-bold">Choose from media library</button></div></div><input id="product-local-files" type="file" accept="image/*" multiple class="hidden"><div id="product-image-grid" class="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-4">${images.map((url,i)=>`<div class="relative overflow-hidden rounded-xl border border-[#e5e8e2]"><img src="${esc(url)}" alt="Product photo ${i+1}" class="aspect-square w-full object-cover"><button type="button" data-remove-product-image="${i}" class="absolute right-1 top-1 grid h-7 w-7 place-items-center rounded-full bg-white/95 text-sm font-bold text-rose-700 shadow">×</button></div>`).join('')||'<p class="col-span-full rounded-xl bg-[#f7f8f5] p-5 text-center text-[10px] text-[#89928a]">No product photos yet. Upload from your device or select from the library.</p>'}</div><textarea name="images" class="hidden">${esc(images.join('\n'))}</textarea></div><label class="block text-xs font-bold text-[#445248]">Description<textarea name="description" rows="4" class="mt-2 w-full rounded-xl border border-[#dfe4dc] bg-white px-3 py-3 text-xs">${esc(r.description||'')}</textarea></label><label class="flex items-center gap-3 rounded-xl bg-[#f0f3ed] p-3 text-xs font-bold text-[#435248]"><input name="active" type="checkbox" ${r.active!==false?'checked':''} class="h-4 w-4 accent-[#315841]"> Visible in storefront</label>${product?'<button type="button" data-action="product-delete" class="text-left text-xs font-bold text-rose-700">Delete this product</button>':''}`;editor.showModal()};
-    function updateProductImages(images){const area=$('[name="images"]'),grid=$('#product-image-grid');area.value=images.join('\\n');grid.innerHTML=images.map((url,i)=>`<div class="relative overflow-hidden rounded-xl border border-[#e5e8e2]"><img src="${esc(url)}" alt="Product photo ${i+1}" class="aspect-square w-full object-cover"><button type="button" data-remove-product-image="${i}" class="absolute right-1 top-1 grid h-7 w-7 place-items-center rounded-full bg-white/95 text-sm font-bold text-rose-700 shadow">×</button></div>`).join('')||'<p class="col-span-full rounded-xl bg-[#f7f8f5] p-5 text-center text-[10px] text-[#89928a]">No product photos yet.</p>'}
-    async function showProductLibrary(){const d=document.createElement('dialog');d.className='w-[min(760px,calc(100%-24px))] max-h-[85vh] rounded-2xl border-0 bg-[#fbfcf9] p-5 shadow-2xl';d.innerHTML=`<div class="flex items-center justify-between"><div><h3 class="text-lg font-extrabold text-[#24342b]">Choose from media library</h3><p class="mt-1 text-xs text-[#758078]">Select a photo to add it to this product.</p></div><button class="close-media grid h-9 w-9 place-items-center rounded-full bg-[#eef0eb] text-xl">×</button></div><div class="library-grid mt-4 grid max-h-[65vh] grid-cols-2 gap-3 overflow-y-auto sm:grid-cols-4">Loading images…</div>`;document.body.append(d);d.showModal();d.querySelector('.close-media').onclick=()=>d.close();d.addEventListener('close',()=>d.remove());try{const files=await loadMedia();const grid=d.querySelector('.library-grid');grid.innerHTML=files.map((x,i)=>`<button type="button" data-library-select="${i}" class="overflow-hidden rounded-xl border border-[#e5e8e2] text-left"><img src="${esc(x.url)}" alt="${esc(x.name)}" class="aspect-square w-full object-cover"><span class="block truncate p-2 text-[10px]">${esc(x.name)}</span></button>`).join('')||'<p class="col-span-full p-8 text-center text-xs">No images found. Upload photos to the Media Library first.</p>';grid.onclick=e=>{const b=e.target.closest('[data-library-select]');if(!b)return;const current=$('[name="images"]').value.split('\\n').filter(Boolean);const image=files[Number(b.dataset.librarySelect)].url;if(!current.includes(image))current.push(image);updateProductImages(current);d.close()}}catch(error){d.querySelector('.library-grid').textContent=error.message}}
-    renderOrders=function(){view.innerHTML=`<div><p class="text-[10px] font-bold uppercase tracking-[.19em] text-[#9a8057]">Fulfillment</p><h2 class="mt-2 text-2xl font-extrabold text-[#21342a]">Orders</h2><p class="mt-1 text-sm text-[#758078]">Open any order to see customer, item, payment and delivery details.</p></div><div class="mt-5 overflow-hidden rounded-2xl border border-[#e7eae3] bg-white"><div class="overflow-x-auto"><table class="w-full min-w-[960px]">${tableHead(['Order','Customer','Placed','Payment','Amount','Status','Tracking','Details',''])}<tbody class="divide-y divide-[#f0f1ed]">${orders.map(o=>`<tr class="hover:bg-[#fbfcfa]"><td class="px-4 py-3 text-xs font-bold">#${esc(String(o.id).slice(0,8).toUpperCase())}</td><td class="px-4 py-3 text-xs">${esc(o.name||o.customer_name||'Customer')}<span class="block text-[10px] text-[#879087]">${esc(o.phone||o.mobile_number||'')}</span></td><td class="px-4 py-3 text-[10px]">${date(o.created_at)}</td><td class="px-4 py-3 text-[10px]">${esc(o.payment_method||'—')}</td><td class="px-4 py-3 text-xs font-bold">${fmt(o.total)}</td><td class="px-4 py-3"><select data-order-status="${esc(o.id)}" class="rounded-lg border px-2 py-2 text-[10px]">${['pending','verified','dispatched','delivered','cancelled'].map(s=>`<option ${o.order_status===s?'selected':''} value="${s}">${s}</option>`).join('')}</select></td><td class="px-4 py-3"><input data-tracking="${esc(o.id)}" value="${esc(o.tracking_id||'')}" placeholder="Tracking ID" class="w-28 rounded-lg border px-2 py-2 text-[10px]"></td><td class="px-4 py-3"><button data-order-details="${esc(o.id)}" class="rounded-lg border px-3 py-2 text-[10px] font-bold">View details</button></td><td class="px-4 py-3"><button data-save-order="${esc(o.id)}" class="rounded-lg bg-[#edf2ec] px-3 py-2 text-[10px] font-bold">Save</button></td></tr>`).join('')}</tbody></table></div></div>`};
-    function showOrderDetails(order){const entries=Object.entries(order).filter(([k])=>!['id','items','order_items'].includes(k));const items=order.items||order.order_items||[];const d=document.createElement('dialog');d.className='w-[min(720px,calc(100%-24px))] max-h-[88vh] rounded-2xl border-0 bg-[#fbfcf9] p-0 shadow-2xl';d.innerHTML=`<div class="flex items-start justify-between border-b p-5"><div><p class="text-[10px] font-bold uppercase tracking-[.18em] text-[#907a56]">Order details</p><h3 class="mt-1 text-xl font-extrabold">#${esc(String(order.id).toUpperCase())}</h3><p class="mt-1 text-xs text-[#758078]">Placed ${date(order.created_at)}</p></div><button class="close-order grid h-9 w-9 place-items-center rounded-full bg-[#eef0eb] text-xl">×</button></div><div class="max-h-[70vh] overflow-y-auto p-5"><section class="grid gap-3 sm:grid-cols-2">${entries.map(([k,v])=>`<div class="rounded-xl bg-white p-3"><p class="text-[9px] font-bold uppercase tracking-wide text-[#89928a]">${esc(k.replace(/_/g,' '))}</p><p class="mt-1 break-words text-xs font-semibold text-[#34443a]">${esc(typeof v==='object'&&v!==null?JSON.stringify(v):v??'—')}</p></div>`).join('')}</section>${Array.isArray(items)?`<h4 class="mt-5 text-sm font-extrabold">Items in this order</h4><div class="mt-2 space-y-2">${items.map(item=>`<div class="flex items-center gap-3 rounded-xl bg-white p-3">${item.image||item.image_url?`<img src="${esc(item.image||item.image_url)}" alt="" class="h-14 w-12 rounded-lg object-cover">`:''}<div class="min-w-0 flex-1"><p class="text-xs font-bold">${esc(item.name||item.product_name||item.title||'Item')}</p><p class="mt-1 text-[10px] text-[#758078]">${esc(item.variant||item.size||item.color||'')} · Qty ${esc(item.quantity||item.qty||1)}</p></div><b class="text-xs">${fmt(item.price||item.total||0)}</b></div>`).join('')||'<p class="rounded-xl bg-white p-4 text-xs text-[#89928a]">No item list is attached to this order.</p>'}</div>`:''}</div>`;document.body.append(d);d.showModal();d.querySelector('.close-order').onclick=()=>d.close();d.addEventListener('close',()=>d.remove())}
-    document.addEventListener('click',async e=>{const imageRemove=e.target.closest('[data-remove-product-image]');if(imageRemove){const list=$('[name="images"]').value.split('\\n').filter(Boolean);list.splice(Number(imageRemove.dataset.removeProductImage),1);updateProductImages(list);return}if(e.target.closest('[data-product-local]')){$('#product-local-files').click();return}if(e.target.closest('[data-product-library]')){showProductLibrary();return}if(e.target.closest('[data-banner-add]')){const container=$('#banner-fields'),i=container.querySelectorAll('.banner-card').length;container.insertAdjacentHTML('beforeend',bannerForm({title:'',subtitle:'',image:'',btn:'Shop now',link:'#/shop'},i));return}const removeBanner=e.target.closest('[data-banner-remove]');if(removeBanner){removeBanner.closest('.banner-card').remove();[...$('#banner-fields').querySelectorAll('.banner-card')].forEach((card,i)=>{card.querySelector('b').textContent=`Slide ${i+1}`;card.querySelectorAll('input').forEach(input=>{const suffix=input.id.split('-').slice(2).join('-');input.id=`banner-${i}-${suffix}`})});return}const details=e.target.closest('[data-order-details]');if(details){showOrderDetails(orders.find(o=>String(o.id)===details.dataset.orderDetails));return}const coupon=e.target.closest('[data-edit-coupon]');if(coupon){openCoupon(coupons.find(c=>String(c.id)===coupon.dataset.editCoupon));return}if(e.target.closest('[data-action="coupon-new"]'))openCoupon(null)});
-    $('#product-local-files').onchange=async e=>{const files=[...e.target.files];e.target.value='';const current=$('[name="images"]')?.value.split('\\n').filter(Boolean)||[];for(const file of files){if(!file.type.startsWith('image/')){toast(`${file.name} is not an image`);continue}if(file.size>4*1024*1024){toast(`${file.name} exceeds the 4 MB limit`);continue}const path=`products/${Date.now()}-${Math.random().toString(36).slice(2,8)}-${file.name.replace(/[^\\w.-]/g,'_')}`;try{const {error}=await db.storage.from(MEDIA_BUCKET).upload(path,file,{contentType:file.type});if(error)throw error;current.push(db.storage.from(MEDIA_BUCKET).getPublicUrl(path).data.publicUrl)}catch(error){toast(error.message);break}}if($('#editor').open)updateProductImages(current)};
-    $('#editor-form').addEventListener('submit',async event=>{if(editing.type!=='coupon')return;event.preventDefault();const fd=new FormData(event.currentTarget),old=editing.row,code=String(fd.get('code')).trim(),discount=Number(fd.get('discount'));const payload={};if('code'in old||!old.id)payload.code=code;if('name'in old)payload.name=code;if('discount'in old||!old.id)payload.discount=discount;if('discount_percent'in old)payload.discount_percent=discount;if('percentage'in old)payload.percentage=discount;if('discount_type'in old||!old.id)payload.discount_type=fd.get('discount_type');if('type'in old)payload.type=fd.get('discount_type');if('minimum_order'in old||!old.id)payload.minimum_order=Number(fd.get('minimum_order'));if('expires_at'in old||!old.id)payload.expires_at=fd.get('expires_at')||null;if('active'in old||!old.id)payload.active=fd.has('active');try{const q=old.id?db.from('coupons').update(payload).eq('id',old.id):db.from('coupons').insert(payload);const {error}=await q;if(error)throw error;editor.close();await loadAll();toast('Coupon saved')}catch(error){toast(error.message||'Could not save coupon')}});
   </script>
 </body>
 </html>
