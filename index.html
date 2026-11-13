@@ -25,7 +25,7 @@ input,select,textarea{font-size:16px!important}
 .rounded-3xl{border-radius:1.75rem!important}
 .shadow-soft{box-shadow:0 10px 30px -5px rgba(0,0,0,0.05),0 4px 12px -2px rgba(0,0,0,0.02)!important}
 .no-scrollbar::-webkit-scrollbar{display:none}.no-scrollbar{scrollbar-width:none}
-#brand{max-width:55vw;overflow:hidden}
+#brand{max-width:55vw;overflow:hidden;cursor:pointer}
 .checkmark-circle{stroke-dasharray:166;stroke-dashoffset:166;stroke-width:2.5;stroke-miterlimit:10;stroke:#10b981;fill:none;animation:stroke .6s cubic-bezier(.65,0,.45,1) forwards}
 .checkmark{width:76px;height:76px;border-radius:50%;display:block;stroke-width:3;stroke:#10b981;stroke-miterlimit:10;margin:0 auto;box-shadow:inset 0 0 0 #10b981;animation:fill .4s ease-in-out .4s forwards,scale .3s ease-in-out .9s both}
 .checkmark-check{transform-origin:50% 50%;stroke-dasharray:48;stroke-dashoffset:48;animation:stroke .3s cubic-bezier(.65,0,.45,1) .8s forwards}
@@ -34,6 +34,14 @@ input,select,textarea{font-size:16px!important}
 @keyframes fill{100%{box-shadow:inset 0 0 0 38px rgba(16,185,129,.12)}}
 .lens-zoom-container{position:relative;overflow:hidden;cursor:default;touch-action:pan-y}
 #hd-lightbox{touch-action:pan-y}
+
+/* Smooth hero model cutout blend */
+.hero-model-cutout {
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 82%, rgba(0,0,0,0) 100%);
+  mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 82%, rgba(0,0,0,0) 100%);
+  object-fit: contain;
+  pointer-events: none;
+}
 </style>
 </head>
 <body class="text-gray-900 antialiased selection:bg-slate-900 selection:text-white">
@@ -41,7 +49,7 @@ input,select,textarea{font-size:16px!important}
 <header class="bg-white/95 backdrop-blur sticky top-0 z-40 border-b border-gray-100">
   <div class="max-w-6xl mx-auto px-4 py-3.5 flex items-center gap-3">
     <button id="nav-back" type="button" aria-label="Go back" class="sm:hidden grid h-10 w-10 shrink-0 place-items-center rounded-full border border-gray-100 bg-white text-gray-700 shadow-soft"><svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 19l-7-7 7-7"/></svg></button>
-    <a href="#/" id="brand" class="flex flex-col"></a>
+    <a href="#/" id="brand" class="flex flex-col select-none"></a>
     <form id="sf" class="flex-1 hidden sm:block max-w-md mx-auto">
       <div class="relative">
         <input id="q" placeholder="சேலைகளைத் தேடுங்கள்… Search sarees" class="w-full bg-[#f1f5f9] rounded-full py-2.5 pl-10 pr-5 outline-none text-xs border border-transparent focus:border-slate-300 focus:bg-white transition">
@@ -50,7 +58,7 @@ input,select,textarea{font-size:16px!important}
     </form>
     <nav class="flex items-center gap-1.5 ml-auto text-sm">
       <button id="msb" aria-label="Search" class="sm:hidden w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-700 hover:bg-gray-100"><svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></button>
-      <a href="#/shop" class="hidden sm:block px-4 py-2 rounded-full hover:bg-gray-100 font-semibold text-xs text-gray-700">Shop</a>
+      <a href="#/shop" id="top-shop-link" class="hidden sm:block px-4 py-2 rounded-full hover:bg-gray-100 font-semibold text-xs text-gray-700">Shop</a>
       <a href="#/login" id="lgn" class="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full hover:bg-gray-100 font-semibold text-xs text-gray-700 transition">
         <svg viewBox="0 0 24 24" class="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
         <span id="lgn-txt">Login</span>
@@ -72,16 +80,16 @@ input,select,textarea{font-size:16px!important}
 </nav>
 
 <div id="toast" class="fixed bottom-24 sm:bottom-4 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-xs px-4 py-2.5 rounded-full shadow-soft hidden z-50"></div>
-<div id="exit-confirm" class="hidden fixed inset-0 z-[100] grid place-items-center bg-slate-950/50 p-5" role="presentation">
-  <section role="dialog" aria-modal="true" aria-labelledby="exit-title" class="w-full max-w-sm rounded-3xl bg-white p-6 text-center shadow-2xl">
+<div id="exit-confirm" class="hidden fixed inset-0 z-[100] grid place-items-center bg-slate-950/60 backdrop-blur-sm p-5" role="presentation">
+  <section role="dialog" aria-modal="true" aria-labelledby="exit-title" class="w-full max-w-sm rounded-3xl bg-white p-6 text-center shadow-2xl border border-gray-100">
+    <div class="w-12 h-12 mx-auto rounded-full bg-slate-100 flex items-center justify-center text-slate-800 mb-3"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg></div>
     <h2 id="exit-title" class="text-lg font-extrabold text-slate-900">Leave Thaarai Tex?</h2>
-    <p class="mt-2 text-sm text-slate-600">Are you sure you want to exit?</p>
-    <div class="mt-6 grid grid-cols-2 gap-3"><button id="exit-stay" class="rounded-xl border border-slate-200 px-4 py-3 text-sm font-bold text-slate-700">Stay here</button><button id="exit-leave" class="rounded-xl bg-slate-900 px-4 py-3 text-sm font-bold text-white">Exit</button></div>
+    <p class="mt-2 text-xs text-slate-600 leading-relaxed">Are you sure you want to exit the store?</p>
+    <div class="mt-6 grid grid-cols-2 gap-3"><button id="exit-stay" class="rounded-xl border border-slate-200 px-4 py-3 text-xs font-bold text-slate-700 hover:bg-slate-50 transition">Stay here</button><button id="exit-leave" class="rounded-xl bg-slate-900 px-4 py-3 text-xs font-bold text-white hover:bg-slate-800 transition">Exit</button></div>
   </section>
 </div>
 
 <script>
-history.replaceState({storefrontEntry:true},'',location.href);
 /* ===== CONFIG ===== */
 const SUPABASE_URL="https://hjogdvqwwbgzgwtdlrak.supabase.co";
 const SUPABASE_ANON_KEY="sb_publishable_gURnxsEPWoxUqqAqnEtJ_g_EmUlUgUZ";
@@ -110,18 +118,10 @@ const ICONS={
   star:ic('<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>','w-3.5 h-3.5 text-amber-500 inline fill-amber-500'),
   starEmpty:ic('<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>','w-3.5 h-3.5 text-amber-300 inline')
 };
-const TRUST_ICONS=[
-  {icon: ICONS.truck, title: 'Free Delivery', desc: 'Direct to doorstep'},
-  {icon: ICONS.cash, title: 'Cash on Delivery', desc: 'Pay when you receive'},
-  {icon: ICONS.tag, title: 'Wholesale Price', desc: 'Direct weaver rates'},
-  {icon: ICONS.handloom, title: '100% Handloom', desc: 'Pure authentic quality'}
-];
 
 /* ===== HELPERS ===== */
 const $=s=>document.querySelector(s), app=$('#app');
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const hx=(value,fallback)=>/^#[\da-f]{3,8}$/i.test(String(value||''))?value:fallback;
-const safeLink=value=>{const link=String(value||'');return link.startsWith('#/')?link:'#/shop'};
 const inr=n=>'₹'+Number(n||0).toLocaleString('en-IN');
 const img=p=>esc(p.images?.[0]||'https://placehold.co/600x750?text=Thaarai+Tex');
 const store={get:k=>{try{return JSON.parse(localStorage.getItem(k))}catch{return null}},set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}}};
@@ -195,41 +195,117 @@ const stars=n=>{
   return `<span class="inline-flex items-center gap-0.5">${html}</span>`;
 };
 
-/* ===== SITE SETTINGS ===== */
+/* ===== DYNAMIC SITE SETTINGS WITH USER-FRIENDLY ADMIN CONTROLS ===== */
 const SET={
-  brand:{name:'Thaarai Tex',tagline:'Premium Sarees',logo:''},
-  banners:[
-    {image:'',title:'பாரம்பரிய பட்டு & காட்டன் சேலைகள்',subtitle:'நேரடி நெசவாளர் விலை · Cash on Delivery & UPI',btn:'Explore Collection',link:'#/shop',c1:'#1e293b',c2:'#0f172a'},
-    {image:'',title:'Exquisite Handloom Silks',subtitle:'Direct from Master Weavers to Your Doorstep',btn:'Shop Now',link:'#/shop',c1:'#0f172a',c2:'#334155'}
+  brand:{name:'Thaarai Tex',tagline:'Pure Sarees & Handloom',logo:''},
+  header:{searchPlaceholder:'சேலைகளைத் தேடுங்கள்… Search sarees',showShopLink:true,shopLinkLabel:'Shop'},
+  hero:{
+    eyebrow:'THAARAI TEX · HANDLOOM EDITION',
+    title:'A legacy woven into every thread',
+    subtitle:'Discover handpicked authentic sarees, crafted with the art and patience of master weavers.',
+    button:'Explore the collection',
+    buttonLink:'#/shop',
+    secButton:'View all sarees',
+    secButtonLink:'#/shop',
+    image:'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80',
+    badge:'HANDLOOM · EST. WITH CARE'
+  },
+  home_categories:[
+    { name: 'Sarees', subtitle: 'Exclusive Handloom', image: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=600&q=80', query: 'Sarees' },
+    { name: 'Lungies', subtitle: 'Comfort & Heritage', image: 'https://images.unsplash.com/photo-1583394838336-acd977736f90?auto=format&fit=crop&w=600&q=80', query: 'Lungies' },
+    { name: 'Soft Silk', subtitle: 'Royal & Elegant', image: 'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=600&q=80', query: 'Soft Silk' },
+    { name: 'Poonam', subtitle: 'Daily & Party Wear', image: 'https://images.unsplash.com/photo-1606760227091-3dd870d97f1d?auto=format&fit=crop&w=600&q=80', query: 'Poonam' },
+    { name: 'Pattu', subtitle: 'Traditional Grandeur', image: 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=600&q=80', query: 'Pattu' },
+    { name: 'Cotton', subtitle: 'Breathable Pure Weave', image: 'https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?auto=format&fit=crop&w=600&q=80', query: 'Cotton' }
   ],
-  about:{title:'Crafted with Tradition',text:'Thaarai Tex brings you handpicked, authentic handloom sarees directly from traditional weavers. Every piece reflects meticulous artistry, premium fabrics, and timeless elegance.'},
-  footer:{about:'Handloom sarees direct from the weavers.',phone:'',email:'',address:'Melur, Tamil Nadu',whatsapp:'919999999999',upi:'yourname@upi',upiName:'Thaarai Tex'},
-  site_ui:{home:{eyebrow:'THAARAI TEX · HANDLOOM EDITION',title:'A legacy woven into every thread',subtitle:'Discover handpicked sarees, crafted with the art and patience of generations.',button:'Explore the collection',image:''},shop:{title:'The collection',filter:'Filter',sort:'Sort by',categories:'Categories',fabric:'Fabric',fabrics:['Silk','Cotton','Semi Silk','Linen'],price:'Price range',sortHeading:'Sort by',stock:'Show only in stock',apply:'Apply filters',reset:'Reset filters'},account:{profile:'Your account',editProfile:'Edit profile',address:'Shopping address',wishlist:'Wishlist',orders:'Order history',saveProfile:'Save changes'}}
+  about:{
+    badge:'Authentic Weaves',
+    title:'Crafted with Tradition',
+    text:'Thaarai Tex brings you handpicked, authentic handloom sarees directly from traditional weavers. Every piece reflects meticulous artistry, premium fabrics, and timeless elegance.',
+    button:'Explore Collections',
+    buttonLink:'#/shop',
+    image:'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80'
+  },
+  trust_badges:[
+    {title: 'Free Delivery', desc: 'Direct to doorstep'},
+    {title: 'Cash on Delivery', desc: 'Pay when you receive'},
+    {title: 'Wholesale Price', desc: 'Direct weaver rates'},
+    {title: '100% Handloom', desc: 'Pure authentic quality'}
+  ],
+  shop_ui:{
+    title:'The collection',
+    subtitle:'Explore our finest handwoven selections',
+    fabrics:['Silk','Cotton','Semi Silk','Linen'],
+    sortNewest:'Newest Arrivals',
+    sortLow:'Price: Low to High',
+    sortHigh:'Price: High to Low',
+    emptyText:'பொருட்கள் எதுவும் இல்லை. No products found.'
+  },
+  account_ui:{
+    title:'Your Profile Details',
+    subtitle:'உங்கள் பெயர் மற்றும் மொபைல் எண்ணை உள்ளிடவும்.',
+    supportText:'Contact support on WhatsApp',
+    emptyOrders:'No orders yet. Start shopping'
+  },
+  footer:{
+    about:'Handloom sarees direct from the weavers.',
+    phone:'',
+    email:'',
+    address:'Melur, Tamil Nadu',
+    whatsapp:'919999999999',
+    upi:'yourname@upi',
+    upiName:'Thaarai Tex',
+    copyright:'© 2026 Thaarai Tex. All rights reserved.'
+  }
 };
 
 function applySettings(){
-  const b=SET.brand,f=SET.footer;
+  const b=SET.brand, f=SET.footer, h=SET.header||{};
   const brandEl=$('#brand');
-  if(brandEl) brandEl.innerHTML=`<span class="font-extrabold text-xl uppercase tracking-tight text-slate-900">${esc(b.name)}</span><span class="text-[10px] text-gray-400 font-semibold uppercase tracking-wider">${esc(b.tagline)}</span>`;
+  if(brandEl){
+    if(b.logo){
+      brandEl.innerHTML=`<img src="${esc(b.logo)}" alt="${esc(b.name)}" class="h-9 object-contain max-w-[160px]"><span class="text-[9px] text-gray-400 font-semibold uppercase tracking-wider">${esc(b.tagline||'')}</span>`;
+    }else{
+      brandEl.innerHTML=`<span class="font-extrabold text-xl uppercase tracking-tight text-slate-900">${esc(b.name)}</span><span class="text-[10px] text-gray-400 font-semibold uppercase tracking-wider">${esc(b.tagline)}</span>`;
+    }
+  }
+  if(h.searchPlaceholder){
+    if($('#q')) $('#q').placeholder = h.searchPlaceholder;
+    if($('#q2')) $('#q2').placeholder = h.searchPlaceholder;
+  }
+  const topShop = $('#top-shop-link');
+  if(topShop){
+    topShop.textContent = h.shopLinkLabel || 'Shop';
+    topShop.style.display = h.showShopLink === false ? 'none' : '';
+  }
   const footEl=$('#foot');
-  if(footEl) footEl.innerHTML=`<div class="max-w-6xl mx-auto px-4 grid sm:grid-cols-3 gap-6 text-left"><div><b class="text-white text-sm">${esc(b.name)}</b><p class="mt-2 leading-relaxed text-gray-400">${esc(f.about)}</p></div>
-   <div><b class="text-white text-sm">Contact</b><p class="mt-2 leading-6 text-gray-400">${f.phone?`${ICONS.phone}<a href="tel:${esc(f.phone)}">${esc(f.phone)}</a><br>`:''}${f.email?`${ICONS.mail}${esc(f.email)}<br>`:''}${f.address?`${ICONS.mapPin}${esc(f.address)}`:''}</p></div>
-   <div><b class="text-white text-sm">Quick links</b><p class="mt-2 leading-7 text-gray-400"><a href="#/shop" class="underline">Shop</a> · <a href="#/account/orders" class="underline">My Orders</a><br><a class="underline" target="_blank" rel="noopener" href="https://wa.me/${esc(f.whatsapp)}">${ICONS.whatsapp}WhatsApp support</a></p></div></div>
-   <p class="mt-6 text-center text-gray-500 text-[11px]">© ${new Date().getFullYear()} ${esc(b.name)}. All rights reserved.</p>`;
- }
- applySettings();
- async function loadSiteSettings(){
-   if(!sb)return;
-   try{
-     const {data,error}=await sb.from('store_settings').select('key,value');
-     if(error)throw error;
-     for(const row of data||[])if(['brand','banners','about','footer','site_ui'].includes(row.key))SET[row.key]=row.value;
-     WHATSAPP=SET.footer.whatsapp||WHATSAPP;UPI_ID=SET.footer.upi||UPI_ID;UPI_NAME=SET.footer.upiName||UPI_NAME;
-     applySettings();
-   }catch{}
- }
+  if(footEl){
+    footEl.innerHTML=`<div class="max-w-6xl mx-auto px-4 grid sm:grid-cols-3 gap-6 text-left"><div><b class="text-white text-sm">${esc(b.name)}</b><p class="mt-2 leading-relaxed text-gray-400">${esc(f.about)}</p></div>
+     <div><b class="text-white text-sm">Contact</b><p class="mt-2 leading-6 text-gray-400">${f.phone?`${ICONS.phone}<a href="tel:${esc(f.phone)}">${esc(f.phone)}</a><br>`:''}${f.email?`${ICONS.mail}${esc(f.email)}<br>`:''}${f.address?`${ICONS.mapPin}${esc(f.address)}`:''}</p></div>
+     <div><b class="text-white text-sm">Quick links</b><p class="mt-2 leading-7 text-gray-400"><a href="#/shop" class="underline">Shop</a> · <a href="#/account/orders" class="underline">My Orders</a><br><a class="underline" target="_blank" rel="noopener" href="https://wa.me/${esc(f.whatsapp)}">${ICONS.whatsapp}WhatsApp support</a></p></div></div>
+     <p class="mt-6 text-center text-gray-500 text-[11px]">${esc(f.copyright || `© ${new Date().getFullYear()} ${b.name}. All rights reserved.`)}</p>`;
+  }
+}
+applySettings();
+
+async function loadSiteSettings(){
+  if(!sb)return;
+  try{
+    const {data,error}=await sb.from('store_settings').select('key,value');
+    if(error)throw error;
+    for(const row of data||[]){
+      if(row.key && row.value !== undefined){
+        SET[row.key]=row.value;
+      }
+    }
+    WHATSAPP=SET.footer?.whatsapp||WHATSAPP;
+    UPI_ID=SET.footer?.upi||UPI_ID;
+    UPI_NAME=SET.footer?.upiName||UPI_NAME;
+    applySettings();
+  }catch{}
+}
  
- function setNav(){
+function setNav(){
   const p=profile(), txt=$('#lgn-txt');
   if(txt)txt.textContent=p?p.name.split(' ')[0]:'Login';
   if($('#lgn')) $('#lgn').href=p?'#/account/hub':'#/login';
@@ -314,7 +390,7 @@ function card(p){
     <div class="mt-0.5 flex items-baseline gap-2 flex-wrap"><b class="text-sm sm:text-base text-gray-900">${inr(p.price)}</b>${o?`<s class="text-xs text-gray-400">${inr(p.mrp)}</s>`:''}</div>
     ${p.stock>0&&p.stock<5?`<p class="text-[10px] text-amber-600 font-semibold">Only ${p.stock} left</p>`:''}</div></a>`;
 }
-const grid=ps=>ps.length?`<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3.5 sm:gap-5">${ps.map(card).join('')}</div>`:'<p class="text-center text-gray-400 py-16 text-xs">பொருட்கள் எதுவும் இல்லை. No products found.</p>';
+const grid=ps=>ps.length?`<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3.5 sm:gap-5">${ps.map(card).join('')}</div>`:`<p class="text-center text-gray-400 py-16 text-xs">${esc(SET.shop_ui?.emptyText || 'பொருட்கள் எதுவும் இல்லை. No products found.')}</p>`;
 const input=(id,label,extra='')=>`<label class="block text-xs font-semibold text-gray-700 mb-1">${label}<input id="${id}" ${extra} class="mt-1 w-full border border-gray-200 bg-white rounded-2xl p-3 text-xs outline-none focus:border-slate-900 transition"></label>`;
 const btn='bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 px-6 rounded-full text-xs sm:text-sm transition disabled:opacity-50 shadow-soft';
 const topbar=(title,back)=>`<div class="flex items-center justify-between px-1"><button onclick="location.hash='${back}'" aria-label="Back" class="w-9 h-9 rounded-full bg-white flex items-center justify-center text-gray-700 shadow-soft border border-gray-100">${ICONS.back}</button><h1 class="text-base font-extrabold text-gray-900">${title}</h1><div class="w-9"></div></div>`;
@@ -322,7 +398,8 @@ const loginNeeded=msg=>`<div class="max-w-md mx-auto text-center py-14 bg-white 
 
 /* ===== HOME & SHOP ===== */
 async function home(){
-  const featuredCats = [
+  const heroData = SET.hero || {};
+  const featuredCats = SET.home_categories?.length ? SET.home_categories : [
     { name: 'Sarees', subtitle: 'Exclusive Handloom', image: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=600&q=80', query: 'Sarees' },
     { name: 'Lungies', subtitle: 'Comfort & Heritage', image: 'https://images.unsplash.com/photo-1583394838336-acd977736f90?auto=format&fit=crop&w=600&q=80', query: 'Lungies' },
     { name: 'Soft Silk', subtitle: 'Royal & Elegant', image: 'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=600&q=80', query: 'Soft Silk' },
@@ -332,71 +409,85 @@ async function home(){
   ];
 
   let featured = null;
-    if (sb) {
-      try {
-        const { data } = await sb.from('products').select('*').eq('active', true).order('created_at', { ascending: false }).limit(1).maybeSingle();
-        featured = data;
-      } catch {}
-    }
-  
-    const homeSettings = {
-      eyebrow: (SET.site_ui?.home?.eyebrow) || 'THAARAI TEX · HANDLOOM EDITION',
-      title: (SET.site_ui?.home?.title) || 'A legacy woven into every thread',
-      subtitle: (SET.site_ui?.home?.subtitle) || 'Discover handpicked sarees, crafted with the art and patience of generations.',
-      button: (SET.site_ui?.home?.button) || 'Explore the collection',
-      image: (SET.site_ui?.home?.image) || ''
-    };
-  
-    const photo = homeSettings.image || featured?.images?.[0] || 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=1000&q=85';
-    const title = homeSettings.title;
-    const firstWord = title.trim().split(/\s+/)[0] || 'THAARAI';
-    const restTitle = title.trim().split(/\s+/).slice(1).join(' ');
-    const productHref = featured ? `#/p/${encodeURIComponent(featured.id)}` : '#/shop';
-  
-    app.innerHTML=`
-    <!-- Black Premium Hero -->
-    <section class="relative mb-8 min-h-[440px] overflow-hidden rounded-[1.7rem] bg-[#080909] text-white shadow-[0_28px_70px_rgba(8,9,9,.25)] sm:min-h-[520px]">
-      <div class="absolute inset-0 opacity-25" style="background:radial-gradient(ellipse at 66% 48%,#5b171b 0%,transparent 42%),linear-gradient(120deg,#090a0a 20%,#171818 100%)"></div>
-      <div class="absolute -right-12 top-12 select-none text-[clamp(5rem,19vw,15rem)] font-black uppercase leading-none tracking-[-.09em] text-white/[.035]">WEAVE</div>
-      <div class="absolute left-0 top-1/3 h-px w-full rotate-[-16deg] bg-[#e32938]/30"></div>
-      <div class="relative z-10 flex min-h-[440px] flex-col justify-between p-5 sm:min-h-[520px] sm:p-9 lg:p-11">
-        <div class="flex items-center justify-between border-b border-white/10 pb-4">
-          <a href="#/" class="text-[10px] font-black tracking-[.28em] text-white">THAARAI <span class="text-[#e42636]">TEX</span></a>
-          <div class="hidden items-center gap-7 text-[9px] font-bold uppercase tracking-[.28em] text-white/65 sm:flex">
-            <a href="#/" class="text-white">Home</a>
-            <a href="#/shop" class="hover:text-white">Sarees</a>
-            <a href="#/account/orders" class="hover:text-white">My orders</a>
+  if (sb) {
+    try {
+      const { data } = await sb.from('products').select('*').eq('active', true).order('created_at', { ascending: false }).limit(1).maybeSingle();
+      featured = data;
+    } catch {}
+  }
+
+  const photo = heroData.image || featured?.images?.[0] || 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80';
+  const fullTitle = heroData.title || 'A legacy woven into every thread';
+  const words = fullTitle.trim().split(/\s+/);
+  const firstWord = words[0] || 'THAARAI';
+  const restTitle = words.slice(1).join(' ');
+  const mainBtnLink = heroData.buttonLink || (featured ? `#/p/${encodeURIComponent(featured.id)}` : '#/shop');
+  const secBtnLink = heroData.secButtonLink || '#/shop';
+
+  const trustBadges = SET.trust_badges?.length ? SET.trust_badges : [
+    {title: 'Free Delivery', desc: 'Direct to doorstep'},
+    {title: 'Cash on Delivery', desc: 'Pay when you receive'},
+    {title: 'Wholesale Price', desc: 'Direct weaver rates'},
+    {title: '100% Handloom', desc: 'Pure authentic quality'}
+  ];
+  const trustIcons = [ICONS.truck, ICONS.cash, ICONS.tag, ICONS.handloom];
+
+  app.innerHTML=`
+  <!-- Black Premium Hero with Seamless Model Cutout -->
+  <section class="relative mb-8 overflow-hidden rounded-[1.75rem] bg-[#080909] text-white shadow-[0_24px_60px_rgba(8,9,9,.28)]">
+    <div class="absolute inset-0 opacity-25" style="background:radial-gradient(ellipse at 70% 50%,#5b171b 0%,transparent 50%),linear-gradient(130deg,#090a0a 15%,#171818 100%)"></div>
+    <div class="absolute -right-8 top-8 select-none text-[clamp(4.5rem,16vw,13rem)] font-black uppercase leading-none tracking-[-.08em] text-white/[.03] pointer-events-none">WEAVE</div>
+    <div class="absolute left-0 top-1/3 h-px w-full rotate-[-12deg] bg-[#e32938]/20 pointer-events-none"></div>
+
+    <div class="relative z-10 flex flex-col justify-between p-5 sm:p-8 lg:p-10 min-h-[460px] sm:min-h-[500px]">
+      <!-- Header row inside Hero -->
+      <div class="flex items-center justify-between border-b border-white/10 pb-3.5">
+        <span class="text-[10px] font-black tracking-[.28em] text-white">THAARAI <span class="text-[#e42636]">TEX</span></span>
+        <div class="hidden items-center gap-7 text-[9px] font-bold uppercase tracking-[.28em] text-white/65 sm:flex">
+          <a href="#/" class="text-white hover:text-white">Home</a>
+          <a href="#/shop" class="hover:text-white">Sarees</a>
+          <a href="#/account/orders" class="hover:text-white">My orders</a>
+        </div>
+        <span class="text-[9px] font-bold uppercase tracking-[.22em] text-[#ff3544]">${esc(heroData.badge || 'HANDLOOM · EST. WITH CARE')}</span>
+      </div>
+
+      <!-- Main hero content: Clean Grid without text collision -->
+      <div class="grid items-center gap-6 lg:gap-8 lg:grid-cols-[1.1fr_0.9fr] my-6">
+        <!-- Text Column -->
+        <div class="relative z-20 max-w-lg">
+          <p class="text-[9px] font-extrabold uppercase tracking-[.34em] text-[#ff3645]">${esc(heroData.eyebrow || 'THAARAI TEX · HANDLOOM EDITION')}</p>
+          <h1 class="mt-3.5 max-w-xl text-[clamp(2.3rem,5.8vw,5rem)] font-black uppercase leading-[.92] tracking-[-.05em]">
+            <span class="text-[#f52638]">${esc(firstWord)}</span>
+            ${restTitle ? `<span class="mt-1 block text-white">${esc(restTitle)}</span>` : ''}
+          </h1>
+          <p class="mt-4 max-w-md text-xs sm:text-sm leading-relaxed text-white/70">${esc(heroData.subtitle || 'Discover handpicked authentic sarees, crafted with the art and patience of master weavers.')}</p>
+          <div class="mt-6 flex flex-wrap items-center gap-3">
+            <a href="${esc(mainBtnLink)}" class="rounded-full bg-white px-6 py-3.5 text-xs font-black uppercase tracking-[.14em] text-[#111] transition hover:bg-[#f4c3c6] shadow-md">${esc(heroData.button || 'Explore the collection')}</a>
+            <a href="${esc(secBtnLink)}" class="rounded-full border border-white/35 px-6 py-3.5 text-xs font-black uppercase tracking-[.14em] text-white hover:bg-white/10 transition">${esc(heroData.secButton || 'View all sarees')}</a>
           </div>
-          <span class="text-[9px] font-bold uppercase tracking-[.25em] text-[#ff3544]">HANDLOOM · EST. WITH CARE</span>
+          ${featured ? `<p class="mt-6 text-[10px] font-bold uppercase tracking-[.18em] text-white/50">Featured weave: <span class="text-white">${esc(featured.name)}</span> <span class="ml-2 text-[#ff3544]">${inr(featured.price)}</span></p>` : ''}
         </div>
-        <div class="grid flex-1 items-center gap-0 lg:grid-cols-[.9fr_1.1fr]">
-          <div class="relative z-20 order-2 mt-[-1.5rem] max-w-lg lg:order-1 lg:mt-0">
-            <p class="text-[9px] font-extrabold uppercase tracking-[.34em] text-[#ff3645]">${esc(homeSettings.eyebrow)}</p>
-                      <h1 class="mt-4 max-w-xl text-[clamp(2.7rem,7.3vw,6.6rem)] font-black uppercase leading-[.85] tracking-[-.065em]">
-                        <span class="text-[#f52638]">${esc(firstWord)}</span>
-                        ${restTitle ? `<span class="mt-2 block text-white">${esc(restTitle)}</span>` : ''}
-                      </h1>
-                      <p class="mt-5 max-w-sm text-xs leading-6 text-white/65 sm:text-sm">${esc(homeSettings.subtitle)}</p>
-                      <div class="mt-5 flex flex-wrap items-center gap-3">
-                        <a href="${esc(productHref)}" class="rounded-sm bg-white px-5 py-3 text-[10px] font-black uppercase tracking-[.14em] text-[#111] transition hover:bg-[#f4c3c6]">${esc(homeSettings.button)}</a>
-                        <a href="#/shop" class="rounded-sm border border-white/35 px-5 py-3 text-[10px] font-black uppercase tracking-[.14em] text-white">View all sarees</a>
-                      </div>
-                      ${featured ? `<p class="mt-6 text-[10px] font-bold uppercase tracking-[.2em] text-white/50">Featured weave <span class="ml-2 text-white">${esc(featured.name)}</span> <span class="ml-3 text-[#ff3544]">${inr(featured.price)}</span></p>` : ''}
-                    </div>
-                    <a href="${esc(productHref)}" class="relative order-1 flex h-[255px] items-center justify-center lg:order-2 lg:h-full">
-                      <div class="absolute h-[68%] w-[65%] rounded-full bg-[#9b101a]/20 blur-3xl"></div>
-                      <img src="${esc(photo)}" alt="${esc(featured?.name || 'Handwoven saree collection')}" class="relative z-10 max-h-[300px] w-full object-contain drop-shadow-[0_28px_38px_rgba(0,0,0,.65)] sm:max-h-[380px] lg:max-h-[420px] lg:rotate-[-5deg]" loading="eager">
-            <span class="absolute right-2 top-8 z-20 hidden text-[10px] font-black uppercase tracking-[.35em] text-[#ff3544] sm:block">PURE · HANDWOVEN</span>
-          </a>
-        </div>
-        <div class="flex items-center justify-between border-t border-white/10 pt-4 text-[8px] font-bold uppercase tracking-[.24em] text-white/45">
-          <span>Woven by hand · Made to be remembered</span>
-          <span>01 / THE HANDLOOM EDITION</span>
+
+        <!-- Seamless Model Cutout Column -->
+        <div class="relative flex items-center justify-center lg:justify-end">
+          <div class="relative w-full max-w-[320px] sm:max-w-[380px] h-[280px] sm:h-[350px] lg:h-[400px] flex items-center justify-center">
+            <!-- Warm backlight ambient glow -->
+            <div class="absolute inset-4 rounded-full bg-gradient-to-tr from-[#9b101a]/30 via-[#c3a875]/15 to-transparent blur-3xl pointer-events-none"></div>
+            <!-- Individual person image with smooth edge fade and zero border box -->
+            <img src="${esc(photo)}" alt="Handloom Saree Weave" class="hero-model-cutout relative z-10 max-h-full max-w-full drop-shadow-[0_20px_35px_rgba(0,0,0,0.85)]" loading="eager">
+          </div>
         </div>
       </div>
-    </section>
-  
-    <!-- Super Attractive Professional Categories Grid with Large Image Boxes -->
+
+      <!-- Footer row inside Hero -->
+      <div class="flex items-center justify-between border-t border-white/10 pt-3 text-[8px] font-bold uppercase tracking-[.24em] text-white/45">
+        <span>Woven by hand · Made to be remembered</span>
+        <span>01 / THE HANDLOOM EDITION</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Featured Categories Grid -->
   <section class="mb-12">
     <div class="flex items-end justify-between mb-6 px-1">
       <div>
@@ -408,44 +499,44 @@ async function home(){
     
     <div class="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-5">
       ${featuredCats.map(c=>`
-        <a href="#/shop?q=${encodeURIComponent(c.query)}" class="group relative aspect-[4/5] sm:aspect-[4/3] rounded-3xl overflow-hidden shadow-soft block bg-slate-900">
+        <a href="${c.query?.startsWith('#/') ? c.query : `#/shop?q=${encodeURIComponent(c.query||c.name)}`}" class="group relative aspect-[4/5] sm:aspect-[4/3] rounded-3xl overflow-hidden shadow-soft block bg-slate-900">
           <img src="${c.image}" alt="${esc(c.name)}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out">
           <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent"></div>
           <div class="absolute bottom-0 inset-x-0 p-4 sm:p-6 text-white">
             <h3 class="font-extrabold text-base sm:text-xl tracking-tight mb-0.5 group-hover:text-emerald-400 transition-colors">${esc(c.name)}</h3>
-            <p class="text-[10px] sm:text-xs text-gray-300 font-medium">${esc(c.subtitle)}</p>
+            <p class="text-[10px] sm:text-xs text-gray-300 font-medium">${esc(c.subtitle||'')}</p>
           </div>
         </a>
       `).join('')}
     </div>
     <div class="mt-4 text-center sm:hidden">
-        <a href="#/shop" class="inline-flex items-center justify-center gap-2 w-full py-3.5 bg-gray-50 text-slate-900 rounded-2xl font-bold text-xs border border-gray-200">View All Shop <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg></a>
+      <a href="#/shop" class="inline-flex items-center justify-center gap-2 w-full py-3.5 bg-gray-50 text-slate-900 rounded-2xl font-bold text-xs border border-gray-200">View All Shop <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg></a>
     </div>
   </section>
 
   <!-- About / Brand Story Section -->
-  ${(SET&&SET.about&&SET.about.text)?`
-    <section class="bg-white border border-gray-100 rounded-3xl p-8 mb-8 shadow-soft grid sm:grid-cols-2 gap-8 items-center">
+  ${(SET.about?.text)?`
+    <section class="bg-white border border-gray-100 rounded-3xl p-6 sm:p-8 mb-8 shadow-soft grid sm:grid-cols-2 gap-8 items-center">
       <div class="space-y-3">
-        <span class="text-[10px] font-extrabold uppercase tracking-widest text-slate-600 bg-slate-100 px-3 py-1 rounded-full">Authentic Weaves</span>
+        <span class="text-[10px] font-extrabold uppercase tracking-widest text-slate-600 bg-slate-100 px-3 py-1 rounded-full">${esc(SET.about.badge || 'Authentic Weaves')}</span>
         <h2 class="text-xl sm:text-2xl font-extrabold text-gray-900 tracking-tight">${esc(SET.about.title)}</h2>
         <p class="text-xs sm:text-sm text-gray-600 leading-relaxed">${esc(SET.about.text)}</p>
-        <div class="pt-2"><a href="#/shop" class="${btn} inline-block !py-3">Explore Collections</a></div>
+        <div class="pt-2"><a href="${esc(SET.about.buttonLink || '#/shop')}" class="${btn} inline-block !py-3">${esc(SET.about.button || 'Explore Collections')}</a></div>
       </div>
       <div class="relative aspect-[4/3] rounded-2xl overflow-hidden bg-slate-100 shadow-inner flex items-center justify-center">
         <div class="absolute inset-0 bg-gradient-to-br from-slate-900/10 to-slate-900/40 z-10"></div>
-        <img src="https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80" alt="Handloom Weaving" class="w-full h-full object-cover">
+        <img src="${esc(SET.about.image || 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80')}" alt="Handloom Weaving" class="w-full h-full object-cover">
       </div>
     </section>
   `:''}
 
-  <!-- Trust Badges at the Very Bottom with Compact Small Height Layout -->
+  <!-- Trust Badges Section -->
   <section class="mb-4">
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
-      ${TRUST_ICONS.map(t=>`
-        <div class="bg-white rounded-2xl p-3 flex items-center gap-3 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+      ${trustBadges.map((t,idx)=>`
+        <div class="bg-white rounded-2xl p-3.5 flex items-center gap-3 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
           <div class="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center shrink-0 text-slate-900 shadow-inner">
-            ${t.icon}
+            ${trustIcons[idx % trustIcons.length]}
           </div>
           <div class="text-left min-w-0">
             <h4 class="font-extrabold text-[11px] sm:text-xs text-gray-900 truncate">${esc(t.title)}</h4>
@@ -456,7 +547,6 @@ async function home(){
     </div>
   </section>
   `;
-
 }
 
 async function shop(params){
@@ -476,6 +566,9 @@ async function shop(params){
     q=f.sort==='low'?q.order('price'):f.sort==='high'?q.order('price',{ascending:false}):q.order('created_at',{ascending:false});
     try{ const res=await q; data=res.data||[]; }catch{}
   }
+
+  const shopUI = SET.shop_ui || {};
+  const fabricList = shopUI.fabrics?.length ? shopUI.fabrics : ['Silk','Cotton','Semi Silk','Linen'];
 
   // Custom Pill helper
   const pill = (val, current, label) => `<button type="button" data-val="${val}" class="filter-pill px-4 py-2 rounded-full border text-[11px] font-bold transition-colors duration-200 ${current===val ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'}">${esc(label)}</button>`;
@@ -503,7 +596,7 @@ async function shop(params){
       
       <div class="sticky top-0 z-10 flex items-center justify-between bg-white pb-4 border-b border-gray-100">
          <button id="filter-close" class="md:hidden text-gray-500 text-xl" aria-label="Close filters">×</button>
-         <h2 class="text-base font-extrabold text-gray-900">Filter</h2>
+         <h2 class="text-base font-extrabold text-gray-900">${esc(shopUI.title || 'Filter')}</h2>
          <button id="f-reset" class="text-[11px] font-bold text-gray-500 hover:text-slate-900 transition-colors flex items-center gap-1"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg> Reset All</button>
       </div>
 
@@ -521,7 +614,7 @@ async function shop(params){
          <h3 class="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3">Fabric</h3>
          <div class="flex flex-wrap gap-2" id="fab-group">
             ${pill('', f.fabric, 'All')}
-            ${['Silk','Cotton','Semi Silk','Linen'].map(fb=>pill(fb, f.fabric, fb)).join('')}
+            ${fabricList.map(fb=>pill(fb, f.fabric, fb)).join('')}
          </div>
       </div>
 
@@ -545,9 +638,9 @@ async function shop(params){
       <div class="hidden md:block">
          <h3 class="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3">Sort By</h3>
          <div class="space-y-2" id="sort-group">
-            ${radio('new', f.sort, 'Newest Arrivals')}
-            ${radio('low', f.sort, 'Price: Low to High')}
-            ${radio('high', f.sort, 'Price: High to Low')}
+            ${radio('new', f.sort, shopUI.sortNewest || 'Newest Arrivals')}
+            ${radio('low', f.sort, shopUI.sortLow || 'Price: Low to High')}
+            ${radio('high', f.sort, shopUI.sortHigh || 'Price: High to Low')}
          </div>
       </div>
 
@@ -571,7 +664,7 @@ async function shop(params){
       <div class="w-full rounded-t-3xl bg-white p-5 pb-8 shadow-2xl">
         <div class="flex items-center justify-between border-b border-gray-100 pb-4"><button id="sort-close" aria-label="Close sort options" class="text-xl text-gray-500">×</button><h2 class="font-extrabold text-base text-slate-800">Sort by</h2><button id="sort-reset" class="text-xs font-bold text-emerald-700">Reset</button></div>
         <div class="py-2" id="sort-mobile">
-          ${[['new','Recommended'],['low','Price: Low to High'],['high','Price: High to Low']].map(([value,label])=>`<label class="flex items-center justify-between border-b border-gray-100 py-4 text-sm font-medium text-slate-700"><span>${label}</span><input type="radio" name="mobile-sort" value="${value}" ${f.sort===value?'checked':''} class="h-5 w-5 accent-emerald-600"></label>`).join('')}
+          ${[['new',shopUI.sortNewest || 'Recommended'],['low',shopUI.sortLow || 'Price: Low to High'],['high',shopUI.sortHigh || 'Price: High to Low']].map(([value,label])=>`<label class="flex items-center justify-between border-b border-gray-100 py-4 text-sm font-medium text-slate-700"><span>${label}</span><input type="radio" name="mobile-sort" value="${value}" ${f.sort===value?'checked':''} class="h-5 w-5 accent-emerald-600"></label>`).join('')}
         </div>
         <button id="sort-done" class="w-full rounded-full bg-emerald-600 py-3.5 text-sm font-bold text-white">Apply sorting</button>
       </div>
@@ -663,7 +756,7 @@ async function product(id){
   let p=null;
   try{ const res=await sb.from('products').select('*').eq('id',id).maybeSingle(); p=res.data; }catch{}
   if(!p){app.innerHTML='<div class="text-center py-20 text-xs text-gray-400 bg-white rounded-3xl border p-8 max-w-md mx-auto shadow-soft">Product not found. <br><a href="#/shop" class="font-bold underline text-slate-900 mt-2 inline-block">Back to Shop</a></div>';return}
-  document.title=p.name+' | '+SET.brand.name;
+  document.title=p.name+' | '+(SET.brand?.name || 'Thaarai Tex');
   let reviews=[], sim=[];
   try{
     const r1=await sb.from('reviews').select('*').eq('product_id',id).order('created_at',{ascending:false});
@@ -869,7 +962,7 @@ async function checkout(){
     <div class="flex justify-between text-gray-500"><span>Delivery</span><span class="text-emerald-700 font-bold">FREE</span></div>
     <div class="flex justify-between font-extrabold text-sm border-t pt-2 text-gray-900"><span>Total</span><span id="st"></span></div></aside></div>`;
   const refresh=()=>{
-    const t=sub-d, link=`upi://pay?pa=${encodeURIComponent(UPI_ID)}&pn=${encodeURIComponent(UPI_NAME)}&am=${t}&cu=INR&tn=${encodeURIComponent(SET.brand.name+' order')}`;
+    const t=sub-d, link=`upi://pay?pa=${encodeURIComponent(UPI_ID)}&pn=${encodeURIComponent(UPI_NAME)}&am=${t}&cu=INR&tn=${encodeURIComponent((SET.brand?.name||'Thaarai Tex')+' order')}`;
     $('#sd').textContent='−'+inr(d);$('#st').textContent=inr(t);$('#upa').textContent=inr(t);$('#upl').href=link;
     $('#po').textContent='Review Order · '+inr(t);
     $('#qr').innerHTML='';if(method==='UPI'&&window.QRCode)new QRCode($('#qr'),{text:link,width:140,height:140});
@@ -919,12 +1012,12 @@ async function checkout(){
 
 /* ===== LOGIN ===== */
 function loginView(){
-  const p=profile();
+  const p=profile(), accUI = SET.account_ui || {};
   app.innerHTML=`<div class="max-w-sm mx-auto bg-white border border-gray-100 rounded-3xl p-6 space-y-4 shadow-soft my-6">
     <div class="text-center">
       <div class="w-14 h-14 mx-auto rounded-full bg-slate-900 text-white flex items-center justify-center shadow-soft"><svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
-      <h2 class="font-extrabold text-base mt-3 text-slate-900">${p?'Your Profile Details':'Login'}</h2>
-      <p class="text-[11px] text-gray-500 mt-0.5">உங்கள் பெயர் மற்றும் மொபைல் எண்ணை உள்ளிடவும்.</p>
+      <h2 class="font-extrabold text-base mt-3 text-slate-900">${esc(p?'Your Profile Details':(accUI.title || 'Login'))}</h2>
+      <p class="text-[11px] text-gray-500 mt-0.5">${esc(accUI.subtitle || 'உங்கள் பெயர் மற்றும் மொபைல் எண்ணை உள்ளிடவும்.')}</p>
     </div>
     ${input('ln','Your Name',`maxlength="60" placeholder="" value="${esc(p?.name||'')}"`)}
     ${input('lp','Mobile Number (10 digits)',`maxlength="10" inputmode="numeric" placeholder="" value="${esc(p?.phone||'')}"`)}
@@ -990,11 +1083,12 @@ function orderCard(o){
 async function ordersHtml(pf){
   if(!pf)return loginNeeded('Please login with your mobile number to see your orders.');
   const list=await fetchOrders();
+  const emptyMsg = SET.account_ui?.emptyOrders || 'No orders yet. Start shopping';
   const chips=[['all','All'],['pending','Pending'],['verified','Processing'],['dispatched','Shipped'],['delivered','Delivered'],['cancelled','Cancelled']];
   return `<div class="max-w-md mx-auto space-y-4 my-2">
     ${topbar('My Orders','#/account/hub')}
     <div class="flex gap-2 overflow-x-auto no-scrollbar py-1">${chips.map(c=>`<button data-f="${c[0]}" class="shrink-0 px-4 py-2 rounded-full text-xs font-bold transition ${ofilter===c[0]?'bg-slate-900 text-white shadow-soft':'bg-white text-gray-600 hover:bg-gray-100 border border-gray-100'}">${c[1]}${c[0]==='all'?'':' ('+list.filter(GRP[c[0]]).length+')'}</button>`).join('')}</div>
-    <div class="space-y-4 pt-1">${list.filter(GRP[ofilter]||GRP.all).map(orderCard).join('')||'<div class="bg-white rounded-3xl p-10 text-center text-gray-400 text-xs border border-gray-100 shadow-soft">No orders yet. <a href="#/shop" class="underline font-bold text-slate-900">Start shopping</a></div>'}</div></div>`;
+    <div class="space-y-4 pt-1">${list.filter(GRP[ofilter]||GRP.all).map(orderCard).join('')||`<div class="bg-white rounded-3xl p-10 text-center text-gray-400 text-xs border border-gray-100 shadow-soft">${esc(emptyMsg)}. <a href="#/shop" class="underline font-bold text-slate-900">Start shopping</a></div>`}</div></div>`;
 }
 
 async function orderDetailView(orderId,pf){
@@ -1014,6 +1108,7 @@ async function orderDetailView(orderId,pf){
   const city=ord.city||ship.city||'';
   const state=ord.state||ship.state||'';
   const pincode=ord.pincode||ship.pincode||'';
+  const supportMsg = SET.account_ui?.supportText || 'Contact support on WhatsApp';
   app.innerHTML=`<div class="max-w-md mx-auto space-y-4 my-2">
     ${topbar('Order #'+esc(shortNo),'#/account/orders')}
     <div class="bg-white rounded-3xl p-5 shadow-soft border border-gray-100 space-y-4">
@@ -1030,7 +1125,7 @@ async function orderDetailView(orderId,pf){
       ${ord.discount?`<div class="flex justify-between text-gray-600"><span>Discount</span><b class="text-emerald-700">−${inr(ord.discount)}</b></div>`:''}
       <div class="flex justify-between text-gray-600"><span>Delivery</span><b class="text-emerald-700">FREE</b></div>
       <div class="flex justify-between text-sm font-extrabold text-slate-900 border-t pt-2.5 mt-2"><span>Total</span><span>${inr(ord.total)}</span></div></div>
-    <div class="text-center pt-2"><a href="https://wa.me/${esc(WHATSAPP)}?text=${encodeURIComponent('Hi, I need help with my order #'+shortNo)}" target="_blank" rel="noopener" class="text-xs font-bold text-emerald-700 hover:underline inline-flex items-center gap-1">${ICONS.whatsapp}<span>Contact support on WhatsApp</span></a></div></div>`;
+    <div class="text-center pt-2"><a href="https://wa.me/${esc(WHATSAPP)}?text=${encodeURIComponent('Hi, I need help with my order #'+shortNo)}" target="_blank" rel="noopener" class="text-xs font-bold text-emerald-700 hover:underline inline-flex items-center gap-1">${ICONS.whatsapp}<span>${esc(supportMsg)}</span></a></div></div>`;
 }
 
 function profileHtml(pf){
@@ -1102,11 +1197,12 @@ async function account(section,params){
 
 /* ===== ROUTER ===== */
 async function route(){
-  app.onclick=null;if(window._bt)clearInterval(window._bt);document.title=(SET&&SET.brand)?(SET.brand.name+' | '+SET.brand.tagline):'Thaarai Tex';
+  app.onclick=null;if(window._bt)clearInterval(window._bt);
+  document.title=(SET.brand?.name || 'Thaarai Tex') + (SET.brand?.tagline ? ' | ' + SET.brand.tagline : '');
   const [path,qs]=(location.hash||'#/').slice(1).split('?'), params=new URLSearchParams(qs||'');
   app.innerHTML='<p class="text-center text-gray-400 py-20 text-xs">ஏற்றப்படுகிறது…</p>';
   $('#tabbar').classList.toggle('hidden',path.startsWith('/p/')||path==='/checkout');
-  document.querySelectorAll('.tb').forEach(a=>{const on=a.dataset.tb.split('|').some(k=>k==='/'?(path==='/'||path===''):path.startsWith(k));a.style.color=on?'var(--p)':'#94a3b8'});
+  document.querySelectorAll('.tb').forEach(a=>{const on=a.dataset.tb.split('|').some(k=>k==='/'?(path==='/'||path===''):path.startsWith(k));a.style.color=on?'#0f172a':'#94a3b8'});
   try{
     if(path==='/'||path==='')await home();
     else if(path==='/shop')await shop(params);
@@ -1119,40 +1215,118 @@ async function route(){
   }catch(err){console.error(err);app.innerHTML='<p class="text-center text-rose-600 py-20 text-xs">Error: '+esc(err.message||err)+'</p>';}
   window.scrollTo(0,0);
 }
+
 window.addEventListener('wheel',e=>{if(e.ctrlKey||e.metaKey)e.preventDefault()},{passive:false});
 window.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&['+','=','-','0'].includes(e.key))e.preventDefault()},true);
 document.addEventListener('click',e=>{const b=e.target.closest('[data-w]');if(b){e.preventDefault();e.stopPropagation();toggleWish(b.dataset.w)}},true);
 $('#sf').onsubmit=e=>{e.preventDefault();location.hash='#/shop?q='+encodeURIComponent($('#q').value.trim())};
 $('#sf2').onsubmit=e=>{e.preventDefault();location.hash='#/shop?q='+encodeURIComponent($('#q2').value.trim());$('#msearch').classList.add('hidden')};
 $('#msb').onclick=()=>{$('#msearch').classList.toggle('hidden');$('#q2').focus()};
-let routeStack=[location.hash||'#/'];
-let exitApproved=false,exitFromPop=false;
-const isHomeRoute=()=>!location.hash||location.hash==='#/'||location.hash==='#';
-function armExitGuard(){if(!history.state?.exitGuard)history.pushState({exitGuard:true},'',location.href)}
-function syncHomeGuard(){if(isHomeRoute())armExitGuard()}
-window.addEventListener('hashchange',()=>{
-  if(exitApproved)return;
-  const next=location.hash||'#/';
-  if(routeStack.length>1&&next===routeStack[routeStack.length-2])routeStack.pop();
-  else if(next!==routeStack[routeStack.length-1])routeStack.push(next);
+
+/* ===== FIX: BRAND CLICK NAVIGATION (NEVER SHOWS EXIT DIALOG) ===== */
+$('#brand').addEventListener('click', e => {
+  e.preventDefault();
+  e.stopPropagation();
+  if(location.hash !== '#/' && location.hash !== '#' && location.hash !== '') {
+    location.hash = '#/';
+  } else {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+});
+
+/* ===== EXIT LOCK ON SHOP TAB (MAIN EXIT GATEWAY) ===== */
+let exitModalOpen = false;
+let exitApproved = false;
+
+function showExitModal(){
+  exitModalOpen = true;
+  $('#exit-confirm').classList.remove('hidden');
+  $('#exit-stay').focus();
+}
+
+function hideExitModal(){
+  exitModalOpen = false;
+  $('#exit-confirm').classList.add('hidden');
+}
+
+function armShopTrap(){
+  if(location.hash === '#/shop'){
+    if(!history.state?.shopLocked){
+      history.pushState({ shopLocked: true }, '', location.href);
+    }
+  }
+}
+
+$('#exit-stay').onclick = () => {
+  hideExitModal();
+  // Ensure locked onto shop tab
+  if(location.hash !== '#/shop'){
+    location.hash = '#/shop';
+  } else {
+    history.pushState({ shopLocked: true }, '', location.href);
+  }
+};
+
+$('#exit-leave').onclick = () => {
+  exitApproved = true;
+  hideExitModal();
+  try {
+    window.close();
+  } catch(e){}
+  // Fallback if browser security prevents closing window
+  setTimeout(()=>{
+    history.back();
+  }, 100);
+};
+
+window.addEventListener('popstate', event => {
+  if(exitApproved) return;
+
+  const current = location.hash || '#/';
+  
+  // If user is on the Shop tab and tries to go back / exit:
+  if(current === '#/shop'){
+    showExitModal();
+    // Keep user in shop tab history so they cannot slip past without confirming
+    history.pushState({ shopLocked: true }, '', location.href);
+    return;
+  }
+
+  // If user is navigating back from subpages and reaches root/empty, direct them to #/shop
+  if(current === '#/' || current === '#' || current === ''){
+    // Allowed to go to home or shop freely, arm shop lock
+  }
+});
+
+$('#nav-back').onclick = () => {
+  const current = location.hash || '#/';
+  if(current === '#/shop'){
+    showExitModal();
+    return;
+  }
+  if(current === '#/' || current === '' || current === '#'){
+    location.hash = '#/shop';
+    return;
+  }
+  history.back();
+};
+
+window.addEventListener('hashchange', () => {
+  if(location.hash === '#/shop'){
+    armShopTrap();
+  }
   route();
 });
-function showExitConfirm(fromPop=false){exitFromPop=fromPop;$('#exit-confirm').classList.remove('hidden');$('#exit-stay').focus()}
-$('#exit-stay').onclick=()=>{$('#exit-confirm').classList.add('hidden');if(exitFromPop)armExitGuard();exitFromPop=false};
-$('#exit-leave').onclick=()=>{const steps=exitFromPop?1:2;exitApproved=true;$('#exit-confirm').classList.add('hidden');history.go(-steps)};
-window.addEventListener('popstate',event=>{
-  if(exitApproved)return;
-  const lastRoute=routeStack[routeStack.length-1]||'#/';
-  if(isHomeRoute()&&(lastRoute==='#/'||lastRoute==='#')&&event.state?.exitGuard!==true){showExitConfirm(true);return}
-});
-$('#nav-back').onclick=()=>{
-  if(isHomeRoute()){showExitConfirm(false);return}
-  if(routeStack.length>1){history.back();return}
-  location.hash='#/';
+
+const originalRoute = route;
+route = async function(){
+  await originalRoute();
+  if(location.hash === '#/shop'){
+    armShopTrap();
+  }
 };
-const originalRoute=route;
-route=async function(){await originalRoute();syncHomeGuard()};
-Promise.all([initAuth(),loadSiteSettings()]).then(route);
+
+Promise.all([initAuth(), loadSiteSettings()]).then(route);
 </script>
 </body>
 </html>
