@@ -3,8 +3,26 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="theme-color" content="#0f172a">
+  <meta name="theme-color" content="#4f46e5">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="TT Admin">
+  <link rel="manifest" href="admin-manifest.json">
   <title>Thaarai Tex — Executive Admin Studio</title>
+  <script>
+    /* Fast cached session check: prevents login screen flash & holds dashboard on page refresh */
+    (function(){
+      try {
+        var hasAuth = Object.keys(localStorage).some(function(k){
+          return k.indexOf('-auth-token') !== -1 && localStorage.getItem(k);
+        });
+        if(hasAuth){
+          document.documentElement.classList.add('has-auth-session');
+        }
+      } catch(e){}
+    })();
+  </script>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script defer src="./site-enhancements.js"></script>
@@ -12,6 +30,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
+    /* Instant smooth refresh: if authenticated, don't show login screen */
+    html.has-auth-session #login-screen { display: none !important; }
+    html.has-auth-session #dashboard { display: block !important; }
     #admin-exit-layer section>div:first-child{display:none}
     :root{font-family:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:#0f172a;background:#f8fafc}
     h1,h2,h3,h4,.brand{font-family:'Plus Jakarta Sans',sans-serif}
@@ -553,10 +574,40 @@ CREATE POLICY "Public access to customers" ON public.customers FOR ALL USING (tr
       document.body.classList.add('overflow-hidden');
     }
 
+    /* ===== ROUTE STATE & URL HASH PERSISTENCE (STAYS ON REFRESH) ===== */
+    function parseRouteFromUrl(){
+      const hash = (location.hash || '').replace(/^#\/?/, '').trim();
+      if(!hash) return null;
+      const parts = hash.split('/');
+      const sec = parts[0];
+      const subId = parts.slice(1).join('/') || null;
+      return { sec, subId };
+    }
+
+    function syncRouteToUrl(){
+      let h = section;
+      if(section === 'orders' && selectedOrderId) h += '/' + selectedOrderId;
+      else if(section === 'products' && selectedProductId !== null) h += '/' + selectedProductId;
+      else if(section === 'customers' && selectedCustomerId) h += '/' + selectedCustomerId;
+      else if(section === 'storefront' && currentStorefrontSubTab && currentStorefrontSubTab !== 'home') h += '/' + currentStorefrontSubTab;
+
+      try {
+        if(location.hash !== '#' + h){
+          history.replaceState({adminSection: section, subId: selectedOrderId||selectedProductId||selectedCustomerId}, '', '#' + h);
+        }
+        localStorage.setItem('thaarai_admin_section', section);
+        if(selectedOrderId) localStorage.setItem('thaarai_admin_order_id', selectedOrderId);
+        else localStorage.removeItem('thaarai_admin_order_id');
+        if(selectedProductId !== null) localStorage.setItem('thaarai_admin_product_id', selectedProductId);
+        else localStorage.removeItem('thaarai_admin_product_id');
+        if(selectedCustomerId) localStorage.setItem('thaarai_admin_customer_id', selectedCustomerId);
+        else localStorage.removeItem('thaarai_admin_customer_id');
+      } catch(e){}
+    }
+
     function setSection(id,fromHistory=false){
       if(!fromHistory){
         sectionHistory.push(id);
-        history.pushState({adminSection:id},'',location.href);
       }
       if(id==='orders' && !fromHistory) selectedOrderId = null;
       if(id==='customers' && !fromHistory) selectedCustomerId = null;
@@ -574,6 +625,7 @@ CREATE POLICY "Public access to customers" ON public.customers FOR ALL USING (tr
         b.className = `relative flex flex-col items-center gap-0.5 py-1 transition rounded-xl ${on ? 'text-indigo-600 font-black bg-indigo-50/80 shadow-xs' : 'text-slate-500 hover:text-slate-800'}`;
       });
       closeSidebar();
+      syncRouteToUrl();
       render();
     }
 
@@ -1669,13 +1721,16 @@ CREATE POLICY "Public access to customers" ON public.customers FOR ALL USING (tr
 
     function viewCustomerDetail(customerId){
       selectedCustomerId = customerId;
-      history.pushState({adminSection:'customers', customerId}, '', location.href);
+      syncRouteToUrl();
       render();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function backToCustomersList(){
       selectedCustomerId = null;
+      syncRouteToUrl();
       renderCustomers();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function renderCustomers(){
@@ -2191,15 +2246,16 @@ CREATE POLICY "Public access to customers" ON public.customers FOR ALL USING (tr
     function openProduct(product){
       selectedProductId = product ? product.id : 'new';
       if(section !== 'products'){
-        setSection('products');
-      } else {
-        render();
+        section = 'products';
       }
+      syncRouteToUrl();
+      render();
       window.scrollTo({top: 0, behavior: 'smooth'});
     }
 
     function backToProductsList(){
       selectedProductId = null;
+      syncRouteToUrl();
       render();
       window.scrollTo({top: 0, behavior: 'smooth'});
     }
@@ -2696,11 +2752,12 @@ CREATE POLICY "Public access to customers" ON public.customers FOR ALL USING (tr
       `;
     }
 
-    /* ===== SEPARATE PAGE: COMPLETE ORDER DETAILS ===== */
+    /* ===== SEPARATE PAGE: COMPLETE ORDER DETAILS (BEAUTIFUL & ALIGNED) ===== */
     function renderOrderDetailPage(orderId){
       const o = orders.find(x => String(x.id) === String(orderId));
       if(!o){
         selectedOrderId = null;
+        syncRouteToUrl();
         renderOrders();
         return;
       }
@@ -2710,202 +2767,318 @@ CREATE POLICY "Public access to customers" ON public.customers FOR ALL USING (tr
       const st = o.order_status || 'pending';
       const name = o.name || o.customer_name || a?.name || 'Customer';
       const phone = o.phone || o.mobile_number || a?.phone || '';
+      const cleanPhone = phone ? String(phone).replace(/\D/g, '').slice(-10) : '';
       const orderShortId = String(o.id).slice(0, 8).toUpperCase();
+      const initials = (name || 'C').split(' ').map(w=>w[0]).filter(Boolean).slice(0,2).join('').toUpperCase() || 'C';
 
       const statusMap = {
-        pending: { label: 'Pending Confirmation', pill: 'bg-amber-50 text-amber-900 border-amber-300' },
-        verified: { label: 'Processing & Packed', pill: 'bg-sky-50 text-sky-900 border-sky-300' },
-        dispatched: { label: 'Shipped & In Transit', pill: 'bg-indigo-50 text-indigo-900 border-indigo-300' },
-        delivered: { label: 'Delivered to Customer', pill: 'bg-emerald-50 text-emerald-900 border-emerald-300' },
-        cancelled: { label: 'Order Cancelled', pill: 'bg-rose-50 text-rose-900 border-rose-300' }
+        pending: { label: 'Pending Confirmation', pill: 'bg-amber-50 text-amber-900 border-amber-300', dot: 'bg-amber-500', step: 1 },
+        verified: { label: 'Processing & Packed', pill: 'bg-sky-50 text-sky-900 border-sky-300', dot: 'bg-sky-500', step: 2 },
+        dispatched: { label: 'Shipped & In Transit', pill: 'bg-indigo-50 text-indigo-900 border-indigo-300', dot: 'bg-indigo-600', step: 3 },
+        delivered: { label: 'Delivered to Customer', pill: 'bg-emerald-50 text-emerald-900 border-emerald-300', dot: 'bg-emerald-600', step: 4 },
+        cancelled: { label: 'Order Cancelled', pill: 'bg-rose-50 text-rose-900 border-rose-300', dot: 'bg-rose-600', step: 0 }
       };
-      const statusInfo = statusMap[st] || { label: st.toUpperCase(), pill: 'bg-slate-100 text-slate-800 border-slate-200' };
+      const statusInfo = statusMap[st] || { label: st.toUpperCase(), pill: 'bg-slate-100 text-slate-800 border-slate-200', dot: 'bg-slate-500', step: 1 };
+      const currentStep = statusInfo.step;
+
+      const whatsappText = encodeURIComponent(
+        `Hello ${name}, greetings from Thaarai Tex!\n\nRegarding your Order #TT-${orderShortId}:\n` +
+        `Current Status: ${statusInfo.label}\n` +
+        (o.tracking_id ? `Courier Tracking: ${o.tracking_id}\n` : '') +
+        `Total: ₹${Number(o.total||0).toLocaleString('en-IN')}\n\n` +
+        `Thank you for shopping with us!`
+      );
 
       view.innerHTML = `
-        <div class="space-y-6">
-          <!-- TOP BAR: BACK BUTTON & HEADER -->
+        <div class="space-y-6 max-w-6xl mx-auto pb-16">
+          <!-- TOP BAR: BACK BUTTON, ORDER ID & ACTION BUTTONS -->
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
-            <div class="flex items-center gap-3">
-              <button onclick="backToOrdersList()" class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 transition shadow-xs">
+            <div class="flex items-center gap-3 min-w-0">
+              <button type="button" onclick="backToOrdersList()" class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 transition shadow-xs shrink-0">
                 ${SVG.arrowLeft} <span>Back to Orders List</span>
               </button>
-              <div>
-                <div class="flex items-center gap-2">
-                  <h2 class="text-xl font-black text-slate-900 font-mono">#TT-${esc(orderShortId)}</h2>
+              <div class="min-w-0">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <h2 class="text-xl font-black text-slate-900 font-mono tracking-tight">#TT-${esc(orderShortId)}</h2>
                   <span class="rounded-full px-2.5 py-0.5 text-xs font-extrabold uppercase border ${statusInfo.pill}">
                     ${statusInfo.label}
                   </span>
+                  <span class="rounded-full px-2.5 py-0.5 text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200 uppercase">
+                    ${esc(o.payment_method || 'COD')}
+                  </span>
                 </div>
-                <p class="text-xs text-slate-500 mt-0.5 flex items-center gap-1">
-                  ${SVG.clock} Placed on ${date(o.created_at)}
+                <p class="text-xs text-slate-500 mt-0.5 flex items-center gap-1.5 flex-wrap">
+                  <span>${SVG.clock}</span>
+                  <span>Placed on <b>${date(o.created_at)}</b></span>
+                  <span>·</span>
+                  <span>${items.length} saree${items.length===1?'':'s'} ordered</span>
                 </p>
               </div>
             </div>
 
-            <div class="flex items-center gap-2">
-              <button onclick="window.print()" class="rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 transition shadow-xs">
-                Print Order
+            <div class="flex items-center gap-2 shrink-0 self-end sm:self-auto">
+              ${cleanPhone ? `
+                <a href="https://wa.me/91${esc(cleanPhone)}?text=${whatsappText}" target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 rounded-xl border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 px-3.5 py-2 text-xs font-bold transition shadow-xs">
+                  ${SVG.whatsapp} <span>Notify Customer</span>
+                </a>
+              ` : ''}
+              <button type="button" onclick="window.print()" class="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 px-3.5 py-2 text-xs font-bold transition shadow-xs">
+                <span>Print Invoice</span>
               </button>
             </div>
           </div>
 
-          <!-- 2-COLUMN DETAIL LAYOUT -->
-          <div class="grid gap-6 lg:grid-cols-12 items-start">
-            <!-- LEFT COLUMN: CUSTOMER, ADDRESS, DELIVERY CONTROLS (7 COLS) -->
-            <div class="lg:col-span-7 space-y-5">
-              <!-- Customer & Direct Contact Card -->
-              <section class="rounded-3xl border border-slate-200/90 bg-white p-6 shadow-xs space-y-4">
-                <div class="flex items-center justify-between pb-3 border-b border-slate-100">
-                  <div class="flex items-center gap-2">
-                    <span class="text-indigo-600">${SVG.user}</span>
-                    <h3 class="text-xs font-black uppercase tracking-wider text-slate-900">Customer Contact</h3>
-                  </div>
-                  ${phone ? `
-                    <div class="flex items-center gap-2">
-                      <a href="tel:${esc(phone)}" class="inline-flex items-center gap-1.5 rounded-full bg-indigo-50 border border-indigo-200/60 px-3 py-1 text-xs font-bold text-indigo-700 hover:bg-indigo-100 transition">
-                        ${SVG.phone} <span>Call</span>
-                      </a>
-                      <a href="https://wa.me/91${esc(phone.replace(/\D/g,''))}" target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-200/60 px-3 py-1 text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition">
-                        ${SVG.whatsapp} <span>WhatsApp</span>
-                      </a>
-                    </div>` : ''}
-                </div>
-                <div class="space-y-1.5 text-xs">
-                  <p class="font-extrabold text-base text-slate-900">${esc(name)}</p>
-                  ${phone ? `<p class="text-slate-600 font-medium">Mobile Phone: <b class="text-slate-900 font-mono">${esc(phone)}</b></p>` : ''}
-                  ${o.account ? `<p class="text-slate-500 text-[11px]">Account ID: <span class="font-mono text-slate-700">${esc(o.account)}</span></p>` : ''}
-                </div>
-              </section>
-
-              <!-- Delivery & Shipping Address Card -->
-              <section class="rounded-3xl border border-slate-200/90 bg-white p-6 shadow-xs space-y-4">
-                <div class="flex items-center justify-between pb-3 border-b border-slate-100">
-                  <div class="flex items-center gap-2">
-                    <span class="text-indigo-600">${SVG.location}</span>
-                    <h3 class="text-xs font-black uppercase tracking-wider text-slate-900">Shipping & Delivery Destination</h3>
-                  </div>
-                  <span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full">Pan-India Delivery</span>
-                </div>
-                <div class="rounded-2xl bg-slate-50/70 p-4 border border-slate-200/70">
-                  ${renderAddressHtml(o.address || o.shipping_address)}
-                </div>
-              </section>
-
-              <!-- Delivery Status & Courier Tracking Updater -->
-              <section class="rounded-3xl border border-slate-200/90 bg-white p-6 shadow-xs space-y-4">
-                <div class="flex items-center justify-between pb-3 border-b border-slate-100">
-                  <div class="flex items-center gap-2">
-                    <span class="text-indigo-600">${SVG.truck}</span>
-                    <h3 class="text-xs font-black uppercase tracking-wider text-slate-900">Delivery Status & Courier Tracking</h3>
-                  </div>
-                  <span class="text-[10px] text-slate-400 font-medium">Live Customer Sync</span>
-                </div>
-
-                <div class="grid gap-3 sm:grid-cols-2">
-                  <label class="block text-xs font-bold text-slate-700">Fulfillment Status
-                    <select id="detail-order-status" class="mt-1.5 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-xs font-black text-slate-900 outline-none focus:border-indigo-600 shadow-xs cursor-pointer">
-                      <option value="pending" ${st==='pending'?'selected':''}>Pending Confirmation</option>
-                      <option value="verified" ${st==='verified'?'selected':''}>Processing & Packed</option>
-                      <option value="dispatched" ${st==='dispatched'?'selected':''}>Shipped & In Transit</option>
-                      <option value="delivered" ${st==='delivered'?'selected':''}>Delivered to Customer</option>
-                      <option value="cancelled" ${st==='cancelled'?'selected':''}>Order Cancelled</option>
-                    </select>
-                  </label>
-
-                  <label class="block text-xs font-bold text-slate-700">Courier Tracking ID / AWB
-                    <input id="detail-tracking-id" value="${esc(o.tracking_id || '')}" placeholder="e.g. ST-992019 or IndiaPost" class="mt-1.5 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-xs font-mono font-bold text-slate-900 outline-none focus:border-indigo-600 shadow-xs">
-                  </label>
-                </div>
-
-                <div class="flex items-center justify-between pt-2">
-                  ${o.tracking_id ? `
-                    <a href="https://www.google.com/search?q=${encodeURIComponent(o.tracking_id + ' courier tracking')}" target="_blank" rel="noopener" class="text-xs font-bold text-indigo-600 hover:underline inline-flex items-center gap-1">
-                      <span>Track online</span> ${SVG.external}
-                    </a>
-                  ` : '<span></span>'}
-                  <button onclick="saveDetailOrderFulfillment('${esc(o.id)}')" class="rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-5 py-2.5 text-xs transition shadow-xs flex items-center gap-1.5 active:scale-[0.99]">
-                    <span>${SVG.save}</span> <span>Save Delivery Changes</span>
-                  </button>
-                </div>
-              </section>
+          <!-- VISUAL LIFECYCLE PROGRESS STEPPER -->
+          <div class="rounded-2xl border border-slate-200/80 bg-white p-4 sm:p-5 shadow-xs">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+              <h3 class="text-xs font-black uppercase tracking-wider text-slate-900 flex items-center gap-2">
+                <span class="h-2 w-2 rounded-full ${statusInfo.dot}"></span> Fulfillment Lifecycle Progress
+              </h3>
+              <span class="text-[11px] font-bold ${statusInfo.pill} px-2.5 py-0.5 rounded-full border">
+                ${statusInfo.label}
+              </span>
             </div>
 
-            <!-- RIGHT COLUMN: ORDERED PRODUCTS & FINANCIAL BREAKDOWN (5 COLS) -->
-            <div class="lg:col-span-5 space-y-5">
-              <!-- Ordered Sarees Breakdown with Product IDs -->
-              <section class="rounded-3xl border border-slate-200/90 bg-white p-6 shadow-xs space-y-4">
+            ${st === 'cancelled' ? `
+              <div class="rounded-xl bg-rose-50 border border-rose-200 p-4 text-center">
+                <span class="font-extrabold text-sm text-rose-800">This order has been cancelled</span>
+                <p class="text-xs text-rose-600 mt-0.5">No further shipping or fulfillment action is required.</p>
+              </div>
+            ` : `
+              <div class="grid grid-cols-4 gap-2 relative">
+                ${[
+                  { step: 1, title: 'Placed', desc: 'Order Received' },
+                  { step: 2, title: 'Processing', desc: 'Saree Packed' },
+                  { step: 3, title: 'Dispatched', desc: 'In Courier Transit' },
+                  { step: 4, title: 'Delivered', desc: 'Received by Customer' }
+                ].map(s => {
+                  const isDone = currentStep >= s.step;
+                  const isCurrent = currentStep === s.step;
+                  return `
+                    <div class="flex flex-col items-center text-center">
+                      <div class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs transition shadow-xs ${isDone ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-400 border border-slate-200'} ${isCurrent ? 'ring-4 ring-indigo-100 font-black' : ''}">
+                        ${isDone ? SVG.check : s.step}
+                      </div>
+                      <p class="text-[11px] sm:text-xs font-extrabold mt-2 ${isDone ? 'text-slate-900' : 'text-slate-400'}">${s.title}</p>
+                      <p class="text-[9px] sm:text-[10px] text-slate-500 hidden sm:block">${s.desc}</p>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            `}
+          </div>
+
+          <!-- 2-COLUMN BALANCED LAYOUT -->
+          <div class="grid gap-6 lg:grid-cols-12 items-start">
+            
+            <!-- LEFT MAIN COLUMN: ORDERED ITEMS, FINANCIALS & FULFILLMENT (7 COLS) -->
+            <div class="lg:col-span-7 space-y-6">
+              
+              <!-- Card 1: Ordered Sarees List -->
+              <section class="rounded-2xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-xs space-y-4">
                 <div class="flex items-center justify-between pb-3 border-b border-slate-100">
                   <div class="flex items-center gap-2">
                     <span class="text-indigo-600">${SVG.package}</span>
                     <h3 class="text-xs font-black uppercase tracking-wider text-slate-900">Ordered Sarees (${items.length})</h3>
                   </div>
-                  <span class="text-[10px] text-slate-400 font-medium">Verified catalog items</span>
+                  <span class="text-[11px] font-bold text-slate-500">Verified Catalog Items</span>
                 </div>
 
-                <div class="space-y-3">
+                <div class="divide-y divide-slate-100">
                   ${items.length ? items.map(item => {
                     const catalogProd = products.find(p => String(p.id) === String(item.product_id || item.id || item.p_id));
                     const prodId = getProductId(catalogProd || item);
                     const imgUrl = item.image || item.image_url || catalogProd?.images?.[0] || 'https://placehold.co/100x120?text=Saree';
-                    const unitPrice = item.price || catalogProd?.price || 0;
-                    const qty = item.quantity || item.qty || 1;
-                    const lineTotal = Number(unitPrice) * Number(qty);
+                    const unitPrice = Number(item.price || catalogProd?.price || 0);
+                    const qty = Number(item.quantity || item.qty || 1);
+                    const lineTotal = unitPrice * qty;
 
                     return `
-                      <div class="flex items-center gap-3.5 rounded-2xl border border-slate-200/70 bg-slate-50/50 p-3.5">
-                        <img src="${esc(imgUrl)}" alt="" class="h-16 w-14 rounded-xl object-cover border border-slate-200 shrink-0 bg-white">
-                        <div class="min-w-0 flex-1 space-y-0.5">
+                      <div class="py-3.5 first:pt-0 last:pb-0 flex items-center gap-4">
+                        <img src="${esc(imgUrl)}" alt="" class="h-20 w-16 rounded-xl object-cover border border-slate-200 shadow-2xs shrink-0 bg-slate-50">
+                        <div class="min-w-0 flex-1 space-y-1">
                           <div class="flex items-center gap-1.5 flex-wrap">
                             <span class="font-mono text-[10px] font-black bg-indigo-50 text-indigo-900 border border-indigo-200 px-2 py-0.5 rounded select-all">
                               ${esc(prodId)}
                             </span>
-                            <span class="text-[10px] font-bold text-slate-500">${esc(catalogProd?.fabric || item.variant || 'Pure Handloom')}</span>
+                            <span class="text-[10px] font-bold text-slate-500 bg-slate-50 px-2 py-0.5 rounded border border-slate-200/70">
+                              ${esc(catalogProd?.fabric || item.variant || 'Handloom')}
+                            </span>
                           </div>
-                          <h4 class="text-xs font-extrabold text-slate-900 truncate">${esc(item.name || item.product_name || catalogProd?.name || 'Handloom Saree')}</h4>
-                          <p class="text-[11px] text-slate-600">
-                            Qty: <b class="text-slate-900 font-black">${qty}</b> · Unit: <b class="text-slate-900">${fmt(unitPrice)}</b>
+                          <h4 class="text-xs sm:text-sm font-bold text-slate-900 leading-snug truncate">${esc(item.name || item.product_name || catalogProd?.name || 'Thaarai Saree')}</h4>
+                          <p class="text-xs text-slate-500">
+                            Quantity: <b class="text-slate-900 font-black">${qty}</b> × <span class="font-bold text-slate-800">${fmt(unitPrice)}</span>
                           </p>
                         </div>
-                        <span class="text-xs font-black text-slate-900 shrink-0">${fmt(lineTotal)}</span>
+                        <div class="text-right shrink-0 pl-2">
+                          <span class="text-sm sm:text-base font-black text-slate-900 block">${fmt(lineTotal)}</span>
+                          <span class="text-[10px] text-slate-400 font-medium">Item Total</span>
+                        </div>
                       </div>
                     `;
                   }).join('') : `
-                    <p class="text-xs text-slate-400 py-6 text-center">No item data attached.</p>
+                    <p class="text-xs text-slate-400 py-6 text-center">No item data attached to this order.</p>
                   `}
                 </div>
               </section>
 
-              <!-- Payment Method & Billing Breakdown -->
-              <section class="rounded-3xl border border-slate-200/90 bg-white p-6 shadow-xs space-y-3.5">
-                <h3 class="text-xs font-black uppercase tracking-wider text-slate-900 pb-2 border-b border-slate-100">
-                  Payment & Invoice Summary
-                </h3>
+              <!-- Card 2: Financial Breakdown & Payment Summary -->
+              <section class="rounded-2xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-xs space-y-4">
+                <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                  <h3 class="text-xs font-black uppercase tracking-wider text-slate-900 flex items-center gap-2">
+                    <span class="text-indigo-600">${SVG.tag}</span> Payment & Financial Breakdown
+                  </h3>
+                  <span class="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                    ${st === 'delivered' ? 'Paid & Completed' : 'Payment on Delivery / Online'}
+                  </span>
+                </div>
 
-                <div class="space-y-2 text-xs">
-                  <div class="flex justify-between text-slate-600">
+                <div class="space-y-2.5 text-xs">
+                  <div class="flex justify-between items-center text-slate-600">
                     <span>Payment Mode</span>
-                    <span class="font-extrabold text-slate-900 uppercase">${esc(o.payment_method || 'Cash on Delivery')}</span>
+                    <span class="font-extrabold text-slate-900 uppercase bg-slate-100 px-2 py-0.5 rounded">${esc(o.payment_method || 'Cash on Delivery (COD)')}</span>
                   </div>
                   ${o.ref || o.utr ? `
-                    <div class="flex justify-between text-slate-600">
-                      <span>UPI UTR / Reference</span>
-                      <span class="font-mono font-bold text-indigo-600 select-all">${esc(o.ref || o.utr)}</span>
-                    </div>` : ''}
+                    <div class="flex justify-between items-center text-slate-600">
+                      <span>UPI UTR / Payment Ref</span>
+                      <span class="font-mono font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200 select-all">${esc(o.ref || o.utr)}</span>
+                    </div>
+                  ` : ''}
                   ${o.coupon ? `
-                    <div class="flex justify-between text-emerald-700 font-bold">
+                    <div class="flex justify-between items-center text-emerald-700 font-bold">
                       <span>Coupon Applied (${esc(o.coupon)})</span>
-                      <span>Discount Active</span>
-                    </div>` : ''}
-                  <div class="flex justify-between text-slate-600">
-                    <span>Delivery Charges</span>
-                    <span class="font-bold text-emerald-700">FREE</span>
+                      <span class="bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">Discount Applied ✓</span>
+                    </div>
+                  ` : ''}
+                  <div class="flex justify-between items-center text-slate-600">
+                    <span>Shipping / Delivery Charges</span>
+                    <span class="font-bold text-emerald-700">FREE SHIPPING</span>
                   </div>
-                  <div class="flex justify-between pt-3 border-t border-slate-200 text-sm font-black text-slate-900">
-                    <span>Grand Total Paid</span>
-                    <span class="text-base sm:text-lg font-black text-indigo-950">${fmt(o.total)}</span>
+                  <div class="flex justify-between items-center pt-3 border-t border-slate-200 text-sm font-black text-slate-900">
+                    <span>Total Amount Paid / Payable</span>
+                    <span class="text-lg sm:text-xl font-black text-indigo-950">${fmt(o.total)}</span>
                   </div>
                 </div>
               </section>
+
+              <!-- Card 3: Live Delivery Status & Courier AWB Tracking -->
+              <section class="rounded-2xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-xs space-y-4">
+                <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                  <div class="flex items-center gap-2">
+                    <span class="text-indigo-600">${SVG.truck}</span>
+                    <h3 class="text-xs font-black uppercase tracking-wider text-slate-900">Fulfillment Status & Courier AWB</h3>
+                  </div>
+                  <span class="text-[10px] text-slate-400 font-medium">Auto-syncs with Storefront</span>
+                </div>
+
+                <div class="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <label class="block text-xs font-bold text-slate-700">Update Delivery Stage
+                      <select id="detail-order-status" class="mt-1.5 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-xs font-black text-slate-900 outline-none focus:border-indigo-600 shadow-xs cursor-pointer">
+                        <option value="pending" ${st==='pending'?'selected':''}>Pending Confirmation</option>
+                        <option value="verified" ${st==='verified'?'selected':''}>Processing & Packed</option>
+                        <option value="dispatched" ${st==='dispatched'?'selected':''}>Shipped & In Transit</option>
+                        <option value="delivered" ${st==='delivered'?'selected':''}>Delivered to Customer</option>
+                        <option value="cancelled" ${st==='cancelled'?'selected':''}>Order Cancelled</option>
+                      </select>
+                    </label>
+                  </div>
+
+                  <div>
+                    <label class="block text-xs font-bold text-slate-700">Courier Tracking / AWB Number
+                      <input id="detail-tracking-id" value="${esc(o.tracking_id || '')}" placeholder="e.g. ST-882910 or DTDC-2910" class="mt-1.5 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-xs font-mono font-bold text-slate-900 outline-none focus:border-indigo-600 shadow-xs">
+                    </label>
+                  </div>
+                </div>
+
+                <div class="flex items-center justify-between pt-2">
+                  ${o.tracking_id ? `
+                    <a href="https://www.google.com/search?q=${encodeURIComponent(o.tracking_id + ' courier tracking')}" target="_blank" rel="noopener" class="text-xs font-bold text-indigo-600 hover:underline inline-flex items-center gap-1">
+                      <span>Track shipment online</span> ${SVG.external}
+                    </a>
+                  ` : '<span class="text-[11px] text-slate-400">Enter tracking ID and save to notify customer</span>'}
+                  <button type="button" onclick="saveDetailOrderFulfillment('${esc(o.id)}')" class="rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-5 py-2.5 text-xs transition shadow-xs flex items-center gap-1.5 active:scale-[0.99]">
+                    <span>${SVG.save}</span> <span>Save Delivery Changes</span>
+                  </button>
+                </div>
+              </section>
+
+            </div>
+
+            <!-- RIGHT SIDEBAR: CUSTOMER PROFILE & SHIPPING DESTINATION (5 COLS) -->
+            <div class="lg:col-span-5 space-y-6">
+              
+              <!-- Card 4: Customer Profile & Direct Contact -->
+              <section class="rounded-2xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-xs space-y-4">
+                <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                  <div class="flex items-center gap-2">
+                    <span class="text-indigo-600">${SVG.user}</span>
+                    <h3 class="text-xs font-black uppercase tracking-wider text-slate-900">Customer Profile</h3>
+                  </div>
+                  ${cleanPhone ? `
+                    <div class="flex items-center gap-1.5">
+                      <a href="tel:${esc(cleanPhone)}" class="inline-flex items-center gap-1 rounded-lg bg-indigo-50 border border-indigo-200/60 px-2.5 py-1 text-xs font-bold text-indigo-700 hover:bg-indigo-100 transition">
+                        ${SVG.phone} <span>Call</span>
+                      </a>
+                      <a href="https://wa.me/91${esc(cleanPhone)}?text=${whatsappText}" target="_blank" rel="noopener" class="inline-flex items-center gap-1 rounded-lg bg-emerald-50 border border-emerald-200/60 px-2.5 py-1 text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition">
+                        ${SVG.whatsapp} <span>Chat</span>
+                      </a>
+                    </div>
+                  ` : ''}
+                </div>
+
+                <div class="flex items-center gap-3">
+                  <div class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-indigo-50 text-indigo-700 font-black text-sm border border-indigo-100 shadow-2xs">
+                    ${esc(initials)}
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <h4 class="text-sm font-extrabold text-slate-900 truncate">${esc(name)}</h4>
+                    ${cleanPhone ? `<p class="text-xs text-slate-600 font-mono font-bold mt-0.5">${esc(phone)}</p>` : ''}
+                    ${o.account ? `<p class="text-[10px] text-slate-400 font-mono">User ID: ${esc(o.account)}</p>` : ''}
+                  </div>
+                </div>
+
+                <div class="pt-2 border-t border-slate-100">
+                  <button type="button" onclick="viewCustomerDetail('TT-CUST-${esc(orderShortId)}')" class="w-full text-center py-2 px-3 rounded-xl border border-slate-200 bg-slate-50/70 hover:bg-slate-100 text-xs font-bold text-indigo-700 transition">
+                    View Full Customer History →
+                  </button>
+                </div>
+              </section>
+
+              <!-- Card 5: Shipping Destination & Delivery Address -->
+              <section class="rounded-2xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-xs space-y-4">
+                <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                  <div class="flex items-center gap-2">
+                    <span class="text-indigo-600">${SVG.location}</span>
+                    <h3 class="text-xs font-black uppercase tracking-wider text-slate-900">Shipping Destination</h3>
+                  </div>
+                  <span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">Pan-India Delivery</span>
+                </div>
+
+                <div class="rounded-xl bg-slate-50/80 p-4 border border-slate-200/80">
+                  ${renderAddressHtml(o.address || o.shipping_address)}
+                </div>
+              </section>
+
+              <!-- Card 6: Order Summary & Meta -->
+              <section class="rounded-2xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-xs space-y-3">
+                <h3 class="text-xs font-black uppercase tracking-wider text-slate-900">Order Metadata</h3>
+                <div class="space-y-2 text-xs text-slate-600">
+                  <div class="flex justify-between">
+                    <span>Internal Order ID</span>
+                    <span class="font-mono text-slate-900 font-bold select-all">${esc(o.id)}</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span>Order Date</span>
+                    <span class="font-bold text-slate-900">${date(o.created_at)}</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span>Checkout Source</span>
+                    <span class="font-bold text-indigo-700">Online Storefront</span>
+                  </div>
+                </div>
+              </section>
+
             </div>
           </div>
         </div>
@@ -2914,12 +3087,14 @@ CREATE POLICY "Public access to customers" ON public.customers FOR ALL USING (tr
 
     function viewOrderDetail(orderId){
       selectedOrderId = orderId;
+      syncRouteToUrl();
       renderOrderDetailPage(orderId);
       window.scrollTo({ top: 0, behavior: 'instant' });
     }
 
     function backToOrdersList(){
       selectedOrderId = null;
+      syncRouteToUrl();
       renderOrders();
       window.scrollTo({ top: 0, behavior: 'instant' });
     }
@@ -3356,22 +3531,72 @@ CREATE POLICY "Public access to customers" ON public.customers FOR ALL USING (tr
       if($('#editor').open)updateProductImages(current);
     };
 
-    /* ===== AUTH & INITIALIZATION ===== */
+    /* ===== AUTH & INITIALIZATION (PERSIST CURRENT PAGE ON REFRESH) ===== */
     async function saveAdminSession(session){
-      if(!session)return false;
+      if(!session){
+        document.documentElement.classList.remove('has-auth-session');
+        $('#login-screen').classList.remove('hidden');
+        $('#dashboard').classList.add('hidden');
+        return false;
+      }
       const {data,error}=await db.auth.getUser();
       if(error||data.user?.app_metadata?.role!=='admin'){
         await db.auth.signOut();
+        document.documentElement.classList.remove('has-auth-session');
+        $('#login-screen').classList.remove('hidden');
+        $('#dashboard').classList.add('hidden');
         return false;
       }
+
+      // Restore active page/sub-item on reload from URL hash or localStorage
+      const route = parseRouteFromUrl();
+      if(route && sections.some(s => s[0] === route.sec)){
+        section = route.sec;
+        if(section === 'orders' && route.subId) selectedOrderId = route.subId;
+        else if(section === 'products' && route.subId) selectedProductId = route.subId;
+        else if(section === 'customers' && route.subId) selectedCustomerId = route.subId;
+        else if(section === 'storefront' && route.subId) currentStorefrontSubTab = route.subId;
+      } else {
+        try {
+          const savedSec = localStorage.getItem('thaarai_admin_section');
+          if(savedSec && sections.some(s => s[0] === savedSec)){
+            section = savedSec;
+            if(section === 'orders') selectedOrderId = localStorage.getItem('thaarai_admin_order_id') || null;
+            if(section === 'products') selectedProductId = localStorage.getItem('thaarai_admin_product_id') || null;
+            if(section === 'customers') selectedCustomerId = localStorage.getItem('thaarai_admin_customer_id') || null;
+          }
+        } catch(e){}
+      }
+
       if(!adminGuardReady){
-        history.replaceState({adminSection:'overview',adminRoot:true},'',location.href);
-        history.pushState({adminSection:'overview',adminGuard:true},'',location.href);
+        let targetHash = '#' + section;
+        if(section === 'orders' && selectedOrderId) targetHash += '/' + selectedOrderId;
+        else if(section === 'products' && selectedProductId !== null) targetHash += '/' + selectedProductId;
+        else if(section === 'customers' && selectedCustomerId) targetHash += '/' + selectedCustomerId;
+        
+        history.replaceState({adminSection:section,adminRoot:true},'',targetHash);
+        history.pushState({adminSection:section,adminGuard:true},'',targetHash);
         adminGuardReady=true;
       }
+
+      document.documentElement.classList.add('has-auth-session');
       $('#login-screen').classList.add('hidden');
       $('#dashboard').classList.remove('hidden');
       $('#admin-email').textContent=data.user.email||'';
+
+      const s=sections.find(x=>x[0]===section)||sections[0];
+      $('#page-title').textContent=s[1];
+      $('#crumb').textContent=s[1].toUpperCase();
+      nav.querySelectorAll('.nav-item').forEach(b=>{
+        const on = b.dataset.section === section;
+        b.className=`nav-item flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-xs font-bold transition ${on ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30' : 'text-slate-400 hover:bg-slate-900 hover:text-white'}`;
+      });
+      document.querySelectorAll('#admin-mobile-tabbar button[data-m-sec]').forEach(b=>{
+        const on = b.dataset.mSec === section;
+        b.className = `relative flex flex-col items-center gap-0.5 py-1 transition rounded-xl ${on ? 'text-indigo-600 font-black bg-indigo-50/80 shadow-xs' : 'text-slate-500 hover:text-slate-800'}`;
+      });
+
+      syncRouteToUrl();
       await loadAll();
       return true;
     }
@@ -3385,7 +3610,17 @@ CREATE POLICY "Public access to customers" ON public.customers FOR ALL USING (tr
       if(!await saveAdminSession(data.session))msg.textContent='This account is not authorized for admin access.';
     };
 
-    $('#logout').onclick=async()=>{await db.auth.signOut();location.reload()};
+    $('#logout').onclick=async()=>{
+      document.documentElement.classList.remove('has-auth-session');
+      try {
+        localStorage.removeItem('thaarai_admin_section');
+        localStorage.removeItem('thaarai_admin_order_id');
+        localStorage.removeItem('thaarai_admin_product_id');
+        localStorage.removeItem('thaarai_admin_customer_id');
+      } catch(e){}
+      await db.auth.signOut();
+      location.href = 'admin.html';
+    };
     $('#editor-form').onsubmit=saveEditor;
     $('#editor-close').onclick=()=>editor.close();
     $('#editor-cancel').onclick=()=>editor.close();
@@ -3497,7 +3732,44 @@ CREATE POLICY "Public access to customers" ON public.customers FOR ALL USING (tr
     };
 
     $('#today').textContent=new Date().toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short'});
-    db.auth.getSession().then(({data})=>{if(data.session)saveAdminSession(data.session)});
+
+    /* Synchronize browser back/forward buttons with admin sections */
+    window.addEventListener('hashchange', () => {
+      const route = parseRouteFromUrl();
+      if(route && sections.some(s => s[0] === route.sec)){
+        section = route.sec;
+        selectedOrderId = (section === 'orders') ? route.subId : null;
+        selectedProductId = (section === 'products') ? route.subId : null;
+        selectedCustomerId = (section === 'customers') ? route.subId : null;
+        if(section === 'storefront' && route.subId) currentStorefrontSubTab = route.subId;
+        const s = sections.find(x => x[0] === section) || sections[0];
+        $('#page-title').textContent = s[1];
+        $('#crumb').textContent = s[1].toUpperCase();
+        nav.querySelectorAll('.nav-item').forEach(b => {
+          const on = b.dataset.section === section;
+          b.className = `nav-item flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-xs font-bold transition ${on ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30' : 'text-slate-400 hover:bg-slate-900 hover:text-white'}`;
+        });
+        document.querySelectorAll('#admin-mobile-tabbar button[data-m-sec]').forEach(b=>{
+          const on = b.dataset.mSec === section;
+          b.className = `relative flex flex-col items-center gap-0.5 py-1 transition rounded-xl ${on ? 'text-indigo-600 font-black bg-indigo-50/80 shadow-xs' : 'text-slate-500 hover:text-slate-800'}`;
+        });
+        render();
+      }
+    });
+
+    db.auth.getSession().then(({data})=>{
+      if(data && data.session){
+        saveAdminSession(data.session);
+      } else {
+        document.documentElement.classList.remove('has-auth-session');
+        $('#login-screen').classList.remove('hidden');
+        $('#dashboard').classList.add('hidden');
+      }
+    }).catch(()=>{
+      document.documentElement.classList.remove('has-auth-session');
+      $('#login-screen').classList.remove('hidden');
+      $('#dashboard').classList.add('hidden');
+    });
   </script>
 </body>
 </html>
