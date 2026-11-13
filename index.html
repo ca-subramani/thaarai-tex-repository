@@ -1237,6 +1237,20 @@ $('#brand').addEventListener('click', e => {
 /* ===== EXIT LOCK ON SHOP TAB (MAIN EXIT GATEWAY) ===== */
 let exitModalOpen = false;
 let exitApproved = false;
+let currentRoute = location.hash || '#/';
+let isLinkNavigation = false;
+
+// Intercept all user anchor clicks so deliberate tab navigation never triggers exit prompts
+document.addEventListener('click', (e) => {
+  const link = e.target.closest('a[href]');
+  if(link){
+    const h = link.getAttribute('href');
+    if(h && (h.startsWith('#') || h.startsWith('/#'))){
+      isLinkNavigation = true;
+      setTimeout(() => { isLinkNavigation = false; }, 400);
+    }
+  }
+}, true);
 
 function showExitModal(){
   exitModalOpen = true;
@@ -1249,58 +1263,109 @@ function hideExitModal(){
   $('#exit-confirm').classList.add('hidden');
 }
 
-function armShopTrap(){
-  if(location.hash === '#/shop'){
-    if(!history.state?.shopLocked){
-      history.pushState({ shopLocked: true }, '', location.href);
-    }
+function armShopGuard(){
+  if(location.hash.startsWith('#/shop') && !history.state?.thaaraiShopGuard){
+    try {
+      history.pushState({ thaaraiShopGuard: true }, '', location.href);
+    } catch(e){}
   }
+}
+
+function exitWebsite(){
+  exitApproved = true;
+  hideExitModal();
+
+  // 1. Immediately blank and replace DOM with a clean exit confirmation screen
+  document.documentElement.innerHTML = `
+    <!DOCTYPE html>
+    <html lang="ta">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Thaarai Tex - Closed</title>
+      <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { background:#090d16; color:#f8fafc; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px; text-align:center; }
+        .card { background:#0f172a; border:1px solid #1e293b; border-radius:24px; padding:32px 24px; max-width:340px; width:100%; box-shadow:0 25px 50px -12px rgba(0,0,0,0.6); }
+        .icon { width:52px; height:52px; border-radius:50%; background:#1e293b; color:#38bdf8; display:flex; align-items:center; justify-content:center; margin:0 auto 16px; }
+        h1 { font-size:18px; font-weight:700; color:#fff; margin-bottom:8px; }
+        p { font-size:13px; color:#94a3b8; line-height:1.5; margin-bottom:20px; }
+        .btn { display:inline-block; background:#f1f5f9; color:#0f172a; font-size:13px; font-weight:700; padding:12px 24px; border-radius:9999px; text-decoration:none; border:none; cursor:pointer; }
+      </style>
+    </head>
+    <body>
+      <div class="card">
+        <div class="icon">
+          <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+        </div>
+        <h1>Thaarai Tex Exited</h1>
+        <p>நீங்கள் வெளியேறிவிட்டீர்கள்.<br>You have exited the store. You can safely close this tab or window.</p>
+        <button class="btn" onclick="window.close()">Close Window</button>
+      </div>
+    </body>
+    </html>
+  `;
+
+  // 2. Immediately invoke browser and webview window closure methods
+  try { window.close(); } catch(e){}
+  try { window.open('', '_self', ''); window.close(); } catch(e){}
+  try { if(window.navigator?.app?.exitApp) window.navigator.app.exitApp(); } catch(e){}
+  try { if(window.parent && window.parent !== window) window.parent.postMessage('close_app', '*'); } catch(e){}
+
+  // 3. Fallback: immediately replace location with about:blank
+  setTimeout(() => {
+    try { window.location.replace("about:blank"); } catch(e){}
+  }, 100);
 }
 
 $('#exit-stay').onclick = () => {
   hideExitModal();
-  // Ensure locked onto shop tab
-  if(location.hash !== '#/shop'){
+  if(!location.hash.startsWith('#/shop')){
     location.hash = '#/shop';
-  } else {
-    history.pushState({ shopLocked: true }, '', location.href);
   }
+  armShopGuard();
 };
 
-$('#exit-leave').onclick = () => {
-  exitApproved = true;
-  hideExitModal();
-  try {
-    window.close();
-  } catch(e){}
-  // Fallback if browser security prevents closing window
-  setTimeout(()=>{
-    history.back();
-  }, 100);
-};
+$('#exit-leave').onclick = exitWebsite;
 
+// Handle popstate: ONLY show exit modal if user presses BACK from Shop tab
 window.addEventListener('popstate', event => {
   if(exitApproved) return;
 
-  const current = location.hash || '#/';
-  
-  // If user is on the Shop tab and tries to go back / exit:
-  if(current === '#/shop'){
-    showExitModal();
-    // Keep user in shop tab history so they cannot slip past without confirming
-    history.pushState({ shopLocked: true }, '', location.href);
+  // Ignore popstate triggered by direct tab or anchor clicks
+  if(isLinkNavigation){
+    currentRoute = location.hash || '#/';
     return;
   }
 
-  // If user is navigating back from subpages and reaches root/empty, direct them to #/shop
-  if(current === '#/' || current === '#' || current === ''){
-    // Allowed to go to home or shop freely, arm shop lock
+  const prev = currentRoute;
+  const next = location.hash || '#/';
+
+  // If user was on Shop tab and presses back button:
+  if(prev.startsWith('#/shop')){
+    showExitModal();
+    // Keep user securely locked onto Shop tab in history
+    try {
+      history.pushState({ thaaraiShopGuard: true }, '', '#/shop');
+    } catch(e){}
+    currentRoute = '#/shop';
+    return;
   }
+
+  // If user was on Home and presses back: redirect & lock into Shop tab
+  if(prev === '#/' || prev === '#' || prev === ''){
+    location.hash = '#/shop';
+    currentRoute = '#/shop';
+    return;
+  }
+
+  // Normal back navigation for subpages
+  currentRoute = next;
 });
 
 $('#nav-back').onclick = () => {
   const current = location.hash || '#/';
-  if(current === '#/shop'){
+  if(current.startsWith('#/shop')){
     showExitModal();
     return;
   }
@@ -1312,17 +1377,15 @@ $('#nav-back').onclick = () => {
 };
 
 window.addEventListener('hashchange', () => {
-  if(location.hash === '#/shop'){
-    armShopTrap();
-  }
   route();
 });
 
 const originalRoute = route;
 route = async function(){
+  currentRoute = location.hash || '#/';
   await originalRoute();
-  if(location.hash === '#/shop'){
-    armShopTrap();
+  if(currentRoute.startsWith('#/shop')){
+    armShopGuard();
   }
 };
 
