@@ -39,6 +39,7 @@ input,select,textarea{font-size:16px!important}
 
 <header class="bg-white/95 backdrop-blur sticky top-0 z-40 border-b border-gray-100">
   <div class="max-w-6xl mx-auto px-4 py-3.5 flex items-center gap-3">
+    <button id="nav-back" type="button" aria-label="Go back" class="sm:hidden grid h-10 w-10 shrink-0 place-items-center rounded-full border border-gray-100 bg-white text-gray-700 shadow-soft"><svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 19l-7-7 7-7"/></svg></button>
     <a href="#/" id="brand" class="flex flex-col"></a>
     <form id="sf" class="flex-1 hidden sm:block max-w-md mx-auto">
       <div class="relative">
@@ -76,7 +77,7 @@ input,select,textarea{font-size:16px!important}
 const SUPABASE_URL="https://hjogdvqwwbgzgwtdlrak.supabase.co";
 const SUPABASE_ANON_KEY="sb_publishable_gURnxsEPWoxUqqAqnEtJ_g_EmUlUgUZ";
 let WHATSAPP="919999999999";
-let UPI_ID="ThaaraiTex@HDFC", UPI_NAME="Thaarai Tex";
+let UPI_ID="yourname@upi", UPI_NAME="Thaarai Tex";
 let sb=null;
 try { sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY); } catch(e){ console.error(e); }
 
@@ -193,7 +194,7 @@ const SET={
     {image:'',title:'Exquisite Handloom Silks',subtitle:'Direct from Master Weavers to Your Doorstep',btn:'Shop Now',link:'#/shop',c1:'#0f172a',c2:'#334155'}
   ],
   about:{title:'Crafted with Tradition',text:'Thaarai Tex brings you handpicked, authentic handloom sarees directly from traditional weavers. Every piece reflects meticulous artistry, premium fabrics, and timeless elegance.'},
-  footer:{about:'Sarees at Wholesale Prices.',phone:'',email:'Thaaraitex.support@gmail.com',address:'9Th Ward, Tharamangalam, Salem, Tamil Nadu - 636502.',whatsapp:'919361378211',upi:'ThaaraiTex@HDFC',upiName:'Thaarai Tex'}
+  footer:{about:'Handloom sarees direct from the weavers.',phone:'',email:'',address:'Melur, Tamil Nadu',whatsapp:'919999999999',upi:'yourname@upi',upiName:'Thaarai Tex'}
 };
 
 function applySettings(){
@@ -205,10 +206,20 @@ function applySettings(){
    <div><b class="text-white text-sm">Contact</b><p class="mt-2 leading-6 text-gray-400">${f.phone?`${ICONS.phone}<a href="tel:${esc(f.phone)}">${esc(f.phone)}</a><br>`:''}${f.email?`${ICONS.mail}${esc(f.email)}<br>`:''}${f.address?`${ICONS.mapPin}${esc(f.address)}`:''}</p></div>
    <div><b class="text-white text-sm">Quick links</b><p class="mt-2 leading-7 text-gray-400"><a href="#/shop" class="underline">Shop</a> · <a href="#/account/orders" class="underline">My Orders</a><br><a class="underline" target="_blank" rel="noopener" href="https://wa.me/${esc(f.whatsapp)}">${ICONS.whatsapp}WhatsApp support</a></p></div></div>
    <p class="mt-6 text-center text-gray-500 text-[11px]">© ${new Date().getFullYear()} ${esc(b.name)}. All rights reserved.</p>`;
-}
-applySettings();
-
-function setNav(){
+ }
+ applySettings();
+ async function loadSiteSettings(){
+   if(!sb)return;
+   try{
+     const {data,error}=await sb.from('store_settings').select('key,value');
+     if(error)throw error;
+     for(const row of data||[])if(['brand','banners','about','footer'].includes(row.key))SET[row.key]=row.value;
+     WHATSAPP=SET.footer.whatsapp||WHATSAPP;UPI_ID=SET.footer.upi||UPI_ID;UPI_NAME=SET.footer.upiName||UPI_NAME;
+     applySettings();
+   }catch{}
+ }
+ 
+ function setNav(){
   const p=profile(), txt=$('#lgn-txt');
   if(txt)txt.textContent=p?p.name.split(' ')[0]:'Login';
   if($('#lgn')) $('#lgn').href=p?'#/account/hub':'#/login';
@@ -1067,10 +1078,39 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-w]');if(b)
 $('#sf').onsubmit=e=>{e.preventDefault();location.hash='#/shop?q='+encodeURIComponent($('#q').value.trim())};
 $('#sf2').onsubmit=e=>{e.preventDefault();location.hash='#/shop?q='+encodeURIComponent($('#q2').value.trim());$('#msearch').classList.add('hidden')};
 $('#msb').onclick=()=>{$('#msearch').classList.toggle('hidden');$('#q2').focus()};
-window.addEventListener('hashchange',route);
-Promise.all([initAuth()]).then(route);
+const routeStack=[location.hash||'#/'];
+let homeGuardArmed=false,skipExitPrompt=false;
+function syncHomeGuard(){
+  const atHome=!location.hash||location.hash==='#/'||location.hash==='#';
+  if(atHome&&routeStack.length===1&&!history.state?.exitGuard){history.pushState({exitGuard:true},'',location.href);homeGuardArmed=true}
+  else homeGuardArmed=Boolean(atHome&&routeStack.length===1&&history.state?.exitGuard);
+}
+window.addEventListener('hashchange',()=>{
+  const next=location.hash||'#/';
+  if(routeStack.length>1&&next===routeStack[routeStack.length-2])routeStack.pop();
+  else if(next!==routeStack[routeStack.length-1])routeStack.push(next);
+  route();
+});
+window.addEventListener('popstate',()=>{
+  const atHome=!location.hash||location.hash==='#/'||location.hash==='#';
+  if(skipExitPrompt){skipExitPrompt=false;history.back();return}
+  if(atHome&&routeStack.length===1&&homeGuardArmed){
+    homeGuardArmed=false;
+    if(window.confirm('Are you sure you want to leave Thaarai Tex?'))history.back();
+    else syncHomeGuard();
+  }
+});
+$('#nav-back').onclick=()=>{
+  if(routeStack.length>1){history.back();return}
+  const atHome=!location.hash||location.hash==='#/'||location.hash==='#';
+  if(!atHome){location.hash='#/';return}
+  if(window.confirm('Are you sure you want to leave Thaarai Tex?')){
+    if(homeGuardArmed){skipExitPrompt=true;history.back()}else history.back();
+  }
+};
+const originalRoute=route;
+route=async function(){await originalRoute();syncHomeGuard()};
+Promise.all([initAuth(),loadSiteSettings()]).then(route);
 </script>
 </body>
 </html>
-
-
