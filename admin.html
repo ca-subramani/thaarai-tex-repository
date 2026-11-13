@@ -16,7 +16,7 @@
     :root{font-family:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:#0f172a;background:#f8fafc}
     h1,h2,h3,h4,.brand{font-family:'Plus Jakarta Sans',sans-serif}
     *{box-sizing:border-box}
-    body{margin:0;min-width:320px;background:#f8fafc;color:#0f172a;-webkit-tap-highlight-color:transparent}
+    html,body{margin:0;min-width:320px;max-width:100vw;width:100%;overflow-x:hidden;background:#f8fafc;color:#0f172a;-webkit-tap-highlight-color:transparent}
     button,input,textarea,select{font:inherit}
     button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid #6366f1;outline-offset:2px}
     .scrollbar-hide{scrollbar-width:none}.scrollbar-hide::-webkit-scrollbar{display:none}
@@ -63,14 +63,19 @@
   </div>
 
   <!-- Dashboard Workspace -->
-  <div id="dashboard" class="hidden min-h-screen">
-    <!-- Sidebar for Desktop -->
-    <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 flex w-[264px] -translate-x-full flex-col bg-slate-950 text-slate-300 border-r border-slate-800/90 transition-transform duration-300 lg:translate-x-0">
-      <div class="flex h-[72px] items-center gap-3 border-b border-slate-800/80 px-6">
-        <div class="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-tr from-indigo-600 to-indigo-400 text-sm font-black text-white shadow-md shadow-indigo-600/30">TT</div>
-        <div class="brand font-extrabold tracking-wide text-white">THAARAI TEX<span class="mt-0.5 block text-[9px] font-bold tracking-[.22em] text-indigo-400">ADMIN STUDIO</span></div>
+  <div id="dashboard" class="hidden min-h-screen w-full max-w-full overflow-x-hidden min-w-0">
+    <!-- Sidebar for Desktop & Mobile Sheet Drawer -->
+    <aside id="sidebar" class="fixed top-0 bottom-0 left-0 z-50 flex w-[280px] max-w-[85vw] h-[100dvh] -translate-x-full flex-col bg-slate-950 text-slate-300 border-r border-slate-800/90 shadow-2xl transition-transform duration-300 ease-out will-change-transform lg:translate-x-0" style="padding-bottom:calc(1rem + env(safe-area-inset-bottom, 0px))">
+      <div class="flex h-[72px] items-center justify-between border-b border-slate-800/80 px-5">
+        <div class="flex items-center gap-3">
+          <div class="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-tr from-indigo-600 to-indigo-400 text-sm font-black text-white shadow-md shadow-indigo-600/30">TT</div>
+          <div class="brand font-extrabold tracking-wide text-white">THAARAI TEX<span class="mt-0.5 block text-[9px] font-bold tracking-[.22em] text-indigo-400">ADMIN STUDIO</span></div>
+        </div>
+        <button id="sidebar-close" class="grid h-8 w-8 place-items-center rounded-xl bg-slate-900 text-slate-400 hover:text-white lg:hidden" aria-label="Close menu">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
       </div>
-      <div class="px-3 pt-5 overflow-y-auto flex-1">
+      <div class="px-3 pt-4 overflow-y-auto flex-1 overscroll-contain">
         <p class="px-3 text-[9px] font-bold uppercase tracking-[.2em] text-slate-500">Store Management</p>
         <nav id="navigation" class="mt-2.5 space-y-1"></nav>
       </div>
@@ -96,62 +101,64 @@
       </div>
     </aside>
 
-    <div id="sidebar-backdrop" class="fixed inset-0 z-30 hidden bg-slate-950/60 backdrop-blur-sm lg:hidden"></div>
+    <div id="sidebar-backdrop" class="fixed inset-0 z-40 hidden bg-slate-950/70 backdrop-blur-sm lg:hidden transition-opacity"></div>
 
     <!-- Main Content Area -->
-    <main class="min-h-screen lg:pl-[264px] pb-24 lg:pb-10">
-      <header class="sticky top-0 z-20 flex h-[70px] items-center justify-between border-b border-slate-200/80 bg-white/95 px-4 backdrop-blur-md sm:px-7 shadow-xs">
-        <div class="flex items-center gap-3">
-          <button id="admin-back" type="button" aria-label="Go back" class="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-slate-200 bg-white text-slate-700 shadow-xs hover:bg-slate-50 transition" onclick="adminBack()">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+    <main class="min-h-screen lg:pl-[280px] pb-24 lg:pb-10 w-full max-w-full overflow-x-hidden min-w-0">
+      <header class="sticky top-0 z-20 flex h-[62px] sm:h-[70px] items-center justify-between border-b border-slate-200/80 bg-white/95 px-3 sm:px-7 backdrop-blur-md shadow-xs w-full max-w-full">
+        <div class="flex items-center gap-2 sm:gap-3 min-w-0">
+          <button id="admin-back" type="button" aria-label="Go back" class="grid h-9 w-9 sm:h-10 sm:w-10 shrink-0 place-items-center rounded-xl border border-slate-200 bg-white text-slate-700 shadow-xs hover:bg-slate-50 transition" onclick="adminBack()">
+            <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
           </button>
-          <button id="menu-toggle" class="grid h-10 w-10 place-items-center rounded-xl border border-slate-200 bg-white text-slate-800 shadow-xs hover:bg-slate-50 lg:hidden" aria-label="Open menu">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+          <button id="menu-toggle" class="grid h-9 w-9 sm:h-10 sm:w-10 shrink-0 place-items-center rounded-xl border border-slate-200 bg-white text-slate-800 shadow-xs hover:bg-slate-50 lg:hidden" aria-label="Open menu">
+            <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
           </button>
-          <div>
-            <p id="crumb" class="text-[10px] font-black uppercase tracking-[.18em] text-indigo-600">WORKSPACE</p>
-            <h1 id="page-title" class="text-base font-extrabold text-slate-900 sm:text-lg">Overview</h1>
+          <div class="min-w-0">
+            <p id="crumb" class="text-[9px] sm:text-[10px] font-black uppercase tracking-[.18em] text-indigo-600 truncate">WORKSPACE</p>
+            <h1 id="page-title" class="text-sm sm:text-lg font-extrabold text-slate-900 truncate max-w-[130px] xs:max-w-[180px] sm:max-w-none">Overview</h1>
           </div>
         </div>
-        <div class="flex items-center gap-2.5">
-          <a href="/" target="_blank" class="inline-flex items-center gap-1.5 rounded-full border border-indigo-200 bg-indigo-50/80 px-3.5 py-1.5 text-xs font-bold text-indigo-700 shadow-xs hover:bg-indigo-100 transition">
-            <span>Live Store</span>
+        <div class="flex items-center gap-2 shrink-0">
+          <a href="/" target="_blank" class="inline-flex items-center gap-1 sm:gap-1.5 rounded-full border border-indigo-200 bg-indigo-50/80 px-2.5 sm:px-3.5 py-1.5 text-xs font-bold text-indigo-700 shadow-xs hover:bg-indigo-100 transition">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+            <span class="hidden sm:inline">Live Store</span>
           </a>
           <span id="today" class="hidden text-xs text-slate-500 md:block font-medium"></span>
-          <button id="btn-header-account" title="Admin Account Credentials & Settings" class="grid h-9 w-9 place-items-center rounded-full bg-slate-900 text-xs font-black text-white shadow-xs hover:ring-2 hover:ring-indigo-500 transition cursor-pointer">AD</button>
+          <button id="btn-header-account" title="Admin Account Credentials & Settings" class="grid h-8 w-8 sm:h-9 sm:w-9 place-items-center rounded-full bg-slate-900 text-xs font-black text-white shadow-xs hover:ring-2 hover:ring-indigo-500 transition cursor-pointer">AD</button>
         </div>
       </header>
 
-      <div class="mx-auto max-w-[1440px] px-4 py-6 sm:px-7 sm:py-8">
-        <div id="view" class="fade-in"></div>
+      <div class="mx-auto max-w-[1440px] px-3.5 py-4 sm:px-7 sm:py-8 w-full max-w-full overflow-x-hidden min-w-0">
+        <div id="view" class="fade-in w-full max-w-full overflow-x-hidden min-w-0"></div>
       </div>
     </main>
-  </div>
 
-  <!-- Mobile Bottom Quick Navigation Bar -->
-  <nav id="admin-mobile-tabbar" class="fixed bottom-0 inset-x-0 z-30 bg-white/95 backdrop-blur-md border-t border-slate-200/90 grid grid-cols-5 py-2 px-1 text-[10px] font-bold text-slate-500 lg:hidden shadow-lg" style="padding-bottom:calc(0.4rem + env(safe-area-inset-bottom))">
-    <button data-m-sec="overview" class="flex flex-col items-center gap-1 py-1 text-indigo-600 font-extrabold transition">
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-      <span>Overview</span>
-    </button>
-    <button data-m-sec="storefront" class="flex flex-col items-center gap-1 py-1 text-slate-500 hover:text-indigo-600 transition">
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-      <span>Studio</span>
-    </button>
-    <button data-m-sec="products" class="flex flex-col items-center gap-1 py-1 text-slate-500 hover:text-indigo-600 transition">
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
-      <span>Products</span>
-    </button>
-    <button data-m-sec="orders" class="flex flex-col items-center gap-1 py-1 text-slate-500 hover:text-indigo-600 transition">
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
-      <span>Orders</span>
-    </button>
-    <button id="m-menu-btn" class="flex flex-col items-center gap-1 py-1 text-slate-500 hover:text-indigo-600 transition">
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
-      <span>Menu</span>
-    </button>
-  </nav>
+    <!-- Mobile Bottom Quick Navigation Bar (INSIDE #dashboard: strictly hidden until admin logs in!) -->
+    <nav id="admin-mobile-tabbar" class="fixed bottom-0 inset-x-0 z-30 bg-white/95 backdrop-blur-md border-t border-slate-200/90 grid grid-cols-5 py-1.5 px-1 text-[10px] font-bold text-slate-500 lg:hidden shadow-lg select-none" style="padding-bottom:calc(0.35rem + env(safe-area-inset-bottom, 0px))">
+      <button data-m-sec="overview" class="flex flex-col items-center gap-0.5 py-1 text-indigo-600 font-extrabold transition rounded-xl">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+        <span>Home</span>
+      </button>
+      <button data-m-sec="orders" class="relative flex flex-col items-center gap-0.5 py-1 text-slate-500 hover:text-indigo-600 transition rounded-xl">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+        <span>Orders</span>
+        <span id="m-orders-badge" class="absolute top-0 right-2 hidden h-4 min-w-[16px] px-1 rounded-full bg-amber-500 text-[9px] font-black text-white leading-4 text-center"></span>
+      </button>
+      <button data-m-sec="products" class="flex flex-col items-center gap-0.5 py-1 text-slate-500 hover:text-indigo-600 transition rounded-xl">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+        <span>Products</span>
+      </button>
+      <button data-m-sec="customers" class="relative flex flex-col items-center gap-0.5 py-1 text-slate-500 hover:text-indigo-600 transition rounded-xl">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+        <span>Users</span>
+        <span id="m-cust-badge" class="absolute top-0 right-1.5 hidden h-4 min-w-[16px] px-1 rounded-full bg-indigo-600 text-[9px] font-black text-white leading-4 text-center"></span>
+      </button>
+      <button id="m-menu-btn" class="flex flex-col items-center gap-0.5 py-1 text-slate-500 hover:text-indigo-600 transition rounded-xl">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+        <span>Menu</span>
+      </button>
+    </nav>
+  </div>
 
   <!-- Reusable Modal Editor -->
   <dialog id="editor" class="w-[min(740px,calc(100%-24px))] max-h-[90vh] rounded-3xl border border-slate-200/80 bg-white p-0 shadow-2xl">
@@ -269,6 +276,78 @@
           </p>
           <p class="mt-1">When you update your credentials here, they sync directly with your Supabase secure authentication. If Supabase requires email verification, a confirmation link will be delivered to the new address.</p>
         </div>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Customer Details & Order History Modal -->
+  <dialog id="customer-modal" class="w-[min(680px,calc(100%-24px))] max-h-[90vh] rounded-3xl border border-slate-200 bg-white p-0 shadow-2xl backdrop:bg-slate-950/60 backdrop:backdrop-blur-sm">
+    <div class="flex max-h-[90vh] flex-col">
+      <div class="flex items-start justify-between border-b border-slate-100 px-6 py-5 bg-slate-50/80 rounded-t-3xl">
+        <div>
+          <span class="text-[10px] font-black uppercase tracking-[.2em] text-indigo-600 bg-indigo-50 border border-indigo-200/60 px-2.5 py-0.5 rounded-full">Customer Profile</span>
+          <h2 id="cust-modal-title" class="mt-1 text-xl font-extrabold text-slate-900">Customer Details</h2>
+          <p id="cust-modal-sub" class="text-xs text-slate-500 mt-0.5">Purchases and shipping addresses</p>
+        </div>
+        <button id="customer-modal-close" type="button" class="grid h-8 w-8 place-items-center rounded-full text-slate-400 hover:bg-slate-200 hover:text-slate-700 transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div id="customer-modal-body" class="overflow-y-auto px-6 py-5 space-y-5"></div>
+      <div class="flex justify-end gap-2 border-t border-slate-100 bg-slate-50/60 px-6 py-4 rounded-b-3xl">
+        <button type="button" onclick="$('#customer-modal').close()" class="rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 transition">Close</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Supabase SQL Setup Modal -->
+  <dialog id="sql-setup-modal" class="w-[min(640px,calc(100%-24px))] max-h-[90vh] rounded-3xl border border-slate-200 bg-white p-0 shadow-2xl backdrop:bg-slate-950/60 backdrop:backdrop-blur-sm">
+    <div class="flex max-h-[90vh] flex-col">
+      <div class="flex items-start justify-between border-b border-slate-100 px-6 py-5 bg-slate-50/80 rounded-t-3xl">
+        <div>
+          <span class="text-[10px] font-black uppercase tracking-[.2em] text-emerald-600 bg-emerald-50 border border-emerald-200/60 px-2.5 py-0.5 rounded-full">Database Integration</span>
+          <h2 class="mt-1 text-xl font-extrabold text-slate-900">Supabase Customers Table</h2>
+          <p class="text-xs text-slate-500 mt-0.5">One-click SQL script for logged-in users database</p>
+        </div>
+        <button id="sql-setup-modal-close" type="button" class="grid h-8 w-8 place-items-center rounded-full text-slate-400 hover:bg-slate-200 hover:text-slate-700 transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="overflow-y-auto px-6 py-5 space-y-4">
+        <p class="text-xs text-slate-600 leading-relaxed">
+          Thaarai Tex automatically captures past and new customer profiles from your orders and storefront logins. To enable direct real-time customer storage in Supabase, run this script once in your <b>Supabase SQL Editor</b>:
+        </p>
+        <div class="relative">
+          <pre id="supabase-sql-code" class="rounded-2xl bg-slate-950 p-4 text-[11px] font-mono text-indigo-300 leading-relaxed overflow-x-auto select-all">-- 1. Create customers table
+CREATE TABLE IF NOT EXISTS public.customers (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  customer_id TEXT UNIQUE,
+  name TEXT NOT NULL,
+  phone TEXT UNIQUE NOT NULL,
+  email TEXT,
+  address JSONB DEFAULT '{}'::jsonb,
+  notes TEXT,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  last_active TIMESTAMPTZ DEFAULT now()
+);
+
+-- 2. Enable Row Level Security (RLS)
+ALTER TABLE public.customers ENABLE ROW LEVEL SECURITY;
+
+-- 3. Allow Public Storefront & Admin Access
+DROP POLICY IF EXISTS "Public access to customers" ON public.customers;
+CREATE POLICY "Public access to customers" ON public.customers FOR ALL USING (true) WITH CHECK (true);</pre>
+          <button id="btn-copy-sql" type="button" class="absolute top-3 right-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 text-xs font-bold transition flex items-center gap-1 shadow-sm">
+            <span>Copy SQL</span>
+          </button>
+        </div>
+        <div class="rounded-xl bg-emerald-50 border border-emerald-200/80 p-3 text-[11px] text-emerald-900 leading-relaxed">
+          <p class="font-bold text-emerald-950 flex items-center gap-1">✓ Instant Fallback Active</p>
+          <p class="mt-0.5">Even before running this script, the admin Customers directory automatically compiles customer records, Customer IDs, phone numbers, and addresses from all store orders!</p>
+        </div>
+      </div>
+      <div class="flex justify-end gap-2 border-t border-slate-100 bg-slate-50/60 px-6 py-4 rounded-b-3xl">
+        <button type="button" onclick="$('#sql-setup-modal').close()" class="rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 transition">Got it</button>
       </div>
     </div>
   </dialog>
@@ -426,6 +505,7 @@
     };
 
     let section='overview', products=[], categories=[], orders=[], reviews=[], coupons=[], settings={}, editing={}, mediaItems=[];
+    let customers=[], profiles=[], customerFilter='all', customerSearchQuery='', selectedCustomerId=null;
     let currentStorefrontSubTab='home';
     let targetImageFieldId = null;
     let orderFilter = 'all';
@@ -435,9 +515,10 @@
     const sectionHistory=['overview'];
     const sections=[
       ['overview','Overview', SVG.home],
-      ['storefront','Website Studio', SVG.studio],
-      ['products','Products', SVG.products],
       ['orders','Orders', SVG.orders],
+      ['products','Products', SVG.products],
+      ['customers','Customers', SVG.user],
+      ['storefront','Website Studio', SVG.studio],
       ['categories','Categories', SVG.categories],
       ['reviews','Reviews', SVG.reviews],
       ['coupons','Coupons', SVG.coupons],
@@ -464,6 +545,12 @@
     function closeSidebar(){
       $('#sidebar').classList.add('-translate-x-full');
       $('#sidebar-backdrop').classList.add('hidden');
+      document.body.classList.remove('overflow-hidden');
+    }
+    function openSidebar(){
+      $('#sidebar').classList.remove('-translate-x-full');
+      $('#sidebar-backdrop').classList.remove('hidden');
+      document.body.classList.add('overflow-hidden');
     }
 
     function setSection(id,fromHistory=false){
@@ -482,7 +569,7 @@
       });
       document.querySelectorAll('#admin-mobile-tabbar button[data-m-sec]').forEach(b=>{
         const on = b.dataset.mSec === id;
-        b.className = `flex flex-col items-center gap-0.5 py-1 transition ${on ? 'text-indigo-600 font-extrabold' : 'text-slate-500 hover:text-slate-800'}`;
+        b.className = `relative flex flex-col items-center gap-0.5 py-1 transition rounded-xl ${on ? 'text-indigo-600 font-black bg-indigo-50/80 shadow-xs' : 'text-slate-500 hover:text-slate-800'}`;
       });
       closeSidebar();
       render();
@@ -534,35 +621,53 @@
       coupons=co.error?[]:co.data||[];
       settings=Object.fromEntries((se.data||[]).map(x=>[x.key,x.value]));
 
-      [['products',products],['orders',orders],['categories',categories],['reviews',reviews],['coupons',coupons]].forEach(([id,rows])=>{
+      try {
+        const { data: cuData } = await db.from('customers').select('*').limit(300);
+        customers = cuData || [];
+      } catch(e) { customers = []; }
+      try {
+        const { data: pfData } = await db.from('profiles').select('*').limit(300);
+        profiles = pfData || [];
+      } catch(e) { profiles = []; }
+
+      const aggCusts = getAggregatedCustomers();
+      [['products',products],['orders',orders],['customers',aggCusts],['categories',categories],['reviews',reviews],['coupons',coupons]].forEach(([id,rows])=>{
         const badge=document.querySelector(`[data-count="${id}"]`);
         if(badge){
           badge.textContent=rows.length;
           badge.classList.toggle('hidden',!rows.length);
         }
       });
+
+      const pendingCount = orders.filter(o=>o.order_status==='pending').length;
+      const mOrders = $('#m-orders-badge');
+      if(mOrders){ mOrders.textContent = pendingCount; mOrders.classList.toggle('hidden', !pendingCount); }
+      const mCust = $('#m-cust-badge');
+      if(mCust){ mCust.textContent = aggCusts.length; mCust.classList.toggle('hidden', !aggCusts.length); }
+
       render();
     }
 
     const statCard=(label,value,sub,icon,color='text-indigo-600',bg='bg-indigo-50')=>`
-      <div class="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-xs hover:shadow-md transition">
-        <div class="flex items-start justify-between">
-          <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">${label}</span>
-          <span class="grid h-10 w-10 place-items-center rounded-xl ${bg} ${color} text-base font-extrabold shadow-xs">${icon}</span>
+      <div class="rounded-2xl border border-slate-200/80 bg-white p-3.5 sm:p-5 shadow-xs hover:shadow-md transition min-w-0">
+        <div class="flex items-start justify-between gap-1">
+          <span class="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider truncate">${label}</span>
+          <span class="grid h-8 w-8 sm:h-10 sm:w-10 shrink-0 place-items-center rounded-xl ${bg} ${color} text-sm sm:text-base font-extrabold shadow-xs">${icon}</span>
         </div>
-        <p class="mt-4 text-3xl font-black tracking-tight text-slate-900">${value}</p>
-        <p class="mt-1 text-[11px] text-slate-500 font-medium">${sub}</p>
+        <p class="mt-2 sm:mt-4 text-xl sm:text-3xl font-black tracking-tight text-slate-900 truncate">${value}</p>
+        <p class="mt-0.5 sm:mt-1 text-[10px] sm:text-[11px] text-slate-500 font-medium truncate">${sub}</p>
       </div>`;
 
     function render(){
       view.className='fade-in';
       if(section==='overview')renderOverview();
-      else if(section==='storefront')renderStorefrontCMS();
-      else if(section==='products')renderProducts();
       else if(section==='orders'){
         if(selectedOrderId) renderOrderDetailPage(selectedOrderId);
         else renderOrders();
       }
+      else if(section==='products')renderProducts();
+      else if(section==='customers')renderCustomers();
+      else if(section==='storefront')renderStorefrontCMS();
       else if(section==='categories')renderCategories();
       else if(section==='reviews')renderReviews();
       else if(section==='coupons')renderCoupons();
@@ -579,90 +684,87 @@
       const delivered=orders.filter(o=>o.order_status==='delivered').length;
       const low=products.filter(p=>Number(p.stock||0)<5).length;
       const live=products.filter(p=>p.active).length;
+      const totalCust=getAggregatedCustomers().length;
 
       view.innerHTML=`
         <!-- Top Executive Welcome & Quick Action Bar -->
-        <div class="rounded-3xl bg-gradient-to-r from-slate-950 via-slate-900 to-indigo-950 p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
+        <div class="rounded-3xl bg-gradient-to-r from-slate-950 via-slate-900 to-indigo-950 p-4 sm:p-8 text-white shadow-xl relative overflow-hidden">
           <div class="absolute -right-20 -top-20 w-80 h-80 rounded-full bg-indigo-500/10 blur-3xl pointer-events-none"></div>
-          <div class="relative flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+          <div class="relative flex flex-col lg:flex-row lg:items-center justify-between gap-5">
             <div>
-              <div class="flex items-center gap-2.5">
-                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-[11px] font-bold text-emerald-300">
+              <div class="flex items-center gap-2">
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-[10px] sm:text-[11px] font-bold text-emerald-300">
                   <span class="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span> Storefront Live & Online
                 </span>
-                <span class="text-xs text-slate-400 font-medium">· Real-time sync</span>
+                <span class="text-[11px] text-slate-400 font-medium hidden xs:inline">· Real-time sync</span>
               </div>
-              <h2 class="mt-3 text-2xl sm:text-3xl font-black tracking-tight text-white">Welcome back, Administrator</h2>
-              <p class="mt-1.5 text-xs sm:text-sm text-slate-300 max-w-xl leading-relaxed">
+              <h2 class="mt-2.5 text-xl sm:text-3xl font-black tracking-tight text-white">Welcome back, Administrator</h2>
+              <p class="mt-1 text-xs sm:text-sm text-slate-300 max-w-xl leading-relaxed">
                 Live store pulse, incoming customer orders, and instant website customization without touching code.
               </p>
             </div>
-            <div class="flex flex-wrap gap-2.5 shrink-0">
-              <button data-action="product-new" class="rounded-xl bg-white hover:bg-slate-100 px-4 py-2.5 text-xs font-black text-slate-950 shadow-md transition flex items-center gap-1.5">
-                <span class="text-indigo-600 font-extrabold">${SVG.plus}</span> Add New Saree
+            <div class="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 w-full lg:w-auto">
+              <button data-action="product-new" class="rounded-xl bg-white hover:bg-slate-100 px-3 sm:px-4 py-2.5 text-xs font-black text-slate-950 shadow-md transition flex items-center justify-center gap-1.5 min-w-0 truncate">
+                <span class="text-indigo-600 font-extrabold">${SVG.plus}</span> <span class="truncate">Add Saree</span>
               </button>
-              <button data-go="storefront" class="rounded-xl bg-indigo-600 hover:bg-indigo-500 px-4 py-2.5 text-xs font-bold text-white shadow-md shadow-indigo-600/30 transition flex items-center gap-1.5">
-                <span>${SVG.studio}</span> Website Studio
+              <button data-go="storefront" class="rounded-xl bg-indigo-600 hover:bg-indigo-500 px-3 sm:px-4 py-2.5 text-xs font-bold text-white shadow-md shadow-indigo-600/30 transition flex items-center justify-center gap-1.5 min-w-0 truncate">
+                <span>${SVG.studio}</span> <span class="truncate">Studio</span>
               </button>
-              <button data-action="refresh" class="rounded-xl border border-slate-700 bg-slate-800/80 hover:bg-slate-800 px-3.5 py-2.5 text-xs font-bold text-slate-200 transition" title="Refresh data">
-                ${SVG.refresh}
+              <button data-action="refresh" class="col-span-2 sm:col-span-1 rounded-xl border border-slate-700 bg-slate-800/80 hover:bg-slate-800 px-3.5 py-2.5 text-xs font-bold text-slate-200 transition flex items-center justify-center gap-1.5" title="Refresh data">
+                ${SVG.refresh} <span class="sm:hidden text-xs">Refresh</span>
               </button>
             </div>
           </div>
 
           <!-- Order Fulfillment Pipeline Quick Bar -->
-          <div class="mt-7 pt-6 border-t border-slate-800/80 grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <button onclick="goToOrdersWithFilter('pending')" class="text-left rounded-2xl bg-slate-900/70 hover:bg-slate-800/90 border border-slate-800 p-3.5 transition group">
+          <div class="mt-5 pt-5 border-t border-slate-800/80 grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
+            <button onclick="goToOrdersWithFilter('pending')" class="text-left rounded-2xl bg-slate-900/70 hover:bg-slate-800/90 border border-slate-800 p-2.5 sm:p-3.5 transition group">
               <div class="flex items-center justify-between">
-                <span class="text-[11px] font-bold text-amber-400 flex items-center gap-1.5">${SVG.pending} Pending</span>
-                <span class="text-xs text-slate-400 group-hover:text-white transition">${SVG.arrowRight}</span>
+                <span class="text-[10px] sm:text-[11px] font-bold text-amber-400 flex items-center gap-1 truncate">${SVG.pending} Pending</span>
+                <span class="text-xs text-slate-400 group-hover:text-white transition shrink-0">${SVG.arrowRight}</span>
               </div>
-              <p class="mt-1.5 text-2xl font-black text-white">${pending}</p>
-              <p class="text-[10px] text-slate-400">Awaiting confirmation</p>
+              <p class="mt-1 text-xl sm:text-2xl font-black text-white">${pending}</p>
+              <p class="text-[9px] sm:text-[10px] text-slate-400 truncate">Awaiting confirm</p>
             </button>
-            <button onclick="goToOrdersWithFilter('verified')" class="text-left rounded-2xl bg-slate-900/70 hover:bg-slate-800/90 border border-slate-800 p-3.5 transition group">
+            <button onclick="goToOrdersWithFilter('verified')" class="text-left rounded-2xl bg-slate-900/70 hover:bg-slate-800/90 border border-slate-800 p-2.5 sm:p-3.5 transition group">
               <div class="flex items-center justify-between">
-                <span class="text-[11px] font-bold text-sky-400 flex items-center gap-1.5">${SVG.processing} Processing</span>
-                <span class="text-xs text-slate-400 group-hover:text-white transition">${SVG.arrowRight}</span>
+                <span class="text-[10px] sm:text-[11px] font-bold text-sky-400 flex items-center gap-1 truncate">${SVG.processing} Processing</span>
+                <span class="text-xs text-slate-400 group-hover:text-white transition shrink-0">${SVG.arrowRight}</span>
               </div>
-              <p class="mt-1.5 text-2xl font-black text-white">${verified}</p>
-              <p class="text-[10px] text-slate-400">Packed & verified</p>
+              <p class="mt-1 text-xl sm:text-2xl font-black text-white">${verified}</p>
+              <p class="text-[9px] sm:text-[10px] text-slate-400 truncate">Packed & ready</p>
             </button>
-            <button onclick="goToOrdersWithFilter('dispatched')" class="text-left rounded-2xl bg-slate-900/70 hover:bg-slate-800/90 border border-slate-800 p-3.5 transition group">
+            <button onclick="goToOrdersWithFilter('dispatched')" class="text-left rounded-2xl bg-slate-900/70 hover:bg-slate-800/90 border border-slate-800 p-2.5 sm:p-3.5 transition group">
               <div class="flex items-center justify-between">
-                <span class="text-[11px] font-bold text-indigo-400 flex items-center gap-1.5">${SVG.shipped} In Transit</span>
-                <span class="text-xs text-slate-400 group-hover:text-white transition">${SVG.arrowRight}</span>
+                <span class="text-[10px] sm:text-[11px] font-bold text-indigo-400 flex items-center gap-1 truncate">${SVG.shipped} In Transit</span>
+                <span class="text-xs text-slate-400 group-hover:text-white transition shrink-0">${SVG.arrowRight}</span>
               </div>
-              <p class="mt-1.5 text-2xl font-black text-white">${dispatched}</p>
-              <p class="text-[10px] text-slate-400">Shipped with courier</p>
+              <p class="mt-1 text-xl sm:text-2xl font-black text-white">${dispatched}</p>
+              <p class="text-[9px] sm:text-[10px] text-slate-400 truncate">Shipped courier</p>
             </button>
-            <button onclick="goToOrdersWithFilter('delivered')" class="text-left rounded-2xl bg-slate-900/70 hover:bg-slate-800/90 border border-slate-800 p-3.5 transition group">
+            <button onclick="goToOrdersWithFilter('delivered')" class="text-left rounded-2xl bg-slate-900/70 hover:bg-slate-800/90 border border-slate-800 p-2.5 sm:p-3.5 transition group">
               <div class="flex items-center justify-between">
-                <span class="text-[11px] font-bold text-emerald-400 flex items-center gap-1.5">${SVG.delivered} Delivered</span>
-                <span class="text-xs text-slate-400 group-hover:text-white transition">${SVG.arrowRight}</span>
+                <span class="text-[10px] sm:text-[11px] font-bold text-emerald-400 flex items-center gap-1 truncate">${SVG.delivered} Delivered</span>
+                <span class="text-xs text-slate-400 group-hover:text-white transition shrink-0">${SVG.arrowRight}</span>
               </div>
-              <p class="mt-1.5 text-2xl font-black text-white">${delivered}</p>
-              <p class="text-[10px] text-slate-400">Fulfilled orders</p>
+              <p class="mt-1 text-xl sm:text-2xl font-black text-white">${delivered}</p>
+              <p class="text-[9px] sm:text-[10px] text-slate-400 truncate">Completed</p>
             </button>
           </div>
         </div>
 
         <!-- 4 Key Stat Cards -->
-        <div class="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          ${statCard('Gross Sales',fmt(revenue),'From successful orders',SVG.check,'text-emerald-700','bg-emerald-50')}
+        <div class="mt-5 grid grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
+          ${statCard('Gross Sales',fmt(revenue),'From valid orders',SVG.check,'text-emerald-700','bg-emerald-50')}
           ${statCard('Total Orders',orders.length,'Customer purchases',SVG.orders,'text-indigo-600','bg-indigo-50')}
-          ${statCard('Action Required',pending,pending>0?`${pending} orders pending confirmation`:'All orders up to date',SVG.alert,'text-amber-700','bg-amber-50')}
-          ${statCard('Live Sarees',live,low>0?`${low} sarees with low stock`:'Catalog active & ready',SVG.products,'text-sky-700','bg-sky-50')}
-        </div>
-          ${statCard('Total Orders',orders.length,'Customer purchases','▣','text-indigo-600','bg-indigo-50')}
-          ${statCard('Action Required',pending,pending>0?`${pending} orders pending confirmation`:'All orders up to date','!','text-amber-700','bg-amber-50')}
-          ${statCard('Live Sarees',live,low>0?`${low} sarees with low stock`:'Catalog active & ready','◇','text-sky-700','bg-sky-50')}
+          ${statCard('Customers',totalCust,'Registered & buyers',SVG.user,'text-purple-700','bg-purple-50')}
+          ${statCard('Live Sarees',live,low>0?`${low} low stock`:'Catalog active',SVG.products,'text-sky-700','bg-sky-50')}
         </div>
 
         <!-- 2 Column Layout: Recent Orders + Quick Website Studio Hub -->
         <div class="mt-6 grid gap-6 xl:grid-cols-[1.3fr_.9fr]">
           <!-- Left: Recent Orders Cards -->
-          <section class="rounded-3xl border border-slate-200/90 bg-white p-6 shadow-xs flex flex-col">
+          <section class="rounded-3xl border border-slate-200/90 bg-white p-4 sm:p-6 shadow-xs flex flex-col">
             <div class="flex items-center justify-between pb-4 border-b border-slate-100">
               <div>
                 <h3 class="text-base font-extrabold text-slate-900">Recent Customer Orders</h3>
@@ -1396,6 +1498,537 @@
       toast('Image selected ✓');
     }
     $('#library-picker-close').onclick=()=>$('#library-picker-modal').close();
+
+    /* ===== CUSTOMERS & USER DIRECTORY ===== */
+    function hashCode(str){
+      let hash = 0;
+      const s = String(str || '');
+      for(let i = 0; i < s.length; i++){
+        hash = ((hash << 5) - hash) + s.charCodeAt(i);
+        hash |= 0;
+      }
+      return hash;
+    }
+
+    function getCustomerId(cOrPhone){
+      if(!cOrPhone) return 'TT-CUST-1001';
+      if(typeof cOrPhone === 'object'){
+        if(cOrPhone.customer_id && String(cOrPhone.customer_id).trim()) return String(cOrPhone.customer_id).trim().toUpperCase();
+        cOrPhone = cOrPhone.phone || cOrPhone.mobile || cOrPhone.id;
+      }
+      const s = String(cOrPhone || '').trim();
+      if(!s) return 'TT-CUST-1001';
+      if(/^TT-CUST-[A-Z0-9]+$/i.test(s)) return s.toUpperCase();
+      const digits = s.replace(/\D/g, '');
+      if(digits.length >= 4) return 'TT-CUST-' + digits.slice(-4);
+      const clean = s.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+      return 'TT-CUST-' + (clean.slice(0, 4) || '1001');
+    }
+
+    function getAggregatedCustomers(){
+      const map = new Map();
+
+      // 1. Ingest customers from Supabase customers table
+      (customers || []).forEach(c => {
+        const rawPhone = String(c.phone || c.mobile || '').trim();
+        const cleanPhone = rawPhone.replace(/\D/g, '').slice(-10);
+        const key = cleanPhone || c.id || c.customer_id;
+        if(!key) return;
+        map.set(key, {
+          id: c.id,
+          customer_id: c.customer_id || getCustomerId(cleanPhone || key),
+          name: c.name || c.full_name || 'Customer',
+          phone: rawPhone || cleanPhone,
+          cleanPhone: cleanPhone,
+          email: c.email || '',
+          address: c.address || null,
+          notes: c.notes || '',
+          created_at: c.created_at || new Date().toISOString(),
+          last_active: c.last_active || c.created_at || new Date().toISOString(),
+          orders_count: 0,
+          total_spent: 0,
+          orders: []
+        });
+      });
+
+      // 2. Ingest profiles
+      (profiles || []).forEach(p => {
+        const rawPhone = String(p.phone || '').trim();
+        const cleanPhone = rawPhone.replace(/\D/g, '').slice(-10);
+        const key = cleanPhone || p.id;
+        if(!key) return;
+        if(!map.has(key)){
+          map.set(key, {
+            id: p.id,
+            customer_id: getCustomerId(cleanPhone || key),
+            name: p.name || 'Customer',
+            phone: rawPhone || cleanPhone,
+            cleanPhone: cleanPhone,
+            email: p.email || '',
+            address: null,
+            notes: '',
+            created_at: p.created_at || new Date().toISOString(),
+            last_active: p.last_active || new Date().toISOString(),
+            orders_count: 0,
+            total_spent: 0,
+            orders: []
+          });
+        } else {
+          const existing = map.get(key);
+          if((!existing.name || existing.name === 'Customer') && p.name) existing.name = p.name;
+        }
+      });
+
+      // 3. Ingest orders (guarantees all past orders & customer details are present immediately)
+      (orders || []).forEach(o => {
+        const a = parseAddress(o.address || o.shipping_address);
+        const rawPhone = String(o.account_phone || a?.phone || o.phone || '').trim();
+        const cleanPhone = rawPhone.replace(/\D/g, '').slice(-10);
+        const name = a?.name || o.name || o.customer_name || 'Customer';
+        const key = cleanPhone || (o.user_id ? String(o.user_id) : String(o.id));
+
+        let cust = map.get(key);
+        if(!cust){
+          cust = {
+            id: o.user_id || key,
+            customer_id: getCustomerId(cleanPhone || key),
+            name: name,
+            phone: rawPhone || cleanPhone,
+            cleanPhone: cleanPhone,
+            email: o.email || '',
+            address: a || null,
+            notes: '',
+            created_at: o.created_at,
+            last_active: o.created_at,
+            orders_count: 0,
+            total_spent: 0,
+            orders: []
+          };
+          map.set(key, cust);
+        } else {
+          if((!cust.name || cust.name === 'Customer') && name && name !== 'Customer') cust.name = name;
+          if(!cust.address && a) cust.address = a;
+          if(!cust.phone && rawPhone){
+            cust.phone = rawPhone;
+            cust.cleanPhone = cleanPhone;
+          }
+        }
+
+        cust.orders_count += 1;
+        if(o.order_status !== 'cancelled'){
+          cust.total_spent += Number(o.total || 0);
+        }
+        cust.orders.push(o);
+
+        if(o.created_at){
+          if(!cust.last_active || new Date(o.created_at) > new Date(cust.last_active)) cust.last_active = o.created_at;
+          if(!cust.created_at || new Date(o.created_at) < new Date(cust.created_at)) cust.created_at = o.created_at;
+        }
+      });
+
+      return Array.from(map.values()).sort((a,b) => new Date(b.last_active || 0) - new Date(a.last_active || 0));
+    }
+
+    function filterCustomerRows(){
+      const all = getAggregatedCustomers();
+      return all.filter(c => {
+        if(customerFilter === 'buyers' && c.orders_count <= 0) return false;
+        if(customerFilter === 'repeat' && c.orders_count < 2) return false;
+        if(customerFilter === 'no_orders' && c.orders_count > 0) return false;
+
+        if(!customerSearchQuery) return true;
+        const q = customerSearchQuery.toLowerCase();
+        const a = c.address;
+        const fullAddr = a ? `${a.line||''} ${a.city||''} ${a.state||''} ${a.pincode||''}`.toLowerCase() : '';
+        return (
+          (c.name || '').toLowerCase().includes(q) ||
+          (c.phone || '').toLowerCase().includes(q) ||
+          (c.customer_id || '').toLowerCase().includes(q) ||
+          (c.email || '').toLowerCase().includes(q) ||
+          fullAddr.includes(q)
+        );
+      });
+    }
+
+    function filterCustomers(filterType){
+      customerFilter = filterType;
+      renderCustomers();
+    }
+
+    function renderCustomers(){
+      const allCust = getAggregatedCustomers();
+      const buyers = allCust.filter(c => c.orders_count > 0);
+      const repeat = allCust.filter(c => c.orders_count >= 2);
+      const totalSpend = allCust.reduce((s,c) => s + c.total_spent, 0);
+      const filtered = filterCustomerRows();
+
+      view.innerHTML = `
+        <div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+          <div>
+            <p class="text-[10px] font-black uppercase tracking-[.2em] text-indigo-600">Customer Relationship & Accounts</p>
+            <h2 class="mt-1 text-2xl font-black text-slate-900">Customers Directory</h2>
+            <p class="mt-0.5 text-xs sm:text-sm text-slate-500">Track registered store users, mobile logins, unique Customer IDs, and order totals.</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <button onclick="openSqlSetupModal()" class="rounded-xl border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 px-3.5 py-2 text-xs font-bold transition flex items-center gap-1.5 shadow-xs">
+              <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
+              <span>Supabase SQL Setup</span>
+            </button>
+            <button data-action="refresh" class="rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 px-3.5 py-2 text-xs font-bold transition flex items-center gap-1.5 shadow-xs">
+              ${SVG.refresh} <span>Refresh</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- KPI Summary Cards -->
+        <div class="mt-5 grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <div class="rounded-2xl border border-slate-200/80 bg-white p-3.5 sm:p-5 shadow-xs">
+            <div class="flex items-start justify-between gap-1">
+              <span class="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Total Users</span>
+              <span class="grid h-8 w-8 sm:h-10 sm:w-10 shrink-0 place-items-center rounded-xl bg-indigo-50 text-indigo-600">${SVG.user}</span>
+            </div>
+            <p class="mt-2 sm:mt-4 text-xl sm:text-3xl font-black text-slate-900">${allCust.length}</p>
+            <p class="mt-0.5 text-[10px] sm:text-[11px] text-slate-500">Registered & buyers</p>
+          </div>
+          <div class="rounded-2xl border border-slate-200/80 bg-white p-3.5 sm:p-5 shadow-xs">
+            <div class="flex items-start justify-between gap-1">
+              <span class="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Active Buyers</span>
+              <span class="grid h-8 w-8 sm:h-10 sm:w-10 shrink-0 place-items-center rounded-xl bg-emerald-50 text-emerald-600">${SVG.check}</span>
+            </div>
+            <p class="mt-2 sm:mt-4 text-xl sm:text-3xl font-black text-slate-900">${buyers.length}</p>
+            <p class="mt-0.5 text-[10px] sm:text-[11px] text-slate-500">${repeat.length} repeat buyers</p>
+          </div>
+          <div class="rounded-2xl border border-slate-200/80 bg-white p-3.5 sm:p-5 shadow-xs">
+            <div class="flex items-start justify-between gap-1">
+              <span class="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Lifetime Spend</span>
+              <span class="grid h-8 w-8 sm:h-10 sm:w-10 shrink-0 place-items-center rounded-xl bg-purple-50 text-purple-600">${SVG.tag}</span>
+            </div>
+            <p class="mt-2 sm:mt-4 text-xl sm:text-3xl font-black text-slate-900 truncate">${fmt(totalSpend)}</p>
+            <p class="mt-0.5 text-[10px] sm:text-[11px] text-slate-500">From delivered/valid orders</p>
+          </div>
+          <div class="rounded-2xl border border-slate-200/80 bg-white p-3.5 sm:p-5 shadow-xs">
+            <div class="flex items-start justify-between gap-1">
+              <span class="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Avg Order Value</span>
+              <span class="grid h-8 w-8 sm:h-10 sm:w-10 shrink-0 place-items-center rounded-xl bg-amber-50 text-amber-600">${SVG.package}</span>
+            </div>
+            <p class="mt-2 sm:mt-4 text-xl sm:text-3xl font-black text-slate-900 truncate">${buyers.length ? fmt(Math.round(totalSpend / (orders.filter(o=>o.order_status!=='cancelled').length || 1))) : '₹0'}</p>
+            <p class="mt-0.5 text-[10px] sm:text-[11px] text-slate-500">Per successful checkout</p>
+          </div>
+        </div>
+
+        <!-- Filter Tabs & Search Bar -->
+        <div class="mt-5 space-y-3">
+          <div class="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+            ${[
+              ['all', 'All Customers', allCust.length, SVG.user],
+              ['buyers', 'Placed Orders', buyers.length, SVG.orders],
+              ['repeat', 'Repeat Buyers', repeat.length, SVG.check]
+            ].map(([f,lbl,cnt,icon])=>`
+              <button onclick="filterCustomers('${f}')" class="shrink-0 rounded-2xl px-4 py-2 text-xs font-bold transition flex items-center gap-2 ${customerFilter===f ? 'bg-indigo-600 text-white shadow-sm' : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'}">
+                <span>${icon}</span>
+                <span>${lbl}</span>
+                <span class="rounded-full px-2 py-0.5 text-[10px] font-black ${customerFilter===f ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600'}">${cnt}</span>
+              </button>`).join('')}
+          </div>
+
+          <div class="rounded-2xl border border-slate-200/80 bg-white p-3 sm:p-3.5 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div class="relative w-full sm:max-w-md">
+              <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs">${SVG.search}</span>
+              <input id="customer-search" value="${esc(customerSearchQuery)}" placeholder="Search name, phone, Customer ID (TT-CUST-...), or city…" class="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-200 bg-slate-50/50 text-xs text-slate-900 outline-none focus:border-indigo-600 focus:bg-white transition">
+            </div>
+            <div class="text-xs text-slate-500 font-semibold self-start sm:self-auto">
+              Showing <span class="font-bold text-slate-900">${filtered.length}</span> of ${allCust.length} customers
+            </div>
+          </div>
+        </div>
+
+        <!-- Customers Directory List (Mobile App Cards + Desktop List) -->
+        <div class="mt-4 space-y-3">
+          ${filtered.length ? filtered.map(c => {
+            const a = c.address;
+            const addrParts = [];
+            if(a?.line) addrParts.push(a.line);
+            if(a?.city) addrParts.push(a.city);
+            if(a?.state) addrParts.push(a.state);
+            if(a?.pincode) addrParts.push(a.pincode);
+            const addrText = addrParts.join(', ') || 'No shipping address saved yet';
+            const initials = (c.name || 'C').split(' ').map(w=>w[0]).filter(Boolean).slice(0,2).join('').toUpperCase() || 'C';
+            const cleanPh = c.cleanPhone || String(c.phone).replace(/\D/g, '').slice(-10);
+
+            return `
+              <div class="rounded-2xl border border-slate-200/90 bg-white p-4 sm:p-5 shadow-xs hover:border-slate-300 transition flex flex-col gap-3.5">
+                <!-- Top Row: Avatar, Name, Customer ID Badge, Last Active -->
+                <div class="flex items-start justify-between gap-3">
+                  <div class="flex items-center gap-3 min-w-0">
+                    <div class="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-gradient-to-tr from-indigo-600 to-indigo-500 text-white font-extrabold text-sm shadow-sm">
+                      ${esc(initials)}
+                    </div>
+                    <div class="min-w-0">
+                      <div class="flex items-center gap-2 flex-wrap">
+                        <h3 class="text-sm sm:text-base font-extrabold text-slate-900 truncate">${esc(c.name)}</h3>
+                        <span class="font-mono text-[11px] font-black bg-indigo-50 text-indigo-700 border border-indigo-200/80 px-2 py-0.5 rounded-lg shadow-2xs">
+                          ${esc(c.customer_id)}
+                        </span>
+                      </div>
+                      <p class="text-[11px] text-slate-400 font-medium mt-0.5">
+                        Member since ${date(c.created_at)} · Last active ${date(c.last_active)}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div class="shrink-0 text-right">
+                    <span class="text-sm sm:text-base font-black text-slate-900 block">${fmt(c.total_spent)}</span>
+                    <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">${c.orders_count} ${c.orders_count===1?'Order':'Orders'}</span>
+                  </div>
+                </div>
+
+                <!-- Middle Row: Contact & Address -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5 pt-2 border-t border-slate-100 text-xs">
+                  <!-- Phone & Action Shortcuts -->
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <span class="inline-flex items-center gap-1 font-semibold text-slate-700 bg-slate-50 px-2.5 py-1.5 rounded-xl border border-slate-200">
+                      ${SVG.phone} <span>${esc(c.phone || '—')}</span>
+                    </span>
+                    ${cleanPh ? `
+                      <a href="tel:${esc(cleanPh)}" class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 font-bold transition shadow-2xs">
+                        ${SVG.phone} <span>Call</span>
+                      </a>
+                      <a href="https://wa.me/91${esc(cleanPh)}?text=Hello%20${encodeURIComponent(c.name)}%2C%20greetings%20from%20Thaarai%20Tex" target="_blank" class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold transition shadow-2xs">
+                        ${SVG.whatsapp} <span>WhatsApp</span>
+                      </a>
+                    ` : ''}
+                  </div>
+
+                  <!-- Address Snippet -->
+                  <div class="flex items-start gap-1.5 text-slate-600 bg-slate-50/60 p-2 rounded-xl border border-slate-100">
+                    <span class="shrink-0 text-slate-400 mt-0.5">${SVG.location}</span>
+                    <span class="truncate text-[11px] sm:text-xs">${esc(addrText)}</span>
+                  </div>
+                </div>
+
+                <!-- Bottom Row: Order History Action -->
+                <div class="flex items-center justify-between pt-1 border-t border-slate-100">
+                  <span class="text-[11px] text-slate-500 font-medium">
+                    ${c.orders_count > 0 ? `${c.orders.length} order records available` : 'Registered user · No orders yet'}
+                  </span>
+                  <button onclick="openCustomerModal('${esc(c.customer_id)}')" class="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 px-3 py-1.5 text-xs font-bold text-slate-700 transition shadow-2xs">
+                    <span>View Customer History</span>
+                    <span>${SVG.arrowRight}</span>
+                  </button>
+                </div>
+              </div>`;
+          }).join('') : `
+            <div class="rounded-3xl border border-slate-200 bg-white py-16 text-center shadow-xs">
+              <div class="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-indigo-50 text-indigo-600 mb-3">${SVG.user}</div>
+              <h3 class="text-base font-extrabold text-slate-900">No Customers Found</h3>
+              <p class="mt-1 text-xs text-slate-500 max-w-sm mx-auto">Try adjusting your search query or filter options above.</p>
+            </div>
+          `}
+        </div>
+      `;
+
+      const searchInput = $('#customer-search');
+      if(searchInput){
+        searchInput.oninput = e => {
+          customerSearchQuery = e.target.value.trim();
+          const filteredRows = filterCustomerRows();
+          renderCustomerRowsOnly(filteredRows);
+        };
+      }
+    }
+
+    function renderCustomerRowsOnly(filtered){
+      const container = view.querySelector('.space-y-3:last-of-type');
+      if(!container) return;
+      if(!filtered.length){
+        container.innerHTML = `
+          <div class="rounded-3xl border border-slate-200 bg-white py-16 text-center shadow-xs">
+            <div class="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-indigo-50 text-indigo-600 mb-3">${SVG.user}</div>
+            <h3 class="text-base font-extrabold text-slate-900">No Customers Found</h3>
+            <p class="mt-1 text-xs text-slate-500 max-w-sm mx-auto">No customer profiles match "${esc(customerSearchQuery)}".</p>
+          </div>`;
+        return;
+      }
+      container.innerHTML = filtered.map(c => {
+        const a = c.address;
+        const addrParts = [];
+        if(a?.line) addrParts.push(a.line);
+        if(a?.city) addrParts.push(a.city);
+        if(a?.state) addrParts.push(a.state);
+        if(a?.pincode) addrParts.push(a.pincode);
+        const addrText = addrParts.join(', ') || 'No shipping address saved yet';
+        const initials = (c.name || 'C').split(' ').map(w=>w[0]).filter(Boolean).slice(0,2).join('').toUpperCase() || 'C';
+        const cleanPh = c.cleanPhone || String(c.phone).replace(/\D/g, '').slice(-10);
+
+        return `
+          <div class="rounded-2xl border border-slate-200/90 bg-white p-4 sm:p-5 shadow-xs hover:border-slate-300 transition flex flex-col gap-3.5">
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex items-center gap-3 min-w-0">
+                <div class="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-gradient-to-tr from-indigo-600 to-indigo-500 text-white font-extrabold text-sm shadow-sm">
+                  ${esc(initials)}
+                </div>
+                <div class="min-w-0">
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <h3 class="text-sm sm:text-base font-extrabold text-slate-900 truncate">${esc(c.name)}</h3>
+                    <span class="font-mono text-[11px] font-black bg-indigo-50 text-indigo-700 border border-indigo-200/80 px-2 py-0.5 rounded-lg shadow-2xs">
+                      ${esc(c.customer_id)}
+                    </span>
+                  </div>
+                  <p class="text-[11px] text-slate-400 font-medium mt-0.5">
+                    Member since ${date(c.created_at)} · Last active ${date(c.last_active)}
+                  </p>
+                </div>
+              </div>
+              <div class="shrink-0 text-right">
+                <span class="text-sm sm:text-base font-black text-slate-900 block">${fmt(c.total_spent)}</span>
+                <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">${c.orders_count} ${c.orders_count===1?'Order':'Orders'}</span>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5 pt-2 border-t border-slate-100 text-xs">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="inline-flex items-center gap-1 font-semibold text-slate-700 bg-slate-50 px-2.5 py-1.5 rounded-xl border border-slate-200">
+                  ${SVG.phone} <span>${esc(c.phone || '—')}</span>
+                </span>
+                ${cleanPh ? `
+                  <a href="tel:${esc(cleanPh)}" class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 font-bold transition shadow-2xs">
+                    ${SVG.phone} <span>Call</span>
+                  </a>
+                  <a href="https://wa.me/91${esc(cleanPh)}?text=Hello%20${encodeURIComponent(c.name)}%2C%20greetings%20from%20Thaarai%20Tex" target="_blank" class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold transition shadow-2xs">
+                    ${SVG.whatsapp} <span>WhatsApp</span>
+                  </a>
+                ` : ''}
+              </div>
+              <div class="flex items-start gap-1.5 text-slate-600 bg-slate-50/60 p-2 rounded-xl border border-slate-100">
+                <span class="shrink-0 text-slate-400 mt-0.5">${SVG.location}</span>
+                <span class="truncate text-[11px] sm:text-xs">${esc(addrText)}</span>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between pt-1 border-t border-slate-100">
+              <span class="text-[11px] text-slate-500 font-medium">
+                ${c.orders_count > 0 ? `${c.orders.length} order records available` : 'Registered user · No orders yet'}
+              </span>
+              <button onclick="openCustomerModal('${esc(c.customer_id)}')" class="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 px-3 py-1.5 text-xs font-bold text-slate-700 transition shadow-2xs">
+                <span>View Customer History</span>
+                <span>${SVG.arrowRight}</span>
+              </button>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    function openCustomerModal(customerId){
+      const all = getAggregatedCustomers();
+      const c = all.find(x => x.customer_id === customerId);
+      if(!c) return toast('Customer not found');
+
+      $('#cust-modal-title').textContent = c.name;
+      $('#cust-modal-sub').textContent = `${c.customer_id} · ${c.phone || 'No phone'}`;
+
+      const a = c.address;
+      const cleanPh = c.cleanPhone || String(c.phone).replace(/\D/g, '').slice(-10);
+
+      const statusColors={
+        pending:'bg-amber-50 text-amber-800 border-amber-200',
+        verified:'bg-sky-50 text-sky-800 border-sky-200',
+        dispatched:'bg-indigo-50 text-indigo-800 border-indigo-200',
+        delivered:'bg-emerald-50 text-emerald-800 border-emerald-200',
+        cancelled:'bg-rose-50 text-rose-800 border-rose-200'
+      };
+
+      $('#customer-modal-body').innerHTML = `
+        <div class="rounded-2xl border border-slate-200 bg-slate-50/60 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-mono text-xs font-black bg-indigo-50 text-indigo-700 border border-indigo-200 px-2.5 py-0.5 rounded-md">
+                ${esc(c.customer_id)}
+              </span>
+              <span class="text-xs text-slate-500 font-medium">Joined ${date(c.created_at)}</span>
+            </div>
+            <h3 class="mt-1.5 text-lg font-black text-slate-900">${esc(c.name)}</h3>
+            <p class="text-xs text-slate-600 flex items-center gap-2 mt-1">
+              <span class="font-semibold">${esc(c.phone || 'No phone registered')}</span>
+              ${c.email ? `<span>·</span><span>${esc(c.email)}</span>` : ''}
+            </p>
+          </div>
+          <div class="flex items-center gap-2">
+            ${cleanPh ? `
+              <a href="tel:${esc(cleanPh)}" class="rounded-xl border border-emerald-200 bg-emerald-50 px-3.5 py-2 text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition flex items-center gap-1.5">
+                ${SVG.phone} <span>Call</span>
+              </a>
+              <a href="https://wa.me/91${esc(cleanPh)}?text=Hello%20${encodeURIComponent(c.name)}%2C%20greetings%20from%20Thaarai%20Tex" target="_blank" class="rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white px-3.5 py-2 text-xs font-bold transition flex items-center gap-1.5">
+                ${SVG.whatsapp} <span>WhatsApp</span>
+              </a>
+            ` : ''}
+          </div>
+        </div>
+
+        <div class="rounded-2xl border border-slate-200 p-4">
+          <p class="text-[10px] font-black uppercase tracking-wider text-slate-500">Default Shipping Address</p>
+          ${a ? `
+            <div class="mt-2 text-xs text-slate-700 leading-relaxed font-medium">
+              <p class="font-bold text-slate-900">${esc(a.name || c.name)}</p>
+              <p>${esc(a.line || '')}</p>
+              <p>${esc(a.city || '')}${a.state ? ', ' + esc(a.state) : ''} - <span class="font-bold">${esc(a.pincode || '')}</span></p>
+              <p class="mt-1 text-slate-500 flex items-center gap-1">${SVG.phone} ${esc(a.phone || c.phone || '—')}</p>
+            </div>
+          ` : '<p class="mt-2 text-xs text-slate-400">No delivery address saved yet by this customer.</p>'}
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+            <h4 class="text-xs font-black uppercase tracking-wider text-slate-800">Order History (${c.orders.length})</h4>
+            <span class="text-xs font-extrabold text-slate-900">Total Spent: ${fmt(c.total_spent)}</span>
+          </div>
+          <div class="mt-3 space-y-2.5">
+            ${c.orders.length ? c.orders.map(o => {
+              const st = o.order_status || 'pending';
+              const badgeClass = statusColors[st] || 'bg-slate-100 text-slate-700 border-slate-200';
+              const items = o.items || o.order_items || [];
+
+              return `
+                <div class="rounded-xl border border-slate-200 p-3 bg-white hover:bg-slate-50 transition flex items-center justify-between gap-3">
+                  <div class="min-w-0">
+                    <div class="flex items-center gap-2 flex-wrap">
+                      <span class="font-mono text-xs font-black text-slate-900">#${esc(String(o.id).slice(0,8).toUpperCase())}</span>
+                      <span class="rounded-full px-2 py-0.5 text-[9px] font-black uppercase border ${badgeClass}">
+                        ${esc(st)}
+                      </span>
+                      <span class="text-[11px] text-slate-400">${date(o.created_at)}</span>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-0.5 truncate">
+                      ${items.length} saree(s) · ${esc(o.payment_method || 'COD')}
+                    </p>
+                  </div>
+                  <div class="flex items-center gap-3 shrink-0">
+                    <span class="text-sm font-black text-slate-900">${fmt(o.total)}</span>
+                    <button onclick="$('#customer-modal').close(); viewOrderDetail('${esc(o.id)}')" class="rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold px-2.5 py-1 text-xs transition">
+                      View Order
+                    </button>
+                  </div>
+                </div>`;
+            }).join('') : '<p class="py-6 text-center text-xs text-slate-400">No orders placed by this customer yet.</p>'}
+          </div>
+        </div>
+      `;
+
+      $('#customer-modal').showModal();
+    }
+    $('#customer-modal-close').onclick = () => $('#customer-modal').close();
+
+    function openSqlSetupModal(){
+      $('#sql-setup-modal').showModal();
+    }
+    $('#sql-setup-modal-close').onclick = () => $('#sql-setup-modal').close();
+    $('#btn-copy-sql').onclick = () => {
+      const code = $('#supabase-sql-code').textContent;
+      navigator.clipboard.writeText(code).then(() => {
+        toast('SQL copied to clipboard ✓');
+      }).catch(() => {
+        toast('Selected SQL for manual copy');
+      });
+    };
 
     /* ===== CATALOG / PRODUCTS ===== */
     function tableHead(cols){return `<thead><tr class="border-b border-slate-100 bg-slate-50/70">${cols.map(c=>`<th class="whitespace-nowrap px-4 py-3 text-left text-[10px] font-bold uppercase tracking-[.14em] text-slate-500">${c}</th>`).join('')}</tr></thead>`}
@@ -2514,8 +3147,9 @@
     $('#editor-form').onsubmit=saveEditor;
     $('#editor-close').onclick=()=>editor.close();
     $('#editor-cancel').onclick=()=>editor.close();
-    $('#menu-toggle').onclick=()=>{$('#sidebar').classList.remove('-translate-x-full');$('#sidebar-backdrop').classList.remove('hidden')};
-    $('#m-menu-btn').onclick=()=>{$('#sidebar').classList.remove('-translate-x-full');$('#sidebar-backdrop').classList.remove('hidden')};
+    $('#menu-toggle').onclick=openSidebar;
+    $('#m-menu-btn').onclick=openSidebar;
+    $('#sidebar-close').onclick=closeSidebar;
     $('#sidebar-backdrop').onclick=closeSidebar;
     nav.onclick=e=>{const b=e.target.closest('[data-section]');if(b)setSection(b.dataset.section)};
 
