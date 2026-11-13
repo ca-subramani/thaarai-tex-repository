@@ -1092,15 +1092,17 @@ let exitFromShop=(location.hash||'').startsWith('#/shop'),exitApproved=false;
 document.addEventListener('click',e=>{if(e.target.closest('a[href="#/shop"]'))exitFromShop=false});
 function syncHomeGuard(){
   const atHome=!location.hash||location.hash==='#/'||location.hash==='#';
-  if(atHome&&routeStack.length===1&&!history.state?.exitGuard)history.pushState({exitGuard:true},'',location.href);
+  if(atHome&&!history.state?.exitGuard)history.pushState({exitGuard:true},'',location.href);
 }
 function moveToShopForExit(){
   exitFromShop=true;routeStack=['#/shop'];
   history.replaceState({exitGuard:false},'','#/shop');
+  history.pushState({exitGuard:true},'',location.href);
   route();
 }
 window.addEventListener('hashchange',()=>{if(exitApproved)return;if(!(exitFromShop&&(location.hash||'').startsWith('#/shop')))exitFromShop=false;
   const next=location.hash||'#/';
+  currentRouteHash=next;
   if(routeStack.length>1&&next===routeStack[routeStack.length-2])routeStack.pop();
   else if(next!==routeStack[routeStack.length-1])routeStack.push(next);
   route();
@@ -1111,9 +1113,11 @@ $('#exit-leave').onclick=()=>{exitApproved=true;$('#exit-confirm').classList.add
 window.addEventListener('popstate',()=>{
   if(exitApproved){history.back();return}
   const destination=location.hash||'#/';
-  if(destination!==currentRouteHash)return;
+  const wasHome=!currentRouteHash||currentRouteHash==='#/'||currentRouteHash==='#';
   const atHome=!destination||destination==='#/'||destination==='#';
   const atShop=destination.startsWith('#/shop');
+  if(wasHome&&atShop&&destination!==currentRouteHash){exitFromShop=true;return}
+  if(destination!==currentRouteHash)return;
   if(atHome){moveToShopForExit();return}
   if(atShop&&exitFromShop)showExitConfirm()
 });
