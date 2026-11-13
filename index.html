@@ -71,6 +71,14 @@ input,select,textarea{font-size:16px!important}
 </nav>
 
 <div id="toast" class="fixed bottom-24 sm:bottom-4 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-xs px-4 py-2.5 rounded-full shadow-soft hidden z-50"></div>
+<div id="exit-confirm" class="hidden fixed inset-0 z-[100] grid place-items-center bg-slate-950/50 p-5" role="presentation">
+  <section role="dialog" aria-modal="true" aria-labelledby="exit-title" class="w-full max-w-sm rounded-3xl bg-white p-6 text-center shadow-2xl">
+    <div class="mx-auto grid h-12 w-12 place-items-center rounded-full bg-amber-50 text-xl text-amber-700">?</div>
+    <h2 id="exit-title" class="mt-4 text-lg font-extrabold text-slate-900">Leave Thaarai Tex?</h2>
+    <p class="mt-2 text-sm text-slate-600">Are you sure you want to exit?</p>
+    <div class="mt-6 grid grid-cols-2 gap-3"><button id="exit-stay" class="rounded-xl border border-slate-200 px-4 py-3 text-sm font-bold text-slate-700">Stay here</button><button id="exit-leave" class="rounded-xl bg-slate-900 px-4 py-3 text-sm font-bold text-white">Exit</button></div>
+  </section>
+</div>
 
 <script>
 /* ===== CONFIG ===== */
@@ -1078,38 +1086,42 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-w]');if(b)
 $('#sf').onsubmit=e=>{e.preventDefault();location.hash='#/shop?q='+encodeURIComponent($('#q').value.trim())};
 $('#sf2').onsubmit=e=>{e.preventDefault();location.hash='#/shop?q='+encodeURIComponent($('#q2').value.trim());$('#msearch').classList.add('hidden')};
 $('#msb').onclick=()=>{$('#msearch').classList.toggle('hidden');$('#q2').focus()};
-const routeStack=[location.hash||'#/'];
-let homeGuardArmed=false,skipExitPrompt=false;
+let routeStack=[location.hash||'#/'];
+let homeGuardArmed=false,exitFromShop=false;
 function syncHomeGuard(){
   const atHome=!location.hash||location.hash==='#/'||location.hash==='#';
   if(atHome&&routeStack.length===1&&!history.state?.exitGuard){history.pushState({exitGuard:true},'',location.href);homeGuardArmed=true}
   else homeGuardArmed=Boolean(atHome&&routeStack.length===1&&history.state?.exitGuard);
 }
-window.addEventListener('hashchange',()=>{
+function moveToShopForExit(){
+  exitFromShop=true;homeGuardArmed=false;routeStack=['#/shop'];
+  history.replaceState({exitGuard:false},'','#/shop');
+  route();
+}
+window.addEventListener('hashchange',()=>{if(!(exitFromShop&&(location.hash||'').startsWith('#/shop')))exitFromShop=false;
   const next=location.hash||'#/';
   if(routeStack.length>1&&next===routeStack[routeStack.length-2])routeStack.pop();
   else if(next!==routeStack[routeStack.length-1])routeStack.push(next);
   route();
 });
+function showExitConfirm(){$('#exit-confirm').classList.remove('hidden');$('#exit-stay').focus()}
+$('#exit-stay').onclick=()=>{$('#exit-confirm').classList.add('hidden');route()};
+$('#exit-leave').onclick=()=>{history.back()};
 window.addEventListener('popstate',()=>{
   const atHome=!location.hash||location.hash==='#/'||location.hash==='#';
-  if(skipExitPrompt){skipExitPrompt=false;history.back();return}
-  if(atHome&&routeStack.length===1&&homeGuardArmed){
-    homeGuardArmed=false;
-    if(window.confirm('Are you sure you want to leave Thaarai Tex?'))history.back();
-    else syncHomeGuard();
-  }
+  const atShop=(location.hash||'').startsWith('#/shop');
+  if(atHome&&routeStack.length===1&&homeGuardArmed){moveToShopForExit();return}
+  if(atShop&&exitFromShop)showExitConfirm();
 });
 $('#nav-back').onclick=()=>{
-  if(routeStack.length>1){history.back();return}
   const atHome=!location.hash||location.hash==='#/'||location.hash==='#';
-  if(!atHome){location.hash='#/';return}
-  if(window.confirm('Are you sure you want to leave Thaarai Tex?')){
-    if(homeGuardArmed){skipExitPrompt=true;history.back()}else history.back();
-  }
+  if(atHome){moveToShopForExit();return}
+  if(exitFromShop&&(location.hash||'').startsWith('#/shop')){history.back();return}
+  if(routeStack.length>1){history.back();return}
+  location.hash='#/';
 };
 const originalRoute=route;
-route=async function(){await originalRoute();syncHomeGuard()};
+route=async function(){await originalRoute();syncHomeGuard();if(exitFromShop&&(location.hash||'').startsWith('#/shop')&&!history.state?.exitGuard)history.pushState({exitGuard:true},'',location.href)};
 Promise.all([initAuth(),loadSiteSettings()]).then(route);
 </script>
 </body>
