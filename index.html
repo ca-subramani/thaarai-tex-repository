@@ -1087,15 +1087,15 @@ $('#sf').onsubmit=e=>{e.preventDefault();location.hash='#/shop?q='+encodeURIComp
 $('#sf2').onsubmit=e=>{e.preventDefault();location.hash='#/shop?q='+encodeURIComponent($('#q2').value.trim());$('#msearch').classList.add('hidden')};
 $('#msb').onclick=()=>{$('#msearch').classList.toggle('hidden');$('#q2').focus()};
 let routeStack=[location.hash||'#/'];
-let homeGuardArmed=false,exitFromShop=false,exitApproved=false;
+let currentRouteHash=location.hash||'#/';
+let exitFromShop=(location.hash||'').startsWith('#/shop'),exitApproved=false;
 document.addEventListener('click',e=>{if(e.target.closest('a[href="#/shop"]'))exitFromShop=false});
 function syncHomeGuard(){
   const atHome=!location.hash||location.hash==='#/'||location.hash==='#';
-  if(atHome&&routeStack.length===1&&!history.state?.exitGuard){history.pushState({exitGuard:true},'',location.href);homeGuardArmed=true}
-  else homeGuardArmed=Boolean(atHome&&routeStack.length===1&&history.state?.exitGuard);
+  if(atHome&&routeStack.length===1&&!history.state?.exitGuard)history.pushState({exitGuard:true},'',location.href);
 }
 function moveToShopForExit(){
-  exitFromShop=true;homeGuardArmed=false;routeStack=['#/shop'];
+  exitFromShop=true;routeStack=['#/shop'];
   history.replaceState({exitGuard:false},'','#/shop');
   route();
 }
@@ -1110,10 +1110,12 @@ $('#exit-stay').onclick=()=>{$('#exit-confirm').classList.add('hidden');route()}
 $('#exit-leave').onclick=()=>{exitApproved=true;$('#exit-confirm').classList.add('hidden');history.back()};
 window.addEventListener('popstate',()=>{
   if(exitApproved){history.back();return}
-  const atHome=!location.hash||location.hash==='#/'||location.hash==='#';
-  const atShop=(location.hash||'').startsWith('#/shop');
-  if(atHome&&routeStack.length===1&&homeGuardArmed){moveToShopForExit();return}
-  if(atShop&&exitFromShop)showExitConfirm();
+  const destination=location.hash||'#/';
+  if(destination!==currentRouteHash)return;
+  const atHome=!destination||destination==='#/'||destination==='#';
+  const atShop=destination.startsWith('#/shop');
+  if(atHome){moveToShopForExit();return}
+  if(atShop&&exitFromShop)showExitConfirm()
 });
 $('#nav-back').onclick=()=>{
   const atHome=!location.hash||location.hash==='#/'||location.hash==='#';
@@ -1123,7 +1125,7 @@ $('#nav-back').onclick=()=>{
   location.hash='#/';
 };
 const originalRoute=route;
-route=async function(){await originalRoute();syncHomeGuard();if(exitFromShop&&(location.hash||'').startsWith('#/shop')&&!history.state?.exitGuard)history.pushState({exitGuard:true},'',location.href)};
+route=async function(){await originalRoute();currentRouteHash=location.hash||'#/';syncHomeGuard();if(exitFromShop&&(location.hash||'').startsWith('#/shop')&&!history.state?.exitGuard)history.pushState({exitGuard:true},'',location.href)};
 Promise.all([initAuth(),loadSiteSettings()]).then(route);
 </script>
 </body>
