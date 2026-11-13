@@ -1903,51 +1903,76 @@
         <div class="flex items-end justify-between gap-3">
           <div>
             <p class="text-[10px] font-black uppercase tracking-[.2em] text-indigo-600">Promotions & Discounts</p>
-            <h2 class="mt-1.5 text-2xl font-extrabold text-slate-900">Coupons</h2>
-            <p class="mt-0.5 text-xs sm:text-sm text-slate-500">Configure promotional discount codes for your customers.</p>
+            <h2 class="mt-1.5 text-2xl font-black text-slate-900">Coupons</h2>
+            <p class="mt-0.5 text-xs sm:text-sm text-slate-500">Configure promotional percentage discount codes for your shoppers.</p>
           </div>
-          <button data-action="coupon-new" class="rounded-xl bg-indigo-600 hover:bg-indigo-700 px-4 py-2.5 text-xs font-bold text-white shadow-xs transition">＋ New Coupon</button>
+          <button data-action="coupon-new" class="rounded-xl bg-indigo-600 hover:bg-indigo-700 px-4 py-2.5 text-xs font-bold text-white shadow-xs transition flex items-center gap-1.5">
+            <span>＋</span> New Coupon
+          </button>
         </div>
         <div class="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           ${coupons.map(c=>`
-            <article class="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-xs hover:shadow-md transition">
+            <article class="rounded-3xl border-2 border-slate-200/90 bg-white p-5 shadow-xs hover:shadow-md transition space-y-3">
               <div class="flex items-start justify-between">
                 <div>
-                  <span class="font-mono text-sm font-black text-indigo-900 bg-indigo-50 border border-indigo-200 px-2.5 py-1 rounded-lg">${esc(c.code)}</span>
-                  <p class="mt-2 text-2xl font-black text-slate-900">${c.discount_type==='flat'?fmt(c.discount_value):`${c.discount_value}% OFF`}</p>
+                  <div class="flex items-center gap-2">
+                    <span class="font-mono text-sm font-black text-indigo-900 bg-indigo-50 border border-indigo-200 px-2.5 py-1 rounded-xl select-all">${esc(c.code)}</span>
+                    <span class="rounded-full px-2 py-0.5 text-[9px] font-black uppercase ${c.active!==false?'bg-emerald-50 text-emerald-800 border border-emerald-200':'bg-slate-100 text-slate-600'}">
+                      ${c.active!==false?'ACTIVE':'INACTIVE'}
+                    </span>
+                  </div>
+                  <p class="mt-3 text-3xl font-black text-slate-900">${c.percent||0}% OFF</p>
                 </div>
-                <button data-edit-coupon="${esc(c.id)}" class="rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-bold text-slate-700 hover:bg-slate-50">Edit</button>
+                <button data-edit-coupon="${esc(c.code)}" class="rounded-xl border border-slate-200 px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition shadow-xs">Edit</button>
               </div>
-              <p class="mt-2 text-xs text-slate-500 font-medium">Min order value: ${fmt(c.min_order_amount||0)}</p>
-            </article>`).join('')||'<p class="col-span-full py-16 text-center text-xs text-slate-400">No coupons active.</p>'}
+              <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+                <span>Min Order: <b class="text-slate-800">${c.min_total ? fmt(c.min_total) : 'None (₹0)'}</b></span>
+                ${c.count!=null?`<span class="font-medium text-[11px]">Limit: <b class="text-slate-800">${c.count}</b> uses</span>`:''}
+              </div>
+            </article>`).join('')||'<div class="col-span-full rounded-3xl border border-slate-200 bg-white py-16 text-center text-xs text-slate-400">No coupons active. Click "＋ New Coupon" to create one.</div>'}
         </div>`;
     }
 
     async function openCoupon(coupon){
-      editing={type:'coupon',row:coupon||{code:'',discount_type:'percentage',discount_value:10,min_order_amount:0}};
+      const isNew=!coupon;
+      editing={type:'coupon',isEdit:!isNew,row:coupon||{code:'',percent:10,min_total:0,count:null,active:true}};
       const r=editing.row;
-      $('#editor-kicker').textContent=coupon?'PROMOTIONS · EDIT':'PROMOTIONS · NEW';
-      $('#editor-title').textContent=coupon?'Edit Coupon':'Create Coupon';
+      $('#editor-kicker').textContent=isNew?'PROMOTIONS · NEW':'PROMOTIONS · EDIT';
+      $('#editor-title').textContent=isNew?'Create Promo Coupon':'Edit Coupon Details';
       $('#editor-fields').innerHTML=`
-        ${field('code','Coupon code (UPPERCASE)',r.code||'')}
-        <label class="block text-xs font-bold text-slate-800">Discount type
-          <select name="discount_type" class="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs text-slate-900 outline-none focus:border-indigo-600">
-            <option value="percentage" ${r.discount_type==='percentage'?'selected':''}>Percentage (%)</option>
-            <option value="flat" ${r.discount_type==='flat'?'selected':''}>Flat Amount (₹)</option>
-          </select>
+        <label class="block text-xs font-bold text-slate-800">Coupon Code (UPPERCASE)
+          <input name="code" value="${esc(r.code||'')}" ${isNew?'':'readonly'} required placeholder="e.g. FESTIVE10, WELCOME20" class="mt-1.5 w-full rounded-xl border border-slate-200 ${isNew?'bg-white':'bg-slate-100 text-slate-500 cursor-not-allowed'} px-3.5 py-2.5 text-xs text-slate-900 font-mono font-bold outline-none focus:border-indigo-600 uppercase">
         </label>
-        ${field('discount_value','Discount amount or percentage',r.discount_value||0,'number')}
-        ${field('min_order_amount','Minimum order value (₹)',r.min_order_amount||0,'number')}`;
+        <div class="grid gap-3 sm:grid-cols-2">
+          <label class="block text-xs font-bold text-slate-800">Discount Percentage (%)
+            <span class="block text-[11px] font-normal text-slate-500 mt-0.5">e.g. 10 for 10% off entire order</span>
+            <input name="percent" type="number" min="1" max="100" step="1" value="${esc(r.percent||10)}" required class="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs text-slate-900 font-bold outline-none focus:border-indigo-600">
+          </label>
+          <label class="block text-xs font-bold text-slate-800">Minimum Order Value (₹)
+            <span class="block text-[11px] font-normal text-slate-500 mt-0.5">Enter 0 for no minimum cart limit</span>
+            <input name="min_total" type="number" min="0" step="any" value="${esc(r.min_total||0)}" required class="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs text-slate-900 font-bold outline-none focus:border-indigo-600">
+          </label>
+        </div>
+        <label class="block text-xs font-bold text-slate-800">Usage Limit (Optional)
+          <span class="block text-[11px] font-normal text-slate-500 mt-0.5">Maximum times this coupon can be redeemed (Leave empty for unlimited)</span>
+          <input name="count" type="number" min="1" step="1" value="${r.count!=null?esc(r.count):''}" placeholder="Unlimited uses" class="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs text-slate-900 outline-none focus:border-indigo-600">
+        </label>
+        <label class="flex items-center gap-3 rounded-xl bg-slate-50 p-3.5 text-xs font-bold text-slate-800 cursor-pointer border border-slate-200/70">
+          <input name="active" type="checkbox" ${r.active!==false?'checked':''} class="h-4 w-4 accent-indigo-600 rounded"> Active & Valid for Customer Checkout
+        </label>
+        ${!isNew?`<button type="button" data-delete-coupon="${esc(r.code)}" class="text-left text-xs font-bold text-rose-600 hover:underline pt-2">Delete this coupon</button>`:''}`;
       editor.showModal();
     }
 
     function couponPayload(form){
       const fd=new FormData(form);
+      const countVal=String(fd.get('count')||'').trim();
       return {
         code:String(fd.get('code')).trim().toUpperCase(),
-        discount_type:fd.get('discount_type'),
-        discount_value:Number(fd.get('discount_value')),
-        min_order_amount:Number(fd.get('min_order_amount')||0)
+        percent:Number(fd.get('percent'))||10,
+        min_total:Number(fd.get('min_total'))||0,
+        count:countVal && !isNaN(Number(countVal)) ? Number(countVal) : null,
+        active:fd.has('active')
       };
     }
 
@@ -2046,10 +2071,16 @@
       if(editing.type==='coupon')payload=couponPayload(form);
 
       let res;
-      if(editing.row.id){
-        res=await db.from(editing.type==='product'?'products':editing.type==='category'?'categories':'coupons').update(payload).eq('id',editing.row.id);
+      if(editing.type==='coupon'){
+        if(editing.isEdit && editing.row.code){
+          res=await db.from('coupons').update(payload).eq('code',editing.row.code);
+        }else{
+          res=await db.from('coupons').upsert(payload, {onConflict:'code'});
+        }
+      }else if(editing.row.id){
+        res=await db.from(editing.type==='product'?'products':'categories').update(payload).eq('id',editing.row.id);
       }else{
-        res=await db.from(editing.type==='product'?'products':editing.type==='category'?'categories':'coupons').insert(payload);
+        res=await db.from(editing.type==='product'?'products':'categories').insert(payload);
       }
       if(res.error){toast('Error: '+res.error.message);return}
       editor.close();
@@ -2057,9 +2088,9 @@
       await loadAll();
     }
 
-    async function deleteRow(table,id){
+    async function deleteRow(table,id,keyCol='id'){
       if(!confirm(`Delete this item permanently?`))return;
-      const {error}=await db.from(table).delete().eq('id',id);
+      const {error}=await db.from(table).delete().eq(keyCol,id);
       if(error){toast(error.message);return}
       toast('Deleted successfully ✓');
       await loadAll();
@@ -2126,7 +2157,8 @@
       const dc=e.target.closest('[data-delete-category]');if(dc)deleteRow('categories',dc.dataset.deleteCategory);
       const dr=e.target.closest('[data-delete-review]');if(dr)deleteRow('reviews',dr.dataset.deleteReview);
       const so=e.target.closest('[data-save-order]');if(so)saveOrder(so.dataset.saveOrder);
-      const ecp=e.target.closest('[data-edit-coupon]');if(ecp)openCoupon(coupons.find(c=>String(c.id)===ecp.dataset.editCoupon));
+      const ecp=e.target.closest('[data-edit-coupon]');if(ecp)openCoupon(coupons.find(c=>String(c.code)===ecp.dataset.editCoupon));
+      const dcp=e.target.closest('[data-delete-coupon]');if(dcp){deleteRow('coupons',dcp.dataset.deleteCoupon,'code').then(()=>editor.close());return;}
       const ordDet=e.target.closest('[data-order-details]');if(ordDet)showOrderDetails(orders.find(o=>String(o.id)===ordDet.dataset.orderDetails));
 
       if(e.target.closest('[data-product-local]')){$('#product-local-files').click();return}
