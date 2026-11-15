@@ -69,7 +69,9 @@
       <div class="absolute -right-32 -top-32 w-[520px] h-[520px] rounded-lg border border-indigo-500/10 blur-sm"></div>
       <div class="absolute right-[-70px] top-[-70px] w-[390px] h-[390px] rounded-lg border border-indigo-400/10"></div>
       <div class="absolute right-20 bottom-[-220px] w-[500px] h-[500px] rounded-lg bg-indigo-500/10 blur-3xl"></div>
-      <div class="relative brand text-2xl font-black tracking-wide text-white">THAARAI <span class="text-indigo-400">TEX</span><div class="text-[10px] tracking-[.28em] text-indigo-300/70 mt-1 uppercase font-extrabold">Executive Store Management Studio</div></div>
+      <div class="relative brand text-2xl font-black tracking-wide text-white">THAARAI <span class="text-indigo-400">TEX</span>
+        <div class="text-[10px] tracking-[.28em] text-indigo-300/70 mt-1 uppercase font-extrabold">Executive Store Management Studio</div>
+      </div>
       <div class="relative max-w-xl">
         <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-indigo-500/15 border border-indigo-400/20 text-[11px] uppercase tracking-wider text-indigo-300 font-bold">Authorized Workspace</span>
         <h1 class="mt-6 text-5xl font-extrabold leading-[1.15] text-white">Your craft.<br>Your commerce.</h1>
@@ -104,9 +106,7 @@
     <aside id="sidebar" class="fixed top-0 bottom-0 left-0 z-50 flex w-[260px] max-w-[85vw] h-[100dvh] -translate-x-full flex-col bg-gray-900 text-gray-300 border-r border-gray-800/90 shadow-sm transition-transform duration-300 ease-out lg:translate-x-0" style="padding-bottom:calc(1rem + env(safe-area-inset-bottom, 0px))">
       <div class="flex h-[72px] items-center justify-between border-b border-gray-800/80 px-5">
         <div class="flex items-center gap-3">
-          <div class="grid h-10 w-10 place-items-center rounded-lg bg-gradient-to-tr from-indigo-600 to-indigo-400 text-sm font-black text-white shadow-sm">
-            TT
-          </div>
+          <div class="grid h-10 w-10 place-items-center rounded-lg bg-gradient-to-tr from-indigo-600 to-indigo-400 text-sm font-black text-white shadow-sm">TT</div>
           <div class="brand font-extrabold tracking-wide text-white">THAARAI TEX<span class="mt-0.5 block text-[9px] font-bold tracking-[.22em] text-indigo-400">ADMIN STUDIO</span></div>
         </div>
         <button id="sidebar-close" class="grid h-8 w-8 place-items-center rounded-lg bg-gray-900 text-gray-400 hover:text-white lg:hidden" aria-label="Close menu">
@@ -207,7 +207,7 @@
       </form>
     </dialog>
 
-    <!-- Reusable Media Library Picker Modal -->
+    <!-- Media Library Picker Modal -->
     <dialog id="library-picker-modal" class="w-[min(820px,calc(100%-24px))] max-h-[85vh] rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
       <div class="flex items-center justify-between border-b border-gray-100 pb-4">
         <div>
@@ -222,7 +222,7 @@
     </dialog>
 
     <!-- Customer Details & Order History Modal -->
-    <dialog id="customer-modal" class="w-[min(680px,calc(100%-24px))] max-h-[90vh] rounded-lg border border-gray-200 bg-white p-0 shadow-sm backdrop:bg-gray-950/60 backdrop:backdrop-blur-sm">
+    <dialog id="customer-modal" class="w-[min(680px,calc(100%-24px))] max-h-[90vh] rounded-lg border border-gray-200 bg-white p-0 shadow-sm backdrop:bg-gray-950/60 backdrop:backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="cust-modal-title">
       <div class="flex max-h-[90vh] flex-col">
         <div class="flex items-start justify-between border-b border-gray-100 px-6 py-5 bg-gray-50/80 rounded-lg">
           <div>
@@ -230,7 +230,7 @@
             <h2 id="cust-modal-title" class="mt-1 text-xl font-extrabold text-gray-900">Customer Details</h2>
             <p id="cust-modal-sub" class="text-xs text-gray-500 mt-0.5">Purchases and shipping addresses</p>
           </div>
-          <button id="customer-modal-close" type="button" class="grid h-8 w-8 place-items-center rounded-lg text-gray-400 hover:bg-gray-200 hover:text-gray-700 transition">
+          <button id="customer-modal-close" type="button" class="grid h-8 w-8 place-items-center rounded-lg text-gray-400 hover:bg-gray-200 hover:text-gray-700 transition" aria-label="Close customer modal">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
           </button>
         </div>
@@ -241,6 +241,87 @@
       </div>
     </dialog>
 
+    <!-- *** NEW ORDER DETAILS MODAL *** -->
+    <dialog id="order-modal"
+            class="w-[min(780px,calc(100%-24px))] max-h-[90vh] rounded-lg border border-gray-200 bg-white p-0 shadow-sm"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="order-modal-title">
+      <form class="flex max-h-[90vh] flex-col">
+        <!-- Header -->
+        <header class="flex items-center justify-between border-b border-gray-100 bg-gray-50/50 p-4 rounded-t-lg">
+          <h2 id="order-modal-title" class="text-xl font-extrabold text-gray-900">
+            Order Details <span id="order-id" class="text-indigo-600 font-mono text-sm"></span>
+          </h2>
+          <button type="button"
+                  class="grid h-9 w-9 place-items-center rounded-lg border border-gray-200 bg-white text-gray-700 shadow-sm hover:bg-gray-50"
+                  aria-label="Close order details"
+                  onclick="document.getElementById('order-modal').close()">
+            ×
+          </button>
+        </header>
+
+        <!-- Body -->
+        <div class="flex-1 overflow-y-auto p-4 space-y-4">
+          <!-- Meta cards -->
+          <div class="grid gap-4 sm:grid-cols-3">
+            <div class="p-3 border bg-gray-50 rounded-lg">
+              <h6 class="text-xs font-medium text-gray-500 uppercase mb-1">Customer</h6>
+              <p id="order-cust-name" class="font-bold mb-0"></p>
+              <p id="order-cust-email" class="text-xs text-gray-600"></p>
+            </div>
+            <div class="p-3 border bg-gray-50 rounded-lg">
+              <h6 class="text-xs font-medium text-gray-500 uppercase mb-1">Shipping Address</h6>
+              <p id="order-shipping" class="text-sm"></p>
+            </div>
+            <div class="p-3 border bg-gray-50 rounded-lg">
+              <h6 class="text-xs font-medium text-gray-500 uppercase mb-1">Summary</h6>
+              <p class="mb-0"><strong>Date:</strong> <span id="order-date"></span></p>
+              <p class="mb-0"><strong>Status:</strong> <span id="order-status" class="badge bg-amber-100 text-amber-800"></span></p>
+              <p class="mb-0"><strong>Payment:</strong> <span id="order-payment" class="text-green-600 font-medium"></span></p>
+            </div>
+          </div>
+
+          <!-- Items table -->
+          <h6 class="font-bold mt-4">Purchased Items</h6>
+          <div class="overflow-x-auto">
+            <table class="w-full table-auto border border-gray-200 text-sm">
+              <thead class="bg-gray-100">
+                <tr>
+                  <th class="px-3 py-2 text-left">Product</th>
+                  <th class="px-3 py-2 text-center">Price</th>
+                  <th class="px-3 py-2 text-center">Qty</th>
+                  <th class="px-3 py-2 text-right">Total</th>
+                </tr>
+              </thead>
+              <tbody id="order-items"></tbody>
+              <tfoot class="bg-gray-50 font-medium">
+                <tr><td colspan="3" class="px-3 py-2 text-right">Subtotal</td><td id="order-subtotal" class="px-3 py-2 text-right"></td></tr>
+                <tr><td colspan="3" class="px-3 py-2 text-right">Shipping</td><td id="order-shipping-fee" class="px-3 py-2 text-right"></td></tr>
+                <tr><td colspan="3" class="px-3 py-2 text-right">Tax</td><td id="order-tax" class="px-3 py-2 text-right"></td></tr>
+                <tr class="border-t"><td colspan="3" class="px-3 py-2 text-right text-lg font-extrabold">Grand Total</td><td id="order-total" class="px-3 py-2 text-right text-lg font-extrabold"></td></tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+
+        <!-- Footer actions -->
+        <footer class="flex items-center justify-between border-t border-gray-100 bg-gray-50/50 p-4 rounded-b-lg">
+          <button type="button"
+                  class="rounded-lg border border-gray-200 bg-white px-4 py-2 text-xs font-bold text-gray-700 hover:bg-gray-50 transition"
+                  onclick="document.getElementById('order-modal').close()">
+            Close
+          </button>
+          <button type="button"
+                  class="rounded-lg border border-indigo-600 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 px-4 py-2 text-xs font-bold transition"
+                  id="fulfill-btn">
+            Mark as Fulfilled
+          </button>
+        </footer>
+      </form>
+    </dialog>
+    <!-- End of NEW ORDER DETAILS MODAL -->
+
     <!-- Supabase SQL Setup Modal -->
     <dialog id="sql-setup-modal" class="w-[min(640px,calc(100%-24px))] max-h-[90vh] rounded-lg border border-gray-200 bg-white p-0 shadow-sm backdrop:bg-gray-950/60 backdrop:backdrop-blur-sm">
       <div class="flex max-h-[90vh] flex-col">
@@ -250,7 +331,7 @@
             <h2 class="mt-1 text-xl font-extrabold text-gray-900">Supabase Customers Table</h2>
             <p class="text-xs text-gray-500 mt-0.5">One-click SQL script for logged-in users database</p>
           </div>
-          <button id="sql-setup-modal-close" type="button" class="grid h-8 w-8 place-items-center rounded-lg text-gray-400 hover:bg-gray-200 hover:text-gray-700 transition">
+          <button id="sql-setup-modal-close" type="button" class="grid h-8 w-8 place-items-center rounded-lg text-gray-400 hover:bg-gray-200 hover:text-gray-700 transition" aria-label="Close SQL setup modal">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
           </button>
         </div>
@@ -259,7 +340,8 @@
             Thaarai Tex automatically captures past and new customer profiles from your orders and storefront logins. To enable direct real-time customer storage in Supabase, run this script once in your <b>Supabase SQL Editor</b>:
           </p>
           <div class="relative">
-            <pre id="supabase-sql-code" class="rounded-lg bg-gray-950 p-4 text-[11px] font-mono text-indigo-300 leading-relaxed overflow-x-auto select-all">-- 1. Create customers table
+            <pre id="supabase-sql-code" class="rounded-lg bg-gray-950 p-4 text-[11px] font-mono text-indigo-300 leading-relaxed overflow-x-auto select-all">
+-- 1. Create customers table
 CREATE TABLE IF NOT EXISTS public.customers (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   customer_id TEXT UNIQUE,
@@ -278,8 +360,10 @@ ALTER TABLE public.customers ENABLE ROW LEVEL SECURITY;
 -- 3. Allow Public Storefront & Admin Access
 DROP POLICY IF EXISTS "Public access to customers" ON public.customers;
 CREATE POLICY "Public access to customers" ON public.customers FOR ALL USING (true) WITH CHECK (true);
-</pre>
-            <button id="btn-copy-sql" type="button" class="absolute top-3 right-3 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 text-xs font-bold transition flex items-center gap-1 shadow-sm"><span>Copy SQL</span></button>
+            </pre>
+            <button id="btn-copy-sql" type="button" class="absolute top-3 right-3 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 text-xs font-bold transition flex items-center gap-1 shadow-sm" aria-label="Copy SQL">
+              <span>Copy SQL</span>
+            </button>
           </div>
           <div class="rounded-lg bg-emerald-50 border border-emerald-200/80 p-3 text-[11px] text-emerald-900 leading-relaxed">
             <p class="font-bold text-emerald-950 flex items-center gap-1">✓ Instant Fallback Active</p>
@@ -318,11 +402,13 @@ CREATE POLICY "Public access to customers" ON public.customers FOR ALL USING (tr
       const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
       const MEDIA_BUCKET='product-images';
       const $=s=>document.querySelector(s), view=$('#view'), editor=$('#editor');
-      const esc=v=>String(v??'').replace(/[&<>\"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
+
+      const esc=v=>String(v??'').replace(/[&<>\\"]/g,c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
+
       const fmt=n=>'₹'+Number(n||0).toLocaleString('en-IN');
       const date=v=>v?new Date(v).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}):'—';
 
-      /* ===== PRODUCT ID SYSTEM ===== */
+      /* ----- PRODUCT ID SYSTEM ----- */
       function getProductId(pOrId){
         if(!pOrId) return 'TT-1001';
         if(typeof pOrId === 'object'){
@@ -336,10 +422,10 @@ CREATE POLICY "Public access to customers" ON public.customers FOR ALL USING (tr
         if(/^TT-[A-Z0-9]+$/i.test(s)) return s.toUpperCase();
         if(/^\d+$/.test(s)) return 'TT-' + String(1000 + Number(s));
         const clean = s.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
-        return 'TT-' + (clean.slice(0, 6) || 'ITEM');
+        return 'TT-' + (clean.slice(0,6) || 'ITEM');
       }
 
-      /* ===== HUMAN-READABLE ADDRESS FORMATTERS ===== */
+      /* ----- ADDRESS HELPERS ----- */
       function parseAddress(raw){
         if(!raw) return null;
         if(typeof raw === 'object') return raw;
@@ -350,7 +436,6 @@ CREATE POLICY "Public access to customers" ON public.customers FOR ALL USING (tr
         }
         return null;
       }
-
       function formatAddressSimple(raw){
         const a = parseAddress(raw);
         if(!a) return typeof raw === 'string' && raw ? raw : '—';
@@ -369,10 +454,9 @@ CREATE POLICY "Public access to customers" ON public.customers FOR ALL USING (tr
         if(cs || pin) lines.push([cs, pin ? `- ${pin}` : ''].filter(Boolean).join(' '));
         return lines.length ? lines.join(', ') : (typeof raw === 'string' ? raw : '—');
       }
-
       function renderAddressHtml(raw){
         const a = parseAddress(raw);
-        if(!a) return typeof raw === 'string' && raw ? `<p class=\"text-xs text-gray-700\">${esc(raw)}</p>` : '<p class=\"text-xs text-gray-400\">No address provided</p>';
+        if(!a) return typeof raw === 'string' && raw ? `<p class="text-xs text-gray-700">${esc(raw)}</p>` : '<p class="text-xs text-gray-400">No address provided</p>';
         const name = a.name || a.full_name || a.customer_name || '';
         const phone = a.phone || a.mobile || a.mobile_number || '';
         const line = a.line || a.address || a.street || a.door_no || '';
@@ -381,19 +465,19 @@ CREATE POLICY "Public access to customers" ON public.customers FOR ALL USING (tr
         const state = a.state || '';
         const pin = a.pincode || a.pin || a.postal_code || '';
         return `
-          <div class=\"space-y-2 text-xs text-gray-800\">
+          <div class="space-y-2 text-xs text-gray-800">
             ${name || phone ? `
-              <div class=\"flex items-center gap-2 flex-wrap\">
-                <span class=\"font-extrabold text-sm text-gray-900\">${esc(name||'Customer')}</span>
-                ${phone ? `<a href=\"tel:${esc(phone)}\" class=\"inline-flex items-center gap-1.5 rounded-lg bg-indigo-50 px-3 py-1 text-xs font-bold text-indigo-700 hover:bg-indigo-100\">${SVG.phone} <span>${esc(phone)}</span></a>` : ''}
-                ${phone ? `<a href=\"https://wa.me/91${esc(phone.replace(/\D/g,''))}\" target=\"_blank\" rel=\"noopener\" class=\"inline-flex items-center gap-1.5 rounded-lg bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700 hover:bg-emerald-100\">${SVG.whatsapp} <span>WhatsApp</span></a>` : ''}
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="font-extrabold text-sm text-gray-900">${esc(name||'Customer')}</span>
+                ${phone ? `<a href="tel:${esc(phone)}" class="inline-flex items-center gap-1.5 rounded-lg bg-indigo-50 px-3 py-1 text-xs font-bold text-indigo-700 hover:bg-indigo-100">${SVG.phone} <span>${esc(phone)}</span></a>` : ''}
+                ${phone ? `<a href="https://wa.me/91${esc(phone.replace(/\D/g,''))}" target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 rounded-lg bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700 hover:bg-emerald-100">${SVG.whatsapp} <span>WhatsApp</span></a>` : ''}
               </div>` : ''}
-            ${line ? `<p class=\"text-gray-700 font-medium leading-relaxed bg-gray-50 p-3 rounded-lg border border-gray-200/70\">${esc(line)}</p>` : ''}
-            ${landmark ? `<p class=\"text-xs text-gray-500\">Landmark: <span class=\"font-semibold text-gray-800\">${esc(landmark)}</span></p>` : ''}
+            ${line ? `<p class="text-gray-700 font-medium leading-relaxed bg-gray-50 p-3 rounded-lg border border-gray-200/70">${esc(line)}</p>` : ''}
+            ${landmark ? `<p class="text-xs text-gray-500">Landmark: <span class="font-semibold text-gray-800">${esc(landmark)}</span></p>` : ''}
             ${(city || state || pin) ? `
-              <div class=\"flex items-center gap-2 flex-wrap pt-1\">
-                <span class=\"font-semibold text-xs text-gray-700\">${esc([city, state].filter(Boolean).join(', '))}</span>
-                ${pin ? `<span class=\"font-mono font-black text-xs text-indigo-900 bg-indigo-50 px-2.5 py-1 rounded-lg border border-indigo-200/80\">PINCODE: ${esc(pin)}</span>` : ''}
+              <div class="flex items-center gap-2 flex-wrap pt-1">
+                <span class="font-semibold text-xs text-gray-700">${esc([city, state].filter(Boolean).join(', '))}</span>
+                ${pin ? `<span class="font-mono font-black text-xs text-indigo-900 bg-indigo-50 px-2.5 py-1 rounded-lg border border-indigo-200/80">PINCODE: ${esc(pin)}</span>` : ''}
               </div>` : ''}
           </div>`;
       }
@@ -403,7 +487,79 @@ CREATE POLICY "Public access to customers" ON public.customers FOR ALL USING (tr
         whatsapp: `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>`
       };
 
-      // Additional JavaScript logic (rendering, navigation, etc.) remains unchanged.
+      /* ----- ORDER DETAILS MODAL LOGIC ----- */
+      async function showOrderDetails(orderId){
+        // Fetch order data from Supabase (replace with your actual table/logic)
+        const {data: order, error} = await db.from('orders').select('*').eq('id', orderId).single();
+        if(error){
+          console.error('Failed to load order', error);
+          return;
+        }
+
+        const modal = document.getElementById('order-modal');
+        document.getElementById('order-id').textContent = `#${order.id}`;
+        document.getElementById('order-cust-name').textContent = order.customer_name || '—';
+        document.getElementById('order-cust-email').textContent = order.customer_email || '';
+        document.getElementById('order-shipping').innerHTML = renderAddressHtml(order.shipping_address);
+        document.getElementById('order-date').textContent = date(order.created_at);
+        document.getElementById('order-status').textContent = order.status || '—';
+        document.getElementById('order-payment').textContent = order.payment_method || '—';
+
+        // Populate items table
+        const tbody = document.getElementById('order-items');
+        tbody.innerHTML = '';
+        let subtotal = 0;
+        order.items.forEach(item=>{
+          const total = (item.price||0)*(item.qty||0);
+          subtotal += total;
+          tbody.insertAdjacentHTML('beforeend', `
+            <tr class="border-t">
+              <td class="px-3 py-2 flex items-center gap-2">
+                <img src="${esc(item.image || 'https://via.placeholder.com/40')}" alt="${esc(item.title)}" class="w-8 h-8 rounded">
+                <div>
+                  <div class="font-medium">${esc(item.title)}</div>
+                  <div class="text-xs text-gray-500">SKU: ${esc(item.sku||'—')}</div>
+                </div>
+              </td>
+              <td class="px-3 py-2 text-center">${fmt(item.price)}</td>
+              <td class="px-3 py-2 text-center">${item.qty}</td>
+              <td class="px-3 py-2 text-right">${fmt(total)}</td>
+            </tr>
+          `);
+        });
+
+        document.getElementById('order-subtotal').textContent = fmt(subtotal);
+        document.getElementById('order-shipping-fee').textContent = fmt(order.shipping_fee||0);
+        document.getElementById('order-tax').textContent = fmt(order.tax||0);
+        document.getElementById('order-total').textContent = fmt((subtotal)+(order.shipping_fee||0)+(order.tax||0));
+
+        // Hook up “Mark as Fulfilled” button (adjust to your workflow)
+        document.getElementById('fulfill-btn').onclick = async ()=>{
+          const {error}=await db.from('orders').update({status:'Fulfilled'}).eq('id',orderId);
+          if(error){
+            alert('Failed to mark as fulfilled');
+          }else{
+            alert('Order marked as fulfilled');
+            modal.close();
+          }
+        };
+
+        modal.showModal();
+      }
+
+      // Example binding – replace with your own table row click listener
+      document.addEventListener('click', e=>{
+        if(e.target.matches('[data-order-id]')){
+          const id = e.target.dataset.orderId;
+          showOrderDetails(id);
+        }
+      });
+
+      // Copy‑SQL button helper
+      $('#btn-copy-sql').addEventListener('click', ()=>{
+        const code = $('#supabase-sql-code').innerText;
+        navigator.clipboard.writeText(code).then(()=>alert('SQL copied to clipboard'));
+      });
     </script>
 </body>
 </html>
