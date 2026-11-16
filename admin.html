@@ -321,6 +321,20 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
     const fmt=n=>'₹'+Number(n||0).toLocaleString('en-IN');
     const date=v=>v?new Date(v).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}):'—';
 
+    function capFirst(s){
+      if(s === null || s === undefined) return '';
+      s = String(s).trim();
+      if(!s) return '';
+      return s.charAt(0).toUpperCase() + s.slice(1);
+    }
+
+    function capWords(s){
+      if(s === null || s === undefined) return '';
+      s = String(s).trim();
+      if(!s) return '';
+      return s.replace(/\b([a-z])/g, c => c.toUpperCase());
+    }
+
     function getProductId(pOrId){
       if(!pOrId) return 'TT-1001';
       if(typeof pOrId === 'object'){
