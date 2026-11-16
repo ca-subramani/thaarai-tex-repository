@@ -369,22 +369,27 @@ async function loadUserData(){
   saveCartBadge();
   setNav();
 }
-async function setProfile(name, phone, email=''){
+async function setProfile(name, phone, email='', google_name=''){
   const cleanPhone = String(phone || '').replace(/\D/g, '').slice(-10);
   const existing = store.get('profile') || {};
   const finalEmail = email || existing.email || '';
-  const profileData = { name, phone: cleanPhone, email: finalEmail };
+  const finalGoogleName = google_name || existing.google_name || '';
+  const profileData = { name, phone: cleanPhone, email: finalEmail, google_name: finalGoogleName };
   store.set('profile', profileData);
   OC={list:[]};ofilter='all';addrEdit=null;
   try{
     if(sb && cleanPhone){
-      await sb.from('customers').upsert({
+      const upsertPayload = {
         phone: cleanPhone,
         name: name,
         email: finalEmail || null,
         customer_id: 'TT-CUST-' + cleanPhone.slice(-4),
         last_active: new Date().toISOString()
-      }, { onConflict: 'phone' });
+      };
+      if(finalGoogleName){
+        upsertPayload.notes = (finalGoogleName !== name) ? `Google Account Name: ${finalGoogleName}` : `Google Account: ${finalGoogleName}`;
+      }
+      await sb.from('customers').upsert(upsertPayload, { onConflict: 'phone' });
     }
   }catch(e){
     console.error('Customer upsert error:', e);
@@ -403,6 +408,21 @@ async function initAuth(){
     // Safety check: remove any unwanted placeholder or mock login like 9876543210
     if(p && (p.phone === '9876543210' || p.phone === '9999999999' || !p.phone || !p.name)){
       localStorage.removeItem('profile');
+    }
+    // If no local profile, check if user is already signed in via Supabase Google OAuth
+    if(!profile() && sb){
+      const { data } = await sb.auth.getSession();
+      const u = data?.session?.user;
+      if(u?.email){
+        const { data: c } = await sb.from('customers').select('*').eq('email', u.email).maybeSingle();
+        if(c && c.phone){
+          const cleanPh = String(c.phone).replace(/\D/g, '').slice(-10);
+          if(/^[6-9]\d{9}$/.test(cleanPh)){
+            const gName = u.user_metadata?.full_name || u.user_metadata?.name || '';
+            await setProfile(c.name || gName || 'Customer', cleanPh, u.email, gName);
+          }
+        }
+      }
     }
   }catch(e){}
   setNav();
@@ -463,7 +483,7 @@ const grid=ps=>ps.length?`<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-co
 const input=(id,label,extra='')=>`<label class="block text-xs font-semibold text-gray-700 mb-1">${label}<input id="${id}" ${extra} class="mt-1 w-full border border-gray-200 bg-white rounded-2xl p-3 text-xs outline-none focus:border-slate-900 transition"></label>`;
 const btn='bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 px-6 rounded-full text-xs sm:text-sm transition disabled:opacity-50 shadow-soft';
 const topbar=(title,back)=>`<div class="flex items-center justify-between px-1"><button onclick="location.hash='${back}'" aria-label="Back" class="w-9 h-9 rounded-full bg-white flex items-center justify-center text-gray-700 shadow-soft border border-gray-100">${ICONS.back}</button><h1 class="text-base font-extrabold text-gray-900">${title}</h1><div class="w-9"></div></div>`;
-const loginNeeded=msg=>`<div class="max-w-md mx-auto text-center py-14 bg-white rounded-3xl p-8 border border-gray-100 shadow-soft my-4 space-y-3"><p class="text-xs text-gray-500">${msg}</p><a href="#/login" class="${btn} inline-block !py-2.5">Login with mobile number</a></div>`;
+const loginNeeded=msg=>`<div class="max-w-md mx-auto text-center py-14 bg-white rounded-3xl p-8 border border-gray-100 shadow-soft my-4 space-y-3"><p class="text-xs text-gray-500">${msg}</p><a href="#/login" class="${btn} inline-block !py-2.5">Sign in to your account</a></div>`;
 
 /* ===== HOME & SHOP ===== */
 async function home(){
@@ -1332,10 +1352,187 @@ async function checkout(){
 }
 
 /* ===== LOGIN ===== */
-function loginView(){
+async function loginView(){
   const p = profile(), accUI = SET.account_ui || {};
+
+  // Check if there is an active Google OAuth session from Supabase
+  let googleUser = null;
+  try {
+    if(sb && !p){
+      const { data } = await sb.auth.getUser();
+      googleUser = data?.user || null;
+    }
+  } catch(e){}
+
+  // If Google session exists, check if customer is already registered with a phone number in Supabase
+  if(googleUser && googleUser.email && !p){
+    try {
+      const { data: existingCust } = await sb.from('customers').select('*').eq('email', googleUser.email).maybeSingle();
+      if(existingCust && existingCust.phone){
+        const cleanPh = String(existingCust.phone).replace(/\D/g, '').slice(-10);
+        if(/^[6-9]\d{9}$/.test(cleanPh)){
+          const gRealName = googleUser.user_metadata?.full_name || googleUser.user_metadata?.name || '';
+          await setProfile(existingCust.name || gRealName || 'Customer', cleanPh, googleUser.email, gRealName);
+          toast('Welcome back, ' + (existingCust.name || gRealName || 'Customer').split(' ')[0] + '! ✓');
+          location.hash = '#/account/hub';
+          return;
+        }
+      }
+    } catch(e){}
+  }
+
+  // --- STATE 1: ALREADY LOGGED IN ---
+  if(p){
+    app.innerHTML = `
+      <div class="max-w-sm mx-auto bg-white border border-gray-100 rounded-3xl p-6 sm:p-7 space-y-4 shadow-soft my-6">
+        <div class="text-center">
+          <div class="w-14 h-14 mx-auto rounded-full bg-slate-900 text-white flex items-center justify-center shadow-soft">
+            <svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+          </div>
+          <h2 class="font-extrabold text-base mt-3 text-slate-900">Your Profile Details</h2>
+          <p class="text-[11px] text-gray-500 mt-0.5">Manage your profile details and account.</p>
+        </div>
+
+        <div class="space-y-3">
+          ${input('ln', 'Your Full Name', `maxlength="60" placeholder="Enter your full name" value="${esc(p.name || '')}"`)}
+          <div>
+            <label class="block text-xs font-semibold text-gray-700 mb-1">Mobile Number (10 digits)</label>
+            <div class="flex items-center w-full rounded-2xl border border-gray-200 bg-white overflow-hidden focus-within:border-slate-900 focus-within:ring-1 focus-within:ring-slate-900 transition">
+              <span class="inline-flex items-center justify-center shrink-0 whitespace-nowrap min-w-[56px] px-3.5 py-3.5 text-xs font-bold text-gray-700 bg-gray-100/90 border-r border-gray-200 select-none tracking-wider">+91</span>
+              <input id="lp" type="tel" maxlength="10" inputmode="numeric" placeholder="Enter 10-digit mobile number" value="${esc(String(p.phone || '').replace(/\D/g, '').slice(-10))}" class="min-w-0 flex-1 w-full bg-transparent px-3.5 py-3.5 text-xs font-semibold text-gray-900 placeholder-gray-400 outline-none">
+            </div>
+            <p class="text-[11px] text-gray-500 mt-1.5 flex items-start gap-1.5 font-medium leading-relaxed">
+              <svg class="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              <span>Entered mobile number is used to receive product delivery updates.</span>
+            </p>
+          </div>
+          ${p.email ? `
+            <div class="rounded-2xl bg-gray-50 p-3 text-xs border border-gray-100 flex items-center justify-between">
+              <span class="text-gray-500 font-medium">Google Account</span>
+              <span class="font-bold text-slate-800 text-[11px] truncate max-w-[190px]">${esc(p.email)}</span>
+            </div>
+          ` : ''}
+        </div>
+
+        <div class="pt-2 space-y-2.5">
+          <button id="go" class="${btn} w-full !py-3.5 text-xs font-bold shadow-soft">
+            Save Profile Details
+          </button>
+          <button id="lo" type="button" class="w-full text-rose-600 text-xs font-bold py-2 hover:underline flex items-center justify-center gap-1 transition">
+            ${ICONS.logout} Logout from this device
+          </button>
+        </div>
+      </div>
+    `;
+
+    $('#go').onclick = async () => {
+      const name = ($('#ln')?.value || '').trim();
+      const rawPhone = ($('#lp')?.value || '').trim();
+      const phone = rawPhone.replace(/\D/g, '').slice(-10);
+      if(name.length < 2) return toast('Please enter your full name');
+      if(!/^[6-9]\d{9}$/.test(phone)) return toast('Please enter a valid 10-digit mobile number');
+      await setProfile(name, phone, p.email, p.google_name);
+      toast('Profile details updated ✓');
+      location.hash = '#/account/hub';
+    };
+
+    $('#lo').onclick = () => {
+      clearProfile();
+      toast('Logged out successfully');
+      location.hash = '#/';
+    };
+    return;
+  }
+
+  // --- STATE 2: GOOGLE SIGN-IN COMPLETE -> ASK PROFILE NAME & MOBILE NUMBER ---
+  if(googleUser){
+    const googleRealName = (googleUser.user_metadata?.full_name || googleUser.user_metadata?.name || '').trim();
+    const defaultProfileName = googleRealName || (googleUser.email ? googleUser.email.split('@')[0] : '');
+
+    app.innerHTML = `
+      <div class="max-w-sm mx-auto bg-white border border-gray-100 rounded-3xl p-6 sm:p-7 space-y-4 shadow-soft my-6">
+        <div class="text-center">
+          <div class="w-14 h-14 mx-auto rounded-full bg-emerald-50 border border-emerald-100 text-emerald-600 flex items-center justify-center shadow-soft">
+            <svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+              <polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+          </div>
+          <h2 class="font-extrabold text-base mt-3 text-slate-900">Confirm Your Details</h2>
+          <p class="text-[11px] text-gray-500 mt-0.5">Signed in as <span class="font-bold text-slate-800">${esc(googleUser.email)}</span></p>
+        </div>
+
+        <!-- Hidden Google Real Name (uneditable, not visible to user) -->
+        <input type="hidden" id="google-real-name" value="${esc(googleRealName)}">
+
+        <div class="space-y-3">
+          <div>
+            <label class="block text-xs font-semibold text-gray-700 mb-1">Profile Name</label>
+            <input id="ln" type="text" maxlength="60" placeholder="Enter profile name" value="${esc(defaultProfileName)}" class="w-full rounded-2xl border border-gray-200 px-3.5 py-3.5 text-xs font-semibold text-gray-900 placeholder-gray-400 outline-none focus:border-slate-900 focus:ring-1 focus:ring-slate-900 transition">
+            <p class="text-[11px] text-gray-400 mt-1 font-medium">You can customize how your name appears on your account & orders.</p>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-gray-700 mb-1">Mobile Number (10 digits)</label>
+            <div class="flex items-center w-full rounded-2xl border border-gray-200 bg-white overflow-hidden focus-within:border-slate-900 focus-within:ring-1 focus-within:ring-slate-900 transition">
+              <span class="inline-flex items-center justify-center shrink-0 whitespace-nowrap min-w-[56px] px-3.5 py-3.5 text-xs font-bold text-gray-700 bg-gray-100/90 border-r border-gray-200 select-none tracking-wider">+91</span>
+              <input id="lp" type="tel" maxlength="10" inputmode="numeric" placeholder="Enter 10-digit mobile number" value="" autofocus class="min-w-0 flex-1 w-full bg-transparent px-3.5 py-3.5 text-xs font-semibold text-gray-900 placeholder-gray-400 outline-none">
+            </div>
+            <p class="text-[11px] text-gray-500 mt-1.5 flex items-start gap-1.5 font-medium leading-relaxed">
+              <svg class="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              <span>Entered mobile number is used to receive product delivery updates.</span>
+            </p>
+          </div>
+        </div>
+
+        <div class="pt-2 space-y-2.5">
+          <button id="btn-confirm-login" class="${btn} w-full !py-3.5 text-xs font-bold shadow-soft">
+            Confirm & Complete Login
+          </button>
+          <button id="btn-switch-account" type="button" class="w-full text-slate-500 hover:text-slate-800 text-xs font-medium py-1.5 transition text-center">
+            Sign in with a different Google account
+          </button>
+        </div>
+      </div>
+    `;
+
+    $('#btn-confirm-login').onclick = async () => {
+      const profileName = ($('#ln')?.value || '').trim();
+      const rawPhone = ($('#lp')?.value || '').trim();
+      const cleanPhone = rawPhone.replace(/\D/g, '').slice(-10);
+      const googleName = ($('#google-real-name')?.value || '').trim();
+
+      if(profileName.length < 2){
+        toast('Please enter your profile name');
+        $('#ln')?.focus();
+        return;
+      }
+      if(!/^[6-9]\d{9}$/.test(cleanPhone)){
+        toast('Please enter your 10-digit mobile number for delivery updates');
+        $('#lp')?.focus();
+        return;
+      }
+
+      const b = $('#btn-confirm-login');
+      if(b){ b.disabled = true; b.textContent = 'Saving details...'; }
+      await setProfile(profileName, cleanPhone, googleUser.email, googleName);
+      toast('Welcome, ' + profileName.split(' ')[0] + '! ✓');
+      location.hash = '#/account/hub';
+    };
+
+    $('#btn-switch-account').onclick = async () => {
+      try { if(sb) await sb.auth.signOut(); } catch(e){}
+      await loginView();
+    };
+    return;
+  }
+
+  // --- STATE 3: INITIAL SCREEN (ONLY GOOGLE LOGIN BUTTON) ---
   app.innerHTML = `
-    <div class="max-w-sm mx-auto bg-white border border-gray-100 rounded-3xl p-6 sm:p-7 space-y-4 shadow-soft my-6">
+    <div class="max-w-sm mx-auto bg-white border border-gray-100 rounded-3xl p-6 sm:p-7 space-y-5 shadow-soft my-6">
       <div class="text-center">
         <div class="w-14 h-14 mx-auto rounded-full bg-slate-900 text-white flex items-center justify-center shadow-soft">
           <svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -1343,122 +1540,37 @@ function loginView(){
             <circle cx="12" cy="7" r="4"/>
           </svg>
         </div>
-        <h2 class="font-extrabold text-base mt-3 text-slate-900">${esc(p ? 'Your Profile Details' : (accUI.title || 'Login / Register'))}</h2>
-        <p class="text-[11px] text-gray-500 mt-0.5">${esc(accUI.subtitle || 'Enter your details below to access your account & orders.')}</p>
+        <h2 class="font-extrabold text-base mt-3 text-slate-900">${esc(accUI.title || 'Welcome to Thaarai Tex')}</h2>
+        <p class="text-[11px] text-gray-500 mt-1">${esc(accUI.subtitle || 'Sign in with your Google account to get started.')}</p>
       </div>
 
-      <div class="space-y-3">
-        ${input('ln', 'Your Full Name', `maxlength="60" placeholder="Enter your full name" value="${esc(p?.name || '')}"`)}
-        
-        <div>
-          <label class="block text-xs font-semibold text-gray-700 mb-1">Mobile Number (10 digits)</label>
-          <div class="flex items-center w-full rounded-2xl border border-gray-200 bg-white overflow-hidden focus-within:border-slate-900 focus-within:ring-1 focus-within:ring-slate-900 transition">
-            <span class="inline-flex items-center justify-center shrink-0 whitespace-nowrap min-w-[56px] px-3.5 py-3.5 text-xs font-bold text-gray-700 bg-gray-100/90 border-r border-gray-200 select-none tracking-wider">+91</span>
-            <input id="lp" type="tel" maxlength="10" inputmode="numeric" placeholder="Enter 10-digit mobile number" value="${esc(p?.phone ? String(p.phone).replace(/\D/g, '').slice(-10) : '')}" class="min-w-0 flex-1 w-full bg-transparent px-3.5 py-3.5 text-xs font-semibold text-gray-900 placeholder-gray-400 outline-none">
-          </div>
-          <p class="text-[11px] text-gray-500 mt-1.5 flex items-start gap-1.5 font-medium leading-relaxed">
-            <svg class="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            <span>Entered mobile number is used to receive product delivery updates.</span>
-          </p>
+      <div class="pt-2">
+        <button id="btn-user-google" type="button" class="w-full flex items-center justify-center gap-3 rounded-2xl border border-gray-200 bg-white hover:bg-gray-50 py-3.5 text-xs font-bold text-gray-800 shadow-xs transition active:scale-[0.99]">
+          <svg class="w-4 h-4" viewBox="0 0 24 24">
+            <path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.7l3.1-3.1C17.3 1.8 14.8 1 12 1 7.5 1 3.7 3.6 1.9 7.3l3.7 2.9C6.5 7.3 9 5 12 5z"/>
+            <path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.7-.2-2.3H12v4.6h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.9z"/>
+            <path fill="#FBBC05" d="M5.6 14.8c-.2-.7-.4-1.5-.4-2.3s.2-1.6.4-2.3L1.9 7.3C.7 9.7 0 12.3 0 15s.7 5.3 1.9 7.7l3.7-2.9z"/>
+            <path fill="#34A853" d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3 0-5.5-2.3-6.4-5.2L1.9 16c1.8 3.7 5.6 6.3 10.1 6.3z"/>
+          </svg>
+          <span>Sign in with Google</span>
+        </button>
+        <div class="pt-3 text-center">
+          <p class="text-[11px] text-gray-400 font-medium">Safe & secure one-click sign in</p>
         </div>
       </div>
-
-      <div class="pt-2 space-y-2.5">
-        <button id="go" class="${btn} w-full !py-3.5 text-xs font-bold shadow-soft">
-          ${p ? 'Save Profile Details' : 'Continue with Mobile'}
-        </button>
-
-        ${!p ? `
-          <div class="relative my-2.5 flex items-center justify-center">
-            <div class="border-t border-gray-100 w-full"></div>
-            <span class="bg-white px-2.5 text-[10px] font-bold uppercase tracking-wider text-gray-400 absolute select-none">or</span>
-          </div>
-
-          <button id="btn-user-google" type="button" class="w-full flex items-center justify-center gap-2.5 rounded-2xl border border-gray-200 bg-white hover:bg-gray-50 py-3 text-xs font-bold text-gray-800 shadow-xs transition active:scale-[0.99]">
-            <svg class="w-4 h-4" viewBox="0 0 24 24">
-              <path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.7l3.1-3.1C17.3 1.8 14.8 1 12 1 7.5 1 3.7 3.6 1.9 7.3l3.7 2.9C6.5 7.3 9 5 12 5z"/>
-              <path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.7-.2-2.3H12v4.6h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.9z"/>
-              <path fill="#FBBC05" d="M5.6 14.8c-.2-.7-.4-1.5-.4-2.3s.2-1.6.4-2.3L1.9 7.3C.7 9.7 0 12.3 0 15s.7 5.3 1.9 7.7l3.7-2.9z"/>
-              <path fill="#34A853" d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3 0-5.5-2.3-6.4-5.2L1.9 16c1.8 3.7 5.6 6.3 10.1 6.3z"/>
-            </svg>
-            <span>Sign in with Google</span>
-          </button>
-        ` : ''}
-      </div>
-
-      ${p ? `
-        <button id="lo" type="button" class="w-full text-rose-600 text-xs font-bold py-2 hover:underline flex items-center justify-center gap-1 transition">
-          ${ICONS.logout} Logout from this device
-        </button>
-      ` : ''}
     </div>
   `;
 
-  // If returning with Google session, pre-fill Google name
-  if(sb && !p){
-    sb.auth.getUser().then(({data}) => {
-      const u = data?.user;
-      if(u && (u.app_metadata?.provider === 'google' || u.app_metadata?.providers?.includes('google'))){
-        const gName = u.user_metadata?.full_name || u.user_metadata?.name || '';
-        const isNumeric = /^\d+$/.test(String(gName).trim());
-        const nameField = $('#ln');
-        if(nameField && !nameField.value && gName && !isNumeric){
-          nameField.value = gName;
-        }
-        $('#lp')?.focus();
-      }
-    }).catch(()=>{});
-  }
-
-  // Handle Google OAuth: User MUST enter name & mobile number before clicking Google Sign-In
   const bg = $('#btn-user-google');
   if(bg){
     bg.onclick = async () => {
-      const name = ($('#ln')?.value || '').trim();
-      const rawPhone = ($('#lp')?.value || '').trim();
-      const phone = rawPhone.replace(/\D/g, '').slice(-10);
-
-      // 1. Validate full name before Google Sign-In
-      if(name.length < 2){
-        toast('Please enter your full name first');
-        $('#ln')?.focus();
-        return;
-      }
-
-      // 2. Validate mobile number before Google Sign-In
-      if(!/^[6-9]\d{9}$/.test(phone)){
-        toast('Please enter your 10-digit mobile number for delivery updates');
-        $('#lp')?.focus();
-        return;
-      }
-
-      // 3. Store name and mobile in storage to persist across OAuth redirect
-      sessionStorage.setItem('tt_pending_name', name);
-      sessionStorage.setItem('tt_pending_phone', phone);
-      localStorage.setItem('tt_pending_name', name);
-      localStorage.setItem('tt_pending_phone', phone);
-
       const orig = bg.innerHTML;
       bg.disabled = true;
       bg.innerHTML = '<span class="inline-block animate-spin mr-1.5">⏳</span> Connecting to Google...';
+
       try {
         if(window.location.protocol === 'file:'){
           alert('Google Sign-In cannot redirect back to a local file (file:///...).\n\nPlease test Google Sign-In on your live website (https://thaaraitex.in) or via a local web server.');
-          $('#ln')?.focus();
-          return;
-        }
-
-        // Pre-flight check: query Supabase auth settings to verify provider status
-        const sRes = await fetch('https://hjogdvqwwbgzgwtdlrak.supabase.co/auth/v1/settings', {
-          headers: { apikey: SUPABASE_ANON_KEY }
-        }).catch(() => null);
-        const sJson = sRes ? await sRes.json().catch(() => null) : null;
-        const isGoogleEnabled = sJson?.external?.google === true;
-
-        if(!isGoogleEnabled){
-          alert('Google Sign-In is not enabled on this store.\n\nReason: The Google OAuth provider is currently disabled in your Supabase project dashboard (hjogdvqwwbgzgwtdlrak).\n\nTo enable it: Go to Supabase Console -> Authentication -> Providers -> Google, toggle ON and add your Google Client ID & Secret.\n\nUntil enabled, please use "Continue with Mobile" above to log in directly.');
-          toast('Google Sign-In is disabled in Supabase.');
-          $('#ln')?.focus();
           return;
         }
 
@@ -1468,7 +1580,7 @@ function loginView(){
         const { error } = await sb.auth.signInWithOAuth({
           provider: 'google',
           options: {
-            redirectTo: cleanTarget
+            redirectTo: cleanTarget + '#/login'
           }
         });
         if(error) throw error;
@@ -1480,46 +1592,6 @@ function loginView(){
           bg.innerHTML = orig;
         }
       }
-    };
-  }
-
-  // Handle Continue with Mobile Button Click
-  $('#go').onclick = async () => {
-    const name = ($('#ln')?.value || '').trim();
-    const rawPhone = ($('#lp')?.value || '').trim();
-    const phone = rawPhone.replace(/\D/g, '').slice(-10);
-
-    if(name.length < 2){
-      toast('Please enter your full name');
-      $('#ln')?.focus();
-      return;
-    }
-    if(!/^[6-9]\d{9}$/.test(phone)){
-      toast('Please enter a valid 10-digit mobile number');
-      $('#lp')?.focus();
-      return;
-    }
-
-    let userEmail = '';
-    try {
-      if(sb){
-        const { data } = await sb.auth.getUser();
-        if(data?.user?.email) userEmail = data.user.email;
-      }
-    } catch(e){}
-
-    await setProfile(name, phone, userEmail);
-    toast('Welcome, ' + name.split(' ')[0] + '!');
-    location.hash = '#/account/hub';
-  };
-
-  // Handle Logout Button Click
-  const lo = $('#lo');
-  if(lo){
-    lo.onclick = () => {
-      clearProfile();
-      toast('Logged out successfully');
-      location.hash = '#/';
     };
   }
 }
@@ -1574,7 +1646,7 @@ function orderCard(o){
 }
 
 async function ordersHtml(pf){
-  if(!pf)return loginNeeded('Please login with your mobile number to see your orders.');
+  if(!pf)return loginNeeded('Please sign in to see your orders.');
   const list=await fetchOrders();
   const emptyMsg = SET.account_ui?.emptyOrders || 'No orders yet. Start shopping';
   const chips=[['all','All'],['pending','Pending'],['verified','Processing'],['dispatched','Shipped'],['delivered','Delivered'],['cancelled','Cancelled']];
@@ -1628,6 +1700,12 @@ function profileHtml(pf){
       ${input('pn','Full Name',`maxlength="60" value="${esc(pf.name)}"`)}
       ${input('pp','Mobile Number (10 digits)',`maxlength="10" inputmode="numeric" value="${esc(pf.phone)}"`)}
       <p class="text-[11px] text-gray-400">Orders, wishlist, cart and addresses are saved against your mobile number.</p>
+      ${pf.email ? `
+        <div class="rounded-2xl bg-gray-50 p-3 text-xs border border-gray-100 flex items-center justify-between">
+          <span class="text-gray-500 font-medium">Google Account</span>
+          <span class="font-bold text-slate-800 text-xs truncate max-w-[200px]">${esc(pf.email)}</span>
+        </div>
+      ` : ''}
       <button id="ps" class="${btn} w-full mt-2">Save Changes</button></div></div>`;
 }
 
@@ -1671,7 +1749,7 @@ async function account(section,params){
       const name=$('#pn').value.trim(),phone=$('#pp').value.trim();
       if(name.length<2)return toast('Enter your name');
       if(!/^[6-9]\d{9}$/.test(phone))return toast('Enter a valid mobile number');
-      await setProfile(name,phone);toast('Saved ✓');location.hash='#/account/hub'}
+      await setProfile(name,phone,pf.email,pf.google_name);toast('Saved ✓');location.hash='#/account/hub'}
     if(t.id==='addA'){addrEdit={};again()}
     if(d.ae){const L=await getAddrs();addrEdit=L.find(x=>x.id===d.ae);again()}
     if(d.ad&&confirm('Delete this address?')){let L=await getAddrs();await setAddrs(L.filter(x=>x.id!==d.ad));again()}
@@ -1703,20 +1781,21 @@ async function route(){
         const { data } = await sb.auth.getSession();
         const user = data?.session?.user;
         if(user){
-          const pPhone = sessionStorage.getItem('tt_pending_phone') || localStorage.getItem('tt_pending_phone');
-          const pName = sessionStorage.getItem('tt_pending_name') || localStorage.getItem('tt_pending_name');
-          const finalName = pName || user.user_metadata?.full_name || user.user_metadata?.name || 'Customer';
           const finalEmail = user.email || '';
+          const googleName = user.user_metadata?.full_name || user.user_metadata?.name || '';
 
-          if(pPhone && /^[6-9]\d{9}$/.test(pPhone)){
-            await setProfile(finalName, pPhone, finalEmail);
-            sessionStorage.removeItem('tt_pending_phone');
-            sessionStorage.removeItem('tt_pending_name');
-            localStorage.removeItem('tt_pending_phone');
-            localStorage.removeItem('tt_pending_name');
-            history.replaceState(null, '', location.pathname + '#/account/hub');
-            toast('Welcome, ' + finalName.split(' ')[0] + '! Logged in with Google ✓');
-            return await account('hub', new URLSearchParams());
+          // If returning customer already has a phone number saved in Supabase customers table:
+          if(finalEmail){
+            const { data: existingCust } = await sb.from('customers').select('*').eq('email', finalEmail).maybeSingle();
+            if(existingCust && existingCust.phone){
+              const cleanPh = String(existingCust.phone).replace(/\D/g, '').slice(-10);
+              if(/^[6-9]\d{9}$/.test(cleanPh)){
+                await setProfile(existingCust.name || googleName || 'Customer', cleanPh, finalEmail, googleName);
+                history.replaceState(null, '', location.pathname + '#/account/hub');
+                toast('Welcome back, ' + (existingCust.name || googleName || 'Customer').split(' ')[0] + '! ✓');
+                return await account('hub', new URLSearchParams());
+              }
+            }
           }
         }
       }
@@ -1737,7 +1816,7 @@ async function route(){
     else if(path==='/cart')await cartView();
     else if(path==='/checkout')await checkout();
     else if(path.startsWith('/account'))await account(path.split('/')[2]||'hub',params);
-    else if(path==='/login')loginView();
+    else if(path==='/login')await loginView();
     else app.innerHTML='<p class="text-center py-20 text-xs text-gray-400">Page not found.</p>';
   }catch(err){console.error(err);app.innerHTML='<p class="text-center text-rose-600 py-20 text-xs">Error: '+esc(err.message||err)+'</p>';}
   window.scrollTo(0,0);
