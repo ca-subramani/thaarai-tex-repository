@@ -369,20 +369,26 @@ async function loadUserData(){
   saveCartBadge();
   setNav();
 }
-async function setProfile(name,phone){
-  store.set('profile',{name,phone});
+async function setProfile(name, phone, email=''){
+  const cleanPhone = String(phone || '').replace(/\D/g, '').slice(-10);
+  const existing = store.get('profile') || {};
+  const finalEmail = email || existing.email || '';
+  const profileData = { name, phone: cleanPhone, email: finalEmail };
+  store.set('profile', profileData);
   OC={list:[]};ofilter='all';addrEdit=null;
   try{
-    if(sb && phone){
-      const cleanPhone = String(phone).replace(/\D/g, '').slice(-10);
-      sb.from('customers').upsert({
-        phone: cleanPhone || phone,
+    if(sb && cleanPhone){
+      await sb.from('customers').upsert({
+        phone: cleanPhone,
         name: name,
-        customer_id: 'TT-CUST-' + (cleanPhone ? cleanPhone.slice(-4) : String(Math.floor(1000 + Math.random() * 9000))),
+        email: finalEmail || null,
+        customer_id: 'TT-CUST-' + cleanPhone.slice(-4),
         last_active: new Date().toISOString()
-      }, { onConflict: 'phone' }).then();
+      }, { onConflict: 'phone' });
     }
-  }catch{}
+  }catch(e){
+    console.error('Customer upsert error:', e);
+  }
   await loadUserData();
   setNav();
 }
@@ -1337,41 +1343,48 @@ function loginView(){
             <circle cx="12" cy="7" r="4"/>
           </svg>
         </div>
-        <h2 class="font-extrabold text-base mt-3 text-slate-900">${esc(p ? 'Your Profile Details' : (accUI.title || 'Login'))}</h2>
-        <p class="text-[11px] text-gray-500 mt-0.5">${esc(accUI.subtitle || 'உங்கள் பெயர் மற்றும் மொபைல் எண்ணை உள்ளிடவும்.')}</p>
+        <h2 class="font-extrabold text-base mt-3 text-slate-900">${esc(p ? 'Your Profile Details' : (accUI.title || 'Login / Register'))}</h2>
+        <p class="text-[11px] text-gray-500 mt-0.5">${esc(accUI.subtitle || 'Enter your details below to access your account & orders.')}</p>
       </div>
 
-      ${!p ? `
-        <button id="btn-user-google" type="button" class="w-full flex items-center justify-center gap-2.5 rounded-2xl border border-gray-200 bg-white hover:bg-gray-50 py-3 text-xs font-bold text-gray-800 shadow-xs transition active:scale-[0.99]">
-          <svg class="w-4 h-4" viewBox="0 0 24 24">
-            <path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.7l3.1-3.1C17.3 1.8 14.8 1 12 1 7.5 1 3.7 3.6 1.9 7.3l3.7 2.9C6.5 7.3 9 5 12 5z"/>
-            <path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.7-.2-2.3H12v4.6h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.9z"/>
-            <path fill="#FBBC05" d="M5.6 14.8c-.2-.7-.4-1.5-.4-2.3s.2-1.6.4-2.3L1.9 7.3C.7 9.7 0 12.3 0 15s.7 5.3 1.9 7.7l3.7-2.9z"/>
-            <path fill="#34A853" d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3 0-5.5-2.3-6.4-5.2L1.9 16c1.8 3.7 5.6 6.3 10.1 6.3z"/>
-          </svg>
-          <span>Connect with Google Account</span>
-        </button>
-      ` : ''}
-
       <div class="space-y-3">
-        ${input('ln', 'Your Name', `maxlength="60" placeholder="Enter your full name" value="${esc(p?.name || '')}"`)}
+        ${input('ln', 'Your Full Name', `maxlength="60" placeholder="Enter your full name" value="${esc(p?.name || '')}"`)}
         
         <div>
           <label class="block text-xs font-semibold text-gray-700 mb-1">Mobile Number (10 digits)</label>
           <div class="flex items-center w-full rounded-2xl border border-gray-200 bg-white overflow-hidden focus-within:border-slate-900 focus-within:ring-1 focus-within:ring-slate-900 transition">
             <span class="inline-flex items-center justify-center shrink-0 whitespace-nowrap min-w-[56px] px-3.5 py-3.5 text-xs font-bold text-gray-700 bg-gray-100/90 border-r border-gray-200 select-none tracking-wider">+91</span>
-            <input id="lp" type="tel" maxlength="10" inputmode="numeric" placeholder="Enter 10-digit mobile" value="${esc(p?.phone ? String(p.phone).replace(/\D/g, '').slice(-10) : '')}" class="min-w-0 flex-1 w-full bg-transparent px-3.5 py-3.5 text-xs font-semibold text-gray-900 placeholder-gray-400 outline-none">
+            <input id="lp" type="tel" maxlength="10" inputmode="numeric" placeholder="Enter 10-digit mobile number" value="${esc(p?.phone ? String(p.phone).replace(/\D/g, '').slice(-10) : '')}" class="min-w-0 flex-1 w-full bg-transparent px-3.5 py-3.5 text-xs font-semibold text-gray-900 placeholder-gray-400 outline-none">
           </div>
+          <p class="text-[11px] text-gray-500 mt-1.5 flex items-start gap-1.5 font-medium leading-relaxed">
+            <svg class="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <span>Entered mobile number is used to receive product delivery updates.</span>
+          </p>
         </div>
       </div>
 
-      <p class="text-[10px] text-gray-400 leading-relaxed">
-        Orders, wishlist, and tracking are saved against your 10-digit mobile number.
-      </p>
+      <div class="pt-2 space-y-2.5">
+        <button id="go" class="${btn} w-full !py-3.5 text-xs font-bold shadow-soft">
+          ${p ? 'Save Profile Details' : 'Continue with Mobile'}
+        </button>
 
-      <button id="go" class="${btn} w-full !py-3.5 text-xs font-bold shadow-soft">
-        ${p ? 'Save Profile Details' : 'Continue'}
-      </button>
+        ${!p ? `
+          <div class="relative my-2.5 flex items-center justify-center">
+            <div class="border-t border-gray-100 w-full"></div>
+            <span class="bg-white px-2.5 text-[10px] font-bold uppercase tracking-wider text-gray-400 absolute select-none">or</span>
+          </div>
+
+          <button id="btn-user-google" type="button" class="w-full flex items-center justify-center gap-2.5 rounded-2xl border border-gray-200 bg-white hover:bg-gray-50 py-3 text-xs font-bold text-gray-800 shadow-xs transition active:scale-[0.99]">
+            <svg class="w-4 h-4" viewBox="0 0 24 24">
+              <path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.7l3.1-3.1C17.3 1.8 14.8 1 12 1 7.5 1 3.7 3.6 1.9 7.3l3.7 2.9C6.5 7.3 9 5 12 5z"/>
+              <path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.7-.2-2.3H12v4.6h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.9z"/>
+              <path fill="#FBBC05" d="M5.6 14.8c-.2-.7-.4-1.5-.4-2.3s.2-1.6.4-2.3L1.9 7.3C.7 9.7 0 12.3 0 15s.7 5.3 1.9 7.7l3.7-2.9z"/>
+              <path fill="#34A853" d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3 0-5.5-2.3-6.4-5.2L1.9 16c1.8 3.7 5.6 6.3 10.1 6.3z"/>
+            </svg>
+            <span>Sign in with Google</span>
+          </button>
+        ` : ''}
+      </div>
 
       ${p ? `
         <button id="lo" type="button" class="w-full text-rose-600 text-xs font-bold py-2 hover:underline flex items-center justify-center gap-1 transition">
@@ -1381,15 +1394,61 @@ function loginView(){
     </div>
   `;
 
-  // Handle Google OAuth Button Click with Pre-flight Check
+  // If returning with Google session, pre-fill Google name
+  if(sb && !p){
+    sb.auth.getUser().then(({data}) => {
+      const u = data?.user;
+      if(u && (u.app_metadata?.provider === 'google' || u.app_metadata?.providers?.includes('google'))){
+        const gName = u.user_metadata?.full_name || u.user_metadata?.name || '';
+        const isNumeric = /^\d+$/.test(String(gName).trim());
+        const nameField = $('#ln');
+        if(nameField && !nameField.value && gName && !isNumeric){
+          nameField.value = gName;
+        }
+        $('#lp')?.focus();
+      }
+    }).catch(()=>{});
+  }
+
+  // Handle Google OAuth: User MUST enter name & mobile number before clicking Google Sign-In
   const bg = $('#btn-user-google');
   if(bg){
     bg.onclick = async () => {
+      const name = ($('#ln')?.value || '').trim();
+      const rawPhone = ($('#lp')?.value || '').trim();
+      const phone = rawPhone.replace(/\D/g, '').slice(-10);
+
+      // 1. Validate full name before Google Sign-In
+      if(name.length < 2){
+        toast('Please enter your full name first');
+        $('#ln')?.focus();
+        return;
+      }
+
+      // 2. Validate mobile number before Google Sign-In
+      if(!/^[6-9]\d{9}$/.test(phone)){
+        toast('Please enter your 10-digit mobile number for delivery updates');
+        $('#lp')?.focus();
+        return;
+      }
+
+      // 3. Store name and mobile in storage to persist across OAuth redirect
+      sessionStorage.setItem('tt_pending_name', name);
+      sessionStorage.setItem('tt_pending_phone', phone);
+      localStorage.setItem('tt_pending_name', name);
+      localStorage.setItem('tt_pending_phone', phone);
+
       const orig = bg.innerHTML;
       bg.disabled = true;
-      bg.innerHTML = '<span class="inline-block animate-spin mr-1.5">⏳</span> Checking Google Sign-In...';
+      bg.innerHTML = '<span class="inline-block animate-spin mr-1.5">⏳</span> Connecting to Google...';
       try {
-        // Pre-flight check: query Supabase auth settings to verify provider status before navigating
+        if(window.location.protocol === 'file:'){
+          alert('Google Sign-In cannot redirect back to a local file (file:///...).\n\nPlease test Google Sign-In on your live website (https://thaaraitex.in) or via a local web server.');
+          $('#ln')?.focus();
+          return;
+        }
+
+        // Pre-flight check: query Supabase auth settings to verify provider status
         const sRes = await fetch('https://hjogdvqwwbgzgwtdlrak.supabase.co/auth/v1/settings', {
           headers: { apikey: SUPABASE_ANON_KEY }
         }).catch(() => null);
@@ -1397,29 +1456,34 @@ function loginView(){
         const isGoogleEnabled = sJson?.external?.google === true;
 
         if(!isGoogleEnabled){
-          alert('Google Sign-In is not enabled on this store.\n\nReason: The Google OAuth provider is currently disabled in your Supabase project dashboard (hjogdvqwwbgzgwtdlrak).\n\nTo enable it: Go to Supabase Console -> Authentication -> Providers -> Google, toggle ON and add your Google Client ID & Secret.\n\nUntil enabled, please type your Name and 10-digit Mobile Number below to log in directly.');
-          toast('Google Sign-In is disabled in Supabase. Please enter Name & Mobile below.');
+          alert('Google Sign-In is not enabled on this store.\n\nReason: The Google OAuth provider is currently disabled in your Supabase project dashboard (hjogdvqwwbgzgwtdlrak).\n\nTo enable it: Go to Supabase Console -> Authentication -> Providers -> Google, toggle ON and add your Google Client ID & Secret.\n\nUntil enabled, please use "Continue with Mobile" above to log in directly.');
+          toast('Google Sign-In is disabled in Supabase.');
           $('#ln')?.focus();
           return;
         }
 
+        const baseTarget = window.location.origin + window.location.pathname;
+        const cleanTarget = baseTarget.endsWith('.html') ? baseTarget : baseTarget.replace(/\/$/, '') + '/index.html';
+
         const { error } = await sb.auth.signInWithOAuth({
           provider: 'google',
           options: {
-            redirectTo: window.location.origin + window.location.pathname + '#/login'
+            redirectTo: cleanTarget
           }
         });
         if(error) throw error;
       } catch(err){
         toast(err.message || 'Google Sign-In error');
       } finally {
-        bg.disabled = false;
-        bg.innerHTML = orig;
+        if(bg){
+          bg.disabled = false;
+          bg.innerHTML = orig;
+        }
       }
     };
   }
 
-  // Handle Continue Button Click
+  // Handle Continue with Mobile Button Click
   $('#go').onclick = async () => {
     const name = ($('#ln')?.value || '').trim();
     const rawPhone = ($('#lp')?.value || '').trim();
@@ -1436,7 +1500,15 @@ function loginView(){
       return;
     }
 
-    await setProfile(name, phone);
+    let userEmail = '';
+    try {
+      if(sb){
+        const { data } = await sb.auth.getUser();
+        if(data?.user?.email) userEmail = data.user.email;
+      }
+    } catch(e){}
+
+    await setProfile(name, phone, userEmail);
     toast('Welcome, ' + name.split(' ')[0] + '!');
     location.hash = '#/account/hub';
   };
@@ -1620,6 +1692,40 @@ async function account(section,params){
 async function route(){
   app.onclick=null;if(window._bt)clearInterval(window._bt);
   document.title=(SET.brand?.name || 'Thaarai Tex') + (SET.brand?.tagline ? ' | ' + SET.brand.tagline : '');
+
+  // 1. Intercept OAuth tokens returning from Google / Supabase in URL hash or search params
+  const rawHash = location.hash || '';
+  const rawSearch = location.search || '';
+  if(rawHash.includes('access_token=') || rawHash.includes('refresh_token=') || rawHash.includes('error_description=') || rawSearch.includes('code=')){
+    try {
+      if(sb){
+        // Allow supabase-js to process session tokens
+        const { data } = await sb.auth.getSession();
+        const user = data?.session?.user;
+        if(user){
+          const pPhone = sessionStorage.getItem('tt_pending_phone') || localStorage.getItem('tt_pending_phone');
+          const pName = sessionStorage.getItem('tt_pending_name') || localStorage.getItem('tt_pending_name');
+          const finalName = pName || user.user_metadata?.full_name || user.user_metadata?.name || 'Customer';
+          const finalEmail = user.email || '';
+
+          if(pPhone && /^[6-9]\d{9}$/.test(pPhone)){
+            await setProfile(finalName, pPhone, finalEmail);
+            sessionStorage.removeItem('tt_pending_phone');
+            sessionStorage.removeItem('tt_pending_name');
+            localStorage.removeItem('tt_pending_phone');
+            localStorage.removeItem('tt_pending_name');
+            history.replaceState(null, '', location.pathname + '#/account/hub');
+            toast('Welcome, ' + finalName.split(' ')[0] + '! Logged in with Google ✓');
+            return await account('hub', new URLSearchParams());
+          }
+        }
+      }
+    } catch(e){
+      console.error('OAuth redirect processing error:', e);
+    }
+    history.replaceState(null, '', location.pathname + '#/login');
+  }
+
   const [path,qs]=(location.hash||'#/').slice(1).split('?'), params=new URLSearchParams(qs||'');
   app.innerHTML='<p class="text-center text-gray-400 py-20 text-xs">ஏற்றப்படுகிறது…</p>';
   $('#tabbar').classList.toggle('hidden',path.startsWith('/p/')||path==='/checkout');
