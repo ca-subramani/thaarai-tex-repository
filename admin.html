@@ -1616,6 +1616,7 @@ CREATE POLICY "Public access to customers" ON public.customers FOR ALL USING (tr
           (c.phone || '').toLowerCase().includes(q) ||
           (c.customer_id || '').toLowerCase().includes(q) ||
           (c.email || '').toLowerCase().includes(q) ||
+          (c.notes || '').toLowerCase().includes(q) ||
           fullAddr.includes(q)
         );
       });
@@ -1869,6 +1870,11 @@ CREATE POLICY "Public access to customers" ON public.customers FOR ALL USING (tr
                   <div class="flex items-center justify-between">
                     <span class="text-slate-400 font-semibold">Email</span>
                     <span class="font-bold text-slate-900">${esc(c.email)}</span>
+                  </div>` : ''}
+                ${c.notes ? `
+                  <div class="flex items-center justify-between">
+                    <span class="text-slate-400 font-semibold">Sign-in Info</span>
+                    <span class="font-bold text-slate-900 truncate max-w-[180px]">${esc(c.notes)}</span>
                   </div>` : ''}
               </div>
             </div>
