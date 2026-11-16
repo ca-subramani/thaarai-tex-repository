@@ -67,8 +67,8 @@
         </div>
 
         <div class="mt-7 space-y-4">
-          <label class="block text-xs font-bold text-slate-700">Email address
-            <input id="login-email" type="email" autocomplete="username" required class="mt-1.5 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-xs font-semibold text-slate-900 placeholder-slate-400 outline-none focus:border-slate-900 focus:ring-1 focus:ring-slate-900 transition shadow-soft" placeholder="admin@thaaraitex.com">
+          <label class="block text-xs font-bold text-slate-700">Email Address
+            <input id="login-email" type="email" autocomplete="username" required class="mt-1.5 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-xs font-semibold text-slate-900 placeholder-slate-400 outline-none focus:border-slate-900 focus:ring-1 focus:ring-slate-900 transition shadow-soft" placeholder="Admin@thaaraitex.com">
           </label>
           <label class="block text-xs font-bold text-slate-700">Password
             <input id="login-password" type="password" autocomplete="current-password" required class="mt-1.5 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-xs font-semibold text-slate-900 placeholder-slate-400 outline-none focus:border-slate-900 focus:ring-1 focus:ring-slate-900 transition shadow-soft" placeholder="Enter administrator password">
@@ -125,7 +125,7 @@
         <div class="rounded-2xl border border-slate-100 bg-slate-50/60 p-2.5 flex items-center justify-between">
           <div class="min-w-0 flex-1 pr-2">
             <span class="block text-[9px] font-bold uppercase tracking-wider text-slate-400">Signed in as</span>
-            <span id="admin-email" class="block text-xs font-bold text-slate-800 truncate">admin@thaaraitex.com</span>
+            <span id="admin-email" class="block text-xs font-bold text-slate-800 truncate">Admin@thaaraitex.com</span>
           </div>
           <button id="logout" type="button" class="grid h-8 w-8 place-items-center rounded-xl bg-white border border-slate-200 text-slate-600 hover:text-rose-600 hover:bg-rose-50 transition shadow-soft" title="Sign out">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
@@ -262,7 +262,18 @@ ALTER TABLE public.customers ENABLE ROW LEVEL SECURITY;
 
 -- 3. Allow Public Storefront & Admin Access
 DROP POLICY IF EXISTS "Public access to customers" ON public.customers;
-CREATE POLICY "Public access to customers" ON public.customers FOR ALL USING (true) WITH CHECK (true);</pre>
+CREATE POLICY "Public access to customers" ON public.customers FOR ALL USING (true) WITH CHECK (true);
+
+-- 4. Create coupons table & enable policies
+CREATE TABLE IF NOT EXISTS public.coupons (
+  code TEXT PRIMARY KEY,
+  percent NUMERIC NOT NULL,
+  min_total NUMERIC DEFAULT 0,
+  active BOOLEAN DEFAULT true
+);
+ALTER TABLE public.coupons ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Allow all for coupons" ON public.coupons;
+CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WITH CHECK (true);</pre>
           <button id="btn-copy-sql" type="button" class="absolute top-3 right-3 rounded-full bg-slate-900 hover:bg-slate-800 text-white px-3.5 py-1.5 text-xs font-bold transition flex items-center gap-1 shadow-soft">
             <span>Copy SQL</span>
           </button>
@@ -800,11 +811,12 @@ CREATE POLICY "Public access to customers" ON public.customers FOR ALL USING (tr
       return orders.filter(o=>o.order_status===orderFilter);
     }
 
-        function orderCleanCard(o){
+            function orderCleanCard(o){
       const a = parseAddress(o.address || o.shipping_address);
       const items = o.items || o.order_items || [];
       const st = o.order_status || 'pending';
-      const name = o.name || o.customer_name || a?.name || 'Customer';
+      const rawName = o.name || o.customer_name || a?.name || 'Customer';
+      const name = capWords(rawName);
       const phone = o.phone || o.mobile_number || a?.phone || '';
       const orderShortId = String(o.id).slice(0, 8).toUpperCase();
       const totalQty = items.reduce((sum, it) => sum + (Number(it.quantity || it.qty || 1)), 0);
@@ -834,23 +846,23 @@ CREATE POLICY "Public access to customers" ON public.customers FOR ALL USING (tr
               ${esc(initials)}
             </div>
             <div class="min-w-0 flex-1 space-y-1">
-              <div class="flex items-center gap-2 flex-wrap min-w-0">
-                <h3 class="text-xs sm:text-sm font-extrabold text-slate-900 truncate">${esc(name)}</h3>
-                <span class="text-[9px] font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded-lg select-all badge-pill">
+              <div class="flex items-center gap-2 min-w-0">
+                <h3 class="text-xs sm:text-sm font-extrabold text-slate-900 truncate min-w-0 flex-1">${esc(name)}</h3>
+                <span class="text-[9px] font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded-lg select-all badge-pill shrink-0">
                   #TT-${esc(orderShortId)}
                 </span>
-                <span class="text-[9px] font-bold px-2 py-0.5 rounded-full badge-pill ${statusBadge}">
-                  ${esc(statusLabels[st] || st)}
+                <span class="text-[9px] font-bold px-2 py-0.5 rounded-full badge-pill shrink-0 ${statusBadge}">
+                  ${esc(statusLabels[st] || capFirst(st))}
                 </span>
               </div>
-              <p class="text-[11px] text-slate-500 truncate flex items-center gap-1.5 flex-wrap">
-                <span class="font-semibold text-slate-700">${esc(phone || 'No phone')}</span>
-                <span>·</span>
-                <span>${date(o.created_at)}</span>
-                ${a?.city ? `<span>·</span><span>${esc(a.city)}</span>` : ''}
-                <span>·</span>
-                <span>${totalQty} saree${totalQty === 1 ? '' : 's'}</span>
-                <span class="sm:hidden font-extrabold text-slate-900">· ${fmt(o.total)}</span>
+              <p class="text-[11px] text-slate-500 truncate flex items-center gap-1.5 min-w-0">
+                <span class="font-semibold text-slate-700 shrink-0">${esc(phone || 'No Phone')}</span>
+                <span class="text-slate-300">·</span>
+                <span class="shrink-0">${date(o.created_at)}</span>
+                ${a?.city ? `<span class="text-slate-300">·</span><span class="truncate">${esc(capWords(a.city))}</span>` : ''}
+                <span class="text-slate-300">·</span>
+                <span class="shrink-0">${totalQty} Saree${totalQty === 1 ? '' : 's'}</span>
+                <span class="sm:hidden font-extrabold text-slate-900 shrink-0">· ${fmt(o.total)}</span>
               </p>
             </div>
           </div>
@@ -866,6 +878,7 @@ CREATE POLICY "Public access to customers" ON public.customers FOR ALL USING (tr
           </div>
         </div>`;
     }
+
 
 
     function viewOrderDetail(orderId){
@@ -1072,12 +1085,12 @@ CREATE POLICY "Public access to customers" ON public.customers FOR ALL USING (tr
         <!-- Box 4: Delivery Address Card Box -->
         <div class="bg-white rounded-3xl p-5 sm:p-6 shadow-soft border border-slate-200/80 space-y-2 text-xs min-w-0">
           <div class="flex items-center justify-between pb-2 border-b border-slate-100 min-w-0">
-            <h3 class="font-extrabold text-slate-900 uppercase tracking-wider text-[11px]">Delivery address</h3>
+            <h3 class="font-extrabold text-slate-900 uppercase tracking-wider text-[11px]">Delivery Address</h3>
             <button onclick="copyOrderText('${esc(fullAddressLines)}', 'Address')" class="text-[11px] font-bold text-slate-900 underline flex items-center gap-1">
               ${SVG.copy} Copy Address
             </button>
           </div>
-          ${name ? `<p class="font-extrabold text-sm text-slate-900 truncate pt-1">${esc(name)}</p>` : ''}
+          ${name ? `<p class="font-extrabold text-sm text-slate-900 truncate pt-1">${esc(capWords(name))}</p>` : ''}
           ${phone ? `<p class="text-slate-700">Mobile: <a href="tel:${esc(phone)}" class="font-semibold underline hover:text-slate-900">${esc(phone)}</a></p>` : ''}
           ${a?.line || (typeof o.address === 'string' ? o.address : '') ? `<p class="text-slate-700 leading-relaxed bg-[#f8fafc] p-2.5 rounded-2xl border border-slate-100 break-words mt-1">${esc(a?.line || o.address)}</p>` : ''}
           <p class="text-slate-700 pt-0.5">${esc([a?.city, a?.state].filter(Boolean).join(', '))}${a?.pincode ? ' - <b>' + esc(a.pincode) + '</b>' : ''}</p>
@@ -1085,14 +1098,14 @@ CREATE POLICY "Public access to customers" ON public.customers FOR ALL USING (tr
 
         <!-- Box 5: Payment Summary Card Box -->
         <div class="bg-white rounded-3xl p-5 sm:p-6 shadow-soft border border-slate-200/80 space-y-2.5 text-xs min-w-0">
-          <h3 class="font-extrabold text-slate-900 uppercase tracking-wider text-[11px] pb-2 border-b border-slate-100">Payment summary</h3>
+          <h3 class="font-extrabold text-slate-900 uppercase tracking-wider text-[11px] pb-2 border-b border-slate-100">Payment Summary</h3>
           <div class="flex justify-between text-slate-600 pt-1">
-            <span>Payment method</span>
+            <span>Payment Method</span>
             <b class="text-slate-900">${esc((o.payment_method || 'COD').toUpperCase())}</b>
           </div>
           ${o.coupon ? `<div class="flex justify-between text-slate-600"><span>Coupon</span><b class="text-slate-900">${esc(o.coupon)}</b></div>` : ''}
           ${o.discount ? `<div class="flex justify-between text-slate-600"><span>Discount</span><b class="text-emerald-700">−${fmt(o.discount)}</b></div>` : ''}
-          <div class="flex justify-between text-slate-600"><span>Delivery charge</span><b class="text-emerald-700">FREE</b></div>
+          <div class="flex justify-between text-slate-600"><span>Delivery Charge</span><b class="text-emerald-700">FREE</b></div>
           <div class="flex justify-between text-sm font-black text-slate-900 border-t border-slate-100 pt-2.5 mt-2">
             <span>Total Amount</span>
             <span>${fmt(o.total)}</span>
@@ -1791,9 +1804,13 @@ CREATE POLICY "Public access to customers" ON public.customers FOR ALL USING (tr
       renderCustomers();
     }
 
-    function customerCard(c){
+        function customerCard(c){
       const a = c.address;
-      const initials = (c.name || 'C').split(' ').map(w=>w[0]).filter(Boolean).slice(0,2).join('').toUpperCase() || 'C';
+      const name = capWords(c.name || 'Customer');
+      const googleName = c.google_verified_name ? capWords(c.google_verified_name) : '';
+      const email = c.email ? capFirst(c.email) : '';
+      const city = a?.city ? capWords(a.city) : '';
+      const initials = (name || 'C').split(' ').map(w=>w[0]).filter(Boolean).slice(0,2).join('').toUpperCase() || 'C';
 
       return `
         <div class="bg-white rounded-3xl p-4 sm:p-5 shadow-soft border border-slate-200/80 flex items-center justify-between gap-3 min-w-0">
@@ -1802,23 +1819,23 @@ CREATE POLICY "Public access to customers" ON public.customers FOR ALL USING (tr
               ${esc(initials)}
             </div>
             <div class="min-w-0 flex-1 space-y-1">
-              <div class="flex items-center gap-2 flex-wrap min-w-0">
-                <h3 class="text-xs sm:text-sm font-extrabold text-slate-900 truncate">${esc(c.name)}</h3>
-                <span class="text-[9px] font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded-lg select-all badge-pill">
+              <div class="flex items-center gap-2 min-w-0">
+                <h3 class="text-xs sm:text-sm font-extrabold text-slate-900 truncate min-w-0 flex-1">${esc(name)}</h3>
+                <span class="text-[9px] font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded-lg select-all badge-pill shrink-0">
                   ${esc(c.customer_id)}
                 </span>
-                ${c.google_verified_name && c.google_verified_name !== c.name ? `
-                  <span class="text-[9px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full flex items-center gap-1 badge-pill">
-                    Google: ${esc(c.google_verified_name)}
+                ${googleName && googleName !== name ? `
+                  <span class="text-[9px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full flex items-center gap-1 badge-pill shrink-0">
+                    Google: ${esc(googleName)}
                   </span>
                 ` : ''}
               </div>
-              <p class="text-[11px] text-slate-500 truncate flex items-center gap-1.5 flex-wrap">
-                <span class="font-semibold text-slate-700">${esc(c.phone || 'No phone')}</span>
-                ${c.email ? `<span>·</span><span class="truncate max-w-[140px]">${esc(c.email)}</span>` : ''}
-                ${a?.city ? `<span>·</span><span>${esc(a.city)}</span>` : ''}
-                <span>·</span>
-                <span>${c.orders_count} order${c.orders_count===1?'':'s'}</span>
+              <p class="text-[11px] text-slate-500 truncate flex items-center gap-1.5 min-w-0">
+                <span class="font-semibold text-slate-700 shrink-0">${esc(c.phone || 'No Phone')}</span>
+                ${email ? `<span class="text-slate-300">·</span><span class="truncate max-w-[140px]">${esc(email)}</span>` : ''}
+                ${city ? `<span class="text-slate-300">·</span><span class="truncate">${esc(city)}</span>` : ''}
+                <span class="text-slate-300">·</span>
+                <span class="shrink-0">${c.orders_count} Order${c.orders_count===1?'':'s'}</span>
               </p>
             </div>
           </div>
@@ -1826,7 +1843,7 @@ CREATE POLICY "Public access to customers" ON public.customers FOR ALL USING (tr
           <div class="flex items-center gap-3 shrink-0">
             <div class="text-right hidden sm:block">
               <span class="text-xs sm:text-sm font-black text-slate-900 block">${fmt(c.total_spent)}</span>
-              <span class="text-[10px] text-slate-400 font-bold">${c.orders_count} orders</span>
+              <span class="text-[10px] text-slate-400 font-bold">${c.orders_count} Orders</span>
             </div>
             <button onclick="viewCustomerDetail('${esc(c.customer_id)}')" class="border border-slate-200 hover:border-slate-900 hover:bg-slate-900 hover:text-white text-slate-800 text-xs font-bold px-3.5 py-1.5 rounded-full transition shadow-soft">
               Details
@@ -1834,6 +1851,7 @@ CREATE POLICY "Public access to customers" ON public.customers FOR ALL USING (tr
           </div>
         </div>`;
     }
+
 
     function viewCustomerDetail(customerId){
       selectedCustomerId = customerId;
@@ -1897,7 +1915,7 @@ CREATE POLICY "Public access to customers" ON public.customers FOR ALL USING (tr
               ${esc(initials)}
             </div>
             <div class="min-w-0 flex-1">
-              <h3 class="text-sm sm:text-base font-extrabold text-slate-900 truncate">${esc(c.name)}</h3>
+              <h3 class="text-sm sm:text-base font-extrabold text-slate-900 truncate">${esc(capWords(c.name))}</h3>
               <p class="text-xs text-slate-400 mt-0.5 truncate">${esc(c.customer_id)}</p>
             </div>
           </div>
@@ -1905,7 +1923,7 @@ CREATE POLICY "Public access to customers" ON public.customers FOR ALL USING (tr
           <div class="pt-3 border-t border-slate-100 space-y-2.5 text-xs min-w-0">
             <div class="flex items-center justify-between p-3 rounded-2xl bg-slate-50 border border-slate-100 min-w-0 gap-2">
               <span class="text-slate-500 font-bold shrink-0">1. Profile Name (Main)</span>
-              <span class="font-extrabold text-slate-900 truncate">${esc(c.name)}</span>
+              <span class="font-extrabold text-slate-900 truncate">${esc(capWords(c.name))}</span>
             </div>
 
             <div class="flex items-center justify-between p-3 rounded-2xl bg-emerald-50/70 border border-emerald-200/60 min-w-0 gap-2">
@@ -1915,7 +1933,7 @@ CREATE POLICY "Public access to customers" ON public.customers FOR ALL USING (tr
                 </svg>
                 2. Google Verified Name
               </span>
-              <span class="font-extrabold text-slate-900 truncate">${esc(c.google_verified_name || c.name || '—')}</span>
+              <span class="font-extrabold text-slate-900 truncate">${esc(capWords(c.google_verified_name || c.name || '—'))}</span>
             </div>
 
             <div class="flex items-center justify-between pt-1">
@@ -1926,7 +1944,7 @@ CREATE POLICY "Public access to customers" ON public.customers FOR ALL USING (tr
             ${c.email ? `
               <div class="flex items-center justify-between min-w-0 gap-2">
                 <span class="text-slate-500 font-medium shrink-0">Google Account</span>
-                <span class="font-bold text-slate-900 truncate max-w-[200px]">${esc(c.email)}</span>
+                <span class="font-bold text-slate-900 truncate max-w-[200px]">${esc(capFirst(c.email))}</span>
               </div>
             ` : ''}
           </div>
@@ -2444,7 +2462,7 @@ CREATE POLICY "Public access to customers" ON public.customers FOR ALL USING (tr
       $('#editor-title').textContent=category?'Edit Category':'Create Category';
       $('#editor-fields').innerHTML=`
         <div>
-          <label class="block text-xs font-bold text-slate-700">Category name</label>
+          <label class="block text-xs font-bold text-slate-700">Category Name</label>
           <input name="name" value="${esc(r.name||'')}" required class="mt-1.5 w-full rounded-2xl border border-slate-200 bg-white p-2.5 text-xs text-slate-900 outline-none focus:border-slate-900 shadow-soft">
         </div>
         <div>
@@ -2489,7 +2507,7 @@ CREATE POLICY "Public access to customers" ON public.customers FOR ALL USING (tr
         </div>`;
     }
 
-    /* ===== COUPONS ===== */
+        /* ===== COUPONS ===== */
     function renderCoupons(){
       view.innerHTML=`
         <div class="bg-white rounded-3xl p-5 sm:p-6 shadow-soft border border-slate-200/80 space-y-4 min-w-0">
@@ -2510,9 +2528,10 @@ CREATE POLICY "Public access to customers" ON public.customers FOR ALL USING (tr
                 <div class="min-w-0">
                   <div class="flex items-center justify-between min-w-0 gap-2">
                     <span class="text-xs font-black text-slate-900 bg-white px-2.5 py-1 rounded-xl border border-slate-200 select-all badge-pill truncate">${esc(c.code)}</span>
-                    <span class="text-xs font-black text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full shrink-0 badge-pill">${Number(c.discount_percent||c.discount_pct||0)}% OFF</span>
+                    <span class="text-xs font-black text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full shrink-0 badge-pill">${Number(c.percent||c.discount_percent||c.discount||0)}% OFF</span>
                   </div>
                   <p class="text-xs text-slate-500 mt-2 truncate">${c.active!==false?'● Active for shoppers':'○ Inactive'}</p>
+                  ${Number(c.min_total)>0 ? `<p class="text-[11px] text-slate-400 mt-0.5">Min. order: ₹${Number(c.min_total)}</p>` : ''}
                 </div>
                 <div class="mt-3.5 pt-2.5 border-t border-slate-200/80 flex gap-2">
                   <button data-edit-coupon="${esc(c.code)}" class="rounded-full border border-slate-200 bg-white px-3.5 py-1 text-xs font-bold text-slate-700 hover:bg-slate-50 transition shadow-soft">Edit</button>
@@ -2530,12 +2549,16 @@ CREATE POLICY "Public access to customers" ON public.customers FOR ALL USING (tr
       $('#editor-title').textContent=coupon?'Edit Coupon':'Create Coupon';
       $('#editor-fields').innerHTML=`
         <div>
-          <label class="block text-xs font-bold text-slate-700">Coupon code</label>
-          <input name="code" value="${esc(r.code||'')}" required class="mt-1.5 w-full rounded-2xl border border-slate-200 bg-white p-2.5 text-xs text-slate-900 outline-none focus:border-slate-900 shadow-soft uppercase ">
+          <label class="block text-xs font-bold text-slate-700">Coupon Code</label>
+          <input name="code" value="${esc(r.code||'')}" required placeholder="E.g. FESTIVE10" class="mt-1.5 w-full rounded-2xl border border-slate-200 bg-white p-2.5 text-xs text-slate-900 outline-none focus:border-slate-900 shadow-soft uppercase">
         </div>
         <div>
-          <label class="block text-xs font-bold text-slate-700">Discount percentage (1 to 100)</label>
-          <input name="discount_percent" type="number" min="1" max="100" value="${esc(r.discount_percent||r.discount_pct||10)}" required class="mt-1.5 w-full rounded-2xl border border-slate-200 bg-white p-2.5 text-xs text-slate-900 outline-none focus:border-slate-900 shadow-soft">
+          <label class="block text-xs font-bold text-slate-700">Discount Percentage (1 to 100)</label>
+          <input name="percent" type="number" min="1" max="100" value="${esc(r.percent||r.discount_percent||r.discount||10)}" required class="mt-1.5 w-full rounded-2xl border border-slate-200 bg-white p-2.5 text-xs text-slate-900 outline-none focus:border-slate-900 shadow-soft">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700">Minimum Order Amount (₹)</label>
+          <input name="min_total" type="number" min="0" value="${esc(r.min_total||0)}" class="mt-1.5 w-full rounded-2xl border border-slate-200 bg-white p-2.5 text-xs text-slate-900 outline-none focus:border-slate-900 shadow-soft" placeholder="0">
         </div>
         <label class="flex items-center gap-2 pt-1 text-xs font-bold text-slate-700 cursor-pointer">
           <input name="active" type="checkbox" ${r.active!==false?'checked':''} class="h-4 w-4 accent-slate-900 rounded">
@@ -2548,10 +2571,12 @@ CREATE POLICY "Public access to customers" ON public.customers FOR ALL USING (tr
       const fd=new FormData(form);
       return {
         code:String(fd.get('code')).trim().toUpperCase(),
-        discount_percent:Number(fd.get('discount_percent')),
+        percent:Number(fd.get('percent')),
+        min_total:Number(fd.get('min_total')||0),
         active:fd.get('active')!==null
       };
     }
+
 
     /* ===== MEDIA LIBRARY ===== */
     async function renderMedia(){
@@ -2648,13 +2673,19 @@ CREATE POLICY "Public access to customers" ON public.customers FOR ALL USING (tr
       if(editing.type==='coupon')payload=couponPayload(form);
 
       let res;
-      if(editing.type==='coupon'){
+            if(editing.type==='coupon'){
         if(editing.isEdit && editing.row.code){
           res=await db.from('coupons').update(payload).eq('code',editing.row.code);
         }else{
-          res=await db.from('coupons').upsert(payload, {onConflict:'code'});
+          const existing = coupons.find(c => String(c.code).toUpperCase() === payload.code);
+          if(existing){
+            res=await db.from('coupons').update(payload).eq('code',payload.code);
+          }else{
+            res=await db.from('coupons').insert(payload);
+          }
         }
-      }else if(editing.row.id){
+      }
+else if(editing.row.id){
         res=await db.from('categories').update(payload).eq('id',editing.row.id);
       }else{
         res=await db.from('categories').insert(payload);
