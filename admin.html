@@ -31,7 +31,9 @@
     html.has-auth-session #login-screen { display: none !important; }
     html.has-auth-session #dashboard { display: block !important; }
     html,body{overflow-x:hidden;max-width:100%;margin:0;padding:0}
-    body{font-family:'Plus Jakarta Sans','Noto Sans Tamil',system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;background-color:#f8fafc;color:#0f172a}
+    *, button, input, textarea, select { font-family: 'Plus Jakarta Sans', 'Noto Sans Tamil', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important; }
+    #supabase-sql-code, #supabase-sql-code * { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important; }
+    body{background-color:#f8fafc;color:#0f172a;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
     *{min-width:0;box-sizing:border-box}
     h1,h2,h3,h4,p,label,td,li{overflow-wrap:break-word}
     .text-xs,.text-sm,.text-base{line-height:1.55}
@@ -141,9 +143,6 @@
       <!-- Clean Top Header Bar -->
       <header class="sticky top-0 z-30 flex h-[62px] items-center justify-between border-b border-slate-200/80 bg-white/95 px-4 sm:px-8 backdrop-blur-md shadow-soft w-full">
         <div class="flex items-center gap-3 min-w-0">
-          <button id="menu-toggle" type="button" class="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-slate-200 bg-white text-slate-800 shadow-soft hover:bg-slate-50 lg:hidden" aria-label="Open menu">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
-          </button>
           <button id="admin-back" type="button" aria-label="Go back" class="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-soft hover:bg-slate-50 transition" onclick="adminBack()">
             <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 19l-7-7 7-7"/></svg>
           </button>
@@ -363,7 +362,7 @@ CREATE POLICY "Public access to customers" ON public.customers FOR ALL USING (tr
           ${(city || state || pin) ? `
             <div class="flex items-center gap-2 flex-wrap pt-0.5">
               <span class="font-semibold text-xs text-slate-700">${esc([city, state].filter(Boolean).join(', '))}</span>
-              ${pin ? `<span class="font-mono font-bold text-xs text-slate-900 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200 select-all badge-pill">PIN: ${esc(pin)}</span>` : ''}
+              ${pin ? `<span class="font-bold text-xs text-slate-900 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200 select-all badge-pill">PIN: ${esc(pin)}</span>` : ''}
             </div>` : ''}
         </div>
       `;
@@ -801,13 +800,22 @@ CREATE POLICY "Public access to customers" ON public.customers FOR ALL USING (tr
       return orders.filter(o=>o.order_status===orderFilter);
     }
 
-    function orderCleanCard(o){
+        function orderCleanCard(o){
       const a = parseAddress(o.address || o.shipping_address);
       const items = o.items || o.order_items || [];
       const st = o.order_status || 'pending';
       const name = o.name || o.customer_name || a?.name || 'Customer';
       const phone = o.phone || o.mobile_number || a?.phone || '';
       const orderShortId = String(o.id).slice(0, 8).toUpperCase();
+      const totalQty = items.reduce((sum, it) => sum + (Number(it.quantity || it.qty || 1)), 0);
+
+      const statusLabels = {
+        pending: 'Pending',
+        verified: 'Processing',
+        dispatched: 'Shipped',
+        delivered: 'Delivered',
+        cancelled: 'Cancelled'
+      };
 
       const statusBadge = {
         pending: 'bg-amber-50 text-amber-900 border border-amber-200',
@@ -817,55 +825,48 @@ CREATE POLICY "Public access to customers" ON public.customers FOR ALL USING (tr
         cancelled: 'bg-rose-50 text-rose-900 border border-rose-200'
       }[st] || 'bg-slate-100 text-slate-900 border border-slate-200';
 
-      const firstItem = items[0] || {};
-      const catalogProd = products.find(p => String(p.id) === String(firstItem.product_id || firstItem.id || firstItem.p_id));
-      const firstProductName = firstItem.name || firstItem.product_name || catalogProd?.name || 'Handloom Saree';
-      const imgUrl = firstItem.image || firstItem.image_url || catalogProd?.images?.[0] || 'https://placehold.co/100x120?text=Saree';
-      const totalQty = items.reduce((sum, it) => sum + (Number(it.quantity || it.qty || 1)), 0);
+      const initials = (name || 'C').split(' ').map(w=>w[0]).filter(Boolean).slice(0,2).join('').toUpperCase() || 'C';
 
       return `
-        <div class="bg-white rounded-3xl p-4 sm:p-5 shadow-soft border border-slate-200/80 space-y-3 min-w-0">
-          <div class="flex justify-between items-start gap-2 min-w-0">
-            <div class="min-w-0">
+        <div class="bg-white rounded-3xl p-4 sm:p-5 shadow-soft border border-slate-200/80 flex items-center justify-between gap-3 min-w-0">
+          <div class="flex items-center gap-3 min-w-0 flex-1">
+            <div class="w-10 h-10 rounded-2xl bg-slate-900 text-white flex items-center justify-center font-black text-xs shrink-0 select-none">
+              ${esc(initials)}
+            </div>
+            <div class="min-w-0 flex-1 space-y-1">
               <div class="flex items-center gap-2 flex-wrap min-w-0">
-                <span class="font-mono text-xs font-black text-slate-900 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-xl select-all badge-pill">#TT-${esc(orderShortId)}</span>
-                <span class="text-xs text-slate-400">· ${date(o.created_at)}</span>
+                <h3 class="text-xs sm:text-sm font-extrabold text-slate-900 truncate">${esc(name)}</h3>
+                <span class="text-[9px] font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded-lg select-all badge-pill">
+                  #TT-${esc(orderShortId)}
+                </span>
+                <span class="text-[9px] font-bold px-2 py-0.5 rounded-full badge-pill ${statusBadge}">
+                  ${esc(statusLabels[st] || st)}
+                </span>
               </div>
-              <p class="font-extrabold text-sm text-slate-900 mt-1 truncate">${esc(name)}</p>
-              ${phone ? `<p class="text-xs text-slate-500 mt-0.5 truncate"><a href="tel:${esc(phone)}" class="underline hover:text-slate-900">${esc(phone)}</a></p>` : ''}
+              <p class="text-[11px] text-slate-500 truncate flex items-center gap-1.5 flex-wrap">
+                <span class="font-semibold text-slate-700">${esc(phone || 'No phone')}</span>
+                <span>·</span>
+                <span>${date(o.created_at)}</span>
+                ${a?.city ? `<span>·</span><span>${esc(a.city)}</span>` : ''}
+                <span>·</span>
+                <span>${totalQty} saree${totalQty === 1 ? '' : 's'}</span>
+                <span class="sm:hidden font-extrabold text-slate-900">· ${fmt(o.total)}</span>
+              </p>
             </div>
-            <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full shrink-0 badge-pill ${statusBadge}">${esc(st.toUpperCase())}</span>
           </div>
 
-          <div class="flex items-center gap-3 py-1 min-w-0">
-            <img src="${esc(imgUrl)}" alt="" class="w-14 h-16 object-cover rounded-2xl bg-slate-50 border border-slate-200 shrink-0">
-            <div class="min-w-0 flex-1">
-              <p class="text-xs font-bold text-slate-900 truncate">${esc(firstProductName)}</p>
-              ${items.length > 1 ? `<p class="text-[11px] text-slate-400 mt-0.5 truncate">+ ${items.length - 1} more item(s)</p>` : ''}
-              <div class="flex justify-between text-xs text-slate-600 font-medium mt-1">
-                <span>Quantity: <b class="text-slate-900 font-bold">${totalQty}</b></span>
-                <span>Total: <b class="text-slate-900 font-black">${fmt(o.total)}</b></span>
-              </div>
+          <div class="flex items-center gap-3 shrink-0">
+            <div class="text-right hidden sm:block">
+              <span class="text-xs sm:text-sm font-black text-slate-900 block">${fmt(o.total)}</span>
+              <span class="text-[10px] text-slate-400 font-bold uppercase">${esc(o.payment_method || 'COD')}</span>
             </div>
-          </div>
-
-          <div class="flex justify-between items-center pt-2.5 border-t border-slate-100 gap-2">
-            <div class="flex items-center gap-1.5 min-w-0">
-              <span class="text-[11px] font-bold text-slate-500 hidden sm:inline shrink-0">Status:</span>
-              <select onchange="quickUpdateDeliveryStatus('${esc(o.id)}', this.value)" class="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-bold text-slate-800 outline-none focus:border-slate-900 focus:bg-white shadow-soft transition cursor-pointer">
-                <option value="pending" ${st==='pending'?'selected':''}>Pending</option>
-                <option value="verified" ${st==='verified'?'selected':''}>Processing</option>
-                <option value="dispatched" ${st==='dispatched'?'selected':''}>Shipped</option>
-                <option value="delivered" ${st==='delivered'?'selected':''}>Delivered</option>
-                <option value="cancelled" ${st==='cancelled'?'selected':''}>Cancelled</option>
-              </select>
-            </div>
-            <button onclick="viewOrderDetail('${esc(o.id)}')" class="border border-slate-200 hover:border-slate-900 hover:bg-slate-900 hover:text-white text-slate-800 text-xs font-bold px-4 py-1.5 rounded-full transition shadow-soft shrink-0">
+            <button onclick="viewOrderDetail('${esc(o.id)}')" class="border border-slate-200 hover:border-slate-900 hover:bg-slate-900 hover:text-white text-slate-800 text-xs font-bold px-3.5 py-1.5 rounded-full transition shadow-soft">
               Details
             </button>
           </div>
         </div>`;
     }
+
 
     function viewOrderDetail(orderId){
       selectedOrderId = orderId;
@@ -954,11 +955,11 @@ CREATE POLICY "Public access to customers" ON public.customers FOR ALL USING (tr
             <div class="min-w-0">
               <span class="text-[10px] font-black uppercase tracking-[.18em] text-emerald-600 block">ORDER DOSSIER</span>
               <div class="flex items-center gap-2 flex-wrap mt-0.5 min-w-0">
-                <h2 class="text-base sm:text-lg font-black text-slate-900 font-mono tracking-tight">#TT-${esc(orderShortId)}</h2>
+                <h2 class="text-base sm:text-lg font-black text-slate-900 tracking-tight">#TT-${esc(orderShortId)}</h2>
                 <span class="text-[11px] font-bold px-3 py-0.5 rounded-full badge-pill ${statusColors[st] || 'bg-slate-100 text-slate-800'}">
                   ${esc(statusLabels[st] || st)}
                 </span>
-                <span class="text-[10px] font-mono font-bold text-slate-600 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-full badge-pill">
+                <span class="text-[10px] font-bold text-slate-600 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-full badge-pill">
                   ${esc(o.payment_method || 'COD')}
                 </span>
               </div>
@@ -985,7 +986,7 @@ CREATE POLICY "Public access to customers" ON public.customers FOR ALL USING (tr
               <span class="text-[10px] font-black uppercase tracking-[.18em] text-slate-400 block">DELIVERY PIPELINE</span>
               <h3 class="font-extrabold text-sm text-slate-900 mt-0.5">Order Fulfillment & Tracking</h3>
             </div>
-            <span class="text-xs font-mono font-bold text-slate-400 select-all">ID: ${esc(String(o.id).slice(0,8))}</span>
+            <span class="text-xs font-bold text-slate-400 select-all">ID: ${esc(String(o.id).slice(0,8))}</span>
           </div>
 
           <!-- 4-step Progress Line Bar -->
@@ -1051,7 +1052,7 @@ CREATE POLICY "Public access to customers" ON public.customers FOR ALL USING (tr
                   <img src="${esc(imgUrl)}" alt="" class="w-16 h-20 object-cover rounded-2xl bg-slate-50 border border-slate-200 shrink-0">
                   <div class="flex-1 min-w-0 space-y-1">
                     <div class="flex items-center gap-1.5 flex-wrap min-w-0">
-                      <span class="font-mono text-[9px] font-black text-slate-900 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-lg select-all badge-pill">
+                      <span class="text-[9px] font-black text-slate-900 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-lg select-all badge-pill">
                         ID: ${esc(pCode)}
                       </span>
                       <span class="font-bold text-xs text-slate-900 truncate block">
@@ -1240,7 +1241,7 @@ CREATE POLICY "Public access to customers" ON public.customers FOR ALL USING (tr
           <div class="relative aspect-[4/5] rounded-2xl overflow-hidden bg-slate-50 border border-slate-100">
             <img src="${esc(imgUrl)}" alt="${esc(p.name)}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
             <div class="absolute top-2 left-2 flex flex-col gap-1">
-              <span class="font-mono text-[9px] font-black bg-white/95 backdrop-blur text-slate-900 border border-slate-200 px-2 py-0.5 rounded-lg shadow-sm select-all badge-pill">
+              <span class="text-[9px] font-black bg-white/95 backdrop-blur text-slate-900 border border-slate-200 px-2 py-0.5 rounded-lg shadow-sm select-all badge-pill">
                 ${esc(prodId)}
               </span>
             </div>
@@ -1327,7 +1328,7 @@ CREATE POLICY "Public access to customers" ON public.customers FOR ALL USING (tr
               <span class="text-[10px] font-black uppercase tracking-[.18em] text-emerald-600 block">CATALOG ITEM</span>
               <div class="flex items-center gap-2 flex-wrap mt-0.5 min-w-0">
                 <h2 class="text-base sm:text-lg font-black text-slate-900 truncate">${isNew ? 'New Saree' : 'Edit Saree'}</h2>
-                <span class="font-mono text-xs font-bold bg-slate-100 text-slate-900 border border-slate-200 px-2.5 py-0.5 rounded-lg select-all badge-pill">
+                <span class="text-xs font-bold bg-slate-100 text-slate-900 border border-slate-200 px-2.5 py-0.5 rounded-lg select-all badge-pill">
                   ${esc(prodId)}
                 </span>
               </div>
@@ -1803,7 +1804,7 @@ CREATE POLICY "Public access to customers" ON public.customers FOR ALL USING (tr
             <div class="min-w-0 flex-1 space-y-1">
               <div class="flex items-center gap-2 flex-wrap min-w-0">
                 <h3 class="text-xs sm:text-sm font-extrabold text-slate-900 truncate">${esc(c.name)}</h3>
-                <span class="font-mono text-[9px] font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded-lg select-all badge-pill">
+                <span class="text-[9px] font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded-lg select-all badge-pill">
                   ${esc(c.customer_id)}
                 </span>
                 ${c.google_verified_name && c.google_verified_name !== c.name ? `
@@ -1869,7 +1870,7 @@ CREATE POLICY "Public access to customers" ON public.customers FOR ALL USING (tr
             <div class="min-w-0">
               <span class="text-[10px] font-black uppercase tracking-[.18em] text-emerald-600 block">CUSTOMER PROFILE</span>
               <div class="flex items-center gap-2 flex-wrap mt-0.5 min-w-0">
-                <h2 class="text-base sm:text-lg font-black text-slate-900 font-mono tracking-tight">${esc(c.customer_id)}</h2>
+                <h2 class="text-base sm:text-lg font-black text-slate-900 tracking-tight">${esc(c.customer_id)}</h2>
                 <span class="rounded-full px-2.5 py-0.5 text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 badge-pill">
                   Active Customer
                 </span>
@@ -1897,7 +1898,7 @@ CREATE POLICY "Public access to customers" ON public.customers FOR ALL USING (tr
             </div>
             <div class="min-w-0 flex-1">
               <h3 class="text-sm sm:text-base font-extrabold text-slate-900 truncate">${esc(c.name)}</h3>
-              <p class="text-xs text-slate-400 font-mono mt-0.5 truncate">${esc(c.customer_id)}</p>
+              <p class="text-xs text-slate-400 mt-0.5 truncate">${esc(c.customer_id)}</p>
             </div>
           </div>
 
@@ -2168,7 +2169,7 @@ CREATE POLICY "Public access to customers" ON public.customers FOR ALL USING (tr
                       <input id="cat-name-${i}" value="${esc(item.name||'')}" placeholder="Category Name" class="flex-1 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-900 outline-none min-w-0">
                     </div>
                     <input id="cat-sub-${i}" value="${esc(item.subtitle||'')}" placeholder="Subtitle (e.g. Pure Weave)" class="w-full rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-900 outline-none">
-                    <input id="cat-query-${i}" value="${esc(item.query||item.name||'')}" placeholder="Search keyword" class="w-full rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-900 outline-none font-mono">
+                    <input id="cat-query-${i}" value="${esc(item.query||item.name||'')}" placeholder="Search keyword" class="w-full rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-900 outline-none ">
                     <div class="flex gap-1.5 min-w-0">
                       <input id="cat-img-${i}" value="${esc(item.image||'')}" placeholder="Image URL" class="flex-1 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-[11px] text-slate-900 outline-none min-w-0">
                       <button type="button" onclick="uploadCustomImage('cat-img-${i}')" class="rounded-xl bg-slate-900 text-white px-3 py-1 text-[11px] font-bold shrink-0">Upload</button>
@@ -2419,7 +2420,7 @@ CREATE POLICY "Public access to customers" ON public.customers FOR ALL USING (tr
                   <div class="flex items-start justify-between min-w-0 gap-2">
                     <div class="min-w-0">
                       <h3 class="text-xs sm:text-sm font-extrabold text-slate-900 truncate">${esc(c.name)}</h3>
-                      <p class="text-[10px] font-mono text-slate-400 mt-0.5 truncate">/${esc(c.slug||'')}</p>
+                      <p class="text-[10px] text-slate-400 mt-0.5 truncate">/${esc(c.slug||'')}</p>
                     </div>
                     <span class="rounded-full bg-white border border-slate-200 text-slate-700 px-2.5 py-0.5 text-[10px] font-bold shrink-0 badge-pill">
                       ${products.filter(p=>String(p.category_id)===String(c.id)).length} sarees
@@ -2508,7 +2509,7 @@ CREATE POLICY "Public access to customers" ON public.customers FOR ALL USING (tr
               <div class="bg-slate-50/70 rounded-3xl p-4 sm:p-5 border border-slate-200/80 flex flex-col justify-between min-w-0">
                 <div class="min-w-0">
                   <div class="flex items-center justify-between min-w-0 gap-2">
-                    <span class="font-mono text-xs font-black text-slate-900 bg-white px-2.5 py-1 rounded-xl border border-slate-200 select-all badge-pill truncate">${esc(c.code)}</span>
+                    <span class="text-xs font-black text-slate-900 bg-white px-2.5 py-1 rounded-xl border border-slate-200 select-all badge-pill truncate">${esc(c.code)}</span>
                     <span class="text-xs font-black text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full shrink-0 badge-pill">${Number(c.discount_percent||c.discount_pct||0)}% OFF</span>
                   </div>
                   <p class="text-xs text-slate-500 mt-2 truncate">${c.active!==false?'● Active for shoppers':'○ Inactive'}</p>
@@ -2530,7 +2531,7 @@ CREATE POLICY "Public access to customers" ON public.customers FOR ALL USING (tr
       $('#editor-fields').innerHTML=`
         <div>
           <label class="block text-xs font-bold text-slate-700">Coupon code</label>
-          <input name="code" value="${esc(r.code||'')}" required class="mt-1.5 w-full rounded-2xl border border-slate-200 bg-white p-2.5 text-xs text-slate-900 outline-none focus:border-slate-900 shadow-soft uppercase font-mono">
+          <input name="code" value="${esc(r.code||'')}" required class="mt-1.5 w-full rounded-2xl border border-slate-200 bg-white p-2.5 text-xs text-slate-900 outline-none focus:border-slate-900 shadow-soft uppercase ">
         </div>
         <div>
           <label class="block text-xs font-bold text-slate-700">Discount percentage (1 to 100)</label>
@@ -2886,7 +2887,6 @@ CREATE POLICY "Public access to customers" ON public.customers FOR ALL USING (tr
     $('#editor-form').onsubmit=saveEditor;
     $('#editor-close').onclick=()=>editor.close();
     $('#editor-cancel').onclick=()=>editor.close();
-    $('#menu-toggle').onclick=openSidebar;
     $('#m-menu-btn').onclick=openSidebar;
     $('#sidebar-close').onclick=closeSidebar;
     $('#sidebar-backdrop').onclick=closeSidebar;
