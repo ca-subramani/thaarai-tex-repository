@@ -387,7 +387,7 @@ async function setProfile(name, phone, email='', google_name=''){
         last_active: new Date().toISOString()
       };
       if(finalGoogleName){
-        upsertPayload.notes = (finalGoogleName !== name) ? `Google Account Name: ${finalGoogleName}` : `Google Account: ${finalGoogleName}`;
+        upsertPayload.notes = `Google Verified Name: ${finalGoogleName}`;
       }
       await sb.from('customers').upsert(upsertPayload, { onConflict: 'phone' });
     }
@@ -402,6 +402,69 @@ function clearProfile(){
   try{ if(sb) sb.auth.signOut().then(); }catch(e){}
   cart=[];saveCart();wish=new Set();OC={list:[]};ofilter='all';addrEdit=null;setNav();
 }
+
+let _oauthUserPromise = null;
+async function resolveOAuthUser(){
+  if(!sb) return null;
+  if(_oauthUserPromise) return _oauthUserPromise;
+
+  _oauthUserPromise = (async () => {
+    try {
+      const rawSearch = window.location.search || '';
+      const rawHash = window.location.hash || '';
+
+      let code = new URLSearchParams(rawSearch).get('code');
+      if(!code && rawHash.includes('code=')){
+        const qPart = rawHash.split('?')[1] || rawHash.replace(/^#/, '');
+        code = new URLSearchParams(qPart).get('code');
+      }
+
+      // If PKCE code exists in search or hash, explicitly exchange it
+      if(code){
+        try {
+          const { data } = await sb.auth.exchangeCodeForSession(code);
+          if(data?.user) return data.user;
+        } catch(err){
+          console.warn('exchangeCodeForSession info:', err);
+        }
+      }
+
+      // If hash contains access_token or code was present, wait up to 1.5s for session detection
+      const hasOAuth = code || rawHash.includes('access_token=') || rawHash.includes('refresh_token=');
+      if(hasOAuth){
+        for(let i = 0; i < 6; i++){
+          const { data: s } = await sb.auth.getSession();
+          if(s?.session?.user) return s.session.user;
+          const { data: u } = await sb.auth.getUser();
+          if(u?.user) return u.user;
+          await new Promise(r => setTimeout(r, 200));
+        }
+      }
+
+      // Standard session checks
+      const { data: sData } = await sb.auth.getSession();
+      if(sData?.session?.user) return sData.session.user;
+      const { data: uData } = await sb.auth.getUser();
+      if(uData?.user) return uData.user;
+
+      // Fallback: check localStorage for cached Supabase session
+      for(let key of Object.keys(localStorage)){
+        if(key.startsWith('sb-') && key.endsWith('-auth-token')){
+          try {
+            const parsed = JSON.parse(localStorage.getItem(key));
+            if(parsed?.user) return parsed.user;
+          } catch(e){}
+        }
+      }
+    } catch(e){
+      console.warn('resolveOAuthUser error:', e);
+    }
+    return null;
+  })();
+
+  return _oauthUserPromise;
+}
+
 async function initAuth(){
   try{
     const p = profile();
@@ -411,8 +474,7 @@ async function initAuth(){
     }
     // If no local profile, check if user is already signed in via Supabase Google OAuth
     if(!profile() && sb){
-      const { data } = await sb.auth.getSession();
-      const u = data?.session?.user;
+      const u = await resolveOAuthUser();
       if(u?.email){
         const { data: c } = await sb.from('customers').select('*').eq('email', u.email).maybeSingle();
         if(c && c.phone){
@@ -1352,17 +1414,27 @@ async function checkout(){
 }
 
 /* ===== LOGIN ===== */
-async function loginView(){
+async function loginView(passedUser = null){
   const p = profile(), accUI = SET.account_ui || {};
 
   // Check if there is an active Google OAuth session from Supabase
-  let googleUser = null;
-  try {
-    if(sb && !p){
-      const { data } = await sb.auth.getUser();
-      googleUser = data?.user || null;
-    }
-  } catch(e){}
+  let googleUser = passedUser;
+  if(!googleUser && sb && !p){
+    googleUser = await resolveOAuthUser();
+  }
+
+  // Fallback: check localStorage for Supabase token if available
+  if(!googleUser && !p){
+    try {
+      for(let key of Object.keys(localStorage)){
+        if(key.startsWith('sb-') && key.endsWith('-auth-token')){
+          const parsed = JSON.parse(localStorage.getItem(key));
+          if(parsed?.user) googleUser = parsed.user;
+          break;
+        }
+      }
+    } catch(e){}
+  }
 
   // If Google session exists, check if customer is already registered with a phone number in Supabase
   if(googleUser && googleUser.email && !p){
@@ -1577,10 +1649,11 @@ async function loginView(){
         const baseTarget = window.location.origin + window.location.pathname;
         const cleanTarget = baseTarget.endsWith('.html') ? baseTarget : baseTarget.replace(/\/$/, '') + '/index.html';
 
+        // Redirect directly to clean target URL without hash fragment
         const { error } = await sb.auth.signInWithOAuth({
           provider: 'google',
           options: {
-            redirectTo: cleanTarget + '#/login'
+            redirectTo: cleanTarget
           }
         });
         if(error) throw error;
@@ -1774,33 +1847,31 @@ async function route(){
   // 1. Intercept OAuth tokens returning from Google / Supabase in URL hash or search params
   const rawHash = location.hash || '';
   const rawSearch = location.search || '';
-  if(rawHash.includes('access_token=') || rawHash.includes('refresh_token=') || rawHash.includes('error_description=') || rawSearch.includes('code=')){
-    try {
-      if(sb){
-        // Allow supabase-js to process session tokens
-        const { data } = await sb.auth.getSession();
-        const user = data?.session?.user;
-        if(user){
-          const finalEmail = user.email || '';
-          const googleName = user.user_metadata?.full_name || user.user_metadata?.name || '';
+  const isOAuthReturn = rawSearch.includes('code=') || rawHash.includes('code=') || rawHash.includes('access_token=') || rawHash.includes('refresh_token=');
 
-          // If returning customer already has a phone number saved in Supabase customers table:
-          if(finalEmail){
-            const { data: existingCust } = await sb.from('customers').select('*').eq('email', finalEmail).maybeSingle();
-            if(existingCust && existingCust.phone){
-              const cleanPh = String(existingCust.phone).replace(/\D/g, '').slice(-10);
-              if(/^[6-9]\d{9}$/.test(cleanPh)){
-                await setProfile(existingCust.name || googleName || 'Customer', cleanPh, finalEmail, googleName);
-                history.replaceState(null, '', location.pathname + '#/account/hub');
-                toast('Welcome back, ' + (existingCust.name || googleName || 'Customer').split(' ')[0] + '! ✓');
-                return await account('hub', new URLSearchParams());
-              }
-            }
+  if(isOAuthReturn){
+    const user = await resolveOAuthUser();
+    if(user && user.email){
+      const finalEmail = user.email;
+      const googleName = user.user_metadata?.full_name || user.user_metadata?.name || '';
+
+      // If returning customer already has a phone number saved in Supabase customers table:
+      try {
+        const { data: existingCust } = await sb.from('customers').select('*').eq('email', finalEmail).maybeSingle();
+        if(existingCust && existingCust.phone){
+          const cleanPh = String(existingCust.phone).replace(/\D/g, '').slice(-10);
+          if(/^[6-9]\d{9}$/.test(cleanPh)){
+            await setProfile(existingCust.name || googleName || 'Customer', cleanPh, finalEmail, googleName);
+            history.replaceState(null, '', location.pathname + '#/account/hub');
+            toast('Welcome back, ' + (existingCust.name || googleName || 'Customer').split(' ')[0] + '! ✓');
+            return await account('hub', new URLSearchParams());
           }
         }
-      }
-    } catch(e){
-      console.error('OAuth redirect processing error:', e);
+      } catch(e){}
+
+      // New customer or no phone saved yet: clean URL to #/login and immediately display confirmation screen
+      history.replaceState(null, '', location.pathname + '#/login');
+      return await loginView(user);
     }
     history.replaceState(null, '', location.pathname + '#/login');
   }
