@@ -1488,6 +1488,9 @@ async function loginView(passedUser = null){
 
   // --- STATE 1: ALREADY LOGGED IN ---
   if(p){
+    window._confirmingDetails = false;
+    hideExitModal();
+    $('#tabbar')?.classList.remove('hidden');
     app.innerHTML = `
       <div class="max-w-sm mx-auto bg-white border border-gray-100 rounded-3xl p-6 sm:p-7 space-y-4 shadow-soft my-6">
         <div class="text-center">
@@ -1556,7 +1559,8 @@ async function loginView(passedUser = null){
   // --- STATE 2: GOOGLE SIGN-IN COMPLETE -> ASK PROFILE NAME & MOBILE NUMBER ---
   if(googleUser){
     window._confirmingDetails = true;
-    $('#tabbar').classList.add('hidden');
+    hideExitModal();
+    $('#tabbar')?.classList.add('hidden');
     const googleRealName = (googleUser.user_metadata?.full_name || googleUser.user_metadata?.name || '').trim();
     const defaultProfileName = (existingCust?.name || googleRealName || (googleUser.email ? googleUser.email.split('@')[0] : '')).trim();
     const defaultPhone = existingCust?.phone ? String(existingCust.phone).replace(/\D/g, '').slice(-10) : '';
@@ -1650,6 +1654,9 @@ async function loginView(passedUser = null){
   }
 
   // --- STATE 3: INITIAL SCREEN (ONLY GOOGLE LOGIN BUTTON) ---
+  window._confirmingDetails = false;
+  hideExitModal();
+  $('#tabbar')?.classList.remove('hidden');
   app.innerHTML = `
     <div class="max-w-sm mx-auto bg-white border border-gray-100 rounded-3xl p-6 sm:p-7 space-y-5 shadow-soft my-6">
       <div class="text-center">
@@ -1952,7 +1959,7 @@ async function route(){
     }
 
     // 3. Lock guard: if user is confirming details in State 2, do not allow routing away
-    if(window._confirmingDetails && !p){
+    if(window._confirmingDetails && !p && rawHash !== '#/login'){
       location.hash = '#/login';
       toast('Please click Confirm & Complete Login to continue');
       return;
@@ -1969,7 +1976,7 @@ async function route(){
       else if(path==='/cart')await cartView();
       else if(path==='/checkout')await checkout();
       else if(path.startsWith('/account'))await account(path.split('/')[2]||'hub',params);
-      else if(path==='/login')await loginView();
+      else if(path==='/login'){ hideExitModal(); await loginView(); }
       else app.innerHTML='<p class="text-center py-20 text-xs text-gray-400">Page not found.</p>';
     }catch(err){console.error(err);app.innerHTML='<p class="text-center text-rose-600 py-20 text-xs">Error: '+esc(err.message||err)+'</p>';}
     window.scrollTo(0,0);
@@ -2015,14 +2022,19 @@ document.addEventListener('click', (e) => {
 }, true);
 
 function showExitModal(){
+  // Never show exit modal if user is confirming details or on login/internal pages
+  if(window._confirmingDetails) return;
+  const h = location.hash || '';
+  if(h.startsWith('#/login') || h.startsWith('#/cart') || h.startsWith('#/account') || h.startsWith('#/p/') || h.startsWith('#/checkout')) return;
+
   exitModalOpen = true;
-  $('#exit-confirm').classList.remove('hidden');
-  $('#exit-stay').focus();
+  $('#exit-confirm')?.classList.remove('hidden');
+  $('#exit-stay')?.focus();
 }
 
 function hideExitModal(){
   exitModalOpen = false;
-  $('#exit-confirm').classList.add('hidden');
+  $('#exit-confirm')?.classList.add('hidden');
 }
 
 function armShopGuard(){
@@ -2082,10 +2094,6 @@ function exitWebsite(){
 
 $('#exit-stay').onclick = () => {
   hideExitModal();
-  if(!location.hash.startsWith('#/shop')){
-    location.hash = '#/shop';
-  }
-  armShopGuard();
 };
 
 $('#exit-leave').onclick = exitWebsite;
@@ -2094,18 +2102,7 @@ $('#exit-leave').onclick = exitWebsite;
 window.addEventListener('popstate', event => {
   if(exitApproved) return;
 
-  // 0. If user is in State 2 (confirming details after Google sign-in), lock them onto #/login
-  if(window._confirmingDetails && !profile()){
-    location.hash = '#/login';
-    toast('Please click Confirm & Complete Login to continue');
-    return;
-  }
-
-  // Ignore popstate triggered by direct tab or anchor clicks
-  if(isLinkNavigation){
-    currentRoute = location.hash || '#/';
-    return;
-  }
+  const current = location.hash || '#/';
 
   // 1. If sort sheet or filter drawer is open, close it without showing exit dialog
   const sortSheet = $('#sort-sheet');
@@ -2119,17 +2116,36 @@ window.addEventListener('popstate', event => {
     return;
   }
 
-  const prev = currentRoute;
-  const next = location.hash || '#/';
+  // 2. If user is in State 2 (confirming details after Google sign-in), lock them onto #/login
+  if(window._confirmingDetails && !profile()){
+    hideExitModal();
+    if(current !== '#/login'){
+      location.hash = '#/login';
+      toast('Please click Confirm & Complete Login to continue');
+    }
+    return;
+  }
 
-  // 2. If user was on a filtered or sorted shop page and presses back, go back normally!
+  // 3. Deliberate navigation (links, tab bar, redirects) or internal routes:
+  // ALWAYS close exit modal and NEVER show exit modal on internal navigation!
+  if(isLinkNavigation || current.startsWith('#/login') || current.startsWith('#/cart') || current.startsWith('#/account') || current.startsWith('#/p/') || current.startsWith('#/checkout')){
+    hideExitModal();
+    currentRoute = current;
+    return;
+  }
+
+  const prev = currentRoute;
+  const next = current;
+
+  // 4. Back navigation within Shop sub-filters or sorts: normal back navigation!
   if(prev.startsWith('#/shop?') && (next === '#/shop' || next.startsWith('#/shop'))){
+    hideExitModal();
     currentRoute = next;
     return;
   }
 
-  // 3. Final back action: ONLY when user is at the clean base Shop tab (#/shop) and attempts to exit the site
-  if((prev === '#/shop' || prev === '#/shop/') && (next === '#/' || next === '' || next === '#' || !next.startsWith('#/shop'))){
+  // 5. Final back action: ONLY when user is at the clean base Shop tab (#/shop) and attempts to exit the site
+  if((prev === '#/shop' || prev === '#/shop/') && (next === '' || next === '#' || next === '#/' || !next.startsWith('#/'))){
     showExitModal();
     // Keep user securely locked onto Shop tab in history
     try {
@@ -2139,8 +2155,8 @@ window.addEventListener('popstate', event => {
     return;
   }
 
-  // 4. If user was on Home and presses back: redirect & lock into Shop tab
-  if(prev === '#/' || prev === '#' || prev === ''){
+  // 6. If user was on Home and presses back: redirect & lock into Shop tab
+  if((prev === '#/' || prev === '#' || prev === '') && (next === '' || next === '#' || !next.startsWith('#/'))){
     location.hash = '#/shop';
     currentRoute = '#/shop';
     return;
@@ -2152,8 +2168,12 @@ window.addEventListener('popstate', event => {
 
 // Lock click interceptor: if user is confirming details after Google sign-in, prevent clicking outside
 document.addEventListener('click', e => {
-  if(window._confirmingDetails && !profile()){
-    const insideCard = e.target.closest('#confirm-details-card') || e.target.closest('#toast');
+  if(window._confirmingDetails && !profile() && (location.hash||'').startsWith('#/login')){
+    // Always allow clicks on the exit modal or toasts so user can never be trapped
+    if(e.target.closest('#exit-confirm') || e.target.closest('#toast')){
+      return;
+    }
+    const insideCard = e.target.closest('#confirm-details-card');
     if(!insideCard){
       e.preventDefault();
       e.stopPropagation();
@@ -2164,6 +2184,12 @@ document.addEventListener('click', e => {
 }, true);
 
 $('#nav-back').onclick = () => {
+  // If user is confirming details on login, keep user on login
+  if(window._confirmingDetails && !profile() && (location.hash||'').startsWith('#/login')){
+    toast('Please click Confirm & Complete Login to continue');
+    return;
+  }
+
   // 1. If sort sheet or filter drawer is open, close it
   const sortSheet = $('#sort-sheet');
   if(sortSheet && !sortSheet.classList.contains('hidden')){
