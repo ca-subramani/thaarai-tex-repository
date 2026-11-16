@@ -1840,23 +1840,18 @@ CREATE POLICY "Public access to customers" ON public.customers FOR ALL USING (tr
 
       view.innerHTML = `
         <div class="space-y-6 max-w-5xl mx-auto pb-10">
-          <!-- Top bar: Back to list button & ID badge -->
+          <!-- Top bar: Customer ID badge & actions -->
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
-            <div class="flex items-center gap-3 min-w-0">
-              <button onclick="backToCustomersList()" class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 transition shadow-xs shrink-0">
-                ${SVG.arrowLeft} <span>Back</span>
-              </button>
-              <div class="min-w-0">
-                <div class="flex items-center gap-2 flex-wrap">
-                  <h2 class="text-xl font-black text-slate-900 font-mono">${esc(c.customer_id)}</h2>
-                  <span class="rounded-full px-2.5 py-0.5 text-xs font-extrabold uppercase border bg-emerald-50 text-emerald-800 border-emerald-200">
-                    Active Customer
-                  </span>
-                </div>
-                <p class="text-xs text-slate-500 mt-0.5">
-                  Member since ${date(c.created_at)} · Last active ${date(c.last_active)}
-                </p>
+            <div class="min-w-0">
+              <div class="flex items-center gap-2 flex-wrap">
+                <h2 class="text-xl font-black text-slate-900 font-mono">${esc(c.customer_id)}</h2>
+                <span class="rounded-full px-2.5 py-0.5 text-xs font-extrabold uppercase border bg-emerald-50 text-emerald-800 border-emerald-200">
+                  Active Customer
+                </span>
               </div>
+              <p class="text-xs text-slate-500 mt-0.5">
+                Member since ${date(c.created_at)} · Last active ${date(c.last_active)}
+              </p>
             </div>
             <div class="flex items-center gap-2 shrink-0 self-end sm:self-auto">
               ${cleanPh ? `
@@ -2259,28 +2254,23 @@ CREATE POLICY "Public access to customers" ON public.customers FOR ALL USING (tr
 
       view.innerHTML = `
         <div class="space-y-6 max-w-5xl mx-auto pb-16">
-          <!-- Top Navigation & Action Header -->
+          <!-- Top Action Header -->
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
-            <div class="flex items-center gap-3 min-w-0">
-              <button type="button" onclick="backToProductsList()" class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 transition shadow-xs shrink-0">
-                ${SVG.arrowLeft} <span>Back</span>
-              </button>
-              <div class="min-w-0">
-                <div class="flex items-center gap-2 flex-wrap">
-                  <h2 class="text-xl font-black text-slate-900 truncate">${isNew ? 'Add New Saree' : esc(p.name || 'Edit Saree')}</h2>
-                  <span class="font-mono text-xs font-black bg-indigo-50 text-indigo-900 border border-indigo-200/80 px-2.5 py-0.5 rounded-lg select-all">
-                    ${esc(prodId)}
+            <div class="min-w-0">
+              <div class="flex items-center gap-2 flex-wrap">
+                <h2 class="text-xl font-black text-slate-900 truncate">${isNew ? 'Add New Saree' : esc(p.name || 'Edit Saree')}</h2>
+                <span class="font-mono text-xs font-black bg-indigo-50 text-indigo-900 border border-indigo-200/80 px-2.5 py-0.5 rounded-lg select-all">
+                  ${esc(prodId)}
+                </span>
+                ${!isNew ? `
+                  <span class="rounded-full px-2.5 py-0.5 text-[10px] font-extrabold uppercase border ${p.active ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : 'bg-slate-100 text-slate-600 border-slate-200'}">
+                    ${p.active ? '● LIVE' : '○ HIDDEN'}
                   </span>
-                  ${!isNew ? `
-                    <span class="rounded-full px-2.5 py-0.5 text-[10px] font-extrabold uppercase border ${p.active ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : 'bg-slate-100 text-slate-600 border-slate-200'}">
-                      ${p.active ? '● LIVE' : '○ HIDDEN'}
-                    </span>
-                  ` : ''}
-                </div>
-                <p class="text-xs text-slate-500 mt-0.5">
-                  ${isNew ? 'Fill in details below to publish a new saree to your catalog.' : `Permanent Product ID: <span class="font-mono font-bold text-indigo-950">${esc(prodId)}</span> · Last updated ${date(p.updated_at || p.created_at)}`}
-                </p>
+                ` : ''}
               </div>
+              <p class="text-xs text-slate-500 mt-0.5">
+                ${isNew ? 'Fill in details below to publish a new saree to your catalog.' : `Permanent Product ID: <span class="font-mono font-bold text-indigo-950">${esc(prodId)}</span> · Last updated ${date(p.updated_at || p.created_at)}`}
+              </p>
             </div>
             
             <div class="flex items-center gap-2 shrink-0 self-end sm:self-auto">
@@ -2820,15 +2810,10 @@ CREATE POLICY "Public access to customers" ON public.customers FOR ALL USING (tr
           <div class="rounded-2xl border border-slate-200 bg-white shadow-xs overflow-hidden">
             <!-- Top Controls Row -->
             <div class="p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100">
-              <div class="flex items-center gap-3.5 min-w-0">
-                <button type="button" onclick="backToOrdersList()" class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 px-3.5 py-2 text-xs font-bold text-slate-700 transition shrink-0 active:scale-95">
-                  ${SVG.arrowLeft} <span>Back</span>
-                </button>
-                <div class="h-6 w-px bg-slate-200 shrink-0 hidden sm:block"></div>
-                <div class="min-w-0">
-                  <div class="flex items-center gap-2 flex-wrap">
-                    <span class="text-xs font-bold text-slate-400">Order</span>
-                    <h2 class="text-lg sm:text-xl font-black text-slate-900 font-mono tracking-tight">#TT-${esc(orderShortId)}</h2>
+              <div class="min-w-0">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <span class="text-xs font-bold text-slate-400">Order</span>
+                  <h2 class="text-lg sm:text-xl font-black text-slate-900 font-mono tracking-tight">#TT-${esc(orderShortId)}</h2>
                     <button type="button" onclick="copyOrderText('${esc(o.id)}', 'Order ID')" title="Copy Order ID" class="text-slate-400 hover:text-slate-700 transition p-1">
                       ${SVG.copy}
                     </button>
@@ -2848,7 +2833,6 @@ CREATE POLICY "Public access to customers" ON public.customers FOR ALL USING (tr
                     <span class="font-bold text-slate-900">Total: ${fmt(o.total)}</span>
                   </p>
                 </div>
-              </div>
 
               <!-- Top Action Buttons -->
               <div class="flex items-center gap-2 shrink-0 self-end sm:self-auto">
