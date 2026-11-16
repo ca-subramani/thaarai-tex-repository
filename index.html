@@ -86,14 +86,7 @@ input,select,textarea{font-size:16px!important}
 </nav>
 
 <div id="toast" class="fixed bottom-24 sm:bottom-4 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-xs px-4 py-2.5 rounded-full shadow-soft hidden z-50"></div>
-<div id="exit-confirm" class="hidden fixed inset-0 z-[100] grid place-items-center bg-slate-950/60 backdrop-blur-sm p-5" role="presentation">
-  <section role="dialog" aria-modal="true" aria-labelledby="exit-title" class="w-full max-w-sm rounded-3xl bg-white p-6 text-center shadow-2xl border border-gray-100">
-    <div class="w-12 h-12 mx-auto rounded-full bg-slate-100 flex items-center justify-center text-slate-800 mb-3"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg></div>
-    <h2 id="exit-title" class="text-lg font-extrabold text-slate-900">Leave Thaarai Tex?</h2>
-    <p class="mt-2 text-xs text-slate-600 leading-relaxed">Are you sure you want to exit the store?</p>
-    <div class="mt-6 grid grid-cols-2 gap-3"><button id="exit-stay" class="rounded-xl border border-slate-200 px-4 py-3 text-xs font-bold text-slate-700 hover:bg-slate-50 transition">Stay here</button><button id="exit-leave" class="rounded-xl bg-slate-900 px-4 py-3 text-xs font-bold text-white hover:bg-slate-800 transition">Exit</button></div>
-  </section>
-</div>
+<!-- Back navigation is permanently locked to Shop tab (no exit popups) -->
 
 <script>
 /* ===== CONFIG ===== */
@@ -562,10 +555,24 @@ async function cartLines(){
 async function couponDiscount(sub){
   if(!coupon || !sb)return 0;
   try{
-    const {data}=await sb.rpc('check_coupon',{p_code:coupon,p_subtotal:sub});
-    return Number(data)||0;
-  }catch{return 0;}
+    const {data, error}=await sb.rpc('check_coupon',{p_code:coupon,p_subtotal:sub});
+    if(!error && Number(data)>0) return Number(data);
+  }catch(e){}
+  try{
+    const {data, error}=await sb.from('coupons').select('*').ilike('code',coupon).eq('active',true).maybeSingle();
+    if(!error && data){
+      const minTotal = Number(data.min_total || data.minimum_order || 0);
+      if(sub >= minTotal){
+        const pct = Number(data.percent || data.discount_percent || data.discount || 0);
+        if(pct > 0){
+          return Math.round((sub * pct) / 100);
+        }
+      }
+    }
+  }catch(e){}
+  return 0;
 }
+
 
 /* ===== CARDS & VIEWS ===== */
 function card(p){
@@ -740,208 +747,679 @@ async function home(){
 }
 
 async function shop(params){
-  const f={q:params.get('q')||'',cat:params.get('cat')||'',fabric:params.get('fabric')||'',min:params.get('min')||'',max:params.get('max')||'',sort:params.get('sort')||'new',stock:params.get('stock')||''};
-  let cats=[];
-  try{ if(sb){ const res=await sb.from('categories').select('*'); cats=res.data||[]; } }catch{}
-  
-  let q=sb?sb.from('products').select('*').eq('active',true):null;
-  let data=[];
+  const $$ = s => Array.from(document.querySelectorAll(s));
+
+  const f = {
+    q: params.get('q') || '',
+    cat: params.get('cat') || '',
+    fabric: params.get('fabric') || '',
+    rating: params.get('rating') || '',
+    min: params.get('min') || '',
+    max: params.get('max') || '',
+    sort: params.get('sort') || 'new',
+    stock: params.get('stock') || '',
+    color: params.get('color') || ''
+  };
+
+  let cats = [];
+  try {
+    if(sb){
+      const res = await sb.from('categories').select('*').order('name');
+      cats = res.data || [];
+    }
+  } catch(e){}
+
+  let q = sb ? sb.from('products').select('*').eq('active', true) : null;
+  let data = [];
   if(q){
-    if(f.q)q=q.or(`name.ilike.%${f.q.replace(/[%,()]/g,'')}%,description.ilike.%${f.q.replace(/[%,()]/g,'')}%`);
-    if(f.cat)q=q.eq('category_id',f.cat);
-    if(f.fabric)q=q.eq('fabric',f.fabric);
-    if(f.min)q=q.gte('price',+f.min);
-    if(f.max)q=q.lte('price',+f.max);
-    if(f.stock)q=q.gt('stock',0);
-    q=f.sort==='low'?q.order('price'):f.sort==='high'?q.order('price',{ascending:false}):q.order('created_at',{ascending:false});
-    try{ const res=await q; data=res.data||[]; }catch{}
+    if(f.q) q = q.or(`name.ilike.%${f.q.replace(/[%,()]/g,'')}%,description.ilike.%${f.q.replace(/[%,()]/g,'')}%`);
+    if(f.cat){
+      const matchedCat = cats.find(c => c.id === f.cat || (c.name && c.name.toLowerCase() === f.cat.toLowerCase()));
+      if(matchedCat){
+        q = q.eq('category_id', matchedCat.id);
+      } else {
+        q = q.or(`category_id.eq.${f.cat},fabric.ilike.%${f.cat.replace(/[%,()]/g,'')}%,name.ilike.%${f.cat.replace(/[%,()]/g,'')}%`);
+      }
+    }
+    if(f.fabric) q = q.ilike('fabric', `%${f.fabric}%`);
+    if(f.color) q = q.ilike('color', `%${f.color}%`);
+    if(f.min) q = q.gte('price', +f.min);
+    if(f.max) q = q.lte('price', +f.max);
+    if(f.stock) q = q.gt('stock', 0);
+
+    if(f.sort === 'low') q = q.order('price');
+    else if(f.sort === 'high') q = q.order('price', {ascending: false});
+    else if(f.sort === 'discount') q = q.order('mrp', {ascending: false});
+    else q = q.order('created_at', {ascending: false});
+
+    try {
+      const res = await q;
+      data = res.data || [];
+    } catch(err){
+      try {
+        const fallbackRes = await sb.from('products').select('*').eq('active', true);
+        data = fallbackRes.data || [];
+      } catch(e2){}
+    }
   }
 
-  const shopUI = SET.shop_ui || {};
-  const fabricList = shopUI.fabrics?.length ? shopUI.fabrics : ['Silk','Cotton','Semi Silk','Linen'];
+  // Client-side ratings & custom sorting/filtering
+  let ratingsMap = {};
+  try {
+    if(sb && (f.rating || f.sort === 'rating')){
+      const { data: revData } = await sb.from('reviews').select('product_id, rating');
+      if(revData && revData.length > 0){
+        const counts = {}, sums = {};
+        revData.forEach(r => {
+          counts[r.product_id] = (counts[r.product_id] || 0) + 1;
+          sums[r.product_id] = (sums[r.product_id] || 0) + (r.rating || 0);
+        });
+        Object.keys(counts).forEach(pid => {
+          ratingsMap[pid] = sums[pid] / counts[pid];
+        });
+      }
+    }
+  } catch(e){}
 
-  // Custom Pill helper
-  const pill = (val, current, label) => `<button type="button" data-val="${val}" class="filter-pill px-4 py-2 rounded-full border text-[11px] font-bold transition-colors duration-200 ${current===val ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'}">${esc(label)}</button>`;
+  if(f.rating){
+    const minR = Number(f.rating);
+    if(minR > 0){
+      data = data.filter(p => {
+        const r = ratingsMap[p.id] !== undefined ? ratingsMap[p.id] : (p.rating ? Number(p.rating) : 4.5);
+        return r >= minR;
+      });
+    }
+  }
 
-  // Custom Radio helper
-  const radio = (val, current, label) => `<label class="flex items-center justify-between p-3 border border-gray-100 rounded-2xl cursor-pointer hover:bg-gray-50 transition-colors">
-    <span class="text-xs font-semibold text-gray-800">${esc(label)}</span>
-    <div class="relative w-5 h-5 rounded-full border-2 ${current===val ? 'border-emerald-500' : 'border-gray-300'} flex items-center justify-center">
-        <div class="w-2.5 h-2.5 rounded-full bg-emerald-500 transition-transform duration-200 ${current===val ? 'scale-100' : 'scale-0'}"></div>
-    </div>
-    <input type="radio" name="sort-radio" value="${val}" class="hidden" ${current===val ? 'checked' : ''}>
-  </label>`;
+  if(f.sort === 'rating'){
+    data.sort((a,b) => {
+      const rA = ratingsMap[a.id] !== undefined ? ratingsMap[a.id] : (a.rating ? Number(a.rating) : 4.5);
+      const rB = ratingsMap[b.id] !== undefined ? ratingsMap[b.id] : (b.rating ? Number(b.rating) : 4.5);
+      return rB - rA;
+    });
+  } else if(f.sort === 'discount'){
+    data.sort((a,b) => {
+      const dA = a.mrp && a.price ? (a.mrp - a.price) / a.mrp : 0;
+      const dB = b.mrp && b.price ? (b.mrp - b.price) / b.mrp : 0;
+      return dB - dA;
+    });
+  }
 
-  app.innerHTML=`
+  // Standard category options
+  const defaultCats = [
+    { id: '', name: 'All Categories' },
+    { id: 'cotton', name: 'Cotton' },
+    { id: 'silk', name: 'Silk' },
+    { id: 'poonam', name: 'Poonam' },
+    { id: 'soft-silk', name: 'Soft Silk' },
+    { id: 'pure-silk', name: 'Pure Silk' },
+    { id: 'kanjivaram', name: 'Kanjivaram' },
+    { id: 'handloom', name: 'Handloom' },
+    { id: 'fancy', name: 'Fancy Sarees' },
+    { id: 'daily-wear', name: 'Daily Wear' }
+  ];
+  const allCategoryOptions = [{ id: '', name: 'All Categories' }];
+  if(cats && cats.length){
+    cats.forEach(c => {
+      if(!allCategoryOptions.some(x => x.name.toLowerCase() === c.name.toLowerCase())){
+        allCategoryOptions.push({ id: c.id, name: c.name });
+      }
+    });
+  }
+  defaultCats.slice(1).forEach(dc => {
+    if(!allCategoryOptions.some(x => x.name.toLowerCase() === dc.name.toLowerCase())){
+      allCategoryOptions.push(dc);
+    }
+  });
+
+  const allFabrics = [
+    { val: '', label: 'All Fabrics' },
+    { val: 'Cotton', label: 'Cotton' },
+    { val: 'Silk', label: 'Silk' },
+    { val: 'Poonam', label: 'Poonam' },
+    { val: 'Soft Silk', label: 'Soft Silk' },
+    { val: 'Pure Silk', label: 'Pure Silk' },
+    { val: 'Linen', label: 'Linen' },
+    { val: 'Georgette', label: 'Georgette' },
+    { val: 'Chiffon', label: 'Chiffon' },
+    { val: 'Rayon', label: 'Rayon' },
+    { val: 'Banarasi', label: 'Banarasi' },
+    { val: 'Organza', label: 'Organza' },
+    { val: 'Semi Silk', label: 'Semi Silk' },
+    { val: 'Art Silk', label: 'Art Silk' },
+    { val: 'Crepe', label: 'Crepe' }
+  ];
+
+  const allRatings = [
+    { val: '', label: 'All Ratings' },
+    { val: '4', label: '4★ & above (Top Rated)' },
+    { val: '3', label: '3★ & above (Popular)' },
+    { val: '2', label: '2★ & above' }
+  ];
+
+  const allPriceTiers = [
+    { min: '', max: '', label: 'All Prices' },
+    { min: '', max: '1000', label: 'Under ₹1,000' },
+    { min: '1000', max: '2500', label: '₹1,000 - ₹2,500' },
+    { min: '2500', max: '5000', label: '₹2,500 - ₹5,000' },
+    { min: '5000', max: '', label: 'Above ₹5,000' }
+  ];
+
+  const allAvailability = [
+    { val: '', label: 'All Sarees (Show All)' },
+    { val: '1', label: 'In Stock Only (Ready to Dispatch)' }
+  ];
+
+  const allColours = [
+    { val: '', label: 'All Colours', hex: '' },
+    { val: 'Red', label: 'Red', hex: '#ef4444' },
+    { val: 'Pink', label: 'Pink', hex: '#ec4899' },
+    { val: 'Blue', label: 'Blue', hex: '#3b82f6' },
+    { val: 'Green', label: 'Green', hex: '#10b981' },
+    { val: 'Yellow', label: 'Yellow', hex: '#eab308' },
+    { val: 'Maroon', label: 'Maroon', hex: '#881337' },
+    { val: 'Purple', label: 'Purple', hex: '#a855f7' },
+    { val: 'Black', label: 'Black', hex: '#0f172a' },
+    { val: 'Orange', label: 'Orange', hex: '#f97316' },
+    { val: 'White', label: 'White', hex: '#f8fafc', border: true },
+    { val: 'Peach', label: 'Peach', hex: '#fdba74' },
+    { val: 'Navy Blue', label: 'Navy Blue', hex: '#1e3a8a' },
+    { val: 'Grey', label: 'Grey', hex: '#64748b' },
+    { val: 'Multicolor', label: 'Multicolor', gradient: true }
+  ];
+
+  const allSorts = [
+    { val: 'new', label: 'Newest Arrivals', desc: 'Latest handloom saree releases added to collection' },
+    { val: 'low', label: 'Price: Low to High', desc: 'Most affordable and budget-friendly sarees first' },
+    { val: 'high', label: 'Price: High to Low', desc: 'Luxury, pure silk, and premium bridal sarees first' },
+    { val: 'rating', label: 'Top Rated & Reviews', desc: 'Highest rated sarees loved by verified customers' },
+    { val: 'discount', label: 'Biggest Discounts', desc: 'Highest savings and clearance offers first' }
+  ];
+
+  // Helper labels for active badges
+  const currentCatObj = allCategoryOptions.find(c => c.id === f.cat || (f.cat && c.name.toLowerCase() === f.cat.toLowerCase()));
+  const currentCatLabel = currentCatObj ? currentCatObj.name : (f.cat || '');
+
+  const currentFabObj = allFabrics.find(fb => fb.val.toLowerCase() === f.fabric.toLowerCase());
+  const currentFabLabel = currentFabObj ? currentFabObj.label : (f.fabric || '');
+
+  const currentRatingLabel = f.rating ? `${f.rating}★ & above` : '';
+  const currentPriceLabel = (f.min || f.max) ? (f.min && f.max ? `₹${f.min}-₹${f.max}` : f.min ? `>₹${f.min}` : `<₹${f.max}`) : '';
+  const currentAvailLabel = f.stock ? 'In Stock' : '';
+  const currentColorLabel = f.color || '';
+  const currentSortObj = allSorts.find(s => s.val === f.sort);
+  const currentSortLabel = (currentSortObj && f.sort !== 'new') ? currentSortObj.label : '';
+
+  app.innerHTML = `
   <div class="grid md:grid-cols-[280px_1fr] gap-6 items-start">
     
-    <!-- Mobile filter controls -->
+    <!-- Mobile Filter & Sort Control Buttons -->
     <div class="md:hidden col-span-full grid grid-cols-2 gap-2">
-      <button id="ftg" type="button" class="flex items-center justify-center gap-2 bg-white rounded-2xl px-4 py-3.5 text-xs font-bold border border-gray-200 shadow-soft text-slate-800">${ICONS.filter} Filter</button>
-      <button id="sort-open" type="button" class="flex items-center justify-center gap-2 bg-white rounded-2xl px-4 py-3.5 text-xs font-bold border border-gray-200 shadow-soft text-slate-800">↕ Sort by</button>
+      <button id="ftg" type="button" class="flex items-center justify-center gap-2 bg-white rounded-2xl px-4 py-3.5 text-xs font-bold border border-gray-200 shadow-soft text-slate-800 hover:bg-slate-50 transition">
+        ${ICONS.filter} Filter
+      </button>
+      <button id="sort-open" type="button" class="flex items-center justify-center gap-2 bg-white rounded-2xl px-4 py-3.5 text-xs font-bold border border-gray-200 shadow-soft text-slate-800 hover:bg-slate-50 transition">
+        ↕ Sort by
+      </button>
     </div>
 
-    <!-- Filter sheet / desktop sidebar -->
-    <aside id="fl" class="hidden fixed inset-0 z-50 bg-white p-5 space-y-6 overflow-y-auto no-scrollbar md:sticky md:top-24 md:z-auto md:block md:max-h-[85vh] md:rounded-3xl md:border md:border-gray-100 md:shadow-soft">
+    <!-- Filter Drawer (Mobile full page sheet & Desktop sticky sidebar) -->
+    <aside id="fl" class="hidden fixed inset-0 z-50 bg-white flex flex-col md:sticky md:top-24 md:z-auto md:block md:max-h-[88vh] md:rounded-3xl md:border md:border-gray-100 md:shadow-soft overflow-hidden">
       
-      <div class="sticky top-0 z-10 flex items-center justify-between bg-white pb-4 border-b border-gray-100">
-         <button id="filter-close" class="md:hidden text-gray-500 text-xl" aria-label="Close filters">×</button>
-         <h2 class="text-base font-extrabold text-gray-900">${esc(shopUI.title || 'Filter')}</h2>
-         <button id="f-reset" class="text-[11px] font-bold text-gray-500 hover:text-slate-900 transition-colors flex items-center gap-1"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg> Reset All</button>
+      <!-- Drawer Top Bar -->
+      <div class="sticky top-0 z-10 flex items-center justify-between bg-white px-5 py-4 border-b border-gray-100">
+        <button id="filter-close" class="md:hidden w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-700 text-lg font-bold" aria-label="Close filters">×</button>
+        <h2 class="text-sm font-extrabold text-slate-900 uppercase tracking-wider">Filters</h2>
+        <button id="f-reset" type="button" class="text-xs font-bold text-rose-600 hover:text-rose-700 transition flex items-center gap-1">Reset All</button>
       </div>
 
-      <!-- Categories -->
-      <div>
-         <h3 class="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3">Categories</h3>
-         <div class="flex flex-wrap gap-2" id="cat-group">
-            ${pill('', f.cat, 'All')}
-            ${cats.map(c=>pill(c.id, f.cat, c.name)).join('')}
-         </div>
-      </div>
-
-      <!-- Fabric -->
-      <div>
-         <h3 class="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3">Fabric</h3>
-         <div class="flex flex-wrap gap-2" id="fab-group">
-            ${pill('', f.fabric, 'All')}
-            ${fabricList.map(fb=>pill(fb, f.fabric, fb)).join('')}
-         </div>
-      </div>
-
-      <!-- Price Range -->
-      <div>
-         <h3 class="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3">Price Range</h3>
-         <div class="flex items-center gap-3">
-            <div class="relative flex-1">
-               <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs font-semibold">₹</span>
-               <input id="f-min" type="number" placeholder="Min" value="${esc(f.min)}" class="w-full pl-7 pr-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-700 outline-none focus:bg-white focus:border-slate-900 transition-colors">
+      <!-- 7 Collapsible Accordion Toggle Lines -->
+      <div class="flex-1 overflow-y-auto p-4 space-y-1 divide-y divide-gray-100/80">
+        
+        <!-- 1. Categories > -->
+        <div class="py-1">
+          <button type="button" class="f-acc-toggle w-full flex items-center justify-between py-3 px-2 rounded-xl text-left hover:bg-slate-50 transition group" data-acc="categories">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-bold text-slate-800 group-hover:text-slate-950">categories</span>
+              <span class="f-badge text-[10px] font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full ${currentCatLabel ? '' : 'hidden'}" id="badge-categories">${esc(currentCatLabel)}</span>
             </div>
-            <span class="text-gray-300 font-bold">-</span>
-            <div class="relative flex-1">
-               <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs font-semibold">₹</span>
-               <input id="f-max" type="number" placeholder="Max" value="${esc(f.max)}" class="w-full pl-7 pr-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-700 outline-none focus:bg-white focus:border-slate-900 transition-colors">
+            <span class="f-chevron text-xs font-bold text-gray-400 group-hover:text-slate-800 transition-transform duration-200">›</span>
+          </button>
+          <div id="acc-categories" class="f-acc-panel hidden pt-1 pb-2 px-1 space-y-1">
+            ${allCategoryOptions.map(c => {
+              const isSel = (!f.cat && !c.id) || (f.cat && (f.cat === c.id || f.cat.toLowerCase() === c.name.toLowerCase()));
+              return `
+              <label class="f-opt-row flex items-center justify-between py-2 px-2.5 rounded-xl cursor-pointer hover:bg-slate-50 transition ${isSel ? 'bg-slate-900 text-white font-bold' : 'text-slate-700 font-medium'}" data-type="cat" data-val="${esc(c.id || c.name)}" data-label="${esc(c.name)}">
+                <span class="text-xs capitalize">${esc(c.name)}</span>
+                <span class="f-check w-4 h-4 rounded-full border flex items-center justify-center ${isSel ? 'border-white bg-white text-slate-900 text-[10px] font-black' : 'border-gray-300'}">${isSel ? '✓' : ''}</span>
+                <input type="radio" name="opt-cat" value="${esc(c.id || c.name)}" class="sr-only" ${isSel ? 'checked' : ''}>
+              </label>`;
+            }).join('')}
+          </div>
+        </div>
+
+        <!-- 2. Fabric > -->
+        <div class="py-1">
+          <button type="button" class="f-acc-toggle w-full flex items-center justify-between py-3 px-2 rounded-xl text-left hover:bg-slate-50 transition group" data-acc="fabric">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-bold text-slate-800 group-hover:text-slate-950">fabric</span>
+              <span class="f-badge text-[10px] font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full ${currentFabLabel ? '' : 'hidden'}" id="badge-fabric">${esc(currentFabLabel)}</span>
             </div>
-         </div>
-      </div>
+            <span class="f-chevron text-xs font-bold text-gray-400 group-hover:text-slate-800 transition-transform duration-200">›</span>
+          </button>
+          <div id="acc-fabric" class="f-acc-panel hidden pt-1 pb-2 px-1 space-y-1">
+            ${allFabrics.map(fb => {
+              const isSel = (f.fabric.toLowerCase() === fb.val.toLowerCase());
+              return `
+              <label class="f-opt-row flex items-center justify-between py-2 px-2.5 rounded-xl cursor-pointer hover:bg-slate-50 transition ${isSel ? 'bg-slate-900 text-white font-bold' : 'text-slate-700 font-medium'}" data-type="fabric" data-val="${esc(fb.val)}" data-label="${esc(fb.label)}">
+                <span class="text-xs capitalize">${esc(fb.label)}</span>
+                <span class="f-check w-4 h-4 rounded-full border flex items-center justify-center ${isSel ? 'border-white bg-white text-slate-900 text-[10px] font-black' : 'border-gray-300'}">${isSel ? '✓' : ''}</span>
+                <input type="radio" name="opt-fabric" value="${esc(fb.val)}" class="sr-only" ${isSel ? 'checked' : ''}>
+              </label>`;
+            }).join('')}
+          </div>
+        </div>
 
-      <!-- Sort By -->
-      <div class="hidden md:block">
-         <h3 class="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3">Sort By</h3>
-         <div class="space-y-2" id="sort-group">
-            ${radio('new', f.sort, shopUI.sortNewest || 'Newest Arrivals')}
-            ${radio('low', f.sort, shopUI.sortLow || 'Price: Low to High')}
-            ${radio('high', f.sort, shopUI.sortHigh || 'Price: High to Low')}
-         </div>
-      </div>
-
-      <!-- Stock Toggle -->
-      <div class="pt-2">
-         <label class="flex items-center justify-between cursor-pointer group">
-            <span class="text-xs font-bold text-gray-800">Show only in stock</span>
-            <div class="relative inline-flex items-center">
-               <input type="checkbox" id="f-stock" class="sr-only peer" ${f.stock?'checked':''}>
-               <div class="w-10 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+        <!-- 3. Ratings > -->
+        <div class="py-1">
+          <button type="button" class="f-acc-toggle w-full flex items-center justify-between py-3 px-2 rounded-xl text-left hover:bg-slate-50 transition group" data-acc="ratings">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-bold text-slate-800 group-hover:text-slate-950">ratings</span>
+              <span class="f-badge text-[10px] font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full ${currentRatingLabel ? '' : 'hidden'}" id="badge-ratings">${esc(currentRatingLabel)}</span>
             </div>
-         </label>
+            <span class="f-chevron text-xs font-bold text-gray-400 group-hover:text-slate-800 transition-transform duration-200">›</span>
+          </button>
+          <div id="acc-ratings" class="f-acc-panel hidden pt-1 pb-2 px-1 space-y-1">
+            ${allRatings.map(rt => {
+              const isSel = (f.rating === rt.val);
+              return `
+              <label class="f-opt-row flex items-center justify-between py-2 px-2.5 rounded-xl cursor-pointer hover:bg-slate-50 transition ${isSel ? 'bg-slate-900 text-white font-bold' : 'text-slate-700 font-medium'}" data-type="rating" data-val="${esc(rt.val)}" data-label="${esc(rt.label)}">
+                <span class="text-xs">${esc(rt.label)}</span>
+                <span class="f-check w-4 h-4 rounded-full border flex items-center justify-center ${isSel ? 'border-white bg-white text-slate-900 text-[10px] font-black' : 'border-gray-300'}">${isSel ? '✓' : ''}</span>
+                <input type="radio" name="opt-rating" value="${esc(rt.val)}" class="sr-only" ${isSel ? 'checked' : ''}>
+              </label>`;
+            }).join('')}
+          </div>
+        </div>
+
+        <!-- 4. Price > -->
+        <div class="py-1">
+          <button type="button" class="f-acc-toggle w-full flex items-center justify-between py-3 px-2 rounded-xl text-left hover:bg-slate-50 transition group" data-acc="price">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-bold text-slate-800 group-hover:text-slate-950">price</span>
+              <span class="f-badge text-[10px] font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full ${currentPriceLabel ? '' : 'hidden'}" id="badge-price">${esc(currentPriceLabel)}</span>
+            </div>
+            <span class="f-chevron text-xs font-bold text-gray-400 group-hover:text-slate-800 transition-transform duration-200">›</span>
+          </button>
+          <div id="acc-price" class="f-acc-panel hidden pt-1 pb-2 px-1 space-y-2">
+            <div class="space-y-1">
+              ${allPriceTiers.map(pt => `
+                <button type="button" class="price-tier-btn w-full flex items-center justify-between py-2 px-2.5 rounded-xl text-left text-xs font-medium text-slate-700 hover:bg-slate-50 transition" data-min="${esc(pt.min)}" data-max="${esc(pt.max)}" data-label="${esc(pt.label)}">
+                  <span>${esc(pt.label)}</span>
+                  <span class="text-[10px] text-gray-400">₹</span>
+                </button>
+              `).join('')}
+            </div>
+            <div class="pt-2 border-t border-gray-100">
+              <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1.5">Custom Price Range</span>
+              <div class="flex items-center gap-2">
+                <div class="relative flex-1">
+                  <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs font-semibold">₹</span>
+                  <input id="f-min" type="number" placeholder="Min" value="${esc(f.min)}" class="w-full pl-7 pr-2 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 outline-none focus:bg-white focus:border-slate-900 transition">
+                </div>
+                <span class="text-gray-300 font-bold">-</span>
+                <div class="relative flex-1">
+                  <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs font-semibold">₹</span>
+                  <input id="f-max" type="number" placeholder="Max" value="${esc(f.max)}" class="w-full pl-7 pr-2 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 outline-none focus:bg-white focus:border-slate-900 transition">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. Availability > -->
+        <div class="py-1">
+          <button type="button" class="f-acc-toggle w-full flex items-center justify-between py-3 px-2 rounded-xl text-left hover:bg-slate-50 transition group" data-acc="availability">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-bold text-slate-800 group-hover:text-slate-950">avaialability</span>
+              <span class="f-badge text-[10px] font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full ${currentAvailLabel ? '' : 'hidden'}" id="badge-availability">${esc(currentAvailLabel)}</span>
+            </div>
+            <span class="f-chevron text-xs font-bold text-gray-400 group-hover:text-slate-800 transition-transform duration-200">›</span>
+          </button>
+          <div id="acc-availability" class="f-acc-panel hidden pt-1 pb-2 px-1 space-y-1">
+            ${allAvailability.map(av => {
+              const isSel = (f.stock === av.val);
+              return `
+              <label class="f-opt-row flex items-center justify-between py-2 px-2.5 rounded-xl cursor-pointer hover:bg-slate-50 transition ${isSel ? 'bg-slate-900 text-white font-bold' : 'text-slate-700 font-medium'}" data-type="stock" data-val="${esc(av.val)}" data-label="${esc(av.label)}">
+                <span class="text-xs">${esc(av.label)}</span>
+                <span class="f-check w-4 h-4 rounded-full border flex items-center justify-center ${isSel ? 'border-white bg-white text-slate-900 text-[10px] font-black' : 'border-gray-300'}">${isSel ? '✓' : ''}</span>
+                <input type="radio" name="opt-stock" value="${esc(av.val)}" class="sr-only" ${isSel ? 'checked' : ''}>
+              </label>`;
+            }).join('')}
+          </div>
+        </div>
+
+        <!-- 6. Colour > -->
+        <div class="py-1">
+          <button type="button" class="f-acc-toggle w-full flex items-center justify-between py-3 px-2 rounded-xl text-left hover:bg-slate-50 transition group" data-acc="colour">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-bold text-slate-800 group-hover:text-slate-950">colour</span>
+              <span class="f-badge text-[10px] font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full ${currentColorLabel ? '' : 'hidden'}" id="badge-colour">${esc(currentColorLabel)}</span>
+            </div>
+            <span class="f-chevron text-xs font-bold text-gray-400 group-hover:text-slate-800 transition-transform duration-200">›</span>
+          </button>
+          <div id="acc-colour" class="f-acc-panel hidden pt-1 pb-2 px-1 space-y-1">
+            ${allColours.map(cl => {
+              const isSel = (f.color.toLowerCase() === cl.val.toLowerCase());
+              return `
+              <label class="f-opt-row flex items-center justify-between py-2 px-2.5 rounded-xl cursor-pointer hover:bg-slate-50 transition ${isSel ? 'bg-slate-900 text-white font-bold' : 'text-slate-700 font-medium'}" data-type="color" data-val="${esc(cl.val)}" data-label="${esc(cl.label)}">
+                <div class="flex items-center gap-2.5">
+                  ${cl.val ? (cl.gradient ? `<span class="w-4 h-4 rounded-full bg-gradient-to-tr from-pink-500 via-yellow-400 to-blue-500 shrink-0"></span>` : `<span class="w-4 h-4 rounded-full shrink-0 ${cl.border ? 'border border-gray-300' : ''}" style="background-color: ${cl.hex};"></span>`) : `<span class="w-4 h-4 rounded-full border border-dashed border-gray-300 shrink-0"></span>`}
+                  <span class="text-xs capitalize">${esc(cl.label)}</span>
+                </div>
+                <span class="f-check w-4 h-4 rounded-full border flex items-center justify-center ${isSel ? 'border-white bg-white text-slate-900 text-[10px] font-black' : 'border-gray-300'}">${isSel ? '✓' : ''}</span>
+                <input type="radio" name="opt-color" value="${esc(cl.val)}" class="sr-only" ${isSel ? 'checked' : ''}>
+              </label>`;
+            }).join('')}
+          </div>
+        </div>
+
+        <!-- 7. Sort > -->
+        <div class="py-1">
+          <button type="button" class="f-acc-toggle w-full flex items-center justify-between py-3 px-2 rounded-xl text-left hover:bg-slate-50 transition group" data-acc="sort">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-bold text-slate-800 group-hover:text-slate-950">sort</span>
+              <span class="f-badge text-[10px] font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full ${currentSortLabel ? '' : 'hidden'}" id="badge-sort">${esc(currentSortLabel)}</span>
+            </div>
+            <span class="f-chevron text-xs font-bold text-gray-400 group-hover:text-slate-800 transition-transform duration-200">›</span>
+          </button>
+          <div id="acc-sort" class="f-acc-panel hidden pt-1 pb-2 px-1 space-y-1">
+            ${allSorts.map(st => {
+              const isSel = (f.sort === st.val);
+              return `
+              <label class="f-opt-row flex items-center justify-between py-2 px-2.5 rounded-xl cursor-pointer hover:bg-slate-50 transition ${isSel ? 'bg-slate-900 text-white font-bold' : 'text-slate-700 font-medium'}" data-type="sort" data-val="${esc(st.val)}" data-label="${esc(st.label)}">
+                <span class="text-xs">${esc(st.label)}</span>
+                <span class="f-check w-4 h-4 rounded-full border flex items-center justify-center ${isSel ? 'border-white bg-white text-slate-900 text-[10px] font-black' : 'border-gray-300'}">${isSel ? '✓' : ''}</span>
+                <input type="radio" name="opt-sort" value="${esc(st.val)}" class="sr-only" ${isSel ? 'checked' : ''}>
+              </label>`;
+            }).join('')}
+          </div>
+        </div>
+
       </div>
 
-      <div class="pt-4 border-t border-gray-50 mt-6">
-         <button id="apply" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white shadow-[0_4px_12px_rgba(5,150,105,0.2)] rounded-full py-3.5 font-bold text-xs transition-all">Confirm Filters</button>
+      <!-- Drawer Bottom Sticky Action Bar -->
+      <div class="sticky bottom-0 bg-white p-4 border-t border-gray-100 flex items-center gap-3">
+        <button id="f-clear-btn" type="button" class="flex-1 py-3.5 px-4 rounded-full border border-gray-200 text-xs font-bold text-slate-700 hover:bg-slate-50 transition text-center">Clear</button>
+        <button id="apply" type="button" class="flex-[2] py-3.5 px-4 rounded-full bg-slate-900 hover:bg-slate-800 text-white text-xs font-extrabold shadow-soft transition text-center">Apply Filters</button>
       </div>
     </aside>
 
-    <div id="sort-sheet" class="hidden fixed inset-0 z-[60] flex items-end bg-slate-900/40 backdrop-blur-sm md:hidden">
-      <div class="w-full rounded-t-3xl bg-white p-5 pb-8 shadow-2xl">
-        <div class="flex items-center justify-between border-b border-gray-100 pb-4"><button id="sort-close" aria-label="Close sort options" class="text-xl text-gray-500">×</button><h2 class="font-extrabold text-base text-slate-800">Sort by</h2><button id="sort-reset" class="text-xs font-bold text-emerald-700">Reset</button></div>
-        <div class="py-2" id="sort-mobile">
-          ${[['new',shopUI.sortNewest || 'Recommended'],['low',shopUI.sortLow || 'Price: Low to High'],['high',shopUI.sortHigh || 'Price: High to Low']].map(([value,label])=>`<label class="flex items-center justify-between border-b border-gray-100 py-4 text-sm font-medium text-slate-700"><span>${label}</span><input type="radio" name="mobile-sort" value="${value}" ${f.sort===value?'checked':''} class="h-5 w-5 accent-emerald-600"></label>`).join('')}
+    <!-- Separate Sort Page Modal (Dedicated Page View, NOT a Slidebar) -->
+    <div id="sort-page-modal" class="hidden fixed inset-0 z-[70] bg-white flex flex-col md:inset-0 md:bg-slate-900/50 md:backdrop-blur-sm md:items-center md:justify-center p-0 md:p-6">
+      <div class="w-full h-full md:h-auto md:max-h-[88vh] md:max-w-lg bg-white md:rounded-3xl flex flex-col shadow-2xl overflow-hidden border border-gray-100">
+        <!-- Header with Circular Back Button -->
+        <div class="sticky top-0 z-10 flex items-center justify-between px-5 py-4 bg-white border-b border-gray-100">
+          <button id="sort-page-back" type="button" aria-label="Back to Shop" class="w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-800 flex items-center justify-center transition shadow-sm">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M15 19l-7-7 7-7"/></svg>
+          </button>
+          <div class="text-center">
+            <h2 class="text-base font-extrabold text-slate-900">Sort Sarees</h2>
+            <p class="text-[10px] text-gray-400 font-medium">Choose your viewing preference</p>
+          </div>
+          <button id="sort-page-reset" type="button" class="text-xs font-bold text-rose-600 hover:text-rose-700 px-2 py-1">Reset</button>
         </div>
-        <button id="sort-done" class="w-full rounded-full bg-emerald-600 py-3.5 text-sm font-bold text-white">Apply sorting</button>
+
+        <!-- Scrollable Sort Options -->
+        <div class="flex-1 overflow-y-auto p-5 space-y-3" id="sort-page-options">
+          ${allSorts.map(opt => `
+            <label class="sort-page-card flex items-center justify-between p-4 rounded-2xl border-2 cursor-pointer transition ${f.sort === opt.val ? 'border-slate-900 bg-slate-50/70 shadow-sm' : 'border-gray-100 bg-white hover:border-gray-200'}" data-sort="${opt.val}">
+              <div class="flex-1 pr-3">
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-extrabold text-slate-900">${esc(opt.label)}</span>
+                  ${opt.val === 'new' ? '<span class="text-[9px] font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full">Popular</span>' : ''}
+                </div>
+                <p class="text-[11px] text-gray-500 mt-0.5 font-medium leading-relaxed">${esc(opt.desc)}</p>
+              </div>
+              <div class="sort-page-radio-outer w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${f.sort === opt.val ? 'border-slate-900 bg-slate-900' : 'border-gray-300 bg-white'}">
+                <div class="w-2 h-2 rounded-full bg-white transition-transform ${f.sort === opt.val ? 'scale-100' : 'scale-0'}"></div>
+              </div>
+              <input type="radio" name="sort-page-choice" value="${opt.val}" class="sr-only" ${f.sort === opt.val ? 'checked' : ''}>
+            </label>
+          `).join('')}
+        </div>
+
+        <!-- Sticky Bottom Apply Button -->
+        <div class="sticky bottom-0 bg-white p-5 border-t border-gray-100 shadow-sm">
+          <button id="sort-page-apply" type="button" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-extrabold py-4 rounded-full text-xs sm:text-sm tracking-wide shadow-soft transition">Apply Sorting</button>
+        </div>
       </div>
     </div>
 
-    <!-- Product Listing -->
+    <!-- Product Listing Grid -->
     <section class="min-w-0">
       <div class="flex items-center justify-between mb-4 px-1">
-         <p class="text-xs font-semibold text-gray-500">Showing <span class="text-gray-900 font-extrabold">${data.length}</span> items${f.q?` for "<span class="text-gray-900">${esc(f.q)}</span>"`:''}</p>
+        <p class="text-xs font-semibold text-gray-500">Showing <span class="text-gray-900 font-extrabold">${data.length}</span> sarees${f.q ? ` for "<span class="text-gray-900">${esc(f.q)}</span>"` : ''}</p>
       </div>
       ${grid(data)}
     </section>
   </div>`;
 
-  // Event Listeners for Filters
-  const openFilters=()=>{ $('#fl').classList.remove('hidden'); document.body.style.overflow='hidden'; };
-  const closeFilters=()=>{ $('#fl').classList.add('hidden'); document.body.style.overflow=''; };
-  $('#ftg').onclick=openFilters;
-  $('#filter-close').onclick=closeFilters;
-  $('#sort-open').onclick=()=>$('#sort-sheet').classList.remove('hidden');
-  $('#sort-close').onclick=()=>$('#sort-sheet').classList.add('hidden');
+  // Open / Close Drawer
+  const openFilters = () => { $('#fl').classList.remove('hidden'); document.body.style.overflow = 'hidden'; };
+  const closeFilters = () => { $('#fl').classList.add('hidden'); document.body.style.overflow = ''; };
+  $('#ftg').onclick = openFilters;
+  $('#filter-close').onclick = closeFilters;
 
-  let selectedCat = f.cat;
-  let selectedFab = f.fabric;
-  let selectedSort = f.sort;
+  // Separate Sort Page Modal Open / Close
+  const openSortPage = () => { $('#sort-page-modal').classList.remove('hidden'); document.body.style.overflow = 'hidden'; };
+  const closeSortPage = () => { $('#sort-page-modal').classList.add('hidden'); document.body.style.overflow = ''; };
+  $('#sort-open').onclick = openSortPage;
+  $('#sort-page-back').onclick = closeSortPage;
 
-  const setupPills = (groupId, updateVarCallback) => {
-     const group = $(groupId);
-     if(!group) return;
-     group.addEventListener('click', e => {
-         const btn = e.target.closest('button');
-         if(!btn) return;
-         group.querySelectorAll('button').forEach(b => {
-             b.className = 'filter-pill px-4 py-2 rounded-full border text-[11px] font-bold transition-colors duration-200 bg-white text-gray-600 border-gray-200 hover:bg-gray-50';
-         });
-         btn.className = 'filter-pill px-4 py-2 rounded-full border text-[11px] font-bold transition-colors duration-200 bg-slate-900 text-white border-slate-900';
-         updateVarCallback(btn.dataset.val);
-     });
-  };
-  
-  setupPills('#cat-group', val => selectedCat = val);
-  setupPills('#fab-group', val => selectedFab = val);
+  // Pending filter states
+  let pendingCat = f.cat;
+  let pendingFabric = f.fabric;
+  let pendingRating = f.rating;
+  let pendingMin = f.min;
+  let pendingMax = f.max;
+  let pendingStock = f.stock;
+  let pendingColor = f.color;
+  let pendingSort = f.sort;
 
-  const sortGroup = $('#sort-group');
-  if(sortGroup){
-    sortGroup.addEventListener('change', e => {
-       if(e.target.type === 'radio') {
-           selectedSort = e.target.value;
-           sortGroup.querySelectorAll('label').forEach(lbl => {
-               const isChecked = lbl.querySelector('input').checked;
-               const outer = lbl.querySelector('.border-2');
-               const inner = lbl.querySelector('div > div');
-               if(isChecked) {
-                   outer.classList.replace('border-gray-300', 'border-emerald-500');
-                   inner.classList.replace('scale-0', 'scale-100');
-               } else {
-                   outer.classList.replace('border-emerald-500', 'border-gray-300');
-                   inner.classList.replace('scale-100', 'scale-0');
-               }
-           });
-       }
+  // Accordion Toggle Handlers
+  $$('.f-acc-toggle').forEach(btn => {
+    btn.onclick = (e) => {
+      e.preventDefault();
+      const accKey = btn.dataset.acc;
+      const panel = $(`#acc-${accKey}`);
+      const chevron = btn.querySelector('.f-chevron');
+      if(panel){
+        const isHidden = panel.classList.contains('hidden');
+        if(isHidden){
+          panel.classList.remove('hidden');
+          if(chevron) chevron.style.transform = 'rotate(90deg)';
+        } else {
+          panel.classList.add('hidden');
+          if(chevron) chevron.style.transform = 'rotate(0deg)';
+        }
+      }
+    };
+  });
+
+  // Helper function to update option row UI
+  const updateOptionRowUI = (containerId, selectedVal) => {
+    const panel = $(containerId);
+    if(!panel) return;
+    panel.querySelectorAll('.f-opt-row').forEach(row => {
+      const isSelected = (row.dataset.val.toLowerCase() === (selectedVal || '').toLowerCase());
+      const radio = row.querySelector('input');
+      const check = row.querySelector('.f-check');
+      if(radio) radio.checked = isSelected;
+      if(isSelected){
+        row.className = 'f-opt-row flex items-center justify-between py-2 px-2.5 rounded-xl cursor-pointer hover:bg-slate-50 transition bg-slate-900 text-white font-bold';
+        if(check){
+          check.className = 'f-check w-4 h-4 rounded-full border flex items-center justify-center border-white bg-white text-slate-900 text-[10px] font-black';
+          check.textContent = '✓';
+        }
+      } else {
+        row.className = 'f-opt-row flex items-center justify-between py-2 px-2.5 rounded-xl cursor-pointer hover:bg-slate-50 transition text-slate-700 font-medium';
+        if(check){
+          check.className = 'f-check w-4 h-4 rounded-full border flex items-center justify-center border-gray-300';
+          check.textContent = '';
+        }
+      }
     });
-  }
-
-  const executeFilter = () => {
-     isLinkNavigation = true;
-     setTimeout(() => { isLinkNavigation = false; }, 600);
-     const p = new URLSearchParams();
-     if(f.q) p.set('q', f.q);
-     if(selectedCat) p.set('cat', selectedCat);
-     if(selectedFab) p.set('fabric', selectedFab);
-     const minv = $('#f-min').value.trim(); if(minv) p.set('min', minv);
-     const maxv = $('#f-max').value.trim(); if(maxv) p.set('max', maxv);
-     if(selectedSort) p.set('sort', selectedSort);
-     if($('#f-stock').checked) p.set('stock', '1');
-     location.hash = '#/shop?' + p.toString();
   };
 
-  $('#sort-done').onclick=()=>{
-    selectedSort=$('#sort-mobile input:checked')?.value||'new';
-    $('#sort-sheet').classList.add('hidden');
+  const updateBadge = (badgeId, label) => {
+    const el = $(badgeId);
+    if(!el) return;
+    if(label){
+      el.textContent = label;
+      el.classList.remove('hidden');
+    } else {
+      el.textContent = '';
+      el.classList.add('hidden');
+    }
+  };
+
+  // Option row click handlers
+  $$('#fl .f-opt-row').forEach(row => {
+    row.onclick = (e) => {
+      const type = row.dataset.type;
+      const val = row.dataset.val;
+      const label = row.dataset.label;
+      if(type === 'cat'){
+        pendingCat = val;
+        updateOptionRowUI('#acc-categories', val);
+        updateBadge('#badge-categories', val ? label : '');
+      } else if(type === 'fabric'){
+        pendingFabric = val;
+        updateOptionRowUI('#acc-fabric', val);
+        updateBadge('#badge-fabric', val ? label : '');
+      } else if(type === 'rating'){
+        pendingRating = val;
+        updateOptionRowUI('#acc-ratings', val);
+        updateBadge('#badge-ratings', val ? `${val}★ & above` : '');
+      } else if(type === 'stock'){
+        pendingStock = val;
+        updateOptionRowUI('#acc-availability', val);
+        updateBadge('#badge-availability', val ? 'In Stock' : '');
+      } else if(type === 'color'){
+        pendingColor = val;
+        updateOptionRowUI('#acc-colour', val);
+        updateBadge('#badge-colour', val ? label : '');
+      } else if(type === 'sort'){
+        pendingSort = val;
+        updateOptionRowUI('#acc-sort', val);
+        updateBadge('#badge-sort', (val && val !== 'new') ? label : '');
+        syncSortPageModalUI(val);
+      }
+    };
+  });
+
+  // Price presets
+  $$('.price-tier-btn').forEach(btn => {
+    btn.onclick = () => {
+      const minV = btn.dataset.min || '';
+      const maxV = btn.dataset.max || '';
+      const label = btn.dataset.label;
+      $('#f-min').value = minV;
+      $('#f-max').value = maxV;
+      pendingMin = minV;
+      pendingMax = maxV;
+      updateBadge('#badge-price', (minV || maxV) ? label : '');
+    };
+  });
+
+  $('#f-min').oninput = (e) => {
+    pendingMin = e.target.value.trim();
+    const lbl = (pendingMin || pendingMax) ? `₹${pendingMin || '0'}-₹${pendingMax || '∞'}` : '';
+    updateBadge('#badge-price', lbl);
+  };
+  $('#f-max').oninput = (e) => {
+    pendingMax = e.target.value.trim();
+    const lbl = (pendingMin || pendingMax) ? `₹${pendingMin || '0'}-₹${pendingMax || '∞'}` : '';
+    updateBadge('#badge-price', lbl);
+  };
+
+  // Sync separate sort page modal UI
+  const syncSortPageModalUI = (val) => {
+    $$('#sort-page-options .sort-page-card').forEach(card => {
+      const isSelected = (card.dataset.sort === val);
+      const radio = card.querySelector('input');
+      const radioOuter = card.querySelector('.sort-page-radio-outer');
+      const dot = card.querySelector('.sort-page-radio-outer > div');
+      if(radio) radio.checked = isSelected;
+      if(isSelected){
+        card.className = 'sort-page-card flex items-center justify-between p-4 rounded-2xl border-2 cursor-pointer transition border-slate-900 bg-slate-50/70 shadow-sm';
+        if(radioOuter) radioOuter.className = 'sort-page-radio-outer w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 border-slate-900 bg-slate-900';
+        if(dot) dot.className = 'w-2 h-2 rounded-full bg-white transition-transform scale-100';
+      } else {
+        card.className = 'sort-page-card flex items-center justify-between p-4 rounded-2xl border-2 cursor-pointer transition border-gray-100 bg-white hover:border-gray-200';
+        if(radioOuter) radioOuter.className = 'sort-page-radio-outer w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 border-gray-300 bg-white';
+        if(dot) dot.className = 'w-2 h-2 rounded-full bg-white transition-transform scale-0';
+      }
+    });
+  };
+
+  // Sort Page Option Click
+  $$('#sort-page-options .sort-page-card').forEach(card => {
+    card.onclick = () => {
+      const val = card.dataset.sort;
+      pendingSort = val;
+      syncSortPageModalUI(val);
+      updateOptionRowUI('#acc-sort', val);
+      const opt = allSorts.find(s => s.val === val);
+      updateBadge('#badge-sort', (opt && val !== 'new') ? opt.label : '');
+    };
+  });
+
+  // Sort Page Apply & Reset
+  $('#sort-page-apply').onclick = () => {
+    closeSortPage();
     executeFilter();
   };
-  $('#sort-reset').onclick=()=>{const recommended=$('#sort-mobile input[value="new"]');recommended.checked=true;};
-  $('#apply').onclick = () => { closeFilters(); executeFilter(); };
-  $('#f-reset').onclick = () => location.hash = '#/shop';
+  $('#sort-page-reset').onclick = () => {
+    pendingSort = 'new';
+    syncSortPageModalUI('new');
+    updateOptionRowUI('#acc-sort', 'new');
+    updateBadge('#badge-sort', '');
+  };
+
+  const executeFilter = () => {
+    isLinkNavigation = true;
+    setTimeout(() => { isLinkNavigation = false; }, 600);
+    const p = new URLSearchParams();
+    if(f.q) p.set('q', f.q);
+    if(pendingCat) p.set('cat', pendingCat);
+    if(pendingFabric) p.set('fabric', pendingFabric);
+    if(pendingRating) p.set('rating', pendingRating);
+    const minv = $('#f-min')?.value.trim() || pendingMin;
+    const maxv = $('#f-max')?.value.trim() || pendingMax;
+    if(minv) p.set('min', minv);
+    if(maxv) p.set('max', maxv);
+    if(pendingStock) p.set('stock', pendingStock);
+    if(pendingColor) p.set('color', pendingColor);
+    if(pendingSort && pendingSort !== 'new') p.set('sort', pendingSort);
+    location.hash = '#/shop' + (p.toString() ? '?' + p.toString() : '');
+  };
+
+  $('#apply').onclick = () => {
+    closeFilters();
+    executeFilter();
+  };
+  $('#f-clear-btn').onclick = () => {
+    closeFilters();
+    location.hash = '#/shop';
+  };
+  $('#f-reset').onclick = () => {
+    closeFilters();
+    location.hash = '#/shop';
+  };
 }
+
 
 /* ===== PRODUCT PAGE ===== */
 async function product(id){
@@ -2003,13 +2481,11 @@ $('#brand').addEventListener('click', e => {
   }
 });
 
-/* ===== EXIT LOCK ON SHOP TAB (MAIN EXIT GATEWAY) ===== */
-let exitModalOpen = false;
-let exitApproved = false;
+/* ===== SHOP TAB NAVIGATION LOCK (NEVER EXIT TO BROWSER / STAY ON SHOP) ===== */
 let currentRoute = location.hash || '#/';
 let isLinkNavigation = false;
 
-// Intercept all user anchor clicks so deliberate tab navigation never triggers exit prompts
+// Intercept link clicks so normal links update currentRoute cleanly
 document.addEventListener('click', (e) => {
   const link = e.target.closest('a[href]');
   if(link){
@@ -2021,104 +2497,34 @@ document.addEventListener('click', (e) => {
   }
 }, true);
 
-function showExitModal(){
-  // Never show exit modal if user is confirming details or on login/internal pages
-  if(window._confirmingDetails) return;
-  const h = location.hash || '';
-  if(h.startsWith('#/login') || h.startsWith('#/cart') || h.startsWith('#/account') || h.startsWith('#/p/') || h.startsWith('#/checkout')) return;
-
-  exitModalOpen = true;
-  $('#exit-confirm')?.classList.remove('hidden');
-  $('#exit-stay')?.focus();
-}
-
-function hideExitModal(){
-  exitModalOpen = false;
-  $('#exit-confirm')?.classList.add('hidden');
-}
-
 function armShopGuard(){
-  if((location.hash === '#/shop' || location.hash === '#/shop/') && !history.state?.thaaraiShopGuard){
-    try {
-      history.pushState({ thaaraiShopGuard: true }, '', location.href);
-    } catch(e){}
-  }
+  try {
+    history.pushState({ thaaraiShopGuard: true }, '', location.href);
+  } catch(e){}
 }
 
-function exitWebsite(){
-  exitApproved = true;
-  hideExitModal();
-
-  // 1. Immediately blank and replace DOM with a clean exit confirmation screen
-  document.documentElement.innerHTML = `
-    <!DOCTYPE html>
-    <html lang="ta">
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Thaarai Tex - Closed</title>
-      <style>
-        * { margin:0; padding:0; box-sizing:border-box; }
-        body { background:#090d16; color:#f8fafc; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px; text-align:center; }
-        .card { background:#0f172a; border:1px solid #1e293b; border-radius:24px; padding:32px 24px; max-width:340px; width:100%; box-shadow:0 25px 50px -12px rgba(0,0,0,0.6); }
-        .icon { width:52px; height:52px; border-radius:50%; background:#1e293b; color:#38bdf8; display:flex; align-items:center; justify-content:center; margin:0 auto 16px; }
-        h1 { font-size:18px; font-weight:700; color:#fff; margin-bottom:8px; }
-        p { font-size:13px; color:#94a3b8; line-height:1.5; margin-bottom:20px; }
-        .btn { display:inline-block; background:#f1f5f9; color:#0f172a; font-size:13px; font-weight:700; padding:12px 24px; border-radius:9999px; text-decoration:none; border:none; cursor:pointer; }
-      </style>
-    </head>
-    <body>
-      <div class="card">
-        <div class="icon">
-          <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
-        </div>
-        <h1>Thaarai Tex Exited</h1>
-        <p>நீங்கள் வெளியேறிவிட்டீர்கள்.<br>You have exited the store. You can safely close this tab or window.</p>
-        <button class="btn" onclick="window.close()">Close Window</button>
-      </div>
-    </body>
-    </html>
-  `;
-
-  // 2. Immediately invoke browser and webview window closure methods
-  try { window.close(); } catch(e){}
-  try { window.open('', '_self', ''); window.close(); } catch(e){}
-  try { if(window.navigator?.app?.exitApp) window.navigator.app.exitApp(); } catch(e){}
-  try { if(window.parent && window.parent !== window) window.parent.postMessage('close_app', '*'); } catch(e){}
-
-  // 3. Fallback: immediately replace location with about:blank
-  setTimeout(() => {
-    try { window.location.replace("about:blank"); } catch(e){}
-  }, 100);
-}
-
-$('#exit-stay').onclick = () => {
-  hideExitModal();
-};
-
-$('#exit-leave').onclick = exitWebsite;
-
-// Handle popstate: ONLY show exit modal if user is on base #/shop and attempts final exit
+// Window popstate: ALWAYS keep user within Thaarai Tex and lock onto #/shop
 window.addEventListener('popstate', event => {
-  if(exitApproved) return;
-
   const current = location.hash || '#/';
 
-  // 1. If sort sheet or filter drawer is open, close it without showing exit dialog
-  const sortSheet = $('#sort-sheet');
-  if(sortSheet && !sortSheet.classList.contains('hidden')){
-    sortSheet.classList.add('hidden');
-    return;
-  }
-  const filterDrawer = $('#filter-drawer');
-  if(filterDrawer && !filterDrawer.classList.contains('hidden')){
-    filterDrawer.classList.add('hidden');
+  // 1. If sort page modal is open, close it first
+  const sortModal = $('#sort-page-modal');
+  if(sortModal && !sortModal.classList.contains('hidden')){
+    sortModal.classList.add('hidden');
+    document.body.style.overflow = '';
     return;
   }
 
-  // 2. If user is in State 2 (confirming details after Google sign-in), lock them onto #/login
+  // 2. If filter drawer is open, close it
+  const fl = $('#fl');
+  if(fl && !fl.classList.contains('hidden')){
+    fl.classList.add('hidden');
+    document.body.style.overflow = '';
+    return;
+  }
+
+  // 3. If confirming login details, lock on #/login
   if(window._confirmingDetails && !profile()){
-    hideExitModal();
     if(current !== '#/login'){
       location.hash = '#/login';
       toast('Please click Confirm & Complete Login to continue');
@@ -2126,10 +2532,8 @@ window.addEventListener('popstate', event => {
     return;
   }
 
-  // 3. Deliberate navigation (links, tab bar, redirects) or internal routes:
-  // ALWAYS close exit modal and NEVER show exit modal on internal navigation!
-  if(isLinkNavigation || current.startsWith('#/login') || current.startsWith('#/cart') || current.startsWith('#/account') || current.startsWith('#/p/') || current.startsWith('#/checkout')){
-    hideExitModal();
+  // 4. Sub-routes (cart, account, product details) allow normal back traversal
+  if(isLinkNavigation || current.startsWith('#/cart') || current.startsWith('#/account') || current.startsWith('#/p/') || current.startsWith('#/checkout')){
     currentRoute = current;
     return;
   }
@@ -2137,17 +2541,14 @@ window.addEventListener('popstate', event => {
   const prev = currentRoute;
   const next = current;
 
-  // 4. Back navigation within Shop sub-filters or sorts: normal back navigation!
+  // 5. Back from filtered shop (#/shop?...) to clean shop (#/shop)
   if(prev.startsWith('#/shop?') && (next === '#/shop' || next.startsWith('#/shop'))){
-    hideExitModal();
     currentRoute = next;
     return;
   }
 
-  // 5. Final back action: ONLY when user is at the clean base Shop tab (#/shop) and attempts to exit the site
+  // 6. If user attempts to exit from Shop tab (#/shop), trap and keep locked on #/shop!
   if((prev === '#/shop' || prev === '#/shop/') && (next === '' || next === '#' || next === '#/' || !next.startsWith('#/'))){
-    showExitModal();
-    // Keep user securely locked onto Shop tab in history
     try {
       history.pushState({ thaaraiShopGuard: true }, '', '#/shop');
     } catch(e){}
@@ -2155,22 +2556,32 @@ window.addEventListener('popstate', event => {
     return;
   }
 
-  // 6. If user was on Home and presses back: redirect & lock into Shop tab
+  // 7. If user is on Home (#/ or '') and clicks back: redirect and lock into Shop tab
   if((prev === '#/' || prev === '#' || prev === '') && (next === '' || next === '#' || !next.startsWith('#/'))){
     location.hash = '#/shop';
+    try {
+      history.pushState({ thaaraiShopGuard: true }, '', '#/shop');
+    } catch(e){}
     currentRoute = '#/shop';
     return;
   }
 
-  // Normal back navigation for subpages
+  // 8. If next is clean #/shop, ensure guard is pushed so subsequent back clicks are also trapped
+  if(next === '#/shop' || next === '#/shop/'){
+    try {
+      history.pushState({ thaaraiShopGuard: true }, '', '#/shop');
+    } catch(e){}
+    currentRoute = '#/shop';
+    return;
+  }
+
   currentRoute = next;
 });
 
-// Lock click interceptor: if user is confirming details after Google sign-in, prevent clicking outside
+// Click lock for login confirmation
 document.addEventListener('click', e => {
   if(window._confirmingDetails && !profile() && (location.hash||'').startsWith('#/login')){
-    // Always allow clicks on the exit modal or toasts so user can never be trapped
-    if(e.target.closest('#exit-confirm') || e.target.closest('#toast')){
+    if(e.target.closest('#toast')){
       return;
     }
     const insideCard = e.target.closest('#confirm-details-card');
@@ -2183,46 +2594,44 @@ document.addEventListener('click', e => {
   }
 }, true);
 
+// Header back navigation button: permanently stays inside store, locks on Shop
 $('#nav-back').onclick = () => {
-  // If user is confirming details on login, keep user on login
   if(window._confirmingDetails && !profile() && (location.hash||'').startsWith('#/login')){
     toast('Please click Confirm & Complete Login to continue');
     return;
   }
 
-  // 1. If sort sheet or filter drawer is open, close it
-  const sortSheet = $('#sort-sheet');
-  if(sortSheet && !sortSheet.classList.contains('hidden')){
-    sortSheet.classList.add('hidden');
+  const sortModal = $('#sort-page-modal');
+  if(sortModal && !sortModal.classList.contains('hidden')){
+    sortModal.classList.add('hidden');
+    document.body.style.overflow = '';
     return;
   }
-  const filterDrawer = $('#filter-drawer');
-  if(filterDrawer && !filterDrawer.classList.contains('hidden')){
-    filterDrawer.classList.add('hidden');
+
+  const fl = $('#fl');
+  if(fl && !fl.classList.contains('hidden')){
+    fl.classList.add('hidden');
+    document.body.style.overflow = '';
     return;
   }
 
   const current = location.hash || '#/';
 
-  // 2. If user is on a filtered/sorted shop view (#/shop?...), reset back to clean #/shop
   if(current.startsWith('#/shop?')){
     location.hash = '#/shop';
     return;
   }
 
-  // 3. Only if user is at the clean base Shop tab (#/shop), show exit modal (final back action)
   if(current === '#/shop' || current === '#/shop/'){
-    showExitModal();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     return;
   }
 
-  // 4. If on Home, redirect to Shop
   if(current === '#/' || current === '' || current === '#'){
     location.hash = '#/shop';
     return;
   }
 
-  // 5. For all sub-pages, normal back navigation
   history.back();
 };
 
@@ -2238,6 +2647,7 @@ route = async function(){
     armShopGuard();
   }
 };
+
 
 // Pre-check: If returning from Google OAuth, pin hash to #/login immediately
 if(_isOAuthIncoming){
