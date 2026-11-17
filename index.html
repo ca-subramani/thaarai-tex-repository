@@ -12,264 +12,17 @@
 <title>Thaarai Tex | Pure Sarees & Handloom</title>
 <meta name="description" content="Handloom silk and cotton sarees direct from weavers. Free delivery, Cash on Delivery.">
 <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-<script>
-  tailwind.config = {
-    darkMode: 'class'
-  };
-</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+Tamil:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script>
   try {
-    if(localStorage.getItem('tt_theme') === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
+    localStorage.removeItem('tt_theme');
+    document.documentElement.classList.remove('dark');
   } catch(e){}
 </script>
 <style>
-/* Dark Mode Comprehensive Visual Rules */
-html.dark, html.dark body {
-  background-color: #0b0f17 !important;
-  color: #f1f5f9 !important;
-}
-
-/* Header & Tabbar */
-html.dark header, html.dark #tabbar {
-  background-color: rgba(15, 23, 42, 0.95) !important;
-  border-color: #334155 !important;
-  color: #f8fafc !important;
-}
-
-/* Surfaces and Cards */
-html.dark .bg-white {
-  background-color: #131c2e !important;
-  color: #f8fafc !important;
-}
-html.dark .bg-white\/95, html.dark .bg-white\/90, html.dark .bg-white\/80 {
-  background-color: rgba(19, 28, 46, 0.95) !important;
-  color: #f8fafc !important;
-}
-html.dark .bg-gray-50, html.dark .bg-slate-50, html.dark .bg-\[\#f8fafc\], html.dark .bg-\[\#f1f5f9\], html.dark .bg-gray-100, html.dark .bg-slate-100 {
-  background-color: #1a2538 !important;
-  color: #f1f5f9 !important;
-}
-html.dark .bg-slate-900:not(button):not(a):not(.checkmark-circle):not(#foot) {
-  background-color: #1e293b !important;
-}
-
-/* Borders & Dividing Lines (Crisp high-contrast lines so boxes are clearly visible) */
-html.dark .border,
-html.dark .border-t,
-html.dark .border-b,
-html.dark .border-l,
-html.dark .border-r,
-html.dark .border-2,
-html.dark .border-gray-100, 
-html.dark .border-gray-200, 
-html.dark .border-slate-200, 
-html.dark .border-gray-300, 
-html.dark .border-slate-300, 
-html.dark .border-slate-800,
-html.dark .border-emerald-100,
-html.dark .border-emerald-200,
-html.dark .border-rose-100,
-html.dark .border-rose-200 {
-  border-color: #334155 !important;
-}
-html.dark .divide-gray-50 > :not([hidden]) ~ :not([hidden]), 
-html.dark .divide-gray-100 > :not([hidden]) ~ :not([hidden]),
-html.dark .divide-gray-200 > :not([hidden]) ~ :not([hidden]) {
-  border-color: #334155 !important;
-}
-
-/* Text Readability (High Contrast for all text & numbers) */
-html.dark .text-gray-900, 
-html.dark .text-slate-900, 
-html.dark .text-gray-800, 
-html.dark .text-slate-800,
-html.dark .text-slate-950,
-html.dark .text-gray-950,
-html.dark .text-black,
-html.dark .text-\[\#111\],
-html.dark b,
-html.dark strong {
-  color: #f8fafc !important;
-}
-html.dark .text-gray-700, 
-html.dark .text-gray-600, 
-html.dark .text-slate-700, 
-html.dark .text-slate-600 {
-  color: #cbd5e1 !important;
-}
-html.dark .text-gray-500, 
-html.dark .text-gray-400, 
-html.dark .text-slate-500, 
-html.dark .text-slate-400,
-html.dark .text-gray-300 {
-  color: #94a3b8 !important;
-}
-
-/* Colored accent texts, amounts and status numbers in dark mode */
-html.dark .text-emerald-700,
-html.dark .text-emerald-800,
-html.dark .text-emerald-900, 
-html.dark .text-emerald-950 {
-  color: #34d399 !important;
-}
-html.dark .bg-emerald-50, html.dark .bg-emerald-50\/70 {
-  background-color: rgba(6, 78, 59, 0.35) !important;
-  color: #f8fafc !important;
-}
-html.dark .text-amber-700,
-html.dark .text-amber-800,
-html.dark .text-amber-900 {
-  color: #fbbf24 !important;
-}
-html.dark .bg-amber-50 {
-  background-color: rgba(120, 53, 15, 0.35) !important;
-  color: #f8fafc !important;
-}
-html.dark .text-indigo-600,
-html.dark .text-indigo-700,
-html.dark .text-indigo-800 {
-  color: #818cf8 !important;
-}
-html.dark .bg-indigo-50 {
-  background-color: rgba(49, 46, 129, 0.35) !important;
-}
-html.dark .text-rose-700,
-html.dark .text-rose-800,
-html.dark .text-rose-900 {
-  color: #fb7185 !important;
-}
-html.dark .bg-rose-50 {
-  background-color: rgba(136, 19, 55, 0.35) !important;
-}
-html.dark font, html.dark .font-mono {
-  color: inherit;
-}
-html.dark #brand svg text, html.dark #brand span {
-  color: #f8fafc !important;
-  fill: #f8fafc !important;
-}
-
-/* Form Controls & Inputs */
-html.dark input, html.dark textarea, html.dark select {
-  background-color: #1a2538 !important;
-  color: #f8fafc !important;
-  border-color: #475569 !important;
-}
-html.dark input:focus, html.dark textarea:focus, html.dark select:focus {
-  border-color: #38bdf8 !important;
-}
-html.dark input::placeholder, html.dark textarea::placeholder {
-  color: #64748b !important;
-}
-
-/* Interactive States */
-html.dark .hover\:bg-gray-50:hover, 
-html.dark .hover\:bg-gray-100:hover, 
-html.dark .hover\:bg-slate-100:hover,
-html.dark .hover\:bg-slate-200:hover {
-  background-color: #223049 !important;
-}
-html.dark .active\:bg-gray-100:active {
-  background-color: #273754 !important;
-}
-
-/* Buttons (In Dark mode only) */
-html.dark .bg-slate-900.text-white,
-html.dark button.bg-slate-900:not(#neon-loader button),
-html.dark a.bg-slate-900 {
-  background-color: #38bdf8 !important;
-  color: #0f172a !important;
-}
-html.dark .bg-slate-900.text-white:hover,
-html.dark button.bg-slate-900:hover,
-html.dark a.bg-slate-900:hover {
-  background-color: #0ea5e9 !important;
-}
-html.dark #modal-dlg-cancel {
-  background-color: #1a2538 !important;
-  border-color: #334155 !important;
-  color: #f8fafc !important;
-}
-
-/* Shadows, Icons, and Toast */
-html.dark .shadow-soft {
-  box-shadow: 0 10px 30px -5px rgba(0,0,0,0.6), 0 4px 12px -2px rgba(0,0,0,0.4) !important;
-}
-html.dark #brand svg text {
-  fill: #f8fafc !important;
-}
-html.dark #toast > div {
-  background-color: rgba(19, 28, 46, 0.98) !important;
-  border-color: #475569 !important;
-}
-html.dark #toast-msg {
-  color: #f8fafc !important;
-}
-html.dark .tb {
-  color: #94a3b8;
-}
-html.dark .tb[style*="rgb(15, 23, 42)"], html.dark .tb[style*="#0f172a"] {
-  color: #38bdf8 !important;
-}
-html.dark #foot {
-  background-color: #080d14 !important;
-  border-top: 1px solid #1e293b;
-}
-
-/* Profile Logo & Avatar Contrast */
-html.dark .profile-avatar-circle {
-  background-color: #38bdf8 !important;
-  color: #0f172a !important;
-}
-html.dark .profile-avatar-ring {
-  border-color: #38bdf8 !important;
-  background-color: #131c2e !important;
-}
-
-/* Loader Dynamic Theme Styling */
-html.dark #neon-loader {
-  background-color: #050811 !important;
-}
-html.dark #neon-loader-glow {
-  background: radial-gradient(circle, rgba(14, 165, 233, 0.45) 0%, rgba(2, 132, 199, 0.25) 50%, rgba(3, 105, 161, 0) 75%) !important;
-}
-html.dark #neon-loader-brand-accent {
-  color: #38bdf8 !important;
-}
-html.dark #neon-counter-num {
-  color: #ffffff !important;
-  text-shadow: 0 0 16px rgba(56, 189, 248, 0.95) !important;
-}
-html.dark #neon-loader p {
-  color: #ffffff !important;
-  text-shadow: 0 0 8px rgba(14, 165, 233, 0.5) !important;
-}
-html.dark #fl, html.dark #sort-page-modal {
-  background-color: #0b0f17 !important;
-}
-html.dark .f-opt-row, html.dark .sort-page-card, html.dark .price-tier-btn {
-  background-color: #131c2e !important;
-  border-color: #334155 !important;
-  color: #f8fafc !important;
-}
-html.dark .f-opt-row.border-slate-900, html.dark .sort-page-card.border-slate-900, html.dark .price-tier-btn.border-slate-900 {
-  border-color: #38bdf8 !important;
-  background-color: #1e293b !important;
-}
-html.dark .f-nav-item.border-slate-900 {
-  border-left-color: #38bdf8 !important;
-  background-color: #131c2e !important;
-  color: #f8fafc !important;
-}
-
 html,body{overflow-x:hidden;max-width:100%}
 body{font-family:'Plus Jakarta Sans','Noto Sans Tamil',system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;background-color:#f8fafc}
 *{min-width:0}
@@ -2601,86 +2354,83 @@ async function checkout(){
                 </button>
               </div>
 
-              <!-- List of Saved Address Boxes -->
-              <div class="space-y-3 pt-1">
-                ${AL.map(a => {
-                  const isSel = (String(a.id) === tempChosenId);
-                  return `
-                    <label class="saved-choice-card block relative border-2 rounded-2xl p-4 cursor-pointer transition select-none ${
-                      isSel ? 'border-slate-900 bg-gray-50 shadow-sm ring-1 ring-slate-900' : 'border-gray-200 bg-white hover:border-gray-300'
-                    }" data-aid="${esc(a.id)}">
-                      <div class="flex items-start gap-3.5">
-                        <input type="radio" name="chk_saved_choice" value="${esc(a.id)}" ${isSel ? 'checked' : ''} class="w-4 h-4 mt-1 shrink-0 accent-slate-900 cursor-pointer">
-                        <div class="flex-1 min-w-0">
-                          <div class="flex items-center gap-2 flex-wrap">
-                            <span class="font-black text-sm text-slate-900">${esc(a.name)}</span>
-                            ${a.def ? `<span class="text-[9px] font-black uppercase tracking-wider bg-slate-900 text-white px-2 py-0.5 rounded-full">Default</span>` : ''}
-                            <span class="text-xs font-bold text-slate-600 ml-auto">📞 ${esc(a.phone)}</span>
-                          </div>
-                          <p class="text-xs text-slate-700 mt-1.5 leading-relaxed font-medium">${esc(a.line)}</p>
-                          <p class="text-xs text-slate-900 font-bold mt-1">${esc(a.city)}, ${esc(a.state)} - <span class="font-mono">${esc(a.pincode)}</span></p>
-                        </div>
-                      </div>
-                    </label>
-                  `;
-                }).join('')}
+        <!-- List of Saved Address Boxes -->
+        <div class="space-y-3 pt-1">
+          ${AL.map(a => {
+            const isSel = (String(a.id) === String(tempChosenId));
+            return `
+              <div onclick="window._selectSavedAddr('${esc(a.id)}')" id="card-addr-${esc(a.id)}" class="saved-choice-card block relative border-2 rounded-2xl p-4 cursor-pointer transition select-none ${
+                isSel ? 'border-slate-900 bg-gray-50 shadow-sm ring-1 ring-slate-900' : 'border-gray-200 bg-white hover:border-gray-300'
+              }">
+                <div class="flex items-start gap-3.5">
+                  <div class="w-5 h-5 rounded-full border-2 mt-0.5 flex items-center justify-center shrink-0 ${
+                    isSel ? 'border-slate-900 bg-slate-900' : 'border-gray-400 bg-white'
+                  }">
+                    ${isSel ? '<div class="w-2 h-2 rounded-full bg-white"></div>' : ''}
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2 flex-wrap">
+                      <span class="font-black text-sm text-slate-900">${esc(a.name)}</span>
+                      ${a.def ? `<span class="text-[9px] font-black uppercase tracking-wider bg-slate-900 text-white px-2 py-0.5 rounded-full">Default</span>` : ''}
+                      <span class="text-xs font-bold text-slate-600 ml-auto">📞 ${esc(a.phone)}</span>
+                    </div>
+                    <p class="text-xs text-slate-700 mt-1.5 leading-relaxed font-medium">${esc(a.line)}</p>
+                    <p class="text-xs text-slate-900 font-bold mt-1">${esc(a.city)}, ${esc(a.state)} - <span class="font-mono">${esc(a.pincode)}</span></p>
+                  </div>
+                </div>
               </div>
+            `;
+          }).join('')}
+        </div>
 
-              <div class="pt-4 border-t flex gap-3">
-                <button type="button" id="btn-cancel-saved-choice" class="flex-1 py-3.5 px-4 rounded-full border border-gray-200 bg-white hover:bg-gray-50 text-slate-800 font-bold text-xs transition">
-                  Cancel
-                </button>
-                <button type="button" id="btn-confirm-saved-choice" class="flex-[2] bg-slate-900 hover:bg-slate-800 text-white font-black py-3.5 px-4 rounded-full text-xs shadow-soft transition flex items-center justify-center gap-2 cursor-pointer">
-                  <span>Confirm Address</span>
-                  <svg class="w-4 h-4 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-                </button>
-              </div>
-            </div>
-          </div>
-        `;
+        <div class="pt-4 border-t flex gap-3">
+          <button type="button" onclick="window._closeSavedAddr()" class="flex-1 py-3.5 px-4 rounded-full border border-gray-200 bg-white hover:bg-gray-50 text-slate-800 font-bold text-xs transition">
+            Cancel
+          </button>
+          <button type="button" onclick="window._confirmSavedAddr()" class="flex-[2] bg-slate-900 hover:bg-slate-800 text-white font-black py-3.5 px-4 rounded-full text-xs shadow-soft transition flex items-center justify-center gap-2 cursor-pointer active:scale-95">
+            <span>Confirm Address</span>
+            <svg class="w-4 h-4 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
 
-        $('#btn-back-from-saved-list').onclick = () => {
-          showingSavedAddressPage = false;
-          renderStepView();
-        };
-        $('#btn-cancel-saved-choice').onclick = () => {
-          showingSavedAddressPage = false;
-          renderStepView();
-        };
+  window._closeSavedAddr = () => {
+    showingSavedAddressPage = false;
+    renderStepView();
+  };
 
-        $('#btn-open-create-addr').onclick = () => {
-          showingSavedAddressPage = 'new';
-          renderStepView();
-        };
+  window._selectSavedAddr = (id) => {
+    tempChosenId = String(id);
+    renderStepView();
+  };
 
-        // Radio change updates tempChosenId and highlights immediately
-        $$('input[name="chk_saved_choice"]').forEach(radio => {
-          radio.onchange = () => {
-            tempChosenId = String(radio.value);
-            $$('.saved-choice-card').forEach(c => {
-              const isMatch = (String(c.dataset.aid) === tempChosenId);
-              c.className = `saved-choice-card block relative border-2 rounded-2xl p-4 cursor-pointer transition select-none ${
-                isMatch ? 'border-slate-900 bg-gray-50 shadow-sm ring-1 ring-slate-900' : 'border-gray-200 bg-white hover:border-gray-300'
-              }`;
-            });
-          };
-        });
+  window._confirmSavedAddr = () => {
+    const match = AL.find(a => String(a.id) === String(tempChosenId)) || AL[0];
+    if(match){
+      addr = {
+        name: match.name || '',
+        phone: match.phone || '',
+        pincode: match.pincode || '',
+        city: match.city || '',
+        state: match.state || 'Tamil Nadu',
+        line: match.line || '',
+        id: match.id
+      };
+    }
+    showingSavedAddressPage = false;
+    toast('Address selected & autofilled ✓');
+    renderStepView();
+  };
 
-        $('#btn-confirm-saved-choice').onclick = (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          const checkedRadio = $('input[name="chk_saved_choice"]:checked');
-          const finalId = checkedRadio ? String(checkedRadio.value) : String(tempChosenId);
-          const match = AL.find(a => String(a.id) === finalId) || AL[0];
-          if(match){
-            addr = { ...match };
-          }
-          showingSavedAddressPage = false;
-          toast('Address selected & autofilled ✓');
-          renderStepView();
-        };
+  $('#btn-back-from-saved-list').onclick = window._closeSavedAddr;
+  $('#btn-open-create-addr').onclick = () => {
+    showingSavedAddressPage = 'new';
+    renderStepView();
+  };
 
-        return;
+  return;
       }
 
       // SUB-VIEW B: SEPARATE DEDICATED ADD NEW ADDRESS PAGE
@@ -3237,23 +2987,7 @@ async function checkout(){
 
   // Live item quantity adjuster handler in Step 1
   app.onclick = async e => {
-    // 1. Saved address card selection (delegated so click NEVER misses)
-    const card = e.target.closest('.saved-choice-card');
-    if(card){
-      const aid = String(card.dataset.aid);
-      tempChosenId = aid;
-      $$('.saved-choice-card').forEach(c => {
-        const isMatch = (String(c.dataset.aid) === aid);
-        c.className = `saved-choice-card block relative border-2 rounded-2xl p-4 cursor-pointer transition select-none ${
-          isMatch ? 'border-slate-900 bg-gray-50 shadow-sm ring-1 ring-slate-900' : 'border-gray-200 bg-white hover:border-gray-300'
-        }`;
-        const rad = c.querySelector('input[type="radio"]');
-        if(rad) rad.checked = isMatch;
-      });
-      return;
-    }
-
-    // 2. Quantity modifier buttons in Step 1
+    // Quantity modifier buttons in Step 1
     const qbtn = e.target.closest('[data-cq]');
     if(qbtn){
       const id = qbtn.dataset.cq;
@@ -3610,7 +3344,6 @@ function hubHtml(pf){
       ${row(s('<path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>'),'Shopping Address','#/account/addresses')}
       ${row(s('<path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>'),'Wishlist','#/account/wishlist')}
       ${row(s('<path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>'),'Order History','#/account/orders')}
-      ${row(s('<path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/>'),'Settings','#/account/settings')}
     </div>
     <div class="mt-8 pt-4 border-t text-center"><button id="lgo" class="text-xs font-bold text-rose-500 hover:text-rose-700 flex items-center justify-center mx-auto">${ICONS.logout}Logout</button></div>
   </div>`;
@@ -3791,79 +3524,6 @@ async function wishHtml(){
     ${wp.length?grid(wp):'<div class="bg-white rounded-3xl p-12 text-center text-gray-400 text-xs border border-gray-100 shadow-soft">Your wishlist is empty.</div>'}</div>`;
 }
 
-function settingsHtml(pf){
-  const isDark = document.documentElement.classList.contains('dark');
-  const notifEnabled = localStorage.getItem('tt_notif') !== 'false';
-  return `<div class="max-w-md mx-auto space-y-4 my-2">
-    ${topbar('Settings','#/account/hub')}
-    
-    <!-- Appearance / Theme -->
-    <div class="bg-white rounded-3xl p-5 shadow-soft border border-gray-100">
-      <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Appearance</h3>
-      <div class="flex items-center justify-between py-2">
-        <div class="flex items-center gap-3">
-          <span class="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-slate-800">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8"><path d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
-          </span>
-          <div>
-            <div class="font-bold text-xs sm:text-sm text-gray-900">Dark Theme</div>
-            <div class="text-[11px] text-gray-500">Switch between light and dark modes</div>
-          </div>
-        </div>
-        <button id="toggle-dark-mode" type="button" aria-pressed="${isDark}" class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${isDark ? 'bg-slate-900 dark:bg-emerald-600' : 'bg-gray-200'}">
-          <span class="sr-only">Toggle dark theme</span>
-          <span class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${isDark ? 'translate-x-5' : 'translate-x-0'}"></span>
-        </button>
-      </div>
-    </div>
-
-    <!-- App Preferences -->
-    <div class="bg-white rounded-3xl p-5 shadow-soft border border-gray-100">
-      <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Preferences</h3>
-      <div class="flex items-center justify-between py-2 border-b border-gray-50">
-        <div class="flex items-center gap-3">
-          <span class="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-slate-800">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8"><path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
-          </span>
-          <div>
-            <div class="font-bold text-xs sm:text-sm text-gray-900">Order & Deal Alerts</div>
-            <div class="text-[11px] text-gray-500">Get updates on your active orders</div>
-          </div>
-        </div>
-        <button id="toggle-notif" type="button" aria-pressed="${notifEnabled}" class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${notifEnabled ? 'bg-slate-900 dark:bg-emerald-600' : 'bg-gray-200'}">
-          <span class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${notifEnabled ? 'translate-x-5' : 'translate-x-0'}"></span>
-        </button>
-      </div>
-      
-      <div class="flex items-center justify-between py-3">
-        <div class="flex items-center gap-3">
-          <span class="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-slate-800">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-          </span>
-          <div>
-            <div class="font-bold text-xs sm:text-sm text-gray-900">Clear Cache</div>
-            <div class="text-[11px] text-gray-500">Free temporary storage and reload</div>
-          </div>
-        </div>
-        <button id="btn-clear-cache" class="text-xs font-bold text-rose-500 hover:text-rose-600 px-3 py-1.5 rounded-xl border border-rose-200 hover:bg-rose-50 transition">Clear</button>
-      </div>
-    </div>
-
-    <!-- About / Information -->
-    <div class="bg-white rounded-3xl p-5 shadow-soft border border-gray-100">
-      <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">About App</h3>
-      <div class="flex items-center justify-between py-2 text-xs">
-        <span class="text-gray-500 font-medium">App Version</span>
-        <span class="font-bold text-gray-900">v2.4.0 (Latest)</span>
-      </div>
-      <div class="flex items-center justify-between py-2 text-xs">
-        <span class="text-gray-500 font-medium">Build</span>
-        <span class="font-bold text-gray-900">Production PWA</span>
-      </div>
-    </div>
-  </div>`;
-}
-
 async function account(section,params){
   const pf=profile();
   if(!pf&&section!=='orders'&&section!=='order-detail'){location.hash='#/login';return}
@@ -3873,54 +3533,10 @@ async function account(section,params){
   else if(section==='profile')body=profileHtml(pf);
   else if(section==='addresses')body=await addressesHtml();
   else if(section==='wishlist')body=await wishHtml();
-  else if(section==='settings')body=settingsHtml(pf);
   else body=hubHtml(pf);
   app.innerHTML=body;
   app.onclick=async e=>{
     const t=e.target,d=t.dataset,again=()=>account(section,params);
-    const darkBtn = t.closest('#toggle-dark-mode');
-    if(darkBtn){
-      const isCurrentlyDark = document.documentElement.classList.contains('dark');
-      if(isCurrentlyDark){
-        document.documentElement.classList.remove('dark');
-        localStorage.setItem('tt_theme', 'light');
-        toast('Light theme enabled');
-      } else {
-        document.documentElement.classList.add('dark');
-        localStorage.setItem('tt_theme', 'dark');
-        toast('Dark theme enabled');
-      }
-      again();
-      return;
-    }
-    const notifBtn = t.closest('#toggle-notif');
-    if(notifBtn){
-      const currentNotif = localStorage.getItem('tt_notif') !== 'false';
-      localStorage.setItem('tt_notif', currentNotif ? 'false' : 'true');
-      toast(currentNotif ? 'Notifications muted' : 'Notifications enabled');
-      again();
-      return;
-    }
-    const cacheBtn = t.closest('#btn-clear-cache');
-    if(cacheBtn){
-      const ok = await showModalDialog({
-        title: 'Clear Cache?',
-        message: 'This will clear cached resources and reload the app.',
-        confirmText: 'Clear & Reload',
-        cancelText: 'Cancel'
-      });
-      if(ok){
-        try {
-          if('caches' in window){
-            const names = await caches.keys();
-            await Promise.all(names.map(name => caches.delete(name)));
-          }
-        }catch(err){}
-        toast('Cache cleared ✓');
-        setTimeout(() => location.reload(), 600);
-      }
-      return;
-    }
     if(t.id==='lgo'){
       await clearProfile();
       toast('Logged out successfully');
@@ -4039,8 +3655,8 @@ async function route(){
     if(footEl) footEl.classList.toggle('hidden', !isHomePage);
     document.querySelectorAll('.tb').forEach(a=>{const on=a.dataset.tb.split('|').some(k=>k==='/'?(path==='/'||path===''):path.startsWith(k));a.style.color=on?'#0f172a':'#94a3b8'});
     
-    // Don't show loading animation on profile tab (#/login or #/account/hub), edit profile (#/account/profile) or settings (#/account/settings)
-    const skipLoader = path === '/login' || path === '/account/hub' || path === '/account' || path === '/account/profile' || path === '/account/settings';
+    // Don't show loading animation on profile tab (#/login or #/account/hub) or edit profile (#/account/profile)
+    const skipLoader = path === '/login' || path === '/account/hub' || path === '/account' || path === '/account/profile';
     if(!skipLoader) showNeonLoader();
     try{
       if(path==='/'||path==='')await home();
