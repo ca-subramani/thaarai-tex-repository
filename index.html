@@ -16,7 +16,93 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+Tamil:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script>
+  try {
+    if(localStorage.getItem('tt_theme') === 'dark' || (!localStorage.getItem('tt_theme') && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  } catch(e){}
+</script>
 <style>
+/* Dark Mode Core Styles */
+html.dark, html.dark body {
+  background-color: #0b0f17 !important;
+  color: #f1f5f9 !important;
+}
+html.dark header, html.dark #tabbar {
+  background-color: rgba(15, 23, 42, 0.95) !important;
+  border-color: #1e293b !important;
+  color: #f8fafc !important;
+}
+html.dark .bg-white {
+  background-color: #131c2e !important;
+  color: #f8fafc !important;
+}
+html.dark .bg-white\/95 {
+  background-color: rgba(19, 28, 46, 0.95) !important;
+}
+html.dark .text-gray-900, html.dark .text-slate-900, html.dark .text-gray-800, html.dark .text-slate-800 {
+  color: #f8fafc !important;
+}
+html.dark .text-gray-700, html.dark .text-gray-600, html.dark .text-slate-600 {
+  color: #cbd5e1 !important;
+}
+html.dark .text-gray-500, html.dark .text-gray-400, html.dark .text-slate-400 {
+  color: #94a3b8 !important;
+}
+html.dark .border-gray-100, html.dark .border-gray-200, html.dark .border-slate-200, html.dark .border-gray-300, html.dark .divide-gray-50 > :not([hidden]) ~ :not([hidden]), html.dark .divide-gray-100 > :not([hidden]) ~ :not([hidden]) {
+  border-color: #1e293b !important;
+}
+html.dark .bg-gray-50, html.dark .bg-slate-50, html.dark .bg-\[\#f8fafc\], html.dark .bg-\[\#f1f5f9\], html.dark .bg-gray-100, html.dark .bg-slate-100 {
+  background-color: #1a2538 !important;
+  color: #f1f5f9 !important;
+}
+html.dark .hover\:bg-gray-50:hover, html.dark .hover\:bg-gray-100:hover {
+  background-color: #223049 !important;
+}
+html.dark .active\:bg-gray-100:active {
+  background-color: #273754 !important;
+}
+html.dark input, html.dark textarea, html.dark select {
+  background-color: #1a2538 !important;
+  color: #f8fafc !important;
+  border-color: #334155 !important;
+}
+html.dark input::placeholder, html.dark textarea::placeholder {
+  color: #64748b !important;
+}
+html.dark .shadow-soft {
+  box-shadow: 0 10px 30px -5px rgba(0,0,0,0.5), 0 4px 12px -2px rgba(0,0,0,0.3) !important;
+}
+html.dark #brand svg text {
+  fill: #f8fafc !important;
+}
+html.dark #toast > div {
+  background-color: rgba(19, 28, 46, 0.96) !important;
+  border-color: #334155 !important;
+}
+html.dark #toast-msg {
+  color: #f8fafc !important;
+}
+html.dark .tb {
+  color: #94a3b8;
+}
+html.dark .tb[style*="rgb(15, 23, 42)"], html.dark .tb[style*="#0f172a"] {
+  color: #38bdf8 !important;
+}
+html.dark .bg-slate-900 {
+  background-color: #0f172a !important;
+}
+html.dark .border-slate-800 {
+  border-color: #1e293b !important;
+}
+html.dark #foot {
+  background-color: #080d14 !important;
+  border-top: 1px solid #1e293b;
+}
+
 html,body{overflow-x:hidden;max-width:100%}
 body{font-family:'Plus Jakarta Sans','Noto Sans Tamil',system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;background-color:#f8fafc}
 *{min-width:0}
@@ -3144,6 +3230,7 @@ function hubHtml(pf){
       ${row(s('<path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>'),'Shopping Address','#/account/addresses')}
       ${row(s('<path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>'),'Wishlist','#/account/wishlist')}
       ${row(s('<path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>'),'Order History','#/account/orders')}
+      ${row(s('<path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/>'),'Settings','#/account/settings')}
     </div>
     <div class="mt-8 pt-4 border-t text-center"><button id="lgo" class="text-xs font-bold text-rose-500 hover:text-rose-700 flex items-center justify-center mx-auto">${ICONS.logout}Logout</button></div>
   </div>`;
@@ -3324,6 +3411,79 @@ async function wishHtml(){
     ${wp.length?grid(wp):'<div class="bg-white rounded-3xl p-12 text-center text-gray-400 text-xs border border-gray-100 shadow-soft">Your wishlist is empty.</div>'}</div>`;
 }
 
+function settingsHtml(pf){
+  const isDark = document.documentElement.classList.contains('dark');
+  const notifEnabled = localStorage.getItem('tt_notif') !== 'false';
+  return `<div class="max-w-md mx-auto space-y-4 my-2">
+    ${topbar('Settings','#/account/hub')}
+    
+    <!-- Appearance / Theme -->
+    <div class="bg-white rounded-3xl p-5 shadow-soft border border-gray-100">
+      <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Appearance</h3>
+      <div class="flex items-center justify-between py-2">
+        <div class="flex items-center gap-3">
+          <span class="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-slate-800">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8"><path d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+          </span>
+          <div>
+            <div class="font-bold text-xs sm:text-sm text-gray-900">Dark Theme</div>
+            <div class="text-[11px] text-gray-500">Switch between light and dark modes</div>
+          </div>
+        </div>
+        <button id="toggle-dark-mode" type="button" aria-pressed="${isDark}" class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${isDark ? 'bg-slate-900 dark:bg-emerald-600' : 'bg-gray-200'}">
+          <span class="sr-only">Toggle dark theme</span>
+          <span class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${isDark ? 'translate-x-5' : 'translate-x-0'}"></span>
+        </button>
+      </div>
+    </div>
+
+    <!-- App Preferences -->
+    <div class="bg-white rounded-3xl p-5 shadow-soft border border-gray-100">
+      <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Preferences</h3>
+      <div class="flex items-center justify-between py-2 border-b border-gray-50">
+        <div class="flex items-center gap-3">
+          <span class="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-slate-800">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8"><path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+          </span>
+          <div>
+            <div class="font-bold text-xs sm:text-sm text-gray-900">Order & Deal Alerts</div>
+            <div class="text-[11px] text-gray-500">Get updates on your active orders</div>
+          </div>
+        </div>
+        <button id="toggle-notif" type="button" aria-pressed="${notifEnabled}" class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${notifEnabled ? 'bg-slate-900 dark:bg-emerald-600' : 'bg-gray-200'}">
+          <span class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${notifEnabled ? 'translate-x-5' : 'translate-x-0'}"></span>
+        </button>
+      </div>
+      
+      <div class="flex items-center justify-between py-3">
+        <div class="flex items-center gap-3">
+          <span class="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-slate-800">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+          </span>
+          <div>
+            <div class="font-bold text-xs sm:text-sm text-gray-900">Clear Cache</div>
+            <div class="text-[11px] text-gray-500">Free temporary storage and reload</div>
+          </div>
+        </div>
+        <button id="btn-clear-cache" class="text-xs font-bold text-rose-500 hover:text-rose-600 px-3 py-1.5 rounded-xl border border-rose-200 hover:bg-rose-50 transition">Clear</button>
+      </div>
+    </div>
+
+    <!-- About / Information -->
+    <div class="bg-white rounded-3xl p-5 shadow-soft border border-gray-100">
+      <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">About App</h3>
+      <div class="flex items-center justify-between py-2 text-xs">
+        <span class="text-gray-500 font-medium">App Version</span>
+        <span class="font-bold text-gray-900">v2.4.0 (Latest)</span>
+      </div>
+      <div class="flex items-center justify-between py-2 text-xs">
+        <span class="text-gray-500 font-medium">Build</span>
+        <span class="font-bold text-gray-900">Production PWA</span>
+      </div>
+    </div>
+  </div>`;
+}
+
 async function account(section,params){
   const pf=profile();
   if(!pf&&section!=='orders'&&section!=='order-detail'){location.hash='#/login';return}
@@ -3333,10 +3493,54 @@ async function account(section,params){
   else if(section==='profile')body=profileHtml(pf);
   else if(section==='addresses')body=await addressesHtml();
   else if(section==='wishlist')body=await wishHtml();
+  else if(section==='settings')body=settingsHtml(pf);
   else body=hubHtml(pf);
   app.innerHTML=body;
   app.onclick=async e=>{
     const t=e.target,d=t.dataset,again=()=>account(section,params);
+    const darkBtn = t.closest('#toggle-dark-mode');
+    if(darkBtn){
+      const isCurrentlyDark = document.documentElement.classList.contains('dark');
+      if(isCurrentlyDark){
+        document.documentElement.classList.remove('dark');
+        localStorage.setItem('tt_theme', 'light');
+        toast('Light theme enabled');
+      } else {
+        document.documentElement.classList.add('dark');
+        localStorage.setItem('tt_theme', 'dark');
+        toast('Dark theme enabled');
+      }
+      again();
+      return;
+    }
+    const notifBtn = t.closest('#toggle-notif');
+    if(notifBtn){
+      const currentNotif = localStorage.getItem('tt_notif') !== 'false';
+      localStorage.setItem('tt_notif', currentNotif ? 'false' : 'true');
+      toast(currentNotif ? 'Notifications muted' : 'Notifications enabled');
+      again();
+      return;
+    }
+    const cacheBtn = t.closest('#btn-clear-cache');
+    if(cacheBtn){
+      const ok = await showModalDialog({
+        title: 'Clear Cache?',
+        message: 'This will clear cached resources and reload the app.',
+        confirmText: 'Clear & Reload',
+        cancelText: 'Cancel'
+      });
+      if(ok){
+        try {
+          if('caches' in window){
+            const names = await caches.keys();
+            await Promise.all(names.map(name => caches.delete(name)));
+          }
+        }catch(err){}
+        toast('Cache cleared ✓');
+        setTimeout(() => location.reload(), 600);
+      }
+      return;
+    }
     if(t.id==='lgo'){
       await clearProfile();
       toast('Logged out successfully');
@@ -3455,8 +3659,8 @@ async function route(){
     if(footEl) footEl.classList.toggle('hidden', !isHomePage);
     document.querySelectorAll('.tb').forEach(a=>{const on=a.dataset.tb.split('|').some(k=>k==='/'?(path==='/'||path===''):path.startsWith(k));a.style.color=on?'#0f172a':'#94a3b8'});
     
-    // Don't show loading animation on profile tab (#/login or #/account/hub) or edit profile (#/account/profile)
-    const skipLoader = path === '/login' || path === '/account/hub' || path === '/account' || path === '/account/profile';
+    // Don't show loading animation on profile tab (#/login or #/account/hub), edit profile (#/account/profile) or settings (#/account/settings)
+    const skipLoader = path === '/login' || path === '/account/hub' || path === '/account' || path === '/account/profile' || path === '/account/settings';
     if(!skipLoader) showNeonLoader();
     try{
       if(path==='/'||path==='')await home();
