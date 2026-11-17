@@ -3205,11 +3205,14 @@ $('#brand').addEventListener('click', e => {
 });
 
 /* ===== NAVIGATION & SHOP BACK LOOP ===== */
-// Seed dummy states ONLY when user enters Shop tab so Android edge-swipe cannot exit
+// Seed dummy states ONLY when user enters base Shop tab so Android edge-swipe cannot exit
 function seedShopHistory(){
   try {
-    for(let i=0; i<6; i++){
-      history.pushState({ thaaraiShopTrap: true, i, t: Date.now() }, '', '#/shop');
+    const h = location.hash || '#/';
+    if(h === '#/shop' || h === '#/shop/'){
+      for(let i=0; i<6; i++){
+        history.pushState({ thaaraiShopTrap: true, i, t: Date.now() }, '', '#/shop');
+      }
     }
   } catch(e){}
 }
@@ -3234,8 +3237,14 @@ window.addEventListener('popstate', event => {
 
   const h = location.hash || '#/';
 
-  // ONLY IF ON SHOP TAB: Hard reload and never let mobile swipe close the browser!
-  if(h === '#/shop' || h.startsWith('#/shop?')){
+  // If in filtered shop view (e.g. #/shop?cat=...), back gesture steps back to base shop
+  if(h.startsWith('#/shop?')){
+    location.hash = '#/shop';
+    return;
+  }
+
+  // ONLY ON BASE SHOP TAB: Trap back swipe gesture, prevent closing, and reload Shop
+  if(h === '#/shop' || h === '#/shop/'){
     try {
       history.pushState({ thaaraiShopTrap: true, t: Date.now() }, '', '#/shop');
     } catch(e){}
@@ -3268,8 +3277,13 @@ $('#nav-back').onclick = e => {
   }
 
   const h = location.hash || '#/';
-  // Only from shop tab does it hard reload and lock
-  if(h === '#/shop' || h.startsWith('#/shop?')){
+  // If filtered shop, return to clean shop
+  if(h.startsWith('#/shop?')){
+    location.hash = '#/shop';
+    return;
+  }
+  // Base shop: reload and stay
+  if(h === '#/shop' || h === '#/shop/'){
     location.href = '#/shop';
     window.location.reload();
     return;
@@ -3287,12 +3301,12 @@ window.addEventListener('hashchange', () => {
   route();
 });
 
-// Watch route to seed shop history whenever entering shop tab
+// Watch route to seed shop history only on base shop tab
 const originalRoute = route;
 route = async function(){
   await originalRoute();
   const h = location.hash || '#/';
-  if(h === '#/shop' || h.startsWith('#/shop?')){
+  if(h === '#/shop' || h === '#/shop/'){
     seedShopHistory();
   }
 };
