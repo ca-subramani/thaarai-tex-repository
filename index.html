@@ -929,11 +929,11 @@ async function shop(params){
   ];
 
   const allSorts = [
-    { val: 'new', label: 'Newest Arrivals', desc: 'Latest handloom saree releases added to collection' },
-    { val: 'low', label: 'Price: Low to High', desc: 'Most affordable and budget-friendly sarees first' },
-    { val: 'high', label: 'Price: High to Low', desc: 'Luxury, pure silk, and premium bridal sarees first' },
-    { val: 'rating', label: 'Top Rated & Reviews', desc: 'Highest rated sarees loved by verified customers' },
-    { val: 'discount', label: 'Biggest Discounts', desc: 'Highest savings and clearance offers first' }
+    { val: 'new', label: 'Newest Arrivals' },
+    { val: 'low', label: 'Price: Low to High' },
+    { val: 'high', label: 'Price: High to Low' },
+    { val: 'rating', label: 'Top Rated & Reviews' },
+    { val: 'discount', label: 'Biggest Discounts' }
   ];
 
   // Helper labels for active badges
@@ -980,18 +980,18 @@ async function shop(params){
         <div class="py-1">
           <button type="button" class="f-acc-toggle w-full flex items-center justify-between py-3 px-2 rounded-xl text-left hover:bg-slate-50 transition group" data-acc="categories">
             <div class="flex items-center gap-2">
-              <span class="text-xs font-bold text-slate-800 group-hover:text-slate-950">categories</span>
+              <span class="text-sm font-bold text-slate-900 group-hover:text-rose-600 transition">Categories</span>
               <span class="f-badge text-[10px] font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full ${currentCatLabel ? '' : 'hidden'}" id="badge-categories">${esc(currentCatLabel)}</span>
             </div>
             <span class="f-chevron text-xs font-bold text-gray-400 group-hover:text-slate-800 transition-transform duration-200">›</span>
           </button>
-          <div id="acc-categories" class="f-acc-panel hidden pt-1 pb-2 px-1 space-y-1">
+          <div id="acc-categories" class="f-acc-panel hidden pt-2 pb-3 px-1 space-y-2">
             ${allCategoryOptions.map(c => {
               const isSel = (!f.cat && !c.id) || (f.cat && (f.cat === c.id || f.cat.toLowerCase() === c.name.toLowerCase()));
               return `
-              <label class="f-opt-row flex items-center justify-between py-2 px-2.5 rounded-xl cursor-pointer hover:bg-slate-50 transition ${isSel ? 'bg-slate-900 text-white font-bold' : 'text-slate-700 font-medium'}" data-type="cat" data-val="${esc(c.id || c.name)}" data-label="${esc(c.name)}">
-                <span class="text-xs capitalize">${esc(c.name)}</span>
-                <span class="f-check w-4 h-4 rounded-full border flex items-center justify-center ${isSel ? 'border-white bg-white text-slate-900 text-[10px] font-black' : 'border-gray-300'}">${isSel ? '✓' : ''}</span>
+              <label class="f-opt-row flex items-center justify-between p-3.5 rounded-2xl border-2 cursor-pointer transition ${isSel ? 'border-slate-900 bg-slate-900 text-white font-bold shadow-sm' : 'border-gray-200 bg-white text-slate-800 font-semibold hover:border-gray-300'}" data-type="cat" data-val="${esc(c.id || c.name)}" data-label="${esc(c.name)}">
+                <span class="text-sm capitalize">${esc(c.name)}</span>
+                <div class="f-check w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${isSel ? 'border-white bg-white text-slate-900 font-black text-xs' : 'border-gray-300 bg-white'}">${isSel ? '✓' : ''}</div>
                 <input type="radio" name="opt-cat" value="${esc(c.id || c.name)}" class="sr-only" ${isSel ? 'checked' : ''}>
               </label>`;
             }).join('')}
@@ -1002,18 +1002,18 @@ async function shop(params){
         <div class="py-1">
           <button type="button" class="f-acc-toggle w-full flex items-center justify-between py-3 px-2 rounded-xl text-left hover:bg-slate-50 transition group" data-acc="fabric">
             <div class="flex items-center gap-2">
-              <span class="text-xs font-bold text-slate-800 group-hover:text-slate-950">fabric</span>
+              <span class="text-sm font-bold text-slate-900 group-hover:text-rose-600 transition">Fabric</span>
               <span class="f-badge text-[10px] font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full ${currentFabLabel ? '' : 'hidden'}" id="badge-fabric">${esc(currentFabLabel)}</span>
             </div>
             <span class="f-chevron text-xs font-bold text-gray-400 group-hover:text-slate-800 transition-transform duration-200">›</span>
           </button>
-          <div id="acc-fabric" class="f-acc-panel hidden pt-1 pb-2 px-1 space-y-1">
+          <div id="acc-fabric" class="f-acc-panel hidden pt-2 pb-3 px-1 space-y-2">
             ${allFabrics.map(fb => {
               const isSel = (f.fabric.toLowerCase() === fb.val.toLowerCase());
               return `
-              <label class="f-opt-row flex items-center justify-between py-2 px-2.5 rounded-xl cursor-pointer hover:bg-slate-50 transition ${isSel ? 'bg-slate-900 text-white font-bold' : 'text-slate-700 font-medium'}" data-type="fabric" data-val="${esc(fb.val)}" data-label="${esc(fb.label)}">
-                <span class="text-xs capitalize">${esc(fb.label)}</span>
-                <span class="f-check w-4 h-4 rounded-full border flex items-center justify-center ${isSel ? 'border-white bg-white text-slate-900 text-[10px] font-black' : 'border-gray-300'}">${isSel ? '✓' : ''}</span>
+              <label class="f-opt-row flex items-center justify-between p-3.5 rounded-2xl border-2 cursor-pointer transition ${isSel ? 'border-slate-900 bg-slate-900 text-white font-bold shadow-sm' : 'border-gray-200 bg-white text-slate-800 font-semibold hover:border-gray-300'}" data-type="fabric" data-val="${esc(fb.val)}" data-label="${esc(fb.label)}">
+                <span class="text-sm capitalize">${esc(fb.label)}</span>
+                <div class="f-check w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${isSel ? 'border-white bg-white text-slate-900 font-black text-xs' : 'border-gray-300 bg-white'}">${isSel ? '✓' : ''}</div>
                 <input type="radio" name="opt-fabric" value="${esc(fb.val)}" class="sr-only" ${isSel ? 'checked' : ''}>
               </label>`;
             }).join('')}
@@ -1024,18 +1024,18 @@ async function shop(params){
         <div class="py-1">
           <button type="button" class="f-acc-toggle w-full flex items-center justify-between py-3 px-2 rounded-xl text-left hover:bg-slate-50 transition group" data-acc="ratings">
             <div class="flex items-center gap-2">
-              <span class="text-xs font-bold text-slate-800 group-hover:text-slate-950">ratings</span>
+              <span class="text-sm font-bold text-slate-900 group-hover:text-rose-600 transition">Ratings</span>
               <span class="f-badge text-[10px] font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full ${currentRatingLabel ? '' : 'hidden'}" id="badge-ratings">${esc(currentRatingLabel)}</span>
             </div>
             <span class="f-chevron text-xs font-bold text-gray-400 group-hover:text-slate-800 transition-transform duration-200">›</span>
           </button>
-          <div id="acc-ratings" class="f-acc-panel hidden pt-1 pb-2 px-1 space-y-1">
+          <div id="acc-ratings" class="f-acc-panel hidden pt-2 pb-3 px-1 space-y-2">
             ${allRatings.map(rt => {
               const isSel = (f.rating === rt.val);
               return `
-              <label class="f-opt-row flex items-center justify-between py-2 px-2.5 rounded-xl cursor-pointer hover:bg-slate-50 transition ${isSel ? 'bg-slate-900 text-white font-bold' : 'text-slate-700 font-medium'}" data-type="rating" data-val="${esc(rt.val)}" data-label="${esc(rt.label)}">
-                <span class="text-xs">${esc(rt.label)}</span>
-                <span class="f-check w-4 h-4 rounded-full border flex items-center justify-center ${isSel ? 'border-white bg-white text-slate-900 text-[10px] font-black' : 'border-gray-300'}">${isSel ? '✓' : ''}</span>
+              <label class="f-opt-row flex items-center justify-between p-3.5 rounded-2xl border-2 cursor-pointer transition ${isSel ? 'border-slate-900 bg-slate-900 text-white font-bold shadow-sm' : 'border-gray-200 bg-white text-slate-800 font-semibold hover:border-gray-300'}" data-type="rating" data-val="${esc(rt.val)}" data-label="${esc(rt.label)}">
+                <span class="text-sm">${esc(rt.label)}</span>
+                <div class="f-check w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${isSel ? 'border-white bg-white text-slate-900 font-black text-xs' : 'border-gray-300 bg-white'}">${isSel ? '✓' : ''}</div>
                 <input type="radio" name="opt-rating" value="${esc(rt.val)}" class="sr-only" ${isSel ? 'checked' : ''}>
               </label>`;
             }).join('')}
@@ -1046,17 +1046,17 @@ async function shop(params){
         <div class="py-1">
           <button type="button" class="f-acc-toggle w-full flex items-center justify-between py-3 px-2 rounded-xl text-left hover:bg-slate-50 transition group" data-acc="price">
             <div class="flex items-center gap-2">
-              <span class="text-xs font-bold text-slate-800 group-hover:text-slate-950">price</span>
+              <span class="text-sm font-bold text-slate-900 group-hover:text-rose-600 transition">Price</span>
               <span class="f-badge text-[10px] font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full ${currentPriceLabel ? '' : 'hidden'}" id="badge-price">${esc(currentPriceLabel)}</span>
             </div>
             <span class="f-chevron text-xs font-bold text-gray-400 group-hover:text-slate-800 transition-transform duration-200">›</span>
           </button>
-          <div id="acc-price" class="f-acc-panel hidden pt-1 pb-2 px-1 space-y-2">
-            <div class="space-y-1">
+          <div id="acc-price" class="f-acc-panel hidden pt-2 pb-3 px-1 space-y-2">
+            <div class="space-y-2">
               ${allPriceTiers.map(pt => `
-                <button type="button" class="price-tier-btn w-full flex items-center justify-between py-2 px-2.5 rounded-xl text-left text-xs font-medium text-slate-700 hover:bg-slate-50 transition" data-min="${esc(pt.min)}" data-max="${esc(pt.max)}" data-label="${esc(pt.label)}">
+                <button type="button" class="price-tier-btn w-full flex items-center justify-between p-3.5 rounded-2xl border-2 border-gray-200 bg-white hover:border-gray-300 text-left text-sm font-semibold text-slate-800 transition" data-min="${esc(pt.min)}" data-max="${esc(pt.max)}" data-label="${esc(pt.label)}">
                   <span>${esc(pt.label)}</span>
-                  <span class="text-[10px] text-gray-400">₹</span>
+                  <span class="text-xs text-gray-400 font-bold">₹</span>
                 </button>
               `).join('')}
             </div>
@@ -1081,18 +1081,18 @@ async function shop(params){
         <div class="py-1">
           <button type="button" class="f-acc-toggle w-full flex items-center justify-between py-3 px-2 rounded-xl text-left hover:bg-slate-50 transition group" data-acc="availability">
             <div class="flex items-center gap-2">
-              <span class="text-xs font-bold text-slate-800 group-hover:text-slate-950">avaialability</span>
+              <span class="text-sm font-bold text-slate-900 group-hover:text-rose-600 transition">Availability</span>
               <span class="f-badge text-[10px] font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full ${currentAvailLabel ? '' : 'hidden'}" id="badge-availability">${esc(currentAvailLabel)}</span>
             </div>
             <span class="f-chevron text-xs font-bold text-gray-400 group-hover:text-slate-800 transition-transform duration-200">›</span>
           </button>
-          <div id="acc-availability" class="f-acc-panel hidden pt-1 pb-2 px-1 space-y-1">
+          <div id="acc-availability" class="f-acc-panel hidden pt-2 pb-3 px-1 space-y-2">
             ${allAvailability.map(av => {
               const isSel = (f.stock === av.val);
               return `
-              <label class="f-opt-row flex items-center justify-between py-2 px-2.5 rounded-xl cursor-pointer hover:bg-slate-50 transition ${isSel ? 'bg-slate-900 text-white font-bold' : 'text-slate-700 font-medium'}" data-type="stock" data-val="${esc(av.val)}" data-label="${esc(av.label)}">
-                <span class="text-xs">${esc(av.label)}</span>
-                <span class="f-check w-4 h-4 rounded-full border flex items-center justify-center ${isSel ? 'border-white bg-white text-slate-900 text-[10px] font-black' : 'border-gray-300'}">${isSel ? '✓' : ''}</span>
+              <label class="f-opt-row flex items-center justify-between p-3.5 rounded-2xl border-2 cursor-pointer transition ${isSel ? 'border-slate-900 bg-slate-900 text-white font-bold shadow-sm' : 'border-gray-200 bg-white text-slate-800 font-semibold hover:border-gray-300'}" data-type="stock" data-val="${esc(av.val)}" data-label="${esc(av.label)}">
+                <span class="text-sm">${esc(av.label)}</span>
+                <div class="f-check w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${isSel ? 'border-white bg-white text-slate-900 font-black text-xs' : 'border-gray-300 bg-white'}">${isSel ? '✓' : ''}</div>
                 <input type="radio" name="opt-stock" value="${esc(av.val)}" class="sr-only" ${isSel ? 'checked' : ''}>
               </label>`;
             }).join('')}
@@ -1103,21 +1103,21 @@ async function shop(params){
         <div class="py-1">
           <button type="button" class="f-acc-toggle w-full flex items-center justify-between py-3 px-2 rounded-xl text-left hover:bg-slate-50 transition group" data-acc="colour">
             <div class="flex items-center gap-2">
-              <span class="text-xs font-bold text-slate-800 group-hover:text-slate-950">colour</span>
+              <span class="text-sm font-bold text-slate-900 group-hover:text-rose-600 transition">Colour</span>
               <span class="f-badge text-[10px] font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full ${currentColorLabel ? '' : 'hidden'}" id="badge-colour">${esc(currentColorLabel)}</span>
             </div>
             <span class="f-chevron text-xs font-bold text-gray-400 group-hover:text-slate-800 transition-transform duration-200">›</span>
           </button>
-          <div id="acc-colour" class="f-acc-panel hidden pt-1 pb-2 px-1 space-y-1">
+          <div id="acc-colour" class="f-acc-panel hidden pt-2 pb-3 px-1 space-y-2">
             ${allColours.map(cl => {
               const isSel = (f.color.toLowerCase() === cl.val.toLowerCase());
               return `
-              <label class="f-opt-row flex items-center justify-between py-2 px-2.5 rounded-xl cursor-pointer hover:bg-slate-50 transition ${isSel ? 'bg-slate-900 text-white font-bold' : 'text-slate-700 font-medium'}" data-type="color" data-val="${esc(cl.val)}" data-label="${esc(cl.label)}">
-                <div class="flex items-center gap-2.5">
-                  ${cl.val ? (cl.gradient ? `<span class="w-4 h-4 rounded-full bg-gradient-to-tr from-pink-500 via-yellow-400 to-blue-500 shrink-0"></span>` : `<span class="w-4 h-4 rounded-full shrink-0 ${cl.border ? 'border border-gray-300' : ''}" style="background-color: ${cl.hex};"></span>`) : `<span class="w-4 h-4 rounded-full border border-dashed border-gray-300 shrink-0"></span>`}
-                  <span class="text-xs capitalize">${esc(cl.label)}</span>
+              <label class="f-opt-row flex items-center justify-between p-3.5 rounded-2xl border-2 cursor-pointer transition ${isSel ? 'border-slate-900 bg-slate-900 text-white font-bold shadow-sm' : 'border-gray-200 bg-white text-slate-800 font-semibold hover:border-gray-300'}" data-type="color" data-val="${esc(cl.val)}" data-label="${esc(cl.label)}">
+                <div class="flex items-center gap-3">
+                  ${cl.val ? (cl.gradient ? `<span class="w-5 h-5 rounded-full bg-gradient-to-tr from-pink-500 via-yellow-400 to-blue-500 shrink-0 shadow-sm"></span>` : `<span class="w-5 h-5 rounded-full shrink-0 ${cl.border ? 'border border-gray-300' : ''}" style="background-color: ${cl.hex};"></span>`) : `<span class="w-5 h-5 rounded-full border-2 border-dashed border-gray-300 shrink-0"></span>`}
+                  <span class="text-sm capitalize">${esc(cl.label)}</span>
                 </div>
-                <span class="f-check w-4 h-4 rounded-full border flex items-center justify-center ${isSel ? 'border-white bg-white text-slate-900 text-[10px] font-black' : 'border-gray-300'}">${isSel ? '✓' : ''}</span>
+                <div class="f-check w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${isSel ? 'border-white bg-white text-slate-900 font-black text-xs' : 'border-gray-300 bg-white'}">${isSel ? '✓' : ''}</div>
                 <input type="radio" name="opt-color" value="${esc(cl.val)}" class="sr-only" ${isSel ? 'checked' : ''}>
               </label>`;
             }).join('')}
@@ -1128,18 +1128,18 @@ async function shop(params){
         <div class="py-1">
           <button type="button" class="f-acc-toggle w-full flex items-center justify-between py-3 px-2 rounded-xl text-left hover:bg-slate-50 transition group" data-acc="sort">
             <div class="flex items-center gap-2">
-              <span class="text-xs font-bold text-slate-800 group-hover:text-slate-950">sort</span>
+              <span class="text-sm font-bold text-slate-900 group-hover:text-rose-600 transition">Sort</span>
               <span class="f-badge text-[10px] font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full ${currentSortLabel ? '' : 'hidden'}" id="badge-sort">${esc(currentSortLabel)}</span>
             </div>
             <span class="f-chevron text-xs font-bold text-gray-400 group-hover:text-slate-800 transition-transform duration-200">›</span>
           </button>
-          <div id="acc-sort" class="f-acc-panel hidden pt-1 pb-2 px-1 space-y-1">
+          <div id="acc-sort" class="f-acc-panel hidden pt-2 pb-3 px-1 space-y-2">
             ${allSorts.map(st => {
               const isSel = (f.sort === st.val);
               return `
-              <label class="f-opt-row flex items-center justify-between py-2 px-2.5 rounded-xl cursor-pointer hover:bg-slate-50 transition ${isSel ? 'bg-slate-900 text-white font-bold' : 'text-slate-700 font-medium'}" data-type="sort" data-val="${esc(st.val)}" data-label="${esc(st.label)}">
-                <span class="text-xs">${esc(st.label)}</span>
-                <span class="f-check w-4 h-4 rounded-full border flex items-center justify-center ${isSel ? 'border-white bg-white text-slate-900 text-[10px] font-black' : 'border-gray-300'}">${isSel ? '✓' : ''}</span>
+              <label class="f-opt-row flex items-center justify-between p-3.5 rounded-2xl border-2 cursor-pointer transition ${isSel ? 'border-slate-900 bg-slate-900 text-white font-bold shadow-sm' : 'border-gray-200 bg-white text-slate-800 font-semibold hover:border-gray-300'}" data-type="sort" data-val="${esc(st.val)}" data-label="${esc(st.label)}">
+                <span class="text-sm font-semibold">${esc(st.label)}</span>
+                <div class="f-check w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${isSel ? 'border-white bg-white text-slate-900 font-black text-xs' : 'border-gray-300 bg-white'}">${isSel ? '✓' : ''}</div>
                 <input type="radio" name="opt-sort" value="${esc(st.val)}" class="sr-only" ${isSel ? 'checked' : ''}>
               </label>`;
             }).join('')}
@@ -1170,16 +1170,13 @@ async function shop(params){
           <button id="sort-page-reset" type="button" class="text-xs font-bold text-rose-600 hover:text-rose-700 px-2 py-1">Reset</button>
         </div>
 
-        <!-- Scrollable Sort Options -->
+        <!-- Scrollable Sort Options (Boxed, No Description, Increased Font Size) -->
         <div class="flex-1 overflow-y-auto p-5 space-y-3" id="sort-page-options">
           ${allSorts.map(opt => `
-            <label class="sort-page-card flex items-center justify-between p-4 rounded-2xl border-2 cursor-pointer transition ${f.sort === opt.val ? 'border-slate-900 bg-slate-50/70 shadow-sm' : 'border-gray-100 bg-white hover:border-gray-200'}" data-sort="${opt.val}">
-              <div class="flex-1 pr-3">
-                <div class="flex items-center gap-2">
-                  <span class="text-xs font-extrabold text-slate-900">${esc(opt.label)}</span>
-                  ${opt.val === 'new' ? '<span class="text-[9px] font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full">Popular</span>' : ''}
-                </div>
-                <p class="text-[11px] text-gray-500 mt-0.5 font-medium leading-relaxed">${esc(opt.desc)}</p>
+            <label class="sort-page-card flex items-center justify-between p-4 rounded-2xl border-2 cursor-pointer transition ${f.sort === opt.val ? 'border-slate-900 bg-slate-100 shadow-sm' : 'border-gray-200 bg-white hover:border-gray-300'}" data-sort="${opt.val}">
+              <div class="flex items-center gap-2.5">
+                <span class="text-sm font-bold text-slate-900">${esc(opt.label)}</span>
+                ${opt.val === 'new' ? '<span class="text-[10px] font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full">Popular</span>' : ''}
               </div>
               <div class="sort-page-radio-outer w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${f.sort === opt.val ? 'border-slate-900 bg-slate-900' : 'border-gray-300 bg-white'}">
                 <div class="w-2 h-2 rounded-full bg-white transition-transform ${f.sort === opt.val ? 'scale-100' : 'scale-0'}"></div>
@@ -1247,7 +1244,7 @@ async function shop(params){
     };
   });
 
-  // Helper function to update option row UI
+  // Helper function to update option row UI with crisp box styling
   const updateOptionRowUI = (containerId, selectedVal) => {
     const panel = $(containerId);
     if(!panel) return;
@@ -1257,15 +1254,15 @@ async function shop(params){
       const check = row.querySelector('.f-check');
       if(radio) radio.checked = isSelected;
       if(isSelected){
-        row.className = 'f-opt-row flex items-center justify-between py-2 px-2.5 rounded-xl cursor-pointer hover:bg-slate-50 transition bg-slate-900 text-white font-bold';
+        row.className = 'f-opt-row flex items-center justify-between p-3.5 rounded-2xl border-2 cursor-pointer transition border-slate-900 bg-slate-900 text-white font-bold shadow-sm';
         if(check){
-          check.className = 'f-check w-4 h-4 rounded-full border flex items-center justify-center border-white bg-white text-slate-900 text-[10px] font-black';
+          check.className = 'f-check w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 border-white bg-white text-slate-900 font-black text-xs';
           check.textContent = '✓';
         }
       } else {
-        row.className = 'f-opt-row flex items-center justify-between py-2 px-2.5 rounded-xl cursor-pointer hover:bg-slate-50 transition text-slate-700 font-medium';
+        row.className = 'f-opt-row flex items-center justify-between p-3.5 rounded-2xl border-2 cursor-pointer transition border-gray-200 bg-white text-slate-800 font-semibold hover:border-gray-300';
         if(check){
-          check.className = 'f-check w-4 h-4 rounded-full border flex items-center justify-center border-gray-300';
+          check.className = 'f-check w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 border-gray-300 bg-white';
           check.textContent = '';
         }
       }
@@ -1353,11 +1350,11 @@ async function shop(params){
       const dot = card.querySelector('.sort-page-radio-outer > div');
       if(radio) radio.checked = isSelected;
       if(isSelected){
-        card.className = 'sort-page-card flex items-center justify-between p-4 rounded-2xl border-2 cursor-pointer transition border-slate-900 bg-slate-50/70 shadow-sm';
+        card.className = 'sort-page-card flex items-center justify-between p-4 rounded-2xl border-2 cursor-pointer transition border-slate-900 bg-slate-100 shadow-sm';
         if(radioOuter) radioOuter.className = 'sort-page-radio-outer w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 border-slate-900 bg-slate-900';
         if(dot) dot.className = 'w-2 h-2 rounded-full bg-white transition-transform scale-100';
       } else {
-        card.className = 'sort-page-card flex items-center justify-between p-4 rounded-2xl border-2 cursor-pointer transition border-gray-100 bg-white hover:border-gray-200';
+        card.className = 'sort-page-card flex items-center justify-between p-4 rounded-2xl border-2 cursor-pointer transition border-gray-200 bg-white hover:border-gray-300';
         if(radioOuter) radioOuter.className = 'sort-page-radio-outer w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 border-gray-300 bg-white';
         if(dot) dot.className = 'w-2 h-2 rounded-full bg-white transition-transform scale-0';
       }
@@ -1419,7 +1416,6 @@ async function shop(params){
     location.hash = '#/shop';
   };
 }
-
 
 /* ===== PRODUCT PAGE ===== */
 async function product(id){
@@ -2503,7 +2499,7 @@ function armShopGuard(){
   } catch(e){}
 }
 
-// Window popstate: ALWAYS keep user within Thaarai Tex and lock onto #/shop
+// Window popstate: ALWAYS keep user locked inside shop tab by reloading
 window.addEventListener('popstate', event => {
   const current = location.hash || '#/';
 
@@ -2547,31 +2543,17 @@ window.addEventListener('popstate', event => {
     return;
   }
 
-  // 6. If user attempts to exit from Shop tab (#/shop), trap and keep locked on #/shop!
-  if((prev === '#/shop' || prev === '#/shop/') && (next === '' || next === '#' || next === '#/' || !next.startsWith('#/'))){
+  // 6. If user attempts to exit or clicks back on shop tab: reload and stay in shop!
+  if(prev.startsWith('#/shop') || next === '' || next === '#' || next === '#/' || next.startsWith('#/shop')){
     try {
       history.pushState({ thaaraiShopGuard: true }, '', '#/shop');
     } catch(e){}
     currentRoute = '#/shop';
-    return;
-  }
-
-  // 7. If user is on Home (#/ or '') and clicks back: redirect and lock into Shop tab
-  if((prev === '#/' || prev === '#' || prev === '') && (next === '' || next === '#' || !next.startsWith('#/'))){
-    location.hash = '#/shop';
-    try {
-      history.pushState({ thaaraiShopGuard: true }, '', '#/shop');
-    } catch(e){}
-    currentRoute = '#/shop';
-    return;
-  }
-
-  // 8. If next is clean #/shop, ensure guard is pushed so subsequent back clicks are also trapped
-  if(next === '#/shop' || next === '#/shop/'){
-    try {
-      history.pushState({ thaaraiShopGuard: true }, '', '#/shop');
-    } catch(e){}
-    currentRoute = '#/shop';
+    if(location.hash !== '#/shop'){
+      location.hash = '#/shop';
+    } else {
+      route();
+    }
     return;
   }
 
@@ -2623,6 +2605,7 @@ $('#nav-back').onclick = () => {
   }
 
   if(current === '#/shop' || current === '#/shop/'){
+    route();
     window.scrollTo({ top: 0, behavior: 'smooth' });
     return;
   }
