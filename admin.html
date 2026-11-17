@@ -1008,6 +1008,14 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
       }[st] || 'bg-slate-100 text-slate-900 border border-slate-200';
 
       const initials = (name || 'C').split(' ').map(w=>w[0]).filter(Boolean).slice(0,2).join('').toUpperCase() || 'C';
+      const createdDate = o.created_at ? new Date(o.created_at).toLocaleString('en-IN', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+      }) : '—';
 
       return `
         <div class="bg-white rounded-3xl p-4 sm:p-5 shadow-soft border border-slate-200/80 flex items-center justify-between gap-3 min-w-0">
@@ -1025,20 +1033,13 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
               <p class="text-[11px] text-slate-500 truncate flex items-center gap-1.5 min-w-0">
                 <span class="font-semibold text-slate-700 shrink-0">${esc(phone || 'No Phone')}</span>
                 <span class="text-slate-300">·</span>
-                <span class="shrink-0">${date(o.created_at)}</span>
+                <span class="text-slate-600 font-medium shrink-0">🕒 ${esc(createdDate)}</span>
                 ${a?.city ? `<span class="text-slate-300">·</span><span class="truncate">${esc(capWords(a.city))}</span>` : ''}
-                <span class="text-slate-300">·</span>
-                <span class="shrink-0">${totalQty} Saree${totalQty === 1 ? '' : 's'}</span>
-                <span class="sm:hidden font-extrabold text-slate-900 shrink-0">· ${fmt(o.total)}</span>
               </p>
             </div>
           </div>
 
           <div class="flex items-center gap-3 shrink-0">
-            <div class="text-right hidden sm:block">
-              <span class="text-xs sm:text-sm font-black text-slate-900 block">${fmt(o.total)}</span>
-              <span class="text-[10px] text-slate-400 font-bold uppercase">${esc(o.payment_method || 'COD')}</span>
-            </div>
             <button onclick="viewOrderDetail('${esc(o.id)}')" aria-label="View order details" class="w-8 h-8 rounded-full border border-slate-200 hover:border-slate-900 hover:bg-slate-900 hover:text-white text-slate-700 font-bold flex items-center justify-center transition shadow-soft active:scale-95">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
             </button>
