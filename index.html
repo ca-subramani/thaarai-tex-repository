@@ -1125,11 +1125,11 @@ async function shop(params){
     </div>
 
     <!-- Flipkart/Amazon Style 2-Column Split Filter Page Modal (Left categories tab, Right options panel) -->
-    <div id="fl" class="hidden fixed !inset-0 !top-0 !left-0 !right-0 !bottom-0 w-full h-full min-h-screen z-[99999] bg-white flex flex-col md:bg-slate-900/50 md:backdrop-blur-sm md:items-center md:justify-center p-0 md:p-6 overscroll-contain" style="top:0;left:0;right:0;bottom:0;margin:0;">
+    <div id="fl" class="hidden fixed !top-0 !left-0 !right-0 !bottom-0 w-full h-[100dvh] z-[99999] bg-white flex flex-col md:bg-slate-900/50 md:backdrop-blur-sm md:items-center md:justify-center p-0 md:p-6 overscroll-contain" style="top:0;left:0;right:0;bottom:0;margin:0;">
       <div class="w-full h-full md:h-[88vh] md:max-w-4xl bg-white md:rounded-3xl flex flex-col shadow-2xl overflow-hidden border border-gray-100">
         
         <!-- Filter Top Bar with Back Button -->
-        <div class="sticky top-0 z-20 flex items-center justify-between px-5 py-4 bg-white border-b border-gray-100 shrink-0">
+        <div class="sticky top-0 z-20 flex items-center justify-between px-5 pt-[max(0.75rem,env(safe-area-inset-top,0px))] pb-3.5 bg-white border-b border-gray-100 shrink-0">
           <div class="flex items-center gap-3">
             <button id="filter-close" type="button" aria-label="Close filters" class="w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-800 flex items-center justify-center transition shadow-sm">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M15 19l-7-7 7-7"/></svg>
@@ -1297,18 +1297,18 @@ async function shop(params){
         </div>
 
         <!-- Sticky Bottom Bar -->
-        <div class="sticky bottom-0 bg-white p-4 border-t border-gray-100 flex items-center gap-3 shrink-0">
-          <button id="f-clear-btn" type="button" class="flex-1 py-3.5 px-4 rounded-full border-2 border-gray-200 text-xs font-bold text-slate-700 hover:bg-slate-50 transition text-center">Reset</button>
-          <button id="apply" type="button" class="flex-[2] py-3.5 px-4 rounded-full bg-slate-900 hover:bg-slate-800 text-white text-xs font-extrabold shadow-soft transition text-center">Apply Filters</button>
+        <div class="sticky bottom-0 bg-white px-4 pt-3 pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))] border-t border-gray-100 flex items-center gap-3 shrink-0 z-30 shadow-[0_-6px_25px_rgba(0,0,0,0.08)]">
+          <button id="f-clear-btn" type="button" class="flex-1 py-3 px-4 rounded-full border-2 border-gray-200 text-xs font-bold text-slate-700 hover:bg-slate-50 transition text-center active:scale-95">Reset</button>
+          <button id="apply" type="button" class="flex-[2] py-3 px-4 rounded-full bg-slate-900 hover:bg-slate-800 text-white text-xs font-extrabold shadow-soft transition text-center active:scale-95">Apply Filters</button>
         </div>
       </div>
     </div>
 
     <!-- Separate Sort Page Modal (Dedicated Page View on Desktop & Mobile) -->
-    <div id="sort-page-modal" class="hidden fixed !inset-0 !top-0 !left-0 !right-0 !bottom-0 w-full h-full min-h-screen z-[99999] bg-white flex flex-col md:bg-slate-900/50 md:backdrop-blur-sm md:items-center md:justify-center p-0 md:p-6 overscroll-contain" style="top:0;left:0;right:0;bottom:0;margin:0;">
+    <div id="sort-page-modal" class="hidden fixed !top-0 !left-0 !right-0 !bottom-0 w-full h-[100dvh] z-[99999] bg-white flex flex-col md:bg-slate-900/50 md:backdrop-blur-sm md:items-center md:justify-center p-0 md:p-6 overscroll-contain" style="top:0;left:0;right:0;bottom:0;margin:0;">
       <div class="w-full h-full md:h-auto md:max-h-[88vh] md:max-w-lg bg-white md:rounded-3xl flex flex-col shadow-2xl overflow-hidden border border-gray-100">
         <!-- Header with Circular Back Button -->
-        <div class="sticky top-0 z-10 flex items-center justify-between px-5 py-4 bg-white border-b border-gray-100">
+        <div class="sticky top-0 z-10 flex items-center justify-between px-5 pt-[max(0.75rem,env(safe-area-inset-top,0px))] pb-3.5 bg-white border-b border-gray-100 shrink-0">
           <button id="sort-page-back" type="button" aria-label="Back to Shop" class="w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-800 flex items-center justify-center transition shadow-sm">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M15 19l-7-7 7-7"/></svg>
           </button>
@@ -1320,7 +1320,7 @@ async function shop(params){
         </div>
 
         <!-- Scrollable Sort Options (Boxed, No Description, Increased Font Size) -->
-        <div class="flex-1 overflow-y-auto p-5 space-y-3" id="sort-page-options">
+        <div class="flex-1 overflow-y-auto p-5 space-y-3 min-h-0" id="sort-page-options">
           ${allSorts.map(opt => `
             <label class="sort-page-card flex items-center justify-between p-4 rounded-2xl border-2 cursor-pointer transition ${f.sort === opt.val ? 'border-slate-900 bg-slate-100 shadow-sm' : 'border-gray-200 bg-white hover:border-gray-300'}" data-sort="${opt.val}">
               <div class="flex items-center gap-2.5">
@@ -1336,8 +1336,8 @@ async function shop(params){
         </div>
 
         <!-- Sticky Bottom Apply Button -->
-        <div class="sticky bottom-0 bg-white p-5 border-t border-gray-100 shadow-sm">
-          <button id="sort-page-apply" type="button" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-extrabold py-4 rounded-full text-xs sm:text-sm tracking-wide shadow-soft transition">Apply Sorting</button>
+        <div class="sticky bottom-0 bg-white px-5 pt-3 pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))] border-t border-gray-100 shrink-0 z-20 shadow-[0_-6px_25px_rgba(0,0,0,0.08)]">
+          <button id="sort-page-apply" type="button" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-extrabold py-3.5 rounded-full text-xs sm:text-sm tracking-wide shadow-soft transition active:scale-95">Apply Sorting</button>
         </div>
       </div>
     </div>
@@ -1554,11 +1554,13 @@ async function shop(params){
   });
 
   // Sort Page Apply & Reset
-  $('#sort-page-apply').onclick = () => {
+  $('#sort-page-apply').onclick = (e) => {
+    if(e){ e.preventDefault(); e.stopPropagation(); }
     closeSortPage();
     executeFilter();
   };
-  $('#sort-page-reset').onclick = () => {
+  $('#sort-page-reset').onclick = (e) => {
+    if(e){ e.preventDefault(); e.stopPropagation(); }
     pendingSort = 'new';
     syncSortPageModalUI('new');
     updateOptionRowUI('#tab-panel-sort', 'new');
@@ -1566,8 +1568,6 @@ async function shop(params){
   };
 
   const executeFilter = () => {
-    isLinkNavigation = true;
-    setTimeout(() => { isLinkNavigation = false; }, 600);
     const p = new URLSearchParams();
     if(f.q) p.set('q', f.q);
     if(pendingCat) p.set('cat', pendingCat);
@@ -1580,18 +1580,26 @@ async function shop(params){
     if(pendingStock) p.set('stock', pendingStock);
     if(pendingColor) p.set('color', pendingColor);
     if(pendingSort && pendingSort !== 'new') p.set('sort', pendingSort);
-    location.hash = '#/shop' + (p.toString() ? '?' + p.toString() : '');
+    const targetHash = '#/shop' + (p.toString() ? '?' + p.toString() : '');
+    if(location.hash !== targetHash){
+      location.hash = targetHash;
+    } else {
+      route();
+    }
   };
 
-  $('#apply').onclick = () => {
+  $('#apply').onclick = (e) => {
+    if(e){ e.preventDefault(); e.stopPropagation(); }
     closeFilters();
     executeFilter();
   };
-  $('#f-clear-btn').onclick = () => {
+  $('#f-clear-btn').onclick = (e) => {
+    if(e){ e.preventDefault(); e.stopPropagation(); }
     closeFilters();
     location.hash = '#/shop';
   };
-  $('#f-reset').onclick = () => {
+  $('#f-reset').onclick = (e) => {
+    if(e){ e.preventDefault(); e.stopPropagation(); }
     closeFilters();
     location.hash = '#/shop';
   };
@@ -2878,13 +2886,32 @@ function hubHtml(pf){
 
 function orderCard(o){
   const d=new Date(o.created_at), shortId=String(o.id).slice(0,8).toUpperCase();
-  const qty=(o.items||[]).reduce((s,i)=>s+(i.quantity||1),0);
-  return `<div class="bg-white rounded-3xl p-5 shadow-soft border border-gray-100 space-y-3">
-    <div class="flex justify-between items-center text-xs font-bold text-gray-900"><span>Order No: <span class="font-extrabold">#${esc(shortId)}</span></span><span class="text-gray-400 font-medium">${d.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})}</span></div>
-    <div class="flex gap-2 overflow-x-auto no-scrollbar">${(o.items||[]).slice(0,5).map(i=>`<img src="${esc(i.image||'https://placehold.co/80x100?text=Saree')}" alt="" class="w-12 h-14 object-cover rounded-xl bg-gray-50 border shrink-0">`).join('')}</div>
-    <div class="text-xs text-gray-500 font-medium">${o.tracking_id?`Tracking number: <span class="font-bold text-gray-800">${esc(o.tracking_id)}</span>`:'Tracking ID appears here once your order is shipped'}</div>
-    <div class="flex justify-between text-xs text-gray-600 font-medium"><span>Quantity: <b class="text-gray-900">${qty}</b></span><span>Total: <b class="text-gray-900">${inr(o.total)}</b></span></div>
-    <div class="flex justify-between items-center pt-2"><span class="text-xs ${STL[o.order_status]||''}">${esc(SLBL[o.order_status]||o.order_status)}</span><a href="#/account/order-detail?id=${encodeURIComponent(o.id)}" class="border border-gray-200 hover:border-slate-900 hover:bg-slate-900 hover:text-white text-gray-800 text-xs font-bold px-6 py-2 rounded-full transition shadow-sm">Details</a></div></div>`;
+  const items = o.items || [];
+  const firstItem = items[0] || {};
+  const imgSrc = firstItem.image || firstItem.image_url || 'https://placehold.co/80x100?text=Product';
+  const prodName = firstItem.name || firstItem.product_name || (items.length > 1 ? `${items.length} Products` : 'Order Item');
+  const countExtra = items.length > 1 ? ` +${items.length - 1} more` : '';
+  const statusLabel = SLBL[o.order_status] || o.order_status || 'Pending';
+
+  return `
+    <a href="#/account/order-detail?id=${encodeURIComponent(o.id)}" class="flex items-center gap-3.5 bg-white rounded-2xl p-3.5 shadow-soft border border-gray-100 hover:border-slate-300 hover:shadow-md transition active:scale-[0.99] group">
+      <img src="${esc(imgSrc)}" alt="${esc(prodName)}" class="w-14 h-16 object-cover rounded-xl bg-gray-50 border shrink-0">
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center justify-between gap-2">
+          <span class="text-[11px] font-bold text-gray-400 font-mono">#${esc(shortId)}</span>
+          <span class="text-[10px] text-gray-400 font-medium">${d.toLocaleDateString('en-IN',{day:'numeric',month:'short'})}</span>
+        </div>
+        <h4 class="text-xs font-bold text-gray-900 truncate mt-0.5">${esc(prodName)}<span class="text-[11px] font-normal text-gray-500">${esc(countExtra)}</span></h4>
+        <div class="flex items-center justify-between gap-2 mt-1.5">
+          <span class="inline-block text-[10px] font-bold ${STL[o.order_status] || 'text-slate-700 bg-slate-100 px-2 py-0.5 rounded-full'}">${esc(statusLabel)}</span>
+          <span class="text-xs font-black text-slate-900">${inr(o.total)}</span>
+        </div>
+      </div>
+      <div class="text-gray-400 group-hover:text-slate-900 group-hover:translate-x-0.5 transition shrink-0 pl-1">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+      </div>
+    </a>
+  `;
 }
 
 async function ordersHtml(pf){
@@ -3185,110 +3212,86 @@ $('#brand').addEventListener('click', e => {
   }
 });
 
-/* ===== SHOP TAB NAVIGATION LOCK (NEVER EXIT TO BROWSER / STAY ON SHOP) ===== */
-let currentRoute = location.hash || '#/';
-let isLinkNavigation = false;
-
-document.addEventListener('click', (e) => {
-  const link = e.target.closest('a[href]');
-  if(link){
-    const h = link.getAttribute('href');
-    if(h && (h.startsWith('#') || h.startsWith('/#'))){
-      isLinkNavigation = true;
-      setTimeout(() => { isLinkNavigation = false; }, 400);
-    }
-  }
-}, true);
-
-function armShopGuard(){
-  try {
-    const s = { thaaraiShopGuard: true, t: Date.now() };
-    history.pushState(s, '', location.href);
-    history.pushState(s, '', location.href);
-  } catch(e){}
-}
-
-window.addEventListener('popstate', event => {
-  const current = location.hash || '#/';
-
-  // 1. Close open modals first
-  const sortModal = $('#sort-page-modal');
-  if(sortModal && !sortModal.classList.contains('hidden')){
-    sortModal.classList.add('hidden');
-    document.documentElement.classList.remove('overflow-hidden');
-    document.body.classList.remove('overflow-hidden', 'touch-none');
-    armShopGuard();
-    return;
-  }
-  const fl = $('#fl');
-  if(fl && !fl.classList.contains('hidden')){
-    fl.classList.add('hidden');
-    document.documentElement.classList.remove('overflow-hidden');
-    document.body.classList.remove('overflow-hidden', 'touch-none');
-    armShopGuard();
-    return;
-  }
-
-  // 2. Sub-routes (cart, account, product details) allow normal back traversal
-  if(isLinkNavigation || current.startsWith('#/cart') || current.startsWith('#/account') || current.startsWith('#/p/') || current.startsWith('#/checkout')){
-    currentRoute = current;
-    return;
-  }
-
-  // 3. Traps any back button press on shop or home: ALWAYS lock in shop and reload shop
-  try {
-    const s = { thaaraiShopGuard: true, t: Date.now() };
-    history.pushState(s, '', '#/shop');
-    history.pushState(s, '', '#/shop');
-  } catch(e){}
-  currentRoute = '#/shop';
-  if(location.hash !== '#/shop'){
-    location.hash = '#/shop';
-  } else {
-    route();
-  }
-});
-
-// Header back navigation button: permanently stays inside store, locks on Shop
-$('#nav-back').onclick = () => {
-  const sortModal = $('#sort-page-modal');
-  if(sortModal && !sortModal.classList.contains('hidden')){
-    sortModal.classList.add('hidden');
-    document.body.style.overflow = '';
-    return;
-  }
-  const fl = $('#fl');
-  if(fl && !fl.classList.contains('hidden')){
-    fl.classList.add('hidden');
-    document.body.style.overflow = '';
-    return;
-  }
-
-  const current = location.hash || '#/';
-  if(current.startsWith('#/shop?')){
-    location.hash = '#/shop';
-    return;
-  }
-  if(current === '#/shop' || current === '#/shop/' || current === '#/' || current === '' || current === '#'){
-    location.hash = '#/shop';
-    route();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    return;
-  }
-
-  history.back();
-};
-
+/* ===== NAVIGATION & SHOP BACK LOOP ===== */
+// Normal browser navigation: when hash changes, route() renders the corresponding tab cleanly
 window.addEventListener('hashchange', () => {
   route();
 });
 
-const originalRoute = route;
-route = async function(){
-  currentRoute = location.hash || '#/';
-  await originalRoute();
-  if(currentRoute === '#/shop' || currentRoute === '#/shop/'){
-    armShopGuard();
+// Android Back Gesture & Popstate Listener:
+// 1. Closes filter or sort modals if open
+// 2. Traps exit back gesture ONLY on base shop (#/shop)
+// 3. Allows all other pages (Home, Bag, Profile, Orders, Products, Filtered Shop) to navigate naturally
+window.addEventListener('popstate', event => {
+  // 1. If Filter modal or Sort modal is open, back gesture dismisses the modal
+  const sortModal = $('#sort-page-modal');
+  if(sortModal && !sortModal.classList.contains('hidden')){
+    sortModal.classList.add('hidden');
+    document.documentElement.classList.remove('overflow-hidden');
+    document.body.classList.remove('overflow-hidden', 'touch-none');
+    return;
+  }
+  const fl = $('#fl');
+  if(fl && !fl.classList.contains('hidden')){
+    fl.classList.add('hidden');
+    document.documentElement.classList.remove('overflow-hidden');
+    document.body.classList.remove('overflow-hidden', 'touch-none');
+    return;
+  }
+
+  const h = location.hash || '#/';
+
+  // 2. If user is currently on base shop (#/shop or #/shop/) and attempts to swipe back / exit:
+  // Redirect back into shop
+  if(h === '#/shop' || h === '#/shop/'){
+    try {
+      history.pushState(null, '', '#/shop');
+    } catch(e){}
+    location.hash = '#/shop';
+    route();
+    return;
+  }
+
+  // 3. All other pages (Home, Bag, Profile, Orders, Filtered shop #/shop?...):
+  // Work 100% naturally with zero interference
+  route();
+});
+
+// Website Top Back Button
+$('#nav-back').onclick = e => {
+  e.preventDefault();
+  e.stopPropagation();
+  const sortModal = $('#sort-page-modal');
+  if(sortModal && !sortModal.classList.contains('hidden')){
+    sortModal.classList.add('hidden');
+    document.body.style.overflow = '';
+    return;
+  }
+  const fl = $('#fl');
+  if(fl && !fl.classList.contains('hidden')){
+    fl.classList.add('hidden');
+    document.body.style.overflow = '';
+    return;
+  }
+
+  const h = location.hash || '#/';
+  // If in filtered shop, step back to clean shop
+  if(h.startsWith('#/shop?')){
+    location.hash = '#/shop';
+    return;
+  }
+  // If on base shop: keep in shop
+  if(h === '#/shop' || h === '#/shop/'){
+    location.hash = '#/shop';
+    route();
+    return;
+  }
+
+  // All other pages: natural history back
+  if(history.length > 1){
+    history.back();
+  } else {
+    location.hash = '#/';
   }
 };
 
