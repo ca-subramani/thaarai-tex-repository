@@ -3219,83 +3219,61 @@ document.addEventListener('click', (e) => {
   }
 }, true);
 
+function lockInShop(){
+  try {
+    const s = { thaaraiShopGuard: true, t: Date.now() };
+    history.pushState(s, '', '#/shop');
+    history.pushState(s, '', '#/shop');
+  } catch(e){}
+  if(location.hash !== '#/shop'){
+    location.replace('#/shop');
+  }
+  route();
+}
+
 function armShopGuard(){
   try {
     const s = { thaaraiShopGuard: true, t: Date.now() };
-    history.pushState(s, '', location.href);
-    history.pushState(s, '', location.href);
+    history.pushState(s, '', '#/shop');
+    history.pushState(s, '', '#/shop');
   } catch(e){}
 }
 
+// Instant permanent lock: Any back attempt (mobile hardware back, browser back gesture, etc.) instantly reloads into Shop
 window.addEventListener('popstate', event => {
-  const current = location.hash || '#/';
-
-  // 1. Close open modals first
+  // Close any open filter or sort modals immediately
   const sortModal = $('#sort-page-modal');
   if(sortModal && !sortModal.classList.contains('hidden')){
     sortModal.classList.add('hidden');
     document.documentElement.classList.remove('overflow-hidden');
     document.body.classList.remove('overflow-hidden', 'touch-none');
-    armShopGuard();
-    return;
   }
   const fl = $('#fl');
   if(fl && !fl.classList.contains('hidden')){
     fl.classList.add('hidden');
     document.documentElement.classList.remove('overflow-hidden');
     document.body.classList.remove('overflow-hidden', 'touch-none');
-    armShopGuard();
-    return;
   }
 
-  // 2. Sub-routes (cart, account, product details) allow normal back traversal
-  if(isLinkNavigation || current.startsWith('#/cart') || current.startsWith('#/account') || current.startsWith('#/p/') || current.startsWith('#/checkout')){
-    currentRoute = current;
-    return;
-  }
-
-  // 3. Traps any back button press on shop or home: ALWAYS lock in shop and reload shop
-  try {
-    const s = { thaaraiShopGuard: true, t: Date.now() };
-    history.pushState(s, '', '#/shop');
-    history.pushState(s, '', '#/shop');
-  } catch(e){}
-  currentRoute = '#/shop';
-  if(location.hash !== '#/shop'){
-    location.hash = '#/shop';
-  } else {
-    route();
-  }
+  // Lightning-fast loop: Always reload and redirect to shop instantly
+  lockInShop();
 });
 
-// Header back navigation button: permanently stays inside store, locks on Shop
-$('#nav-back').onclick = () => {
+// Website Back Button: Always instantly redirects and reloads shop
+$('#nav-back').onclick = e => {
+  e.preventDefault();
+  e.stopPropagation();
   const sortModal = $('#sort-page-modal');
   if(sortModal && !sortModal.classList.contains('hidden')){
     sortModal.classList.add('hidden');
     document.body.style.overflow = '';
-    return;
   }
   const fl = $('#fl');
   if(fl && !fl.classList.contains('hidden')){
     fl.classList.add('hidden');
     document.body.style.overflow = '';
-    return;
   }
-
-  const current = location.hash || '#/';
-  if(current.startsWith('#/shop?')){
-    location.hash = '#/shop';
-    return;
-  }
-  if(current === '#/shop' || current === '#/shop/' || current === '#/' || current === '' || current === '#'){
-    location.hash = '#/shop';
-    route();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    return;
-  }
-
-  history.back();
+  lockInShop();
 };
 
 window.addEventListener('hashchange', () => {
