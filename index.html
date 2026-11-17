@@ -229,7 +229,22 @@ html.dark .profile-avatar-ring {
   background-color: #131c2e !important;
 }
 
-/* Loader Dynamic Theme Styling: Green for White theme, Deep Blue for Dark theme */
+/* Loader Dynamic Theme Styling: Light background in White Theme, Dark background in Dark Theme */
+#neon-loader {
+  background-color: rgba(248, 250, 252, 0.98) !important;
+}
+#neon-loader-glow {
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.25) 0%, rgba(5, 150, 105, 0.12) 50%, rgba(4, 120, 87, 0) 75%) !important;
+}
+#neon-counter-num {
+  color: #0f172a !important;
+  text-shadow: none !important;
+}
+#neon-loader p {
+  color: #0f172a !important;
+  text-shadow: none !important;
+}
+
 html.dark #neon-loader {
   background-color: #050811 !important;
 }
@@ -241,7 +256,11 @@ html.dark #neon-loader-brand-accent {
 }
 html.dark #neon-counter-num {
   color: #ffffff !important;
-  text-shadow: 0 0 16px rgba(56, 189, 248, 0.95);
+  text-shadow: 0 0 16px rgba(56, 189, 248, 0.95) !important;
+}
+html.dark #neon-loader p {
+  color: #ffffff !important;
+  text-shadow: 0 0 8px rgba(14, 165, 233, 0.5) !important;
 }
 html.dark #fl, html.dark #sort-page-modal {
   background-color: #0b0f17 !important;
@@ -397,8 +416,8 @@ input,select,textarea{font-size:16px!important}
 </div>
 <!-- Back navigation is permanently locked to Shop tab (no exit popups) -->
 
-<!-- Premium Neon Ring Counter Loader (Deep Green for White theme, Blue for Dark theme) -->
-<div id="neon-loader" class="fixed inset-0 z-[999999] bg-[#000000] flex flex-col items-center justify-center opacity-0 pointer-events-none select-none transition-all duration-200" style="visibility:hidden">
+<!-- Premium Neon Ring Counter Loader -->
+<div id="neon-loader" class="fixed inset-0 z-[999999] bg-[#f8fafc]/95 dark:bg-[#050811] flex flex-col items-center justify-center opacity-0 pointer-events-none select-none transition-all duration-200" style="visibility:hidden">
   <div class="relative w-44 h-44 flex items-center justify-center">
     <!-- Ambient Radial Glow -->
     <div id="neon-loader-glow" class="absolute inset-0 rounded-full bg-gradient-to-tr from-[#064e3b]/45 via-[#047857]/30 to-[#059669]/20 blur-2xl pointer-events-none transition-all duration-300"></div>
@@ -2553,7 +2572,7 @@ async function checkout(){
                   <h2 class="font-extrabold text-base text-slate-900">Choose Saved Address</h2>
                   <p class="text-xs text-gray-500 mt-0.5">Click an address box and click Confirm</p>
                 </div>
-                <button type="button" id="btn-open-create-addr" class="text-xs font-bold text-sky-600 hover:text-sky-700 bg-sky-50 dark:bg-sky-950/40 px-3 py-1.5 rounded-full border border-sky-200 transition">
+                <button type="button" id="btn-open-create-addr" class="text-xs font-bold text-slate-700 hover:text-slate-900 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-full border border-gray-200 dark:border-slate-700 transition">
                   + Add New Address
                 </button>
               </div>
@@ -2739,7 +2758,7 @@ async function checkout(){
               <div class="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl p-3.5 flex items-center justify-between gap-3">
                 <div class="min-w-0">
                   <div class="flex items-center gap-2">
-                    <svg class="w-4 h-4 text-sky-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    <svg class="w-4 h-4 text-emerald-600 dark:text-sky-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                     <span class="text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">Choose Saved Address (${AL.length} Available)</span>
                   </div>
                   <p class="text-xs font-bold text-slate-900 truncate mt-1">
@@ -2804,8 +2823,8 @@ async function checkout(){
         };
       }
 
-      // Submit Form -> Proceeds to Step 3 (Payment)
-      $('#step-addr-form').onsubmit = e => {
+      // Submit Form -> Saves to saved addresses & Proceeds to Step 3 (Payment)
+      $('#step-addr-form').onsubmit = async e => {
         e.preventDefault();
         addr = {
           ...addr,
@@ -2816,6 +2835,25 @@ async function checkout(){
           state: $('#a-state').value.trim(),
           line: $('#a-line').value.trim()
         };
+
+        // Automatically save to user's saved address list if not already saved
+        try {
+          const currentList = await getAddrs();
+          const existing = currentList.find(x => 
+            x.line.trim().toLowerCase() === addr.line.trim().toLowerCase() && 
+            x.pincode.trim() === addr.pincode.trim()
+          );
+          if(!existing){
+            const newEntry = {
+              ...addr,
+              id: Date.now().toString(36),
+              def: !currentList.length
+            };
+            AL.push(newEntry);
+            await setAddrs([...currentList, newEntry]);
+          }
+        } catch(err){}
+
         currentStep = 3;
         renderStepView();
       };
