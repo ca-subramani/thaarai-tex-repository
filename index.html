@@ -737,11 +737,12 @@ async function home(){
     { name: 'Cotton', subtitle: 'Breathable Pure Weave', image: 'https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?auto=format&fit=crop&w=600&q=80', query: 'Cotton' }
   ];
 
-  let featured = null;
-  if (sb) {
+  let featured = cachedFeatured;
+  if (!cachedFeatured && sb) {
     try {
       const { data } = await sb.from('products').select('*').eq('active', true).order('created_at', { ascending: false }).limit(1).maybeSingle();
-      featured = data;
+      cachedFeatured = data;
+      featured = cachedFeatured;
     } catch {}
   }
 
@@ -878,6 +879,9 @@ async function home(){
   `;
 }
 
+let cachedCats = null;
+let cachedFeatured = null;
+
 async function shop(params){
   const $$ = s => Array.from(document.querySelectorAll(s));
 
@@ -893,13 +897,14 @@ async function shop(params){
     color: params.get('color') || ''
   };
 
-  let cats = [];
-  try {
-    if(sb){
+  let cats = cachedCats || [];
+  if(!cachedCats && sb){
+    try {
       const res = await sb.from('categories').select('*').order('name');
-      cats = res.data || [];
-    }
-  } catch(e){}
+      cachedCats = res.data || [];
+      cats = cachedCats;
+    } catch(e){}
+  }
 
   let q = sb ? sb.from('products').select('*').eq('active', true) : null;
   let data = [];
@@ -3321,7 +3326,6 @@ async function route(){
     }
 
     const [path,qs]=(location.hash||'#/').slice(1).split('?'), params=new URLSearchParams(qs||'');
-    app.innerHTML='<p class="text-center text-gray-400 py-20 text-xs">ஏற்றப்படுகிறது…</p>';
     $('#tabbar').classList.toggle('hidden',path.startsWith('/p/')||path==='/checkout');
     const isHomePage = (path === '/' || path === '');
     const footEl = $('#foot');
