@@ -420,6 +420,8 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
     let section='overview', products=[], categories=[], orders=[], reviews=[], coupons=[], settings={}, editing={}, mediaItems=[];
     let customers=[], profiles=[], customerFilter='all', customerSearchQuery='', selectedCustomerId=null, selectedProductId=null;
     let currentStorefrontSubTab='home';
+    let studioMode = 'text'; // 'text' (normal text edit form) or 'live' (live website preview edit page)
+    let liveEditActive = false; // in live mode: false = Preview (interactive store), true = Edit (frozen, editable)
     let targetImageFieldId = null;
     let orderFilter = 'all';
     let productFilter = 'all';
@@ -2094,7 +2096,7 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
       return `
         <label class="block mt-3 text-xs font-bold text-slate-700 min-w-0">${label}
           ${help ? `<span class="block text-[11px] font-normal text-slate-400 mt-0.5 truncate">${help}</span>` : ''}
-          <input id="${id}" type="${type}" value="${esc(value||'')}" class="mt-1.5 w-full rounded-2xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs text-slate-900 outline-none focus:border-slate-900 transition shadow-soft">
+          <input id="${id}" type="${type}" value="${esc(value||'')}" class="mt-1.5 w-full rounded-2xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs text-slate-900 font-normal outline-none focus:border-slate-900 transition shadow-soft">
         </label>`;
     }
 
@@ -2134,69 +2136,94 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 min-w-0">
             <div class="min-w-0">
               <div class="flex items-center gap-2">
-                <span class="text-[10px] font-black uppercase tracking-[.18em] text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">VISUAL CMS STUDIO</span>
-                <span class="text-[10px] font-bold text-slate-400">Live Editor with Real-Time Store Preview</span>
+                <span class="text-[10px] font-black uppercase tracking-[.18em] text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">WEBSITE STUDIO</span>
+                <span class="text-[10px] font-bold text-slate-400">Content Management & Live Visual Editing</span>
               </div>
               <h2 class="text-lg sm:text-xl font-extrabold text-slate-900 truncate mt-1">Website Studio</h2>
-              <p class="text-xs text-slate-500 mt-0.5">Customize texts, images, banners, and layout for the customer-facing storefront in real time.</p>
+              <p class="text-xs text-slate-500 mt-0.5">Customize texts, images, banners, and layout for your online store.</p>
             </div>
             
             <div class="flex items-center gap-2 shrink-0">
+              <!-- Mode Switcher Tabs: Normal Text Edit vs Live Preview Edit -->
+              <div class="bg-slate-100 p-1 rounded-2xl flex items-center gap-1 border border-slate-200/60">
+                <button type="button" onclick="setStudioMode('text')" class="px-4 py-2 rounded-xl text-xs font-bold transition ${studioMode==='text'?'bg-white text-slate-900 shadow-sm':'text-slate-500 hover:text-slate-800'}">
+                  Normal Text Edit
+                </button>
+                <button type="button" onclick="setStudioMode('live')" class="px-4 py-2 rounded-xl text-xs font-bold transition ${studioMode==='live'?'bg-white text-slate-900 shadow-sm':'text-slate-500 hover:text-slate-800'}">
+                  Live Preview Edit
+                </button>
+              </div>
+
               <!-- Live Store Link -->
               <a href="./index.html" target="_blank" class="rounded-full border border-slate-200 bg-white hover:bg-slate-50 px-4 py-2 text-xs font-bold text-slate-800 transition shadow-soft flex items-center gap-1.5 active:scale-95">
                 <span>Open Store</span>
                 <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
               </a>
-              <!-- Refresh Preview Button -->
-              <button type="button" onclick="refreshStudioPreview()" class="rounded-full bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 text-xs font-bold transition shadow-soft flex items-center gap-1.5 active:scale-95">
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-                <span>Refresh Preview</span>
-              </button>
             </div>
           </div>
 
-          <!-- Studio Category Chips -->
-          <div class="flex gap-2 overflow-x-auto no-scrollbar pt-1 border-t border-slate-100">
-            ${subTabs.map(([id,icon,label,sub])=>`
-              <button onclick="setStorefrontSubTab('${id}')" class="shrink-0 px-4 py-2.5 rounded-2xl text-xs font-bold transition flex items-center gap-2 ${currentStorefrontSubTab===id?'bg-slate-900 text-white shadow-soft':'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200/80'}">
-                <span class="${currentStorefrontSubTab===id?'text-white':'text-slate-400'}">${icon}</span>
-                <div class="text-left">
-                  <p class="leading-none text-xs font-black">${label}</p>
-                  <p class="text-[9px] mt-0.5 opacity-70">${sub}</p>
-                </div>
-              </button>`).join('')}
-          </div>
+          ${studioMode === 'text' ? `
+            <!-- Studio Section Chips (Visible in Normal Text Edit mode) -->
+            <div class="flex gap-2 overflow-x-auto no-scrollbar pt-1 border-t border-slate-100">
+              ${subTabs.map(([id,icon,label,sub])=>`
+                <button onclick="setStorefrontSubTab('${id}')" class="shrink-0 px-4 py-2.5 rounded-2xl text-xs font-bold transition flex items-center gap-2 ${currentStorefrontSubTab===id?'bg-slate-900 text-white shadow-soft':'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200/80'}">
+                  <span class="${currentStorefrontSubTab===id?'text-white':'text-slate-400'}">${icon}</span>
+                  <div class="text-left">
+                    <p class="leading-none text-xs font-black">${label}</p>
+                    <p class="text-[9px] mt-0.5 opacity-70">${sub}</p>
+                  </div>
+                </button>`).join('')}
+            </div>
+          ` : ''}
         </div>
 
-        <!-- Split 2-Column Studio: Left Editor Controls & Right Interactive Device Preview -->
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start min-w-0">
-          
-          <!-- Left Column: Settings & Media Controls (col-span-6 / col-span-7) -->
-          <div class="lg:col-span-6 xl:col-span-7 space-y-4 min-w-0" id="storefront-content"></div>
-
-          <!-- Right Column: Interactive Live Front Website Preview (col-span-6 / col-span-5) -->
-          <div class="lg:col-span-6 xl:col-span-5 sticky top-20 space-y-3 min-w-0">
-            <div class="bg-white rounded-3xl p-4 sm:p-5 shadow-soft border border-slate-200/80 space-y-3">
+        ${studioMode === 'text' ? `
+          <!-- PAGE 1: SEPARATE NORMAL TEXT EDIT PAGE -->
+          <div class="max-w-4xl mx-auto space-y-4 min-w-0" id="storefront-content"></div>
+        ` : `
+          <!-- PAGE 2: SEPARATE LIVE PREVIEW EDIT PAGE -->
+          <div class="space-y-4 min-w-0">
+            <div class="bg-white rounded-3xl p-5 shadow-soft border border-slate-200/80 space-y-4">
               
-              <!-- Device Mode Switcher Bar -->
-              <div class="flex items-center justify-between pb-3 border-b border-slate-100">
-                <div class="flex items-center gap-1.5">
-                  <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                  <span class="text-xs font-black text-slate-900">Live Website Preview</span>
+              <!-- Toolbar for Live Preview Page: Preview Mode vs Edit Mode -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+                <div class="flex items-center gap-2">
+                  <span class="w-2.5 h-2.5 rounded-full ${liveEditActive ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500'}"></span>
+                  <span class="text-sm font-extrabold text-slate-900">
+                    ${liveEditActive ? 'Visual Edit Mode (Page Frozen · Tap text/images to edit)' : 'Live Preview Mode (Interactive Store)'}
+                  </span>
                 </div>
-                
-                <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-xl">
-                  <button type="button" onclick="setStudioPreviewDevice('mobile')" class="px-2.5 py-1 rounded-lg text-[10px] font-bold transition ${currentStorefrontPreviewDevice==='mobile'?'bg-white text-slate-900 shadow-sm':'text-slate-500 hover:text-slate-800'}">Mobile</button>
-                  <button type="button" onclick="setStudioPreviewDevice('tablet')" class="px-2.5 py-1 rounded-lg text-[10px] font-bold transition ${currentStorefrontPreviewDevice==='tablet'?'bg-white text-slate-900 shadow-sm':'text-slate-500 hover:text-slate-800'}">Tablet</button>
-                  <button type="button" onclick="setStudioPreviewDevice('desktop')" class="px-2.5 py-1 rounded-lg text-[10px] font-bold transition ${currentStorefrontPreviewDevice==='desktop'?'bg-white text-slate-900 shadow-sm':'text-slate-500 hover:text-slate-800'}">Desktop</button>
+
+                <div class="flex items-center gap-2 flex-wrap">
+                  <!-- Mode Switcher: Click Preview vs Click Edit -->
+                  <div class="bg-slate-100 p-1 rounded-2xl flex items-center gap-1 border border-slate-200">
+                    <button type="button" onclick="setLiveEditMode(false)" class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition ${!liveEditActive ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'}">
+                      👁️ Preview
+                    </button>
+                    <button type="button" onclick="setLiveEditMode(true)" class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition ${liveEditActive ? 'bg-amber-500 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'}">
+                      ✏️ Edit
+                    </button>
+                  </div>
+
+                  <!-- Device Size Bar -->
+                  <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-xl">
+                    <button type="button" onclick="setStudioPreviewDevice('mobile')" class="px-2.5 py-1 rounded-lg text-[10px] font-bold transition ${currentStorefrontPreviewDevice==='mobile'?'bg-white text-slate-900 shadow-sm':'text-slate-500 hover:text-slate-800'}">Mobile</button>
+                    <button type="button" onclick="setStudioPreviewDevice('tablet')" class="px-2.5 py-1 rounded-lg text-[10px] font-bold transition ${currentStorefrontPreviewDevice==='tablet'?'bg-white text-slate-900 shadow-sm':'text-slate-500 hover:text-slate-800'}">Tablet</button>
+                    <button type="button" onclick="setStudioPreviewDevice('desktop')" class="px-2.5 py-1 rounded-lg text-[10px] font-bold transition ${currentStorefrontPreviewDevice==='desktop'?'bg-white text-slate-900 shadow-sm':'text-slate-500 hover:text-slate-800'}">Desktop</button>
+                  </div>
+
+                  <!-- Reload Live Storeframe -->
+                  <button type="button" onclick="refreshStudioPreview()" class="rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 px-3 py-1.5 text-xs font-bold transition shadow-2xs">
+                    ↻ Refresh
+                  </button>
                 </div>
               </div>
 
               <!-- Device Simulation Frame Container -->
-              <div class="flex justify-center bg-slate-950/5 rounded-2xl p-2 sm:p-3 overflow-hidden">
+              <div class="flex justify-center bg-slate-950/5 rounded-2xl p-2 sm:p-4 overflow-hidden">
                 <div id="studio-device-frame" class="bg-white transition-all duration-300 shadow-2xl rounded-2xl overflow-hidden border border-slate-300 flex flex-col ${
-                  currentStorefrontPreviewDevice==='mobile'?'w-[360px] h-[640px] max-w-full':
-                  (currentStorefrontPreviewDevice==='tablet'?'w-[480px] h-[640px] max-w-full':'w-full h-[640px]')
+                  currentStorefrontPreviewDevice==='mobile'?'w-[360px] h-[720px] max-w-full':
+                  (currentStorefrontPreviewDevice==='tablet'?'w-[480px] h-[720px] max-w-full':'w-full h-[720px]')
                 }">
                   <!-- Simulated browser header bar -->
                   <div class="bg-slate-100 px-3 py-2 border-b border-slate-200 flex items-center justify-between shrink-0 select-none">
@@ -2205,33 +2232,43 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
                       <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
                       <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
                     </div>
-                    <span class="text-[10px] font-mono font-bold text-slate-500 truncate max-w-[180px]">thaaraitex.in</span>
-                    <button type="button" onclick="refreshStudioPreview()" class="text-slate-400 hover:text-slate-700">
-                      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-                    </button>
+                    <span class="text-[10px] font-mono font-bold text-slate-500 truncate max-w-[200px]">thaaraitex.in</span>
+                    <span class="text-[9px] font-bold ${liveEditActive ? 'text-amber-700 bg-amber-100 border border-amber-200' : 'text-emerald-700 bg-emerald-100 border border-emerald-200'} px-2 py-0.5 rounded-full">
+                      ${liveEditActive ? 'FROZEN FOR EDITING' : 'NORMAL PREVIEW'}
+                    </span>
                   </div>
                   
-                  <!-- Responsive iframe preview of front store with Live Visual Editing -->
+                  <!-- Responsive iframe preview of front store -->
                   <div class="relative flex-1 w-full overflow-hidden flex flex-col">
-                    <div id="live-edit-indicator" class="bg-slate-900 text-white text-[10px] font-bold px-3 py-1.5 flex items-center justify-between shrink-0 shadow-sm">
-                      <div class="flex items-center gap-1.5">
-                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                        <span>Touch or click any text or image in the preview to edit live</span>
-                      </div>
-                      <span class="bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded text-[9px] font-extrabold uppercase tracking-wide">Live Visual Mode</span>
-                    </div>
                     <iframe id="studio-store-iframe" src="./index.html" class="w-full flex-1 border-0 bg-white" title="Storefront Live Preview" onload="attachLiveVisualStudioEditor(this)"></iframe>
                   </div>
                 </div>
               </div>
 
-              <p class="text-[10px] text-center text-slate-400">💡 Direct visual editing: Tap any heading, subtitle, or photo directly in the preview frame above to modify it in real time.</p>
+              <p class="text-[11px] text-center text-slate-500 font-medium">
+                ${liveEditActive 
+                  ? '🔒 In Edit Mode: Navigation is frozen so the page never moves away while scrolling and tapping text or images to edit.' 
+                  : '🌐 In Preview Mode: The store behaves exactly like the live website for customer interaction testing.'}
+              </p>
             </div>
           </div>
+        `}`;
 
-        </div>`;
+      if(studioMode === 'text') {
+        renderStorefrontSubTabContent();
+      }
+    }
 
-      renderStorefrontSubTabContent();
+    function setStudioMode(mode){
+      studioMode = mode;
+      renderStorefrontCMS();
+    }
+
+    function setLiveEditMode(isEdit){
+      liveEditActive = isEdit;
+      const ifr = $('#studio-store-iframe');
+      if(ifr) attachLiveVisualStudioEditor(ifr);
+      renderStorefrontCMS();
     }
 
     /* ===== LIVE VISUAL IN-PLACE STUDIO EDITOR ===== */
@@ -2240,40 +2277,45 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
         const doc = ifr.contentDocument || ifr.contentWindow?.document;
         if(!doc) return;
 
-        // Inject highlight & visual edit cue styles into the preview iframe
-        if(!doc.getElementById('thaarai-studio-live-styles')){
-          const style = doc.createElement('style');
-          style.id = 'thaarai-studio-live-styles';
-          style.textContent = `
-            [data-studio-editable="true"]:hover {
-              outline: 2px dashed #0f172a !important;
-              outline-offset: 2px !important;
-              cursor: pointer !important;
-              position: relative !important;
-            }
-            [data-studio-editable="img"]:hover {
-              outline: 3px solid #10b981 !important;
-              outline-offset: 2px !important;
-              cursor: pointer !important;
-              filter: brightness(0.95);
-            }
-          `;
-          doc.head.appendChild(style);
+        // Remove old style tag if any
+        const oldStyle = doc.getElementById('thaarai-studio-live-styles');
+        if(oldStyle) oldStyle.remove();
+
+        if(!liveEditActive){
+          // In PREVIEW mode: Normal website behavior, not editable
+          doc.body.style.cursor = 'default';
+          return;
         }
+
+        // In EDIT mode: Freeze page from navigating, keep only scrollable
+        const style = doc.createElement('style');
+        style.id = 'thaarai-studio-live-styles';
+        style.textContent = `
+          [data-studio-editable="true"]:hover {
+            outline: 2px dashed #0f172a !important;
+            outline-offset: 2px !important;
+            cursor: pointer !important;
+            position: relative !important;
+          }
+          [data-studio-editable="img"]:hover {
+            outline: 3px solid #10b981 !important;
+            outline-offset: 2px !important;
+            cursor: pointer !important;
+            filter: brightness(0.95);
+          }
+        `;
+        doc.head.appendChild(style);
 
         // Tag text and image elements for live interaction
         function tagElements(){
-          // 1. Tag text elements
           const textNodes = doc.querySelectorAll('h1, h2, h3, h4, p, span, a, button, label');
           textNodes.forEach(el => {
-            // Ignore non-user-facing system elements or empty tags
             if(el.children.length === 0 && el.innerText.trim().length > 0 && !el.closest('script') && !el.closest('style')){
               el.setAttribute('data-studio-editable', 'true');
               el.title = 'Click to edit text';
             }
           });
 
-          // 2. Tag images
           const imgNodes = doc.querySelectorAll('img');
           imgNodes.forEach(img => {
             img.setAttribute('data-studio-editable', 'img');
@@ -2283,22 +2325,25 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
 
         tagElements();
 
-        // Attach click / touch event listener inside iframe
+        // When in Edit mode: freeze links/buttons from changing routes, make them editable
         doc.addEventListener('click', async (e) => {
+          if(!liveEditActive) return; // normal behavior if preview mode
+
           const target = e.target;
           if(!target) return;
+
+          // Freeze navigation
+          e.preventDefault();
+          e.stopPropagation();
 
           // IMAGE EDITING
           const img = target.closest('img') || (target.tagName === 'IMG' ? target : null);
           if(img){
-            e.preventDefault();
-            e.stopPropagation();
             const currentSrc = img.src || '';
             const newUrl = prompt('Enter new Image URL (or upload from Media Library):', currentSrc);
             if(newUrl && newUrl.trim() && newUrl.trim() !== currentSrc){
               img.src = newUrl.trim();
               toast('Image updated in live view ✓');
-              // Automatically sync with hero image or store settings if it corresponds
               if(img.closest('#hero') || img.src.includes('hero') || target.id === 'hero-img-display'){
                 const hero = settings.hero || defaultSettings.hero;
                 hero.image = newUrl.trim();
@@ -2308,26 +2353,21 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
                 brand.logo_url = newUrl.trim();
                 await saveSettingToDB('brand', brand);
               } else {
-                toast('Image updated live in preview');
+                toast('Image updated in live view');
               }
             }
             return;
           }
 
           // TEXT EDITING
-          const textEl = target.closest('[data-studio-editable="true"]');
+          const textEl = target.closest('[data-studio-editable="true"]') || (target.innerText.trim() ? target : null);
           if(textEl){
-            e.preventDefault();
-            e.stopPropagation();
-
             const oldText = textEl.innerText.trim();
             const newText = prompt('Edit storefront text:', oldText);
             if(newText !== null && newText.trim() !== oldText){
               textEl.innerText = newText.trim();
-              toast('Text updated in live view ✓');
+              toast('Text updated ✓');
 
-              // Identify if text belongs to hero title, subtitle, eyebrow, or brand
-              const lowerText = oldText.toLowerCase();
               if(textEl.closest('#hero') || textEl.classList.contains('hero-text')){
                 const hero = settings.hero || defaultSettings.hero;
                 if(textEl.tagName === 'H1' || textEl.classList.contains('hero-title')) hero.title = newText.trim();
@@ -2773,22 +2813,21 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
       $('#editor-fields').innerHTML=`
         <div>
           <label class="block text-xs font-bold text-slate-700">Category Name</label>
-          <input name="name" value="${esc(r.name||'')}" required class="mt-1.5 w-full rounded-2xl border border-slate-200 bg-white p-2.5 text-xs text-slate-900 outline-none focus:border-slate-900 shadow-soft">
-        </div>
-        <div>
-          <label class="block text-xs font-bold text-slate-700">Slug (URL path)</label>
-          <input name="slug" value="${esc(r.slug||'')}" required class="mt-1.5 w-full rounded-2xl border border-slate-200 bg-white p-2.5 text-xs text-slate-900 outline-none focus:border-slate-900 shadow-soft">
-        </div>
-        <div>
-          <label class="block text-xs font-bold text-slate-700">Description</label>
-          <textarea name="description" rows="3" class="mt-1.5 w-full rounded-2xl border border-slate-200 bg-white p-2.5 text-xs text-slate-900 outline-none focus:border-slate-900 shadow-soft leading-relaxed">${esc(r.description||'')}</textarea>
+          <input name="name" value="${esc(r.name||'')}" required placeholder="e.g. Soft Silk, Cotton, Wedding Sarees" autofocus class="mt-1.5 w-full rounded-2xl border border-slate-200 bg-white p-3 text-xs text-slate-900 outline-none focus:border-slate-900 shadow-soft font-normal">
+          <p class="text-[11px] text-slate-400 mt-1 font-normal">Enter the category name. URL slug and descriptions are generated automatically.</p>
         </div>`;
       editor.showModal();
     }
 
     function categoryPayload(form){
       const fd=new FormData(form);
-      return {name:String(fd.get('name')).trim(),slug:String(fd.get('slug')).trim(),description:String(fd.get('description')||'').trim()};
+      const name = String(fd.get('name')||'').trim();
+      const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+      return {
+        name: name,
+        slug: slug || 'category',
+        description: `Authentic handpicked collection of ${name} sarees.`
+      };
     }
 
     /* ===== REVIEWS ===== */
