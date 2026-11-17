@@ -821,31 +821,35 @@ async function shop(params){
   let data = [];
   if(q){
     if(f.q) q = q.or(`name.ilike.%${f.q.replace(/[%,()]/g,'')}%,description.ilike.%${f.q.replace(/[%,()]/g,'')}%`);
-    if(f.cat && f.cat !== 'All Categories' && f.cat !== 'all'){
-      const catList = f.cat.split(',').map(s=>s.trim()).filter(Boolean);
-      if(catList.length === 1){
-        const cVal = catList[0];
+    
+    // OR condition for categories / fabrics combinations when user selects multiple options
+    const catList = (f.cat && f.cat !== 'All Categories' && f.cat !== 'all') ? f.cat.split(',').map(s=>s.trim()).filter(Boolean) : [];
+    const fabList = (f.fabric && f.fabric !== 'All Fabrics' && f.fabric !== 'all') ? f.fabric.split(',').map(s=>s.trim()).filter(Boolean) : [];
+
+    if(catList.length > 0 || fabList.length > 0){
+      const orClauses = [];
+      
+      // Category conditions (OR)
+      catList.forEach(cVal => {
         const matchedCat = cats.find(c => c.id === cVal || (c.name && c.name.toLowerCase() === cVal.toLowerCase()));
         if(matchedCat && matchedCat.id){
-          q = q.eq('category_id', matchedCat.id);
+          orClauses.push(`category_id.eq.${matchedCat.id}`);
         } else {
-          q = q.or(`category_id.eq.${cVal},fabric.ilike.%${cVal.replace(/[%,()]/g,'')}%,name.ilike.%${cVal.replace(/[%,()]/g,'')}%`);
+          orClauses.push(`category_id.eq.${cVal}`);
         }
-      } else if(catList.length > 1){
-        const matchedIds = catList.map(cv => cats.find(c => c.id === cv || (c.name && c.name.toLowerCase() === cv.toLowerCase()))?.id || cv).filter(Boolean);
-        const orClauses = [];
-        if(matchedIds.length) orClauses.push(...matchedIds.map(id => `category_id.eq.${id}`));
-        orClauses.push(...catList.map(cv => `fabric.ilike.%${cv.replace(/[%,()]/g,'')}%`));
-        orClauses.push(...catList.map(cv => `name.ilike.%${cv.replace(/[%,()]/g,'')}%`));
-        if(orClauses.length){
-          q = q.or(orClauses.join(','));
-        }
+        orClauses.push(`fabric.ilike.%${cVal.replace(/[%,()]/g,'')}%`);
+        orClauses.push(`name.ilike.%${cVal.replace(/[%,()]/g,'')}%`);
+      });
+
+      // Fabric conditions (OR)
+      fabList.forEach(fb => {
+        orClauses.push(`fabric.ilike.%${fb.replace(/[%,()]/g,'')}%`);
+        orClauses.push(`name.ilike.%${fb.replace(/[%,()]/g,'')}%`);
+      });
+
+      if(orClauses.length){
+        q = q.or(orClauses.join(','));
       }
-    }
-    if(f.fabric){
-      const fabList = f.fabric.split(',').map(s=>s.trim()).filter(Boolean);
-      if(fabList.length === 1) q = q.ilike('fabric', `%${fabList[0]}%`);
-      else if(fabList.length > 1) q = q.or(fabList.map(fb => `fabric.ilike.%${fb.replace(/[%,()]/g,'')}%`).join(','));
     }
     if(f.color){
       const colList = f.color.split(',').map(s=>s.trim()).filter(Boolean);
@@ -2096,17 +2100,9 @@ async function checkout(){
                 <div class="flex items-start gap-3">
                   <input type="radio" name="step-pm" value="COD" ${method === 'COD' ? 'checked' : ''} class="accent-slate-900 w-4 h-4 mt-0.5 shrink-0">
                   <div class="flex-1 min-w-0">
-                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5">
-                      <p class="text-sm font-extrabold text-slate-900 flex items-center gap-2">
-                        ${ICONS.cash} <span>Cash on Delivery (COD)</span>
-                      </p>
-                      <!-- Clean alignment: badge sits below title on mobile, inline on desktop -->
-                      <div>
-                        <span class="inline-block text-[11px] font-bold text-emerald-800 bg-emerald-100/80 px-2.5 py-0.5 rounded-full border border-emerald-200">
-                          ✓ No Extra Fee
-                        </span>
-                      </div>
-                    </div>
+                    <p class="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+                      ${ICONS.cash} <span>Cash on Delivery (COD)</span>
+                    </p>
                     <p class="text-[11px] text-gray-500 mt-1 font-medium leading-relaxed">
                       Pay safely in cash when your sarees are delivered to your door.
                     </p>
@@ -2119,17 +2115,9 @@ async function checkout(){
                 <div class="flex items-start gap-3">
                   <input type="radio" name="step-pm" value="UPI" ${method === 'UPI' ? 'checked' : ''} class="accent-slate-900 w-4 h-4 mt-0.5 shrink-0">
                   <div class="flex-1 min-w-0">
-                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5">
-                      <p class="text-sm font-extrabold text-slate-900 flex items-center gap-2">
-                        ${ICONS.upi} <span>Online Payment (UPI / QR / GPay / PhonePe)</span>
-                      </p>
-                      <!-- Clean alignment: badge sits below title on mobile, inline on desktop -->
-                      <div>
-                        <span class="inline-block text-[11px] font-bold text-sky-800 bg-sky-100/80 px-2.5 py-0.5 rounded-full border border-sky-200">
-                          ⚡ Instant
-                        </span>
-                      </div>
-                    </div>
+                    <p class="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+                      ${ICONS.upi} <span>Online Payment (UPI / QR / GPay / PhonePe)</span>
+                    </p>
                     <p class="text-[11px] text-gray-500 mt-1 font-medium leading-relaxed">
                       Instant scan & pay via any UPI application (GPay, PhonePe, Paytm).
                     </p>
@@ -2144,22 +2132,6 @@ async function checkout(){
                 <p class="text-xs text-emerald-900 font-medium">Pay exactly <b class="text-base font-black text-emerald-950">${inr(totalPayable)}</b> to this UPI ID:</p>
                 <p class="font-mono bg-white border border-emerald-300 rounded-2xl py-2.5 font-black select-all text-sm text-slate-900 shadow-2xs mt-2">${esc(UPI_ID)}</p>
               </div>
-
-              <div id="step-qr-box" class="flex justify-center py-2 bg-white rounded-2xl border border-emerald-100 p-3 max-w-[200px] mx-auto shadow-sm"></div>
-
-              <div class="flex flex-col sm:flex-row gap-2 justify-center">
-                <a id="step-upi-app-link" href="${upiLink}" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-5 rounded-full inline-flex items-center justify-center gap-1.5 shadow-sm text-xs transition">
-                  <span>Open UPI App</span>
-                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-                </a>
-              </div>
-
-              <div class="text-left pt-2">
-                <label class="block text-[11px] font-bold text-emerald-950 uppercase tracking-wider mb-1">UPI Transaction ID / UTR Number <span class="text-rose-600">*</span></label>
-                <input id="step-utr-input" maxlength="22" placeholder="e.g. 331234567890 (12 digits)" value="${esc(utrNumber)}" class="w-full border border-emerald-300 rounded-2xl p-3 text-xs outline-none focus:border-slate-900 bg-white font-bold text-slate-900">
-                <p class="text-[10px] text-emerald-800 mt-1">Please enter the 12-digit UPI reference number after making payment.</p>
-              </div>
-            </div>
 
               <div id="step-qr-box" class="flex justify-center py-2 bg-white rounded-2xl border border-emerald-100 p-3 max-w-[200px] mx-auto shadow-sm"></div>
 
@@ -2862,13 +2834,44 @@ async function orderDetailView(orderId,pf){
     </div>
     <div class="bg-white rounded-3xl p-5 shadow-soft border border-gray-100 space-y-3"><h3 class="font-extrabold text-xs text-gray-900 uppercase tracking-wider">Ordered products (${items.length})</h3>
       <div class="divide-y divide-gray-100">${items.map(i=>{const productId=i.product_id??i.id, productHref=productId!==undefined&&productId!==null?'#/p/'+encodeURIComponent(productId):'';const pCode=getProductId(i);return `<div class="py-3 flex items-center gap-3.5"><a ${productHref?`href="${productHref}"`:''} class="shrink-0 ${productHref?'cursor-pointer':''}"><img src="${esc(i.image||'https://placehold.co/100x120?text=Saree')}" alt="${esc(i.name||'Ordered saree')}" class="w-16 h-20 object-cover rounded-2xl bg-gray-50 border"></a><div class="flex-1 min-w-0"><div class="flex items-center gap-1.5 flex-wrap"><span class="font-mono text-[9px] font-black text-slate-800 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded select-all">ID: ${esc(pCode)}</span><${productHref?'a href="'+productHref+'"':'span'} class="font-bold text-xs text-gray-900 truncate block">${esc(i.name||'Saree')}</${productHref?'a':'span'}></div><p class="text-[11px] text-gray-500 mt-1">Unit price: ${inr(i.price)} · Quantity: <b class="text-gray-900 font-bold">${i.quantity||1}</b></p><b class="text-xs text-slate-900 mt-1 block">${inr(Number(i.price||0)*Number(i.quantity||1))}</b></div></div>`}).join('')}</div></div>
-    <div class="bg-white rounded-3xl p-5 shadow-soft border border-gray-100 space-y-2 text-xs"><h3 class="font-extrabold text-gray-900 uppercase tracking-wider text-[11px]">Delivery address</h3>${recipient?`<p class="font-bold text-gray-900">${esc(recipient)}</p>`:''}${phone?`<p class="text-gray-700">Mobile: <a href="tel:${esc(phone)}" class="font-semibold underline">${esc(phone)}</a></p>`:''}${addressLine?`<p class="text-gray-700 leading-relaxed">${esc(addressLine)}</p>`:''}<p class="text-gray-700">${esc([city,state].filter(Boolean).join(', '))}${pincode?' - '+esc(pincode):''}</p></div>
-    <div class="bg-white rounded-3xl p-5 shadow-soft border border-gray-100 space-y-2 text-xs"><h3 class="font-extrabold text-gray-900 uppercase tracking-wider text-[11px]">Payment summary</h3>
-      <div class="flex justify-between text-gray-600 pt-1"><span>Payment method</span><b class="text-gray-900">${esc(PAYLBL[ord.payment_method]||ord.payment_method||'')}</b></div>
-      ${ord.coupon?`<div class="flex justify-between text-gray-600"><span>Coupon</span><b class="text-gray-900">${esc(ord.coupon)}</b></div>`:''}
-      ${ord.discount?`<div class="flex justify-between text-gray-600"><span>Discount</span><b class="text-emerald-700">−${inr(ord.discount)}</b></div>`:''}
-      <div class="flex justify-between text-gray-600"><span>Delivery</span><b class="text-emerald-700">FREE</b></div>
-      <div class="flex justify-between text-sm font-extrabold text-slate-900 border-t pt-2.5 mt-2"><span>Total</span><span>${inr(ord.total)}</span></div></div>
+
+    <!-- Complete Detailed Delivery Address -->
+    <div class="bg-white rounded-3xl p-5 shadow-soft border border-gray-100 space-y-2.5 text-xs">
+      <div class="flex items-center justify-between border-b pb-2">
+        <h3 class="font-extrabold text-gray-900 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+          <svg class="w-4 h-4 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          Full Delivery Address
+        </h3>
+        <span class="text-[10px] font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full">Shipping Destination</span>
+      </div>
+      <div class="space-y-1.5 pt-1">
+        <div class="flex items-center justify-between">
+          <span class="font-bold text-slate-900 text-sm">${esc(recipient || pf.name || 'Customer')}</span>
+          ${phone ? `<a href="tel:${esc(phone)}" class="text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full flex items-center gap-1 hover:underline">📞 +91 ${esc(phone)}</a>` : ''}
+        </div>
+        ${addressLine ? `<p class="text-slate-800 font-medium leading-relaxed bg-slate-50 p-2.5 rounded-xl border border-gray-100">${esc(addressLine)}</p>` : ''}
+        <div class="grid grid-cols-2 gap-2 text-slate-600 font-medium pt-1">
+          <div><span class="text-gray-400 block text-[10px] uppercase">City</span><b class="text-slate-900">${esc(city || '—')}</b></div>
+          <div><span class="text-gray-400 block text-[10px] uppercase">State</span><b class="text-slate-900">${esc(state || 'Tamil Nadu')}</b></div>
+          <div><span class="text-gray-400 block text-[10px] uppercase">Pincode</span><b class="text-slate-900 font-mono">${esc(pincode || '—')}</b></div>
+          <div><span class="text-gray-400 block text-[10px] uppercase">Country</span><b class="text-slate-900">India</b></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Complete Payment & Order Attributes -->
+    <div class="bg-white rounded-3xl p-5 shadow-soft border border-gray-100 space-y-2 text-xs">
+      <div class="flex items-center justify-between border-b pb-2">
+        <h3 class="font-extrabold text-gray-900 uppercase tracking-wider text-[11px]">Payment Summary & Verification</h3>
+        <span class="font-mono text-[10px] font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded">#TT-${esc(shortNo)}</span>
+      </div>
+      <div class="flex justify-between text-gray-600 pt-1"><span>Payment Method</span><b class="text-gray-900">${esc(PAYLBL[ord.payment_method]||ord.payment_method||'')}</b></div>
+      ${ord.tracking_id ? `<div class="flex justify-between text-gray-600"><span>Courier Tracking No</span><b class="text-slate-900 font-mono">${esc(ord.tracking_id)}</b></div>` : ''}
+      ${ord.coupon?`<div class="flex justify-between text-gray-600"><span>Coupon Applied</span><b class="text-slate-900">${esc(ord.coupon)}</b></div>`:''}
+      ${ord.discount?`<div class="flex justify-between text-gray-600"><span>Discount</span><b class="text-emerald-700 font-bold">−${inr(ord.discount)}</b></div>`:''}
+      <div class="flex justify-between text-gray-600"><span>Shipping / Delivery</span><b class="text-emerald-700 font-bold">FREE</b></div>
+      <div class="flex justify-between text-sm font-extrabold text-slate-900 border-t pt-2.5 mt-2"><span>Total Amount</span><span class="text-emerald-700 font-black text-base">${inr(ord.total)}</span></div>
+    </div>
     <div class="text-center pt-2"><a href="https://wa.me/${esc(WHATSAPP)}?text=${encodeURIComponent('Hi, I need help with my order #'+shortNo)}" target="_blank" rel="noopener" class="text-xs font-bold text-emerald-700 hover:underline inline-flex items-center gap-1">${ICONS.whatsapp}<span>${esc(supportMsg)}</span></a></div></div>`;
 }
 
