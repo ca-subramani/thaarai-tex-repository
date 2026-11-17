@@ -4134,6 +4134,10 @@ window.addEventListener('popstate', event => {
       return;
     } else {
       window._checkoutState = null;
+      if(location.hash.startsWith('#/checkout')){
+        history.back();
+        return;
+      }
     }
   }
 
