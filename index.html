@@ -2822,6 +2822,8 @@ async function orderDetailView(orderId,pf){
   if(!ord){app.innerHTML=`<div class="max-w-md mx-auto text-center py-16 bg-white rounded-3xl p-8 border border-gray-100 shadow-soft my-4 space-y-3"><p class="text-xs text-gray-500">This order was not found in your account.</p><a href="#/account/orders" class="${btn} inline-block !py-2.5">Back to Orders</a></div>`;return}
   const items=ord.items||[], status=ord.order_status||'pending', steps=['pending','verified','dispatched','delivered'], cur=steps.indexOf(status);
   const shortNo=String(ord.id).slice(0,8).toUpperCase(), createdAt=new Date(ord.created_at);
+  const deliveryDate = ord.delivered_at || ord.delivery_date || ord.expected_delivery_date || ord.estimated_delivery_date || new Date(createdAt.getTime() + 5 * 864e5);
+  const deliveryDateLabel = ord.delivered_at || ord.delivery_date ? 'Delivery date' : 'Estimated delivery';
   // Extract complete shipping address object
   let ship = {};
   if(ord.address){
