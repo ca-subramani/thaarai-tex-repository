@@ -1798,11 +1798,13 @@ async function product(id){
 
   // Fullscreen Lightbox Controls
   const lb=$('#hd-lightbox'), lbImg=$('#lightbox-img'), lbStage=$('#lb-stage');
-  const resetLightboxZoom=attachPinchZoom(lbStage, lbImg);
+  let lbScale = 1;
+  const resetLightboxZoom=attachPinchZoom(lbStage, lbImg, value => lbScale = value);
   
   function updateLightboxUI(){
     if(!lb || lb.classList.contains('hidden')) return;
     lbImg.src = imgs[cur];
+    lbScale = 1;
     resetLightboxZoom();
     const counter = $('#lb-counter');
     if(counter) counter.textContent = `${cur + 1} / ${imgs.length}`;
@@ -1823,6 +1825,7 @@ async function product(id){
     lb.classList.add('hidden');
     document.documentElement.classList.remove('overflow-hidden');
     document.body.classList.remove('overflow-hidden', 'touch-none');
+    lbScale = 1;
     resetLightboxZoom();
   };
 
@@ -1847,7 +1850,21 @@ async function product(id){
     closeLb();
   };
 
-  // Lightbox Bottom Thumbnails click (move to another image only by touching below image list)
+  // Swipe to move photos ONLY when out of zoom (scale <= 1.05). In zoom, swipe is strictly disabled so user can pan freely
+  let lbSwipeX0 = null;
+  lbStage.addEventListener('touchstart', e => {
+    lbSwipeX0 = (e.touches.length === 1 && lbScale <= 1.05) ? e.touches[0].clientX : null;
+  }, { passive: true });
+  lbStage.addEventListener('touchend', e => {
+    if(e.touches.length || lbSwipeX0 === null) { lbSwipeX0 = null; return; }
+    const dx = e.changedTouches[0].clientX - lbSwipeX0;
+    if(lbScale <= 1.05 && imgs.length > 1 && Math.abs(dx) > 40) {
+      switchImage(cur + (dx < 0 ? 1 : -1));
+    }
+    lbSwipeX0 = null;
+  });
+
+  // Lightbox Bottom Thumbnails click
   document.querySelectorAll('.lb-thumb-btn').forEach(tb => {
     tb.onclick = (e) => {
       e.stopPropagation();
