@@ -2450,6 +2450,12 @@ async function checkout(){
     setSubView: v => { showingSavedAddressPage = v; renderStepView(); }
   };
 
+  function pushCheckoutState(step, sub){
+    try {
+      history.pushState({ inCheckout: true, step, sub }, '', location.href);
+    } catch(e){}
+  }
+
   function renderStepView(){
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
@@ -2541,6 +2547,7 @@ async function checkout(){
 
       $('#btn-to-step2').onclick = () => {
         currentStep = 2;
+        pushCheckoutState(2, false);
         renderStepView();
       };
 
@@ -2553,7 +2560,7 @@ async function checkout(){
     if(currentStep === 2){
       // SUB-VIEW A: DEDICATED SAVED ADDRESSES PAGE
       if(showingSavedAddressPage === 'list'){
-        let tempChosenId = addr.id || (AL.find(a => a.def)?.id || AL[0]?.id || '');
+        let tempChosenId = String(addr.id || (AL.find(a => a.def)?.id || AL[0]?.id || ''));
         app.innerHTML = `
           <div class="max-w-2xl mx-auto space-y-5 animate-fadeIn">
             <div class="flex items-center justify-between px-1">
@@ -2578,9 +2585,9 @@ async function checkout(){
               <!-- List of Saved Address Boxes -->
               <div class="space-y-3 pt-1">
                 ${AL.map(a => {
-                  const isSel = (a.id === tempChosenId);
+                  const isSel = (String(a.id) === tempChosenId);
                   return `
-                    <label class="saved-choice-card block relative border-2 rounded-2xl p-4 cursor-pointer transition select-none ${
+                    <div class="saved-choice-card block relative border-2 rounded-2xl p-4 cursor-pointer transition select-none ${
                       isSel ? 'border-slate-900 bg-gray-50 shadow-sm ring-1 ring-slate-900' : 'border-gray-200 bg-white hover:border-gray-300'
                     }" data-aid="${esc(a.id)}">
                       <div class="flex items-start gap-3.5">
@@ -2595,7 +2602,7 @@ async function checkout(){
                           <p class="text-xs text-slate-900 font-bold mt-1">${esc(a.city)}, ${esc(a.state)} - <span class="font-mono">${esc(a.pincode)}</span></p>
                         </div>
                       </div>
-                    </label>
+                    </div>
                   `;
                 }).join('')}
               </div>
@@ -2614,24 +2621,24 @@ async function checkout(){
         `;
 
         $('#btn-back-from-saved-list').onclick = () => {
-          showingSavedAddressPage = false;
-          renderStepView();
+          history.back();
         };
         $('#btn-cancel-saved-choice').onclick = () => {
-          showingSavedAddressPage = false;
-          renderStepView();
+          history.back();
         };
 
         $('#btn-open-create-addr').onclick = () => {
           showingSavedAddressPage = 'new';
+          pushCheckoutState(2, 'new');
           renderStepView();
         };
 
         $$('.saved-choice-card').forEach(card => {
-          card.onclick = () => {
-            tempChosenId = card.dataset.aid;
+          card.onclick = (e) => {
+            const aid = String(card.dataset.aid);
+            tempChosenId = aid;
             $$('.saved-choice-card').forEach(c => {
-              const isMatch = (c.dataset.aid === tempChosenId);
+              const isMatch = (String(c.dataset.aid) === aid);
               c.className = `saved-choice-card block relative border-2 rounded-2xl p-4 cursor-pointer transition select-none ${
                 isMatch ? 'border-slate-900 bg-gray-50 shadow-sm ring-1 ring-slate-900' : 'border-gray-200 bg-white hover:border-gray-300'
               }`;
@@ -2642,7 +2649,9 @@ async function checkout(){
         });
 
         $('#btn-confirm-saved-choice').onclick = () => {
-          const match = AL.find(a => a.id === tempChosenId);
+          const checkedRadio = $('input[name="chk_saved_choice"]:checked');
+          const chosenId = checkedRadio ? String(checkedRadio.value) : tempChosenId;
+          const match = AL.find(a => String(a.id) === chosenId) || AL[0];
           if(!match){
             return toast('Please select an address');
           }
@@ -2700,12 +2709,10 @@ async function checkout(){
         `;
 
         $('#btn-back-from-new-page').onclick = () => {
-          showingSavedAddressPage = AL.length ? 'list' : false;
-          renderStepView();
+          history.back();
         };
         $('#btn-cancel-create-addr').onclick = () => {
-          showingSavedAddressPage = AL.length ? 'list' : false;
-          renderStepView();
+          history.back();
         };
 
         $('#dedicated-new-addr-form').onsubmit = async e => {
@@ -2804,8 +2811,7 @@ async function checkout(){
       `;
 
       const goBackStep1 = () => {
-        currentStep = 1;
-        renderStepView();
+        history.back();
       };
 
       $('#btn-back-to-step1').onclick = goBackStep1;
@@ -2816,6 +2822,7 @@ async function checkout(){
       if(openSavedBtn){
         openSavedBtn.onclick = () => {
           showingSavedAddressPage = 'list';
+          pushCheckoutState(2, 'list');
           renderStepView();
         };
       }
@@ -2852,6 +2859,7 @@ async function checkout(){
         } catch(err){}
 
         currentStep = 3;
+        pushCheckoutState(3, false);
         renderStepView();
       };
 
@@ -2971,8 +2979,7 @@ async function checkout(){
 
       const goBackStep2 = () => {
         if(method === 'UPI') utrNumber = $('#step-utr-input')?.value.trim() || utrNumber;
-        currentStep = 2;
-        renderStepView();
+        history.back();
       };
 
       $('#btn-back-to-step2').onclick = goBackStep2;
@@ -2987,6 +2994,7 @@ async function checkout(){
           utrNumber = val;
         }
         currentStep = 4;
+        pushCheckoutState(4, false);
         renderStepView();
       };
 
@@ -3117,10 +3125,10 @@ async function checkout(){
       `;
 
       // Back navigation & Edit links
-      $('#btn-back-to-step3').onclick = () => { currentStep = 3; renderStepView(); };
-      $('#review-edit-items').onclick = () => { currentStep = 1; renderStepView(); };
-      $('#review-edit-address').onclick = () => { currentStep = 2; renderStepView(); };
-      $('#review-edit-payment').onclick = () => { currentStep = 3; renderStepView(); };
+      $('#btn-back-to-step3').onclick = () => { history.back(); };
+      $('#review-edit-items').onclick = () => { currentStep = 1; pushCheckoutState(1, false); renderStepView(); };
+      $('#review-edit-address').onclick = () => { currentStep = 2; pushCheckoutState(2, false); renderStepView(); };
+      $('#review-edit-payment').onclick = () => { currentStep = 3; pushCheckoutState(3, false); renderStepView(); };
 
       // Final Confirm Click
       $('#btn-final-confirm-order').onclick = async () => {
@@ -4085,20 +4093,27 @@ window.addEventListener('popstate', event => {
 
   // Handle Checkout Stepper back navigation (Steps 2, 3, 4, and sub-pages)
   if(current.startsWith('#/checkout') && window._checkoutState){
+    // If the popped state carried specific checkout state, apply it:
+    if(event.state && event.state.inCheckout){
+      if(typeof event.state.sub !== 'undefined') window._checkoutState.setSubView(event.state.sub);
+      if(typeof event.state.step !== 'undefined') window._checkoutState.setStep(event.state.step);
+      return;
+    }
+
     const sub = window._checkoutState.getSubView();
     if(sub === 'new'){
-      try { history.pushState({ inCheckout: true }, '', location.href); } catch(e){}
+      try { history.pushState({ inCheckout: true, step: window._checkoutState.getStep(), sub: 'list' }, '', location.href); } catch(e){}
       window._checkoutState.setSubView('list');
       return;
     }
     if(sub === 'list'){
-      try { history.pushState({ inCheckout: true }, '', location.href); } catch(e){}
+      try { history.pushState({ inCheckout: true, step: window._checkoutState.getStep(), sub: false }, '', location.href); } catch(e){}
       window._checkoutState.setSubView(false);
       return;
     }
     const step = window._checkoutState.getStep();
     if(step > 1){
-      try { history.pushState({ inCheckout: true }, '', location.href); } catch(e){}
+      try { history.pushState({ inCheckout: true, step: step - 1, sub: false }, '', location.href); } catch(e){}
       window._checkoutState.setStep(step - 1);
       return;
     }
