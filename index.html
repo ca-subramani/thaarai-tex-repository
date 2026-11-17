@@ -881,6 +881,15 @@ async function home(){
 async function shop(params){
   const $$ = s => Array.from(document.querySelectorAll(s));
 
+  // Base Shop Trap: If user is on clean base shop, push trap state into history
+  // so an Android back swipe or browser back button triggers popstate and reloads the shop
+  const isBaseShop = !params.toString() && (location.hash === '#/shop' || location.hash === '#/shop/');
+  if(isBaseShop && (!history.state || !history.state.shopTrap)){
+    try {
+      history.pushState({ shopTrap: true }, '', '#/shop');
+    } catch(e){}
+  }
+
   const f = {
     q: params.get('q') || '',
     cat: params.get('cat') || '',
@@ -3220,7 +3229,7 @@ window.addEventListener('hashchange', () => {
 
 // Android Back Gesture & Popstate Listener:
 // 1. Closes filter or sort modals if open
-// 2. Traps exit back gesture ONLY on base shop (#/shop)
+// 2. Traps exit back swipe ONLY on base shop (#/shop) and hard reloads shop
 // 3. Allows all other pages (Home, Bag, Profile, Orders, Products, Filtered Shop) to navigate naturally
 window.addEventListener('popstate', event => {
   // 1. If Filter modal or Sort modal is open, back gesture dismisses the modal
@@ -3241,18 +3250,24 @@ window.addEventListener('popstate', event => {
 
   const h = location.hash || '#/';
 
-  // 2. If user is currently on base shop (#/shop or #/shop/) and attempts to swipe back / exit:
-  // Redirect back into shop
-  if(h === '#/shop' || h === '#/shop/'){
-    try {
-      history.pushState(null, '', '#/shop');
-    } catch(e){}
+  // 2. If user is on filtered shop (#/shop?...) and swipes back, return to base shop without reloading
+  if(h.startsWith('#/shop?')){
     location.hash = '#/shop';
-    route();
     return;
   }
 
-  // 3. All other pages (Home, Bag, Profile, Orders, Filtered shop #/shop?...):
+  // 3. ONLY ON CLEAN BASE SHOP TAB (#/shop or #/shop/):
+  // When user swipes back on base shop, keep them trapped in shop and hard reload
+  if(h === '#/shop' || h === '#/shop/'){
+    try {
+      history.pushState({ shopTrap: true }, '', '#/shop');
+    } catch(e){}
+    location.href = '#/shop';
+    window.location.reload();
+    return;
+  }
+
+  // 4. All other pages (Home, Bag, Profile, Orders, Product Details):
   // Work 100% naturally with zero interference
   route();
 });
@@ -3280,10 +3295,10 @@ $('#nav-back').onclick = e => {
     location.hash = '#/shop';
     return;
   }
-  // If on base shop: keep in shop
+  // If on base shop: stay on shop and reload
   if(h === '#/shop' || h === '#/shop/'){
-    location.hash = '#/shop';
-    route();
+    location.href = '#/shop';
+    window.location.reload();
     return;
   }
 
