@@ -2652,12 +2652,15 @@ async function checkout(){
           const checkedRadio = $('input[name="chk_saved_choice"]:checked');
           const chosenId = checkedRadio ? String(checkedRadio.value) : tempChosenId;
           const match = AL.find(a => String(a.id) === chosenId) || AL[0];
-          if(!match){
-            return toast('Please select an address');
+          if(match){
+            addr = { ...match };
           }
-          addr = { ...match };
-          toast('Address selected & autofilled ✓');
           showingSavedAddressPage = false;
+          // Clear subview in history so popping won't re-enter list
+          try {
+            history.replaceState({ inCheckout: true, step: 2, sub: false }, '', location.href);
+          } catch(e){}
+          toast('Address selected & autofilled ✓');
           renderStepView();
         };
 
