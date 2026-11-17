@@ -961,7 +961,7 @@ async function shop(params){
     </div>
 
     <!-- Flipkart/Amazon Style 2-Column Split Filter Page Modal (Left categories tab, Right options panel) -->
-    <div id="fl" class="hidden fixed inset-0 z-[70] bg-white flex flex-col md:inset-0 md:bg-slate-900/50 md:backdrop-blur-sm md:items-center md:justify-center p-0 md:p-6">
+    <div id="fl" class="hidden fixed !inset-0 !top-0 !left-0 !right-0 !bottom-0 w-screen h-screen z-[99999] bg-white flex flex-col md:bg-slate-900/50 md:backdrop-blur-sm md:items-center md:justify-center p-0 md:p-6 overscroll-contain">
       <div class="w-full h-full md:h-[88vh] md:max-w-4xl bg-white md:rounded-3xl flex flex-col shadow-2xl overflow-hidden border border-gray-100">
         
         <!-- Filter Top Bar with Back Button -->
@@ -1140,7 +1140,7 @@ async function shop(params){
     </div>
 
     <!-- Separate Sort Page Modal (Dedicated Page View on Desktop & Mobile) -->
-    <div id="sort-page-modal" class="hidden fixed inset-0 z-[70] bg-white flex flex-col md:inset-0 md:bg-slate-900/50 md:backdrop-blur-sm md:items-center md:justify-center p-0 md:p-6">
+    <div id="sort-page-modal" class="hidden fixed !inset-0 !top-0 !left-0 !right-0 !bottom-0 w-screen h-screen z-[99999] bg-white flex flex-col md:bg-slate-900/50 md:backdrop-blur-sm md:items-center md:justify-center p-0 md:p-6 overscroll-contain">
       <div class="w-full h-full md:h-auto md:max-h-[88vh] md:max-w-lg bg-white md:rounded-3xl flex flex-col shadow-2xl overflow-hidden border border-gray-100">
         <!-- Header with Circular Back Button -->
         <div class="sticky top-0 z-10 flex items-center justify-between px-5 py-4 bg-white border-b border-gray-100">
@@ -1186,15 +1186,31 @@ async function shop(params){
     </section>
   </div>`;
 
-  // Open / Close Split Filter Page Modal
-  const openFilters = () => { $('#fl').classList.remove('hidden'); document.body.style.overflow = 'hidden'; };
-  const closeFilters = () => { $('#fl').classList.add('hidden'); document.body.style.overflow = ''; };
+  // Open / Close Split Filter Page Modal with total background scroll lock
+  const openFilters = () => {
+    $('#fl').classList.remove('hidden');
+    document.documentElement.classList.add('overflow-hidden');
+    document.body.classList.add('overflow-hidden', 'touch-none');
+  };
+  const closeFilters = () => {
+    $('#fl').classList.add('hidden');
+    document.documentElement.classList.remove('overflow-hidden');
+    document.body.classList.remove('overflow-hidden', 'touch-none');
+  };
   $('#ftg').onclick = openFilters;
   $('#filter-close').onclick = closeFilters;
 
-  // Separate Sort Page Modal Open / Close
-  const openSortPage = () => { $('#sort-page-modal').classList.remove('hidden'); document.body.style.overflow = 'hidden'; };
-  const closeSortPage = () => { $('#sort-page-modal').classList.add('hidden'); document.body.style.overflow = ''; };
+  // Separate Sort Page Modal Open / Close with total background scroll lock
+  const openSortPage = () => {
+    $('#sort-page-modal').classList.remove('hidden');
+    document.documentElement.classList.add('overflow-hidden');
+    document.body.classList.add('overflow-hidden', 'touch-none');
+  };
+  const closeSortPage = () => {
+    $('#sort-page-modal').classList.add('hidden');
+    document.documentElement.classList.remove('overflow-hidden');
+    document.body.classList.remove('overflow-hidden', 'touch-none');
+  };
   $('#sort-open').onclick = openSortPage;
   $('#sort-page-back').onclick = closeSortPage;
 
@@ -2478,8 +2494,9 @@ document.addEventListener('click', (e) => {
 
 function armShopGuard(){
   try {
-    history.pushState({ thaaraiShopGuard: true }, '', location.href);
-    history.pushState({ thaaraiShopGuard: true }, '', location.href);
+    const s = { thaaraiShopGuard: true, t: Date.now() };
+    history.pushState(s, '', location.href);
+    history.pushState(s, '', location.href);
   } catch(e){}
 }
 
@@ -2490,13 +2507,17 @@ window.addEventListener('popstate', event => {
   const sortModal = $('#sort-page-modal');
   if(sortModal && !sortModal.classList.contains('hidden')){
     sortModal.classList.add('hidden');
-    document.body.style.overflow = '';
+    document.documentElement.classList.remove('overflow-hidden');
+    document.body.classList.remove('overflow-hidden', 'touch-none');
+    armShopGuard();
     return;
   }
   const fl = $('#fl');
   if(fl && !fl.classList.contains('hidden')){
     fl.classList.add('hidden');
-    document.body.style.overflow = '';
+    document.documentElement.classList.remove('overflow-hidden');
+    document.body.classList.remove('overflow-hidden', 'touch-none');
+    armShopGuard();
     return;
   }
 
@@ -2508,8 +2529,9 @@ window.addEventListener('popstate', event => {
 
   // 3. Traps any back button press on shop or home: ALWAYS lock in shop and reload shop
   try {
-    history.pushState({ thaaraiShopGuard: true }, '', '#/shop');
-    history.pushState({ thaaraiShopGuard: true }, '', '#/shop');
+    const s = { thaaraiShopGuard: true, t: Date.now() };
+    history.pushState(s, '', '#/shop');
+    history.pushState(s, '', '#/shop');
   } catch(e){}
   currentRoute = '#/shop';
   if(location.hash !== '#/shop'){
