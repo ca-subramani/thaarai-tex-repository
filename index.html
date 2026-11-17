@@ -3205,34 +3205,17 @@ $('#brand').addEventListener('click', e => {
 });
 
 /* ===== NAVIGATION & SHOP BACK LOOP ===== */
-let isLinkNavigation = false;
-
-document.addEventListener('click', (e) => {
-  const link = e.target.closest('a[href]');
-  if(link){
-    const h = link.getAttribute('href');
-    if(h && (h.startsWith('#') || h.startsWith('/#'))){
-      isLinkNavigation = true;
-      setTimeout(() => { isLinkNavigation = false; }, 350);
-    }
-  }
-}, true);
-
-// Keep a buffer of history entries ONLY when on shop tab
-function ensureShopBuffer(){
+// Seed dummy states ONLY when user enters Shop tab so Android edge-swipe cannot exit
+function seedShopHistory(){
   try {
-    const h = location.hash || '#/';
-    if(h === '#/shop' || h.startsWith('#/shop?')){
-      history.pushState({ thaaraiShopTab: true, t: Date.now() }, '', location.href);
+    for(let i=0; i<6; i++){
+      history.pushState({ thaaraiShopTrap: true, i, t: Date.now() }, '', '#/shop');
     }
   } catch(e){}
 }
 
-// Android Back Gesture & Popstate: ONLY loop/reload if user is on Shop tab
+// Android Back Gesture & Popstate Listener
 window.addEventListener('popstate', event => {
-  // If user clicked any link/tab, let navigation happen normally
-  if(isLinkNavigation) return;
-
   // Close modals if open
   const sortModal = $('#sort-page-modal');
   if(sortModal && !sortModal.classList.contains('hidden')){
@@ -3251,21 +3234,19 @@ window.addEventListener('popstate', event => {
 
   const h = location.hash || '#/';
 
-  // ONLY IF USER IS ON SHOP TAB: Trap back swipe gesture, prevent closing, and reload Shop
+  // ONLY IF ON SHOP TAB: Hard reload and never let mobile swipe close the browser!
   if(h === '#/shop' || h.startsWith('#/shop?')){
     try {
-      history.pushState({ thaaraiShopTab: true, t: Date.now() }, '', '#/shop');
+      history.pushState({ thaaraiShopTrap: true, t: Date.now() }, '', '#/shop');
     } catch(e){}
-    if(location.hash !== '#/shop'){
-      location.replace('#/shop');
-    } else {
-      route();
-    }
+    sessionStorage.setItem('tt_force_shop_reload', '1');
+    location.href = '#/shop';
+    window.location.reload();
     return;
   }
 
   // ALL OTHER TABS (Home, Profile, Bag, Orders, Product Details):
-  // Work 100% normally using standard browser/SPA routing!
+  // Normal SPA navigation
   route();
 });
 
@@ -3287,11 +3268,10 @@ $('#nav-back').onclick = e => {
   }
 
   const h = location.hash || '#/';
-  // Only from shop tab does it reload/stay on shop
+  // Only from shop tab does it hard reload and lock
   if(h === '#/shop' || h.startsWith('#/shop?')){
-    location.hash = '#/shop';
-    route();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    location.href = '#/shop';
+    window.location.reload();
     return;
   }
 
@@ -3305,13 +3285,16 @@ $('#nav-back').onclick = e => {
 
 window.addEventListener('hashchange', () => {
   route();
-  ensureShopBuffer();
 });
 
+// Watch route to seed shop history whenever entering shop tab
 const originalRoute = route;
 route = async function(){
   await originalRoute();
-  ensureShopBuffer();
+  const h = location.hash || '#/';
+  if(h === '#/shop' || h.startsWith('#/shop?')){
+    seedShopHistory();
+  }
 };
 
 
