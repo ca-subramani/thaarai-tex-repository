@@ -2822,44 +2822,44 @@ async function orderDetailView(orderId,pf){
   if(!ord){app.innerHTML=`<div class="max-w-md mx-auto text-center py-16 bg-white rounded-3xl p-8 border border-gray-100 shadow-soft my-4 space-y-3"><p class="text-xs text-gray-500">This order was not found in your account.</p><a href="#/account/orders" class="${btn} inline-block !py-2.5">Back to Orders</a></div>`;return}
   const items=ord.items||[], status=ord.order_status||'pending', steps=['pending','verified','dispatched','delivered'], cur=steps.indexOf(status);
   const shortNo=String(ord.id).slice(0,8).toUpperCase(), createdAt=new Date(ord.created_at);
-  const ship=ord.address&&typeof ord.address==='object'?ord.address:{};
-  const deliveryDate=ord.delivered_at||ord.delivery_date||ord.expected_delivery_date||ord.estimated_delivery_date||new Date(createdAt.getTime()+5*864e5);
-  const deliveryDateLabel=ord.delivered_at||ord.delivery_date?'Delivery date':'Estimated delivery';
-  const recipient=ord.name||ord.customer_name||ship.name||'';
-  const phone=ord.phone||ord.mobile_number||ship.phone||pf.phone||'';
-  const addressLine=ord.line||ship.line||ord.address_line||ship.address_line||(typeof ord.address==='string'?ord.address:'');
-  const city=ord.city||ship.city||'';
-  const state=ord.state||ship.state||'';
-  const pincode=ord.pincode||ship.pincode||'';
-
-  // Format full combined shipping address string guaranteeing complete door no, street, area, city, state, pin
-  let fullAddrParts = [];
-  if(typeof ord.address === 'string' && ord.address.trim()){
-    try {
-      const parsed = JSON.parse(ord.address);
-      if(parsed && typeof parsed === 'object') Object.assign(ship, parsed);
-      else fullAddrParts.push(ord.address.trim());
-    } catch(e){
-      fullAddrParts.push(ord.address.trim());
+  // Extract complete shipping address object
+  let ship = {};
+  if(ord.address){
+    if(typeof ord.address === 'object') {
+      ship = { ...ord.address };
+    } else if(typeof ord.address === 'string'){
+      const tr = ord.address.trim();
+      if((tr.startsWith('{') && tr.endsWith('}')) || (tr.startsWith('[') && tr.endsWith(']'))){
+        try {
+          const parsed = JSON.parse(tr);
+          if(parsed && typeof parsed === 'object') ship = { ...parsed };
+        } catch(e){}
+      }
     }
   }
 
-  const doorStreet = ship.line || ship.address_line || ship.street || ship.address || ord.line || ord.address_line || '';
-  const area = ship.area || '';
-  const cityVal = ship.city || ord.city || '';
-  const stateVal = ship.state || ord.state || 'Tamil Nadu';
-  const pinVal = ship.pincode || ship.pin || ord.pincode || '';
+  // Fallback to customer or profile saved address if order address is missing fields
+  const savedAddrs = await getAddrs();
+  const matchedSaved = savedAddrs.find(sa => sa.phone === (ord.phone || pf.phone) || sa.def) || savedAddrs[0] || {};
 
-  if(!fullAddrParts.length){
-    if(doorStreet) fullAddrParts.push(doorStreet);
-    if(area && !doorStreet.toLowerCase().includes(area.toLowerCase())) fullAddrParts.push(area);
-    const loc = [cityVal, stateVal].filter(Boolean).join(', ');
-    if(loc) fullAddrParts.push(loc);
-    if(pinVal) fullAddrParts.push(`Pincode: ${pinVal}`);
-    fullAddrParts.push('India');
-  }
+  const recipient = ord.name || ord.customer_name || ship.name || matchedSaved.name || pf.name || '';
+  const phone = ord.phone || ord.mobile_number || ship.phone || matchedSaved.phone || pf.phone || '';
+  const doorNoAndStreet = ship.line || ship.address_line || ship.street || ship.door_no || (typeof ord.address === 'string' && !ord.address.trim().startsWith('{') ? ord.address.trim() : '') || matchedSaved.line || ord.line || '';
+  const area = ship.area || matchedSaved.area || '';
+  const city = ship.city || matchedSaved.city || ord.city || '';
+  const state = ship.state || matchedSaved.state || ord.state || 'Tamil Nadu';
+  const pincode = ship.pincode || ship.pin || matchedSaved.pincode || ord.pincode || '';
 
-  const formattedAddress = fullAddrParts.join('\n');
+  // Construct comprehensive formatted address
+  let addressLines = [];
+  if(doorNoAndStreet) addressLines.push(doorNoAndStreet);
+  if(area && !doorNoAndStreet.toLowerCase().includes(area.toLowerCase())) addressLines.push(area);
+  const cityState = [city, state].filter(Boolean).join(', ');
+  if(cityState) addressLines.push(cityState);
+  if(pincode) addressLines.push(`Pincode: ${pincode}`);
+  addressLines.push('India');
+
+  const formattedAddress = addressLines.filter(Boolean).join('\n');
   const supportMsg = SET.account_ui?.supportText || 'Contact support on WhatsApp';
   app.innerHTML=`<div class="max-w-md mx-auto space-y-4 my-2">
     ${topbar('Order #'+esc(shortNo),'#/account/orders')}
