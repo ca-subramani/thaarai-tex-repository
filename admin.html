@@ -24,7 +24,6 @@
   </script>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script defer src="./site-enhancements.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Noto+Sans+Tamil:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
@@ -522,10 +521,13 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
       render();
     }
 
-    let adminExitFromPop=false, adminGuardReady=false;
-    function armAdminExitGuard(){if(!history.state?.adminGuard)history.pushState({adminSection:section,adminGuard:true},'',location.href)}
-    function showAdminExit(fromPop=false){adminExitFromPop=fromPop;const dialog=$('#admin-exit-layer');dialog.classList.remove('hidden');dialog.classList.add('grid');$('#admin-exit-stay').focus()}
-    function hideAdminExit(){const dialog=$('#admin-exit-layer');dialog.classList.add('hidden');dialog.classList.remove('grid')}
+    let adminGuardReady=false;
+    function armAdminExitGuard(){
+      try {
+        const s = { adminSection: 'overview', adminGuard: true, t: Date.now() };
+        history.pushState(s, '', location.href);
+      } catch(e){}
+    }
 
     function adminBack(){
       if(section==='orders' && selectedOrderId){
@@ -540,25 +542,54 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
         backToProductsList();
         return;
       }
-      if(sectionHistory.length>1){history.back();return}
-      showAdminExit(false);
-    }
-    $('#admin-exit-stay').onclick=()=>{hideAdminExit();if(adminExitFromPop)armAdminExitGuard();adminExitFromPop=false};
-    $('#admin-exit-layer').onclick=e=>{if(e.target===e.currentTarget)$('#admin-exit-stay').click()};
-    $('#admin-exit-confirm').onclick=()=>{const steps=adminExitFromPop?1:2;hideAdminExit();history.go(-steps)};
-    window.addEventListener('popstate',event=>{
       if(sectionHistory.length>1){
-        if(event.state?.adminSection){
-          if(sectionHistory[sectionHistory.length-2]===event.state.adminSection)sectionHistory.pop();
-          else sectionHistory.push(event.state.adminSection);
-          setSection(event.state.adminSection,true);
-        }else{
-          sectionHistory.pop();
-          setSection(sectionHistory[sectionHistory.length-1],true);
-        }
+        sectionHistory.pop();
+        const prev = sectionHistory[sectionHistory.length-1] || 'overview';
+        setSection(prev, true);
         return;
       }
-      showAdminExit(true);
+      // Already on base/overview: re-lock and stay on overview
+      armAdminExitGuard();
+      if(section !== 'overview') setSection('overview');
+      else render();
+    }
+
+    // Unbreakable Overview Lock: Never exit admin workspace on back button
+    window.addEventListener('popstate', event => {
+      // 1. If currently in deep detail view (single order, customer, product edit), pop to their parent list
+      if(section==='orders' && selectedOrderId){
+        backToOrdersList();
+        armAdminExitGuard();
+        return;
+      }
+      if(section==='customers' && selectedCustomerId){
+        backToCustomersList();
+        armAdminExitGuard();
+        return;
+      }
+      if(section==='products' && selectedProductId !== null){
+        backToProductsList();
+        armAdminExitGuard();
+        return;
+      }
+
+      // 2. If user traversed multiple subtabs, step back through history
+      if(sectionHistory.length > 1){
+        sectionHistory.pop();
+        const target = sectionHistory[sectionHistory.length - 1] || 'overview';
+        setSection(target, true);
+        armAdminExitGuard();
+        return;
+      }
+
+      // 3. Traps any exit: immediately lock onto Overview, refresh view, and re-arm guard
+      armAdminExitGuard();
+      armAdminExitGuard();
+      if(section !== 'overview'){
+        setSection('overview');
+      } else {
+        render();
+      }
     });
 
     async function loadAll(){
@@ -2096,6 +2127,8 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
       }
     }
 
+    let currentStorefrontPreviewDevice = 'mobile'; // 'mobile', 'tablet', 'desktop'
+
     function renderStorefrontCMS(){
       const subTabs = [
         ['home', SVG.home, 'Home Page', 'Hero & Categories'],
@@ -2107,32 +2140,122 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
       ];
 
       view.innerHTML=`
-        <!-- Top Studio Header Card Box -->
+        <!-- Top Studio Control Bar -->
         <div class="bg-white rounded-3xl p-5 sm:p-6 shadow-soft border border-slate-200/80 space-y-4 min-w-0">
-          <div class="flex items-center justify-between gap-3 min-w-0">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 min-w-0">
             <div class="min-w-0">
-              <span class="text-[10px] font-black uppercase tracking-[.18em] text-emerald-600 block">VISUAL CMS</span>
-              <h2 class="text-base sm:text-lg font-extrabold text-slate-900 truncate mt-0.5">Website Studio</h2>
-              <p class="text-xs text-slate-500 mt-0.5 truncate">Edit store banners, categories, texts, and contact details without code.</p>
+              <div class="flex items-center gap-2">
+                <span class="text-[10px] font-black uppercase tracking-[.18em] text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">VISUAL CMS STUDIO</span>
+                <span class="text-[10px] font-bold text-slate-400">Live Editor with Real-Time Store Preview</span>
+              </div>
+              <h2 class="text-lg sm:text-xl font-extrabold text-slate-900 truncate mt-1">Website Studio</h2>
+              <p class="text-xs text-slate-500 mt-0.5">Customize texts, images, banners, and layout for the customer-facing storefront in real time.</p>
             </div>
-            <a href="/" target="_blank" class="rounded-full border border-slate-200 bg-white hover:bg-slate-50 px-3.5 py-1.5 text-xs font-bold text-slate-800 transition shadow-soft flex items-center gap-1 shrink-0">
-              <span>View Store ↗</span>
-            </a>
+            
+            <div class="flex items-center gap-2 shrink-0">
+              <!-- Live Store Link -->
+              <a href="./index.html" target="_blank" class="rounded-full border border-slate-200 bg-white hover:bg-slate-50 px-4 py-2 text-xs font-bold text-slate-800 transition shadow-soft flex items-center gap-1.5 active:scale-95">
+                <span>Open Store</span>
+                <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+              </a>
+              <!-- Refresh Preview Button -->
+              <button type="button" onclick="refreshStudioPreview()" class="rounded-full bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 text-xs font-bold transition shadow-soft flex items-center gap-1.5 active:scale-95">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                <span>Refresh Preview</span>
+              </button>
+            </div>
           </div>
 
-          <!-- Sub-Tabs Navigation Chips -->
-          <div class="flex gap-2 overflow-x-auto no-scrollbar pt-1">
-            ${subTabs.map(([id,icon,label])=>`
-              <button onclick="setStorefrontSubTab('${id}')" class="shrink-0 px-3.5 py-1.5 rounded-full text-xs font-bold transition flex items-center gap-1.5 badge-pill ${currentStorefrontSubTab===id?'bg-slate-900 text-white shadow-soft':'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200/80 shadow-soft'}">
-                <span>${icon}</span>
-                <span>${label}</span>
+          <!-- Studio Category Chips -->
+          <div class="flex gap-2 overflow-x-auto no-scrollbar pt-1 border-t border-slate-100">
+            ${subTabs.map(([id,icon,label,sub])=>`
+              <button onclick="setStorefrontSubTab('${id}')" class="shrink-0 px-4 py-2.5 rounded-2xl text-xs font-bold transition flex items-center gap-2 ${currentStorefrontSubTab===id?'bg-slate-900 text-white shadow-soft':'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200/80'}">
+                <span class="${currentStorefrontSubTab===id?'text-white':'text-slate-400'}">${icon}</span>
+                <div class="text-left">
+                  <p class="leading-none text-xs font-black">${label}</p>
+                  <p class="text-[9px] mt-0.5 opacity-70">${sub}</p>
+                </div>
               </button>`).join('')}
           </div>
         </div>
 
-        <div id="storefront-content" class="space-y-4 min-w-0"></div>`;
+        <!-- Split 2-Column Studio: Left Editor Controls & Right Interactive Device Preview -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start min-w-0">
+          
+          <!-- Left Column: Settings & Media Controls (col-span-6 / col-span-7) -->
+          <div class="lg:col-span-6 xl:col-span-7 space-y-4 min-w-0" id="storefront-content"></div>
+
+          <!-- Right Column: Interactive Live Front Website Preview (col-span-6 / col-span-5) -->
+          <div class="lg:col-span-6 xl:col-span-5 sticky top-20 space-y-3 min-w-0">
+            <div class="bg-white rounded-3xl p-4 sm:p-5 shadow-soft border border-slate-200/80 space-y-3">
+              
+              <!-- Device Mode Switcher Bar -->
+              <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                <div class="flex items-center gap-1.5">
+                  <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                  <span class="text-xs font-black text-slate-900">Live Website Preview</span>
+                </div>
+                
+                <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-xl">
+                  <button type="button" onclick="setStudioPreviewDevice('mobile')" class="px-2.5 py-1 rounded-lg text-[10px] font-bold transition ${currentStorefrontPreviewDevice==='mobile'?'bg-white text-slate-900 shadow-sm':'text-slate-500 hover:text-slate-800'}">Mobile</button>
+                  <button type="button" onclick="setStudioPreviewDevice('tablet')" class="px-2.5 py-1 rounded-lg text-[10px] font-bold transition ${currentStorefrontPreviewDevice==='tablet'?'bg-white text-slate-900 shadow-sm':'text-slate-500 hover:text-slate-800'}">Tablet</button>
+                  <button type="button" onclick="setStudioPreviewDevice('desktop')" class="px-2.5 py-1 rounded-lg text-[10px] font-bold transition ${currentStorefrontPreviewDevice==='desktop'?'bg-white text-slate-900 shadow-sm':'text-slate-500 hover:text-slate-800'}">Desktop</button>
+                </div>
+              </div>
+
+              <!-- Device Simulation Frame Container -->
+              <div class="flex justify-center bg-slate-950/5 rounded-2xl p-2 sm:p-3 overflow-hidden">
+                <div id="studio-device-frame" class="bg-white transition-all duration-300 shadow-2xl rounded-2xl overflow-hidden border border-slate-300 flex flex-col ${
+                  currentStorefrontPreviewDevice==='mobile'?'w-[360px] h-[640px] max-w-full':
+                  (currentStorefrontPreviewDevice==='tablet'?'w-[480px] h-[640px] max-w-full':'w-full h-[640px]')
+                }">
+                  <!-- Simulated browser header bar -->
+                  <div class="bg-slate-100 px-3 py-2 border-b border-slate-200 flex items-center justify-between shrink-0 select-none">
+                    <div class="flex items-center gap-1.5">
+                      <span class="w-2.5 h-2.5 rounded-full bg-rose-400"></span>
+                      <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
+                      <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+                    </div>
+                    <span class="text-[10px] font-mono font-bold text-slate-500 truncate max-w-[180px]">thaaraitex.in</span>
+                    <button type="button" onclick="refreshStudioPreview()" class="text-slate-400 hover:text-slate-700">
+                      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    </button>
+                  </div>
+                  
+                  <!-- Responsive iframe preview of front store -->
+                  <iframe id="studio-store-iframe" src="./index.html" class="w-full flex-1 border-0 bg-white" title="Storefront Live Preview"></iframe>
+                </div>
+              </div>
+
+              <p class="text-[10px] text-center text-slate-400">Changes saved in Studio immediately sync and render in this live preview frame.</p>
+            </div>
+          </div>
+
+        </div>`;
 
       renderStorefrontSubTabContent();
+    }
+
+    function setStudioPreviewDevice(dev){
+      currentStorefrontPreviewDevice = dev;
+      const frame = $('#studio-device-frame');
+      if(!frame) return;
+      if(dev === 'mobile'){
+        frame.className = 'bg-white transition-all duration-300 shadow-2xl rounded-2xl overflow-hidden border border-slate-300 flex flex-col w-[360px] h-[640px] max-w-full';
+      } else if(dev === 'tablet'){
+        frame.className = 'bg-white transition-all duration-300 shadow-2xl rounded-2xl overflow-hidden border border-slate-300 flex flex-col w-[480px] h-[640px] max-w-full';
+      } else {
+        frame.className = 'bg-white transition-all duration-300 shadow-2xl rounded-2xl overflow-hidden border border-slate-300 flex flex-col w-full h-[640px]';
+      }
+      renderStorefrontCMS();
+    }
+
+    function refreshStudioPreview(){
+      const ifr = $('#studio-store-iframe');
+      if(ifr){
+        ifr.src = './index.html?t=' + Date.now();
+        toast('Preview reloaded ✓');
+      }
     }
 
     function setStorefrontSubTab(tab){
@@ -2157,125 +2280,183 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
           <!-- Hero Banner Settings Card Box -->
           <div class="bg-white rounded-3xl p-5 sm:p-6 shadow-soft border border-slate-200/80 space-y-4 min-w-0">
             <div class="flex items-center justify-between pb-3 border-b border-slate-100 min-w-0">
-              <h3 class="font-extrabold text-xs text-slate-900 uppercase tracking-wider">Hero Banner</h3>
-              <span class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-bold badge-pill">Front Page</span>
+              <div>
+                <h3 class="font-extrabold text-sm text-slate-900">Hero Promotional Banner</h3>
+                <p class="text-xs text-slate-500 mt-0.5">Primary visual section displayed at the top of your homepage.</p>
+              </div>
+              <span class="text-[10px] bg-slate-100 text-slate-700 px-2.5 py-1 rounded-full font-bold">Homepage Top</span>
             </div>
 
-            ${formText('hero-eyebrow','Eyebrow Badge',hero.eyebrow||'THAARAI TEX · HANDLOOM')}
+            <!-- Banner Photo Preview & Image Upload -->
+            <div>
+              <label class="block text-xs font-bold text-slate-800 mb-1.5">Hero Banner Image</label>
+              <div class="flex items-center gap-4 bg-slate-50 p-3.5 rounded-2xl border border-slate-200/80">
+                <img id="hero-img-preview" src="${esc(hero.image||'')}" alt="Hero Image" class="w-20 h-24 sm:w-24 sm:h-28 object-cover rounded-xl bg-white border border-slate-200 shrink-0 shadow-sm" onerror="this.src='https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=400&q=80'">
+                <div class="space-y-2 flex-1 min-w-0">
+                  <input id="hero-image" value="${esc(hero.image||'')}" placeholder="Image URL or upload a file" class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-900 outline-none focus:border-slate-900 font-medium" oninput="$('#hero-img-preview').src = this.value">
+                  <div class="flex flex-wrap gap-2">
+                    <button type="button" onclick="uploadCustomImage('hero-image','hero-img-preview')" class="rounded-full bg-slate-900 hover:bg-slate-800 text-white px-4 py-1.5 text-xs font-bold shadow-soft shrink-0">Upload File</button>
+                    <button type="button" onclick="pickFromMediaLibrary('hero-image','hero-img-preview')" class="rounded-full border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 px-4 py-1.5 text-xs font-bold shadow-soft shrink-0">Media Library</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            ${formText('hero-eyebrow','Eyebrow Badge Text',hero.eyebrow||'THAARAI TEX · HANDLOOM')}
             ${formText('hero-title','Hero Main Title',hero.title||'A legacy woven into every thread')}
             ${formArea('hero-subtitle','Hero Subtitle / Description',hero.subtitle||'Discover handpicked authentic sarees, crafted with the art and patience of master weavers.')}
 
-            <div class="grid grid-cols-2 gap-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               ${formText('hero-btn-1','Primary Button Text',hero.button||'Explore the collection')}
               ${formText('hero-btn-2','Secondary Button Text',hero.secButton||'View all sarees')}
             </div>
 
-            <div>
-              <label class="block text-xs font-bold text-slate-700">Model Photo / Banner Image</label>
-              <div class="flex gap-2 mt-1.5 min-w-0">
-                <input id="hero-image" value="${esc(hero.image||'')}" class="flex-1 rounded-2xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs text-slate-900 outline-none focus:border-slate-900 shadow-soft min-w-0">
-                <button type="button" onclick="uploadCustomImage('hero-image','hero-img-preview')" class="rounded-full bg-slate-900 hover:bg-slate-800 text-white px-3.5 py-2 text-xs font-bold shadow-soft shrink-0">Upload</button>
-                <button type="button" onclick="pickFromMediaLibrary('hero-image','hero-img-preview')" class="rounded-full border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 px-3.5 py-2 text-xs font-bold shadow-soft shrink-0">Library</button>
-              </div>
-            </div>
-
-            <button onclick="saveHeroSettings()" class="rounded-full bg-slate-900 hover:bg-slate-800 text-white px-6 py-2.5 text-xs font-bold transition shadow-soft flex items-center gap-1.5 mt-2 active:scale-95">
-              ${SVG.check} <span>Save Hero Section</span>
+            <button onclick="saveHeroSettings()" class="rounded-full bg-slate-900 hover:bg-slate-800 text-white px-7 py-3 text-xs font-black transition shadow-soft flex items-center justify-center gap-2 w-full sm:w-auto active:scale-95">
+              ${SVG.check} <span>Save Hero Banner & Update Store</span>
             </button>
           </div>
 
           <!-- Home Categories Card Box -->
           <div class="bg-white rounded-3xl p-5 sm:p-6 shadow-soft border border-slate-200/80 space-y-4 min-w-0">
             <div class="flex items-center justify-between pb-3 border-b border-slate-100 min-w-0">
-              <h3 class="font-extrabold text-xs text-slate-900 uppercase tracking-wider">6 Quick Categories</h3>
-              <span class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-bold badge-pill">Homepage Circles</span>
+              <div>
+                <h3 class="font-extrabold text-sm text-slate-900">Homepage 6 Category Cards</h3>
+                <p class="text-xs text-slate-500 mt-0.5">Front category tiles that link shoppers directly to specific sarees.</p>
+              </div>
+              <span class="text-[10px] bg-slate-100 text-slate-700 px-2.5 py-1 rounded-full font-bold">Featured Circles</span>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 min-w-0">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 min-w-0">
               ${[0,1,2,3,4,5].map(i => {
                 const item = cats[i] || defaultSettings.home_categories[i] || { name: `Category ${i+1}`, subtitle: '', query: '', image: '' };
                 return `
-                  <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-2 min-w-0">
-                    <div class="flex items-center gap-2 min-w-0">
-                      <span class="w-6 h-6 rounded-full bg-slate-900 text-white text-[10px] font-black flex items-center justify-center shrink-0">${i+1}</span>
-                      <input id="cat-name-${i}" value="${esc(item.name||'')}" placeholder="Category Name" class="flex-1 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-900 outline-none min-w-0">
+                  <div class="p-4 rounded-2xl bg-slate-50/90 border border-slate-200 space-y-3 min-w-0">
+                    <div class="flex items-center justify-between">
+                      <div class="flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-full bg-slate-900 text-white text-[11px] font-black flex items-center justify-center">${i+1}</span>
+                        <span class="text-xs font-black text-slate-800">${esc(item.name || `Category ${i+1}`)}</span>
+                      </div>
                     </div>
-                    <input id="cat-sub-${i}" value="${esc(item.subtitle||'')}" placeholder="Subtitle (e.g. Pure Weave)" class="w-full rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-900 outline-none">
-                    <input id="cat-query-${i}" value="${esc(item.query||item.name||'')}" placeholder="Search keyword" class="w-full rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-900 outline-none ">
-                    <div class="flex gap-1.5 min-w-0">
-                      <input id="cat-img-${i}" value="${esc(item.image||'')}" placeholder="Image URL" class="flex-1 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-[11px] text-slate-900 outline-none min-w-0">
-                      <button type="button" onclick="uploadCustomImage('cat-img-${i}')" class="rounded-xl bg-slate-900 text-white px-3 py-1 text-[11px] font-bold shrink-0">Upload</button>
+
+                    <div class="flex items-center gap-3">
+                      <img id="cat-img-preview-${i}" src="${esc(item.image||'')}" alt="" class="w-14 h-14 object-cover rounded-xl bg-white border border-slate-200 shrink-0 shadow-2xs" onerror="this.src='https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=150&q=80'">
+                      <div class="flex-1 space-y-1.5 min-w-0">
+                        <input id="cat-name-${i}" value="${esc(item.name||'')}" placeholder="Title (e.g. Kanchi Cotton)" class="w-full rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-900 outline-none focus:border-slate-900">
+                        <input id="cat-sub-${i}" value="${esc(item.subtitle||'')}" placeholder="Subtitle (e.g. Lightweight)" class="w-full rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-600 outline-none">
+                      </div>
+                    </div>
+
+                    <input id="cat-query-${i}" value="${esc(item.query||item.name||'')}" placeholder="Search Query / Filter Keyword" class="w-full rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-800 font-medium outline-none">
+
+                    <div class="flex gap-2">
+                      <input id="cat-img-${i}" value="${esc(item.image||'')}" placeholder="Category Image URL" class="flex-1 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-[11px] text-slate-700 outline-none min-w-0" oninput="$('#cat-img-preview-${i}').src = this.value">
+                      <button type="button" onclick="uploadCustomImage('cat-img-${i}', 'cat-img-preview-${i}')" class="rounded-xl bg-slate-900 text-white px-3 py-1 text-xs font-bold shrink-0">Upload</button>
                     </div>
                   </div>`;
               }).join('')}
             </div>
 
-            <button onclick="saveHomeCategoriesSettings()" class="rounded-full bg-slate-900 hover:bg-slate-800 text-white px-6 py-2.5 text-xs font-bold transition shadow-soft flex items-center gap-1.5 active:scale-95">
-              ${SVG.check} <span>Save Categories</span>
+            <button onclick="saveHomeCategoriesSettings()" class="rounded-full bg-slate-900 hover:bg-slate-800 text-white px-7 py-3 text-xs font-black transition shadow-soft flex items-center justify-center gap-2 w-full sm:w-auto active:scale-95">
+              ${SVG.check} <span>Save Categories & Update Store</span>
             </button>
           </div>`;
       } else if(currentStorefrontSubTab==='shop'){
         container.innerHTML=`
           <div class="bg-white rounded-3xl p-5 sm:p-6 shadow-soft border border-slate-200/80 space-y-4 min-w-0">
-            <h3 class="font-extrabold text-xs text-slate-900 uppercase tracking-wider pb-2 border-b border-slate-100">Shop & Fabric Filters</h3>
+            <div class="pb-3 border-b border-slate-100">
+              <h3 class="font-extrabold text-sm text-slate-900">Shop Catalog & Fabric Filters</h3>
+              <p class="text-xs text-slate-500 mt-0.5">Control titles, subtitles, and quick-filter fabric chips on the Shop tab.</p>
+            </div>
+
             ${formText('shop-title','Shop Collection Title',shop.title||'The collection')}
             ${formText('shop-subtitle','Shop Subtitle',shop.subtitle||'Explore our finest handwoven selections')}
             ${formText('shop-fabrics','Fabric Filter Chips (comma separated)',(shop.fabrics||[]).join(', '),'text','Shoppers tap these chips to filter by fabric.')}
+            
             <div class="flex flex-wrap gap-1.5 pt-1">
               <span class="text-[11px] text-slate-400 font-bold self-center">Quick add:</span>
               ${['Soft Silk','Kanchipuram Silk','Poonam','Chiffon','Georgette','Banarasi','Linen','Tussar'].map(f=>`
-                <button type="button" onclick="addFabricChip('${f}')" class="px-2.5 py-1 rounded-full bg-slate-100 hover:bg-slate-900 hover:text-white text-slate-700 text-[10px] font-bold transition badge-pill">
+                <button type="button" onclick="addFabricChip('${f}')" class="px-2.5 py-1 rounded-full bg-slate-100 hover:bg-slate-900 hover:text-white text-slate-700 text-[10px] font-bold transition">
                   + ${f}
                 </button>
               `).join('')}
             </div>
+
             ${formText('shop-empty','Empty State Message',shop.emptyText||'No products found.')}
-            <button onclick="saveShopSettings()" class="rounded-full bg-slate-900 hover:bg-slate-800 text-white px-6 py-2.5 text-xs font-bold transition shadow-soft flex items-center gap-1.5 active:scale-95">
+
+            <button onclick="saveShopSettings()" class="rounded-full bg-slate-900 hover:bg-slate-800 text-white px-7 py-3 text-xs font-black transition shadow-soft flex items-center justify-center gap-2 w-full sm:w-auto active:scale-95">
               ${SVG.check} <span>Save Shop Settings</span>
             </button>
           </div>`;
       } else if(currentStorefrontSubTab==='header'){
         container.innerHTML=`
           <div class="bg-white rounded-3xl p-5 sm:p-6 shadow-soft border border-slate-200/80 space-y-4 min-w-0">
-            <h3 class="font-extrabold text-xs text-slate-900 uppercase tracking-wider pb-2 border-b border-slate-100">Header & Brand Details</h3>
+            <div class="pb-3 border-b border-slate-100">
+              <h3 class="font-extrabold text-sm text-slate-900">Brand Identity & Navigation Header</h3>
+              <p class="text-xs text-slate-500 mt-0.5">Top brand logo, store name, tagline, and search bar text.</p>
+            </div>
+
             ${formText('brand-name','Store Brand Name',b.name||'THAARAI TEX')}
             ${formText('brand-tagline','Store Tagline',b.tagline||'PURE SAREES & HANDLOOM')}
-            ${formText('brand-logo','Logo Image URL (Leave blank for TT text logo)',b.logo_url||'')}
-            ${formText('header-search-placeholder','Search Input Placeholder',h.searchPlaceholder||'சேலைகளைத் தேடுங்கள்… Search sarees')}
-            <button onclick="saveHeaderSettings()" class="rounded-full bg-slate-900 hover:bg-slate-800 text-white px-6 py-2.5 text-xs font-bold transition shadow-soft flex items-center gap-1.5 active:scale-95">
-              ${SVG.check} <span>Save Header Settings</span>
+            
+            <div>
+              <label class="block text-xs font-bold text-slate-800 mb-1.5">Store Logo Image (Optional)</label>
+              <div class="flex items-center gap-3">
+                <input id="brand-logo" value="${esc(b.logo_url||'')}" placeholder="Logo URL (leave blank for Thaarai Tex text logo)" class="flex-1 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-900 outline-none focus:border-slate-900">
+                <button type="button" onclick="uploadCustomImage('brand-logo')" class="rounded-xl bg-slate-900 text-white px-4 py-2 text-xs font-bold shrink-0">Upload Logo</button>
+              </div>
+            </div>
+
+            ${formText('header-search-placeholder','Search Input Placeholder Text',h.searchPlaceholder||'சேலைகளைத் தேடுங்கள்… Search sarees')}
+
+            <button onclick="saveHeaderSettings()" class="rounded-full bg-slate-900 hover:bg-slate-800 text-white px-7 py-3 text-xs font-black transition shadow-soft flex items-center justify-center gap-2 w-full sm:w-auto active:scale-95">
+              ${SVG.check} <span>Save Header & Brand Settings</span>
             </button>
           </div>`;
       } else if(currentStorefrontSubTab==='footer'){
         container.innerHTML=`
           <div class="bg-white rounded-3xl p-5 sm:p-6 shadow-soft border border-slate-200/80 space-y-4 min-w-0">
-            <h3 class="font-extrabold text-xs text-slate-900 uppercase tracking-wider pb-2 border-b border-slate-100">Footer, Support & UPI Payment</h3>
-            ${formText('footer-whatsapp','Support WhatsApp Number (with 91)',foot.whatsapp||'919999999999')}
-            ${formText('footer-upi','UPI VPA ID (For customer UPI payments)',foot.upi||'yourname@upi')}
+            <div class="pb-3 border-b border-slate-100">
+              <h3 class="font-extrabold text-sm text-slate-900">Footer, Support & UPI Payment Setup</h3>
+              <p class="text-xs text-slate-500 mt-0.5">Configure customer WhatsApp support number and UPI receiving credentials.</p>
+            </div>
+
+            ${formText('footer-whatsapp','Support WhatsApp Number (e.g. 919999999999)',foot.whatsapp||'919999999999')}
+            ${formText('footer-upi','UPI VPA ID (For QR code & direct app payments)',foot.upi||'yourname@upi')}
             ${formText('footer-upi-name','UPI Payee Name (e.g. Thaarai Tex)',foot.upiName||'Thaarai Tex')}
-            ${formText('footer-copyright','Copyright Text (Leave blank for default)',foot.copyright||'')}
-            <button onclick="saveFooterSettings()" class="rounded-full bg-slate-900 hover:bg-slate-800 text-white px-6 py-2.5 text-xs font-bold transition shadow-soft flex items-center gap-1.5 active:scale-95">
-              ${SVG.check} <span>Save Footer Settings</span>
+            ${formText('footer-copyright','Copyright & Trademark Notice',foot.copyright||'')}
+
+            <button onclick="saveFooterSettings()" class="rounded-full bg-slate-900 hover:bg-slate-800 text-white px-7 py-3 text-xs font-black transition shadow-soft flex items-center justify-center gap-2 w-full sm:w-auto active:scale-95">
+              ${SVG.check} <span>Save Footer & Payment Details</span>
             </button>
           </div>`;
       } else if(currentStorefrontSubTab==='orders_ui'){
         container.innerHTML=`
           <div class="bg-white rounded-3xl p-5 sm:p-6 shadow-soft border border-slate-200/80 space-y-4 min-w-0">
-            <h3 class="font-extrabold text-xs text-slate-900 uppercase tracking-wider pb-2 border-b border-slate-100">Customer Orders UI Texts</h3>
+            <div class="pb-3 border-b border-slate-100">
+              <h3 class="font-extrabold text-sm text-slate-900">Customer Orders UI Texts</h3>
+              <p class="text-xs text-slate-500 mt-0.5">Phrases displayed to customers when viewing their past orders.</p>
+            </div>
+
             ${formText('order-support-msg','Order Help WhatsApp Link Text',acc.supportText||'Contact support on WhatsApp')}
             ${formText('order-empty-msg','Empty Orders Screen Message',acc.emptyOrders||'No orders yet. Start shopping')}
-            <button onclick="saveOrdersUISettings()" class="rounded-full bg-slate-900 hover:bg-slate-800 text-white px-6 py-2.5 text-xs font-bold transition shadow-soft flex items-center gap-1.5 active:scale-95">
-              ${SVG.check} <span>Save Orders UI</span>
+
+            <button onclick="saveOrdersUISettings()" class="rounded-full bg-slate-900 hover:bg-slate-800 text-white px-7 py-3 text-xs font-black transition shadow-soft flex items-center justify-center gap-2 w-full sm:w-auto active:scale-95">
+              ${SVG.check} <span>Save Orders Texts</span>
             </button>
           </div>`;
       } else if(currentStorefrontSubTab==='profile_ui'){
         container.innerHTML=`
           <div class="bg-white rounded-3xl p-5 sm:p-6 shadow-soft border border-slate-200/80 space-y-4 min-w-0">
-            <h3 class="font-extrabold text-xs text-slate-900 uppercase tracking-wider pb-2 border-b border-slate-100">Customer Profile & Sign-In Texts</h3>
+            <div class="pb-3 border-b border-slate-100">
+              <h3 class="font-extrabold text-sm text-slate-900">Customer Profile & Sign-In Prompts</h3>
+              <p class="text-xs text-slate-500 mt-0.5">Headlines and instructions on the login and profile tabs.</p>
+            </div>
+
             ${formText('profile-title','Login Profile Screen Title',acc.title||'Your Profile Details')}
             ${formText('profile-sub','Login Screen Subtitle (Tamil/English)',acc.subtitle||'உங்கள் பெயர் மற்றும் மொபைல் எண்ணை உள்ளிடவும்.')}
-            <button onclick="saveProfileUISettings()" class="rounded-full bg-slate-900 hover:bg-slate-800 text-white px-6 py-2.5 text-xs font-bold transition shadow-soft flex items-center gap-1.5 active:scale-95">
-              ${SVG.check} <span>Save Profile UI</span>
+
+            <button onclick="saveProfileUISettings()" class="rounded-full bg-slate-900 hover:bg-slate-800 text-white px-7 py-3 text-xs font-black transition shadow-soft flex items-center justify-center gap-2 w-full sm:w-auto active:scale-95">
+              ${SVG.check} <span>Save Profile Texts</span>
             </button>
           </div>`;
       }
@@ -2287,6 +2468,7 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
         if(error) throw error;
         settings[key] = val;
         toast('Saved successfully ✓');
+        refreshStudioPreview();
       } catch(err){
         toast('Error saving: ' + err.message);
       }
