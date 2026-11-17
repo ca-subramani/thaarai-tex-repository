@@ -18,7 +18,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+Tamil:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script>
   try {
-    if(localStorage.getItem('tt_theme') === 'dark' || (!localStorage.getItem('tt_theme') && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    if(localStorage.getItem('tt_theme') === 'dark') {
       document.documentElement.classList.add('dark');
     } else {
       document.documentElement.classList.remove('dark');
