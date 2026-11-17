@@ -1039,8 +1039,8 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
               <span class="text-xs sm:text-sm font-black text-slate-900 block">${fmt(o.total)}</span>
               <span class="text-[10px] text-slate-400 font-bold uppercase">${esc(o.payment_method || 'COD')}</span>
             </div>
-            <button onclick="viewOrderDetail('${esc(o.id)}')" class="border border-slate-200 hover:border-slate-900 hover:bg-slate-900 hover:text-white text-slate-800 text-xs font-bold px-3.5 py-1.5 rounded-full transition shadow-soft">
-              Details
+            <button onclick="viewOrderDetail('${esc(o.id)}')" aria-label="View order details" class="w-8 h-8 rounded-full border border-slate-200 hover:border-slate-900 hover:bg-slate-900 hover:text-white text-slate-700 font-bold flex items-center justify-center transition shadow-soft active:scale-95">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
             </button>
           </div>
         </div>`;
