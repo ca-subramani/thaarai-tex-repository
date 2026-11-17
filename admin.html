@@ -179,7 +179,7 @@
         </button>
         <button data-m-sec="products" class="flex flex-col items-center gap-0.5 py-1 text-slate-500 hover:text-slate-900 transition rounded-2xl">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
-          <span>Sarees</span>
+          <span>Products</span>
         </button>
         <button data-m-sec="customers" class="flex flex-col items-center gap-0.5 py-1 text-slate-500 hover:text-slate-900 transition rounded-2xl">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
@@ -306,6 +306,21 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
     </section>
   </div>
 
+  <!-- Reusable Website UI Confirm Modal (replaces browser confirm popups) -->
+  <div id="ui-confirm-modal" class="hidden fixed inset-0 z-[200] grid place-items-center bg-slate-950/60 backdrop-blur-sm p-4" role="dialog" aria-modal="true">
+    <div class="w-full max-w-sm rounded-3xl bg-white p-6 text-center shadow-2xl border border-slate-100 fade-in">
+      <div class="w-12 h-12 mx-auto rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mb-3">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+      </div>
+      <h3 id="ui-confirm-title" class="text-base font-extrabold text-slate-900">Are you sure?</h3>
+      <p id="ui-confirm-message" class="mt-2 text-xs text-slate-600 leading-relaxed">This action cannot be undone.</p>
+      <div class="mt-6 grid grid-cols-2 gap-3">
+        <button id="ui-confirm-cancel" class="rounded-2xl border border-slate-200 px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition">Cancel</button>
+        <button id="ui-confirm-ok" class="rounded-2xl bg-rose-600 hover:bg-rose-700 px-4 py-2.5 text-xs font-bold text-white transition shadow-soft">Delete</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Hidden global upload inputs -->
   <input id="product-local-files" type="file" accept="image/*" multiple class="hidden">
   <input id="custom-image-file-input" type="file" accept="image/*" class="hidden">
@@ -319,6 +334,33 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
     const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
     const fmt=n=>'₹'+Number(n||0).toLocaleString('en-IN');
     const date=v=>v?new Date(v).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}):'—';
+
+    /* Website UI Confirm Popup Replacement */
+    function showConfirmModal(message, title='Are you sure?', btnText='Delete'){
+      return new Promise(resolve => {
+        const modal = $('#ui-confirm-modal');
+        const titleEl = $('#ui-confirm-title');
+        const msgEl = $('#ui-confirm-message');
+        const okBtn = $('#ui-confirm-ok');
+        const cancelBtn = $('#ui-confirm-cancel');
+
+        if(titleEl) titleEl.textContent = title;
+        if(msgEl) msgEl.textContent = message;
+        if(okBtn) okBtn.textContent = btnText;
+
+        const cleanup = () => {
+          modal.classList.add('hidden');
+          okBtn.removeEventListener('click', onOk);
+          cancelBtn.removeEventListener('click', onCancel);
+        };
+        const onOk = () => { cleanup(); resolve(true); };
+        const onCancel = () => { cleanup(); resolve(false); };
+
+        okBtn.addEventListener('click', onOk);
+        cancelBtn.addEventListener('click', onCancel);
+        modal.classList.remove('hidden');
+      });
+    }
 
     function capFirst(s){
       if(s === null || s === undefined) return '';
@@ -639,7 +681,7 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
         $('#page-title').textContent='Order #TT-' + String(selectedOrderId).slice(0,8).toUpperCase();
       } else if(section==='products' && selectedProductId !== null){
         $('#crumb').textContent='PRODUCTS';
-        $('#page-title').textContent=selectedProductId==='new'?'New Saree':'Edit Saree';
+        $('#page-title').textContent=selectedProductId==='new'?'New Product':'Edit Product';
       } else if(section==='customers' && selectedCustomerId){
         $('#crumb').textContent='CUSTOMERS';
         $('#page-title').textContent='Customer ' + selectedCustomerId;
@@ -706,7 +748,7 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
             </div>
             <div class="flex flex-wrap gap-2 shrink-0">
               <button data-action="product-new" class="rounded-full bg-white hover:bg-slate-100 px-4 py-2 text-xs font-bold text-slate-900 shadow-soft transition flex items-center gap-1.5 active:scale-95">
-                ${SVG.plus} <span>Add Saree</span>
+                ${SVG.plus} <span>Add Product</span>
               </button>
               <button data-go="storefront" class="rounded-full bg-slate-800 hover:bg-slate-700 border border-slate-700 px-4 py-2 text-xs font-bold text-white shadow-soft transition flex items-center gap-1.5 active:scale-95">
                 ${SVG.studio} <span>Studio</span>
@@ -1232,14 +1274,14 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
               <p class="text-xs text-slate-500 mt-0.5 truncate">Manage pricing, photos, stock inventory, and visibility.</p>
             </div>
             <button data-action="product-new" class="rounded-full bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 text-xs font-bold shadow-soft transition flex items-center gap-1.5 active:scale-95 shrink-0">
-              ${SVG.plus} <span>Add Saree</span>
+              ${SVG.plus} <span>Add Product</span>
             </button>
           </div>
 
           <!-- Inventory Filter Chips -->
           <div class="flex gap-2 overflow-x-auto no-scrollbar pt-1">
             ${[
-              ['all',`All Sarees (${products.length})`],
+              ['all',`All Products (${products.length})`],
               ['live',`Live (${activeCount})`],
               ['hidden',`Hidden (${hiddenCount})`],
               ['low',`Low Stock (${lowCount})`],
@@ -1253,15 +1295,15 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
           <!-- Search Input -->
           <div class="relative pt-1">
             <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs">${SVG.search}</span>
-            <input id="product-search" placeholder="Search by saree name, Product ID (e.g. TT-1001), fabric…" class="w-full pl-9 pr-4 py-2.5 rounded-full border border-slate-200 bg-[#f1f5f9] text-xs text-slate-900 outline-none focus:border-slate-900 focus:bg-white transition shadow-soft">
+            <input id="product-search" placeholder="Search by product name, Product ID (e.g. TT-1001), fabric…" class="w-full pl-9 pr-4 py-2.5 rounded-full border border-slate-200 bg-[#f1f5f9] text-xs text-slate-900 outline-none focus:border-slate-900 focus:bg-white transition shadow-soft">
           </div>
         </div>
 
-        <!-- Saree Card Grid -->
+        <!-- Product Card Grid -->
         <div id="product-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3.5 sm:gap-4 pt-1 min-w-0">
           ${filtered.length ? filtered.map(productCard).join('') : `
             <div class="col-span-full bg-white rounded-3xl p-12 text-center text-slate-400 text-xs border border-slate-200/80 shadow-soft">
-              No sarees found matching this filter.
+              No products found matching this filter.
             </div>
           `}
         </div>`;
@@ -1277,7 +1319,7 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
         if(container){
           container.innerHTML=results.length ? results.map(productCard).join('') : `
             <div class="col-span-full bg-white rounded-3xl p-12 text-center text-slate-400 text-xs border border-slate-200/80 shadow-soft">
-              No sarees found matching "${esc(q)}".
+              No products found matching "${esc(q)}".
             </div>`;
         }
       };
@@ -1392,7 +1434,7 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
             <div class="min-w-0">
               <span class="text-[10px] font-black uppercase tracking-[.18em] text-emerald-600 block">CATALOG ITEM</span>
               <div class="flex items-center gap-2 flex-wrap mt-0.5 min-w-0">
-                <h2 class="text-base sm:text-lg font-black text-slate-900 truncate">${isNew ? 'New Saree' : 'Edit Saree'}</h2>
+                <h2 class="text-base sm:text-lg font-black text-slate-900 truncate">${isNew ? 'New Product' : 'Edit Product'}</h2>
                 <span class="text-xs font-bold bg-slate-100 text-slate-900 border border-slate-200 px-2.5 py-0.5 rounded-lg select-all badge-pill">
                   ${esc(prodId)}
                 </span>
@@ -1408,12 +1450,12 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
         </div>
 
         <form id="product-page-form" onsubmit="saveProductEditPage(event)" class="space-y-4 min-w-0">
-          <!-- Box 2: Saree Information Card Box -->
+          <!-- Box 2: Product Information Card Box -->
           <div class="bg-white rounded-3xl p-5 sm:p-6 shadow-soft border border-slate-200/80 space-y-4 min-w-0">
-            <h3 class="font-extrabold text-xs text-slate-900 uppercase tracking-wider pb-2 border-b border-slate-100">Saree Information</h3>
+            <h3 class="font-extrabold text-xs text-slate-900 uppercase tracking-wider pb-2 border-b border-slate-100">Product Information</h3>
             <div>
-              <label class="block text-xs font-bold text-slate-700">Saree Title *</label>
-              <input name="name" value="${esc(p.name||'')}" required placeholder="e.g. Royal Blue Kanchipuram Pure Silk Saree" class="mt-1.5 w-full rounded-2xl border border-slate-200 bg-white p-2.5 text-xs text-slate-900 outline-none focus:border-slate-900 transition shadow-soft">
+              <label class="block text-xs font-bold text-slate-700">Product Title *</label>
+              <input name="name" value="${esc(p.name||'')}" required placeholder="e.g. Royal Blue Handloom Product" class="mt-1.5 w-full rounded-2xl border border-slate-200 bg-white p-2.5 text-xs text-slate-900 outline-none focus:border-slate-900 transition shadow-soft">
             </div>
 
             <div class="grid grid-cols-2 gap-3">
@@ -1468,7 +1510,7 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
           <div class="bg-white rounded-3xl p-5 sm:p-6 shadow-soft border border-slate-200/80 space-y-4 min-w-0">
             <div class="flex items-center justify-between pb-2 border-b border-slate-100 min-w-0">
               <div>
-                <h3 class="font-extrabold text-xs text-slate-900 uppercase tracking-wider">Saree Photos</h3>
+                <h3 class="font-extrabold text-xs text-slate-900 uppercase tracking-wider">Product Photos</h3>
                 <p class="text-[11px] text-slate-500 mt-0.5">First photo is automatically the storefront cover image.</p>
               </div>
               <div class="flex gap-2">
@@ -1497,7 +1539,7 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
           <div class="bg-white rounded-3xl p-5 shadow-soft border border-slate-200/80 flex items-center justify-between gap-3 min-w-0">
             <div class="min-w-0">
               <p class="text-xs font-bold text-slate-900 truncate">Active on Storefront</p>
-              <p class="text-[11px] text-slate-500 truncate">When checked, customers can browse and purchase this saree.</p>
+              <p class="text-[11px] text-slate-500 truncate">When checked, customers can browse and purchase this product.</p>
             </div>
             <input name="active" type="checkbox" ${p.active!==false?'checked':''} class="h-5 w-5 accent-slate-900 rounded shrink-0">
           </div>
@@ -1508,7 +1550,7 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
               Cancel
             </button>
             <button type="submit" class="rounded-full bg-slate-900 hover:bg-slate-800 text-white px-7 py-2.5 text-xs font-bold transition shadow-soft flex items-center gap-1.5 active:scale-95">
-              ${SVG.check} <span>${isNew ? 'Create Saree' : 'Save Changes'}</span>
+              ${SVG.check} <span>${isNew ? 'Create Product' : 'Save Changes'}</span>
             </button>
           </div>
         </form>`;
@@ -1603,13 +1645,13 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
         if(selectedProductId === 'new'){
           const { error } = await db.from('products').insert([payload]);
           if(error) throw error;
-          toast('New saree created successfully ✓');
+          toast('New product created successfully ✓');
           await loadAll();
           backToProductsList();
         } else {
           const { error } = await db.from('products').update(payload).eq('id', selectedProductId);
           if(error) throw error;
-          toast('Saree updated successfully ✓');
+          toast('Product updated successfully ✓');
           await loadAll();
           backToProductsList();
         }
@@ -1620,11 +1662,12 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
     }
 
     async function deleteProductFromPage(productId){
-      if(!confirm('Permanently delete this saree from catalog?')) return;
+      const ok = await showConfirmModal('Permanently delete this product from catalog?');
+      if(!ok) return;
       try {
         const { error } = await db.from('products').delete().eq('id', productId);
         if(error) throw error;
-        toast('Saree deleted ✓');
+        toast('Product deleted ✓');
         await loadAll();
         backToProductsList();
       } catch(err){
@@ -3016,7 +3059,8 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
     }
 
     async function deleteMediaFile(path){
-      if(!confirm('Permanently delete this photo from cloud storage?')) return;
+      const ok = await showConfirmModal('Permanently delete this photo from cloud storage?');
+      if(!ok) return;
       try {
         const { error } = await db.storage.from(MEDIA_BUCKET).remove([path]);
         if(error) throw error;
@@ -3087,7 +3131,8 @@ else if(editing.row.id){
     }
 
     async function deleteRow(table,id,keyCol='id'){
-      if(!confirm(`Delete this item permanently?`))return;
+      const ok = await showConfirmModal('Delete this item permanently?');
+      if(!ok) return;
       const {error}=await db.from(table).delete().eq(keyCol,id);
       if(error){toast(error.message);return}
       toast('Deleted successfully ✓');
