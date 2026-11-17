@@ -3205,21 +3205,9 @@ $('#brand').addEventListener('click', e => {
 });
 
 /* ===== NAVIGATION & SHOP BACK LOOP ===== */
-// Seed dummy states ONLY when user enters base Shop tab so Android edge-swipe cannot exit
-function seedShopHistory(){
-  try {
-    const h = location.hash || '#/';
-    if(h === '#/shop' || h === '#/shop/'){
-      for(let i=0; i<6; i++){
-        history.pushState({ thaaraiShopTrap: true, i, t: Date.now() }, '', '#/shop');
-      }
-    }
-  } catch(e){}
-}
-
-// Android Back Gesture & Popstate Listener
+// Android Back Gesture & Popstate Listener: ONLY traps when exiting from Base Shop
 window.addEventListener('popstate', event => {
-  // Close modals if open
+  // 1. Close modals if open
   const sortModal = $('#sort-page-modal');
   if(sortModal && !sortModal.classList.contains('hidden')){
     sortModal.classList.add('hidden');
@@ -3237,25 +3225,25 @@ window.addEventListener('popstate', event => {
 
   const h = location.hash || '#/';
 
-  // If in filtered shop view (e.g. #/shop?cat=...), back gesture steps back to base shop
+  // 2. Filtered shop view: step back to base shop cleanly without reloading
   if(h.startsWith('#/shop?')){
     location.hash = '#/shop';
     return;
   }
 
-  // ONLY ON BASE SHOP TAB: Trap back swipe gesture, prevent closing, and reload Shop
+  // 3. ONLY ON CLEAN BASE SHOP TAB (#/shop or #/shop/):
+  // When user swipes back on base shop, keep them trapped in shop and hard reload
   if(h === '#/shop' || h === '#/shop/'){
     try {
       history.pushState({ thaaraiShopTrap: true, t: Date.now() }, '', '#/shop');
     } catch(e){}
-    sessionStorage.setItem('tt_force_shop_reload', '1');
     location.href = '#/shop';
     window.location.reload();
     return;
   }
 
-  // ALL OTHER TABS (Home, Profile, Bag, Orders, Product Details):
-  // Normal SPA navigation
+  // 4. ALL OTHER TABS (Home, Profile, Bag, Orders, Product Details):
+  // Work 100% naturally with zero interference
   route();
 });
 
@@ -3277,12 +3265,12 @@ $('#nav-back').onclick = e => {
   }
 
   const h = location.hash || '#/';
-  // If filtered shop, return to clean shop
+  // If in filtered shop, go back to clean shop
   if(h.startsWith('#/shop?')){
     location.hash = '#/shop';
     return;
   }
-  // Base shop: reload and stay
+  // If on base shop: stay on shop
   if(h === '#/shop' || h === '#/shop/'){
     location.href = '#/shop';
     window.location.reload();
@@ -3301,15 +3289,14 @@ window.addEventListener('hashchange', () => {
   route();
 });
 
-// Watch route to seed shop history only on base shop tab
-const originalRoute = route;
-route = async function(){
-  await originalRoute();
-  const h = location.hash || '#/';
-  if(h === '#/shop' || h === '#/shop/'){
-    seedShopHistory();
+// Keep a buffer of states on base shop tab only after first direct interaction
+window.addEventListener('load', () => {
+  if(location.hash === '#/shop' || location.hash === '#/shop/'){
+    try {
+      history.pushState({ thaaraiShopTrap: true }, '', '#/shop');
+    } catch(e){}
   }
-};
+});
 
 
 // Pre-check: If returning from Google OAuth, pin hash to #/login immediately
