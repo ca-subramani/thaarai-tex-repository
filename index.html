@@ -3272,12 +3272,11 @@ window.addEventListener('popstate', event => {
     return;
   }
 
-  // Trapped at base: Android swipe gesture forces reload to Shop tab
+  // Trapped at base: Android swipe gesture forces hard reload to Shop tab
   if(location.hash !== '#/shop'){
-    location.replace('#/shop');
-  } else {
-    route();
+    location.href = '#/shop';
   }
+  window.location.reload();
 });
 
 // Website Back Button: smart navigation that falls back to Shop
