@@ -26,62 +26,144 @@
   } catch(e){}
 </script>
 <style>
-/* Dark Mode Core Styles */
+/* Dark Mode Comprehensive Visual Rules */
 html.dark, html.dark body {
   background-color: #0b0f17 !important;
   color: #f1f5f9 !important;
 }
+
+/* Header & Tabbar */
 html.dark header, html.dark #tabbar {
   background-color: rgba(15, 23, 42, 0.95) !important;
-  border-color: #1e293b !important;
+  border-color: #334155 !important;
   color: #f8fafc !important;
 }
+
+/* Surfaces and Cards */
 html.dark .bg-white {
   background-color: #131c2e !important;
   color: #f8fafc !important;
 }
-html.dark .bg-white\/95 {
+html.dark .bg-white\/95, html.dark .bg-white\/90, html.dark .bg-white\/80 {
   background-color: rgba(19, 28, 46, 0.95) !important;
-}
-html.dark .text-gray-900, html.dark .text-slate-900, html.dark .text-gray-800, html.dark .text-slate-800 {
   color: #f8fafc !important;
-}
-html.dark .text-gray-700, html.dark .text-gray-600, html.dark .text-slate-600 {
-  color: #cbd5e1 !important;
-}
-html.dark .text-gray-500, html.dark .text-gray-400, html.dark .text-slate-400 {
-  color: #94a3b8 !important;
-}
-html.dark .border-gray-100, html.dark .border-gray-200, html.dark .border-slate-200, html.dark .border-gray-300, html.dark .divide-gray-50 > :not([hidden]) ~ :not([hidden]), html.dark .divide-gray-100 > :not([hidden]) ~ :not([hidden]) {
-  border-color: #1e293b !important;
 }
 html.dark .bg-gray-50, html.dark .bg-slate-50, html.dark .bg-\[\#f8fafc\], html.dark .bg-\[\#f1f5f9\], html.dark .bg-gray-100, html.dark .bg-slate-100 {
   background-color: #1a2538 !important;
   color: #f1f5f9 !important;
 }
-html.dark .hover\:bg-gray-50:hover, html.dark .hover\:bg-gray-100:hover {
+html.dark .bg-slate-900:not(button):not(a):not(.checkmark-circle):not(#foot) {
+  background-color: #1e293b !important;
+}
+
+/* Borders & Dividing Lines (Crisp high-contrast lines so boxes are clearly visible) */
+html.dark .border,
+html.dark .border-t,
+html.dark .border-b,
+html.dark .border-l,
+html.dark .border-r,
+html.dark .border-2,
+html.dark .border-gray-100, 
+html.dark .border-gray-200, 
+html.dark .border-slate-200, 
+html.dark .border-gray-300, 
+html.dark .border-slate-300, 
+html.dark .border-slate-800,
+html.dark .border-emerald-100,
+html.dark .border-emerald-200,
+html.dark .border-rose-100,
+html.dark .border-rose-200 {
+  border-color: #334155 !important;
+}
+html.dark .divide-gray-50 > :not([hidden]) ~ :not([hidden]), 
+html.dark .divide-gray-100 > :not([hidden]) ~ :not([hidden]),
+html.dark .divide-gray-200 > :not([hidden]) ~ :not([hidden]) {
+  border-color: #334155 !important;
+}
+
+/* Text Readability (High Contrast) */
+html.dark .text-gray-900, 
+html.dark .text-slate-900, 
+html.dark .text-gray-800, 
+html.dark .text-slate-800,
+html.dark .text-slate-950,
+html.dark .text-black,
+html.dark .text-\[\#111\] {
+  color: #f8fafc !important;
+}
+html.dark .text-gray-700, 
+html.dark .text-gray-600, 
+html.dark .text-slate-700, 
+html.dark .text-slate-600 {
+  color: #cbd5e1 !important;
+}
+html.dark .text-gray-500, 
+html.dark .text-gray-400, 
+html.dark .text-slate-500, 
+html.dark .text-slate-400 {
+  color: #94a3b8 !important;
+}
+
+/* Colored accent texts in dark mode */
+html.dark .text-emerald-900, html.dark .text-emerald-950, html.dark .text-emerald-800 {
+  color: #34d399 !important;
+}
+html.dark .bg-emerald-50, html.dark .bg-emerald-50\/70 {
+  background-color: rgba(6, 78, 59, 0.3) !important;
+}
+
+/* Form Controls & Inputs */
+html.dark input, html.dark textarea, html.dark select {
+  background-color: #1a2538 !important;
+  color: #f8fafc !important;
+  border-color: #475569 !important;
+}
+html.dark input:focus, html.dark textarea:focus, html.dark select:focus {
+  border-color: #38bdf8 !important;
+}
+html.dark input::placeholder, html.dark textarea::placeholder {
+  color: #64748b !important;
+}
+
+/* Interactive States */
+html.dark .hover\:bg-gray-50:hover, 
+html.dark .hover\:bg-gray-100:hover, 
+html.dark .hover\:bg-slate-100:hover,
+html.dark .hover\:bg-slate-200:hover {
   background-color: #223049 !important;
 }
 html.dark .active\:bg-gray-100:active {
   background-color: #273754 !important;
 }
-html.dark input, html.dark textarea, html.dark select {
+
+/* Buttons */
+html.dark .bg-slate-900.text-white,
+html.dark button.bg-slate-900,
+html.dark a.bg-slate-900 {
+  background-color: #38bdf8 !important;
+  color: #0f172a !important;
+}
+html.dark .bg-slate-900.text-white:hover,
+html.dark button.bg-slate-900:hover,
+html.dark a.bg-slate-900:hover {
+  background-color: #0ea5e9 !important;
+}
+html.dark #modal-dlg-cancel {
   background-color: #1a2538 !important;
-  color: #f8fafc !important;
   border-color: #334155 !important;
+  color: #f8fafc !important;
 }
-html.dark input::placeholder, html.dark textarea::placeholder {
-  color: #64748b !important;
-}
+
+/* Shadows, Icons, and Toast */
 html.dark .shadow-soft {
-  box-shadow: 0 10px 30px -5px rgba(0,0,0,0.5), 0 4px 12px -2px rgba(0,0,0,0.3) !important;
+  box-shadow: 0 10px 30px -5px rgba(0,0,0,0.6), 0 4px 12px -2px rgba(0,0,0,0.4) !important;
 }
 html.dark #brand svg text {
   fill: #f8fafc !important;
 }
 html.dark #toast > div {
-  background-color: rgba(19, 28, 46, 0.96) !important;
-  border-color: #334155 !important;
+  background-color: rgba(19, 28, 46, 0.98) !important;
+  border-color: #475569 !important;
 }
 html.dark #toast-msg {
   color: #f8fafc !important;
@@ -92,15 +174,28 @@ html.dark .tb {
 html.dark .tb[style*="rgb(15, 23, 42)"], html.dark .tb[style*="#0f172a"] {
   color: #38bdf8 !important;
 }
-html.dark .bg-slate-900 {
-  background-color: #0f172a !important;
-}
-html.dark .border-slate-800 {
-  border-color: #1e293b !important;
-}
 html.dark #foot {
   background-color: #080d14 !important;
   border-top: 1px solid #1e293b;
+}
+
+/* Filter & Modal Modals */
+html.dark #fl, html.dark #sort-page-modal {
+  background-color: #0b0f17 !important;
+}
+html.dark .f-opt-row, html.dark .sort-page-card, html.dark .price-tier-btn {
+  background-color: #131c2e !important;
+  border-color: #334155 !important;
+  color: #f8fafc !important;
+}
+html.dark .f-opt-row.border-slate-900, html.dark .sort-page-card.border-slate-900, html.dark .price-tier-btn.border-slate-900 {
+  border-color: #38bdf8 !important;
+  background-color: #1e293b !important;
+}
+html.dark .f-nav-item.border-slate-900 {
+  border-left-color: #38bdf8 !important;
+  background-color: #131c2e !important;
+  color: #f8fafc !important;
 }
 
 html,body{overflow-x:hidden;max-width:100%}
