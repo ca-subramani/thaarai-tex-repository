@@ -153,25 +153,25 @@ input,select,textarea{font-size:16px!important}
 </div>
 <!-- Back navigation is permanently locked to Shop tab (no exit popups) -->
 
-<!-- Futuristic Neon Ring Counter Loader (Matches Video Reference) -->
+<!-- Futuristic Neon Green Ring Counter Loader (Matches Video Reference in Neon Green) -->
 <div id="neon-loader" class="fixed inset-0 z-[999999] bg-black/90 backdrop-blur-md flex flex-col items-center justify-center opacity-0 pointer-events-none select-none transition-all duration-200" style="visibility:hidden">
   <div class="relative w-44 h-44 flex items-center justify-center">
-    <!-- Outer ambient radial neon glow -->
-    <div class="absolute inset-0 rounded-full bg-gradient-to-tr from-rose-600/30 via-red-500/20 to-purple-600/25 blur-2xl pointer-events-none"></div>
+    <!-- Outer ambient radial neon green glow -->
+    <div class="absolute inset-0 rounded-full bg-gradient-to-tr from-emerald-500/30 via-green-400/20 to-teal-400/25 blur-2xl pointer-events-none"></div>
 
     <!-- Dual Animated Neon Arc Rings SVG -->
     <svg class="w-full h-full" viewBox="0 0 150 150">
       <defs>
-        <!-- Red to Violet/Blue Neon Gradient -->
+        <!-- Neon Green to Emerald/Teal Gradient -->
         <linearGradient id="neonGrad1" x1="0%" y1="100%" x2="100%" y2="0%">
-          <stop offset="0%" stop-color="#ff1e42" stop-opacity="0.95" />
-          <stop offset="65%" stop-color="#ff3366" stop-opacity="0.9" />
-          <stop offset="100%" stop-color="#8054ff" stop-opacity="0.8" />
+          <stop offset="0%" stop-color="#10b981" stop-opacity="0.95" />
+          <stop offset="65%" stop-color="#00ff88" stop-opacity="0.9" />
+          <stop offset="100%" stop-color="#34d399" stop-opacity="0.8" />
         </linearGradient>
         <linearGradient id="neonGrad2" x1="100%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stop-color="#ff2a55" stop-opacity="0.9" />
-          <stop offset="70%" stop-color="#e01235" stop-opacity="0.8" />
-          <stop offset="100%" stop-color="#5544ff" stop-opacity="0.7" />
+          <stop offset="0%" stop-color="#00ff88" stop-opacity="0.9" />
+          <stop offset="70%" stop-color="#059669" stop-opacity="0.8" />
+          <stop offset="100%" stop-color="#10b981" stop-opacity="0.7" />
         </linearGradient>
         <!-- Soft Outer Glow Filter -->
         <filter id="neonGlow" x="-30%" y="-30%" width="160%" height="160%">
@@ -191,15 +191,15 @@ input,select,textarea{font-size:16px!important}
       <circle class="neon-spinner-circle-reverse" cx="75" cy="75" r="48" fill="none" stroke="url(#neonGrad2)" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="150 150" filter="url(#neonGlow)"/>
 
       <!-- Inner Subtle Ambient Arc Ring -->
-      <circle class="neon-spinner-circle" cx="75" cy="75" r="42" fill="none" stroke="#ff2040" stroke-width="1.8" stroke-linecap="round" stroke-dasharray="100 160" opacity="0.6"/>
+      <circle class="neon-spinner-circle" cx="75" cy="75" r="42" fill="none" stroke="#00ff88" stroke-width="1.8" stroke-linecap="round" stroke-dasharray="100 160" opacity="0.6"/>
     </svg>
 
     <!-- Center Glowing Live Percentage Counter -->
     <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
-      <span id="neon-counter-num" class="text-2xl font-black tracking-tight text-white drop-shadow-[0_0_12px_rgba(255,40,70,0.85)] font-mono">0</span>
+      <span id="neon-counter-num" class="text-2xl font-black tracking-tight text-white drop-shadow-[0_0_12px_rgba(0,255,136,0.85)] font-mono">0</span>
     </div>
   </div>
-  <p class="mt-4 text-xs font-black uppercase tracking-[0.22em] text-white/80">Thaarai Tex</p>
+  <p class="mt-4 text-xs font-black uppercase tracking-[0.22em] text-emerald-400/90 drop-shadow-[0_0_8px_rgba(0,255,136,0.4)]">Thaarai Tex</p>
 </div>
 
 <script>
@@ -3351,7 +3351,16 @@ async function account(section,params){
       if(!/^[6-9]\d{9}$/.test(phone))return toast('Enter a valid mobile number');
       await setProfile(name,phone,pf.email,pf.google_name);toast('Saved ✓');location.hash='#/account/hub'}
     if(t.id==='addA'){addrEdit={};again()}
-    if(d.ae){const L=await getAddrs();addrEdit=L.find(x=>x.id===d.ae);again()}
+    if(d.ae){
+      showNeonLoader();
+      try {
+        const L=await getAddrs();
+        addrEdit=L.find(x=>x.id===d.ae);
+        await again();
+      } finally {
+        hideNeonLoader();
+      }
+    }
     if(d.ad){
       const ok = await showModalDialog({
         title: 'Delete Address?',
@@ -3445,7 +3454,10 @@ async function route(){
     const footEl = $('#foot');
     if(footEl) footEl.classList.toggle('hidden', !isHomePage);
     document.querySelectorAll('.tb').forEach(a=>{const on=a.dataset.tb.split('|').some(k=>k==='/'?(path==='/'||path===''):path.startsWith(k));a.style.color=on?'#0f172a':'#94a3b8'});
-    showNeonLoader();
+    
+    // Don't show loading animation on profile tab (#/login or #/account/hub) or edit profile (#/account/profile)
+    const skipLoader = path === '/login' || path === '/account/hub' || path === '/account' || path === '/account/profile';
+    if(!skipLoader) showNeonLoader();
     try{
       if(path==='/'||path==='')await home();
       else if(path==='/shop')await shop(params);
