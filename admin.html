@@ -288,8 +288,15 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
     </div>
   </dialog>
 
-  <!-- Toast Notification -->
-  <div id="toast" class="fixed bottom-24 sm:bottom-4 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-xs px-4 py-2.5 rounded-full shadow-soft hidden z-50"></div>
+  <!-- Toast Notification (Styled to match website UI cards & badges) -->
+  <div id="toast" class="fixed bottom-20 sm:bottom-6 left-1/2 -translate-x-1/2 z-[250] hidden max-w-[90vw] transition-all duration-300 pointer-events-none">
+    <div class="flex items-center gap-2.5 rounded-full bg-white/95 backdrop-blur-md px-5 py-3 border border-slate-200/90 shadow-[0_12px_35px_-6px_rgba(15,23,42,0.18)]">
+      <div id="toast-icon" class="w-6 h-6 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-100">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+      </div>
+      <span id="toast-msg" class="text-xs font-bold text-slate-800 tracking-tight select-none"></span>
+    </div>
+  </div>
 
   <!-- Admin Exit Guard Dialog -->
   <div id="admin-exit-layer" class="hidden fixed inset-0 z-[100] grid place-items-center bg-slate-950/60 backdrop-blur-sm p-5" role="presentation">
@@ -490,12 +497,32 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
         <span class="truncate font-bold sm:font-semibold">${label}</span>
       </button>`).join('');
 
-    const toast=message=>{
+    const toast=(message, isError=false)=>{
       const el=$('#toast');
-      el.textContent=message;
+      const msgEl=$('#toast-msg');
+      const iconEl=$('#toast-icon');
+      if(!el || !msgEl) return;
+
+      const isErr = isError || /error|failed|cannot|exceeds/i.test(message);
+      msgEl.textContent = message;
+
+      if(iconEl){
+        if(isErr){
+          iconEl.className = 'w-6 h-6 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center shrink-0 border border-rose-100';
+          iconEl.innerHTML = '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>';
+        } else {
+          iconEl.className = 'w-6 h-6 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-100';
+          iconEl.innerHTML = '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>';
+        }
+      }
+
       el.classList.remove('hidden');
+      el.classList.add('fade-in');
       clearTimeout(el._timer);
-      el._timer=setTimeout(()=>el.classList.add('hidden'),2600);
+      el._timer=setTimeout(()=>{
+        el.classList.add('hidden');
+        el.classList.remove('fade-in');
+      }, 2800);
     };
 
     function closeSidebar(){
