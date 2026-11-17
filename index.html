@@ -774,15 +774,32 @@ async function shop(params){
   if(q){
     if(f.q) q = q.or(`name.ilike.%${f.q.replace(/[%,()]/g,'')}%,description.ilike.%${f.q.replace(/[%,()]/g,'')}%`);
     if(f.cat && f.cat !== 'All Categories' && f.cat !== 'all'){
-      const matchedCat = cats.find(c => c.id === f.cat || (c.name && c.name.toLowerCase() === f.cat.toLowerCase()));
-      if(matchedCat && matchedCat.id){
-        q = q.eq('category_id', matchedCat.id);
-      } else {
-        q = q.or(`category_id.eq.${f.cat},fabric.ilike.%${f.cat.replace(/[%,()]/g,'')}%,name.ilike.%${f.cat.replace(/[%,()]/g,'')}%`);
+      const catList = f.cat.split(',').map(s=>s.trim()).filter(Boolean);
+      if(catList.length === 1){
+        const cVal = catList[0];
+        const matchedCat = cats.find(c => c.id === cVal || (c.name && c.name.toLowerCase() === cVal.toLowerCase()));
+        if(matchedCat && matchedCat.id){
+          q = q.eq('category_id', matchedCat.id);
+        } else {
+          q = q.or(`category_id.eq.${cVal},fabric.ilike.%${cVal.replace(/[%,()]/g,'')}%,name.ilike.%${cVal.replace(/[%,()]/g,'')}%`);
+        }
+      } else if(catList.length > 1){
+        const matchedIds = catList.map(cv => cats.find(c => c.id === cv || (c.name && c.name.toLowerCase() === cv.toLowerCase()))?.id).filter(Boolean);
+        if(matchedIds.length){
+          q = q.in('category_id', matchedIds);
+        }
       }
     }
-    if(f.fabric) q = q.ilike('fabric', `%${f.fabric}%`);
-    if(f.color) q = q.ilike('color', `%${f.color}%`);
+    if(f.fabric){
+      const fabList = f.fabric.split(',').map(s=>s.trim()).filter(Boolean);
+      if(fabList.length === 1) q = q.ilike('fabric', `%${fabList[0]}%`);
+      else if(fabList.length > 1) q = q.or(fabList.map(fb => `fabric.ilike.%${fb.replace(/[%,()]/g,'')}%`).join(','));
+    }
+    if(f.color){
+      const colList = f.color.split(',').map(s=>s.trim()).filter(Boolean);
+      if(colList.length === 1) q = q.ilike('color', `%${colList[0]}%`);
+      else if(colList.length > 1) q = q.or(colList.map(cl => `color.ilike.%${cl.replace(/[%,()]/g,'')}%`).join(','));
+    }
     if(f.min) q = q.gte('price', +f.min);
     if(f.max) q = q.lte('price', +f.max);
     if(f.stock) q = q.gt('stock', 0);
@@ -892,8 +909,8 @@ async function shop(params){
 
   const allRatings = [
     { val: '', label: 'All Ratings' },
-    { val: '4', label: '4★ & above (Top Rated)' },
-    { val: '3', label: '3★ & above (Popular)' },
+    { val: '4', label: '4★ & above' },
+    { val: '3', label: '3★ & above' },
     { val: '2', label: '2★ & above' }
   ];
 
@@ -906,8 +923,8 @@ async function shop(params){
   ];
 
   const allAvailability = [
-    { val: '', label: 'All Sarees (Show All)' },
-    { val: '1', label: 'In Stock Only (Ready to Dispatch)' }
+    { val: '', label: 'All Sarees' },
+    { val: '1', label: 'In Stock Only' }
   ];
 
   const allColours = [
@@ -1022,12 +1039,13 @@ async function shop(params){
             <!-- Panel: Categories -->
             <div id="tab-panel-categories" class="f-tab-panel space-y-2.5">
               ${allCategoryOptions.map(c => {
-                const isSel = (!f.cat && !c.id) || (f.cat && (f.cat === c.id || f.cat.toLowerCase() === c.name.toLowerCase()));
+                const optVal = c.id ? c.id : (c.name === 'All Categories' ? '' : c.name);
+                const isSel = (!f.cat && !optVal) || (f.cat && optVal && f.cat.split(',').map(s=>s.trim().toLowerCase()).includes(optVal.toLowerCase()));
                 return `
-                <label class="f-opt-row flex items-center justify-between p-3.5 rounded-2xl border-2 cursor-pointer transition ${isSel ? 'border-slate-900 bg-slate-900 text-white font-bold shadow-sm' : 'border-gray-200 bg-white text-slate-800 font-semibold hover:border-gray-300'}" data-type="cat" data-val="${esc(c.id ? c.id : (c.name === 'All Categories' ? '' : c.name))}" data-label="${esc(c.name)}">
+                <label class="f-opt-row flex items-center justify-between p-3.5 rounded-2xl border-2 cursor-pointer transition ${isSel ? 'border-slate-900 bg-slate-900 text-white font-bold shadow-sm' : 'border-gray-200 bg-white text-slate-800 font-semibold hover:border-gray-300'}" data-type="cat" data-val="${esc(optVal)}" data-label="${esc(c.name)}">
                   <span class="text-sm capitalize">${esc(c.name)}</span>
                   <div class="f-check w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${isSel ? 'border-white bg-white text-slate-900 font-black text-xs' : 'border-gray-300 bg-white'}">${isSel ? '✓' : ''}</div>
-                  <input type="radio" name="opt-cat" value="${esc(c.id || c.name)}" class="sr-only" ${isSel ? 'checked' : ''}>
+                  <input type="checkbox" name="opt-cat" value="${esc(optVal)}" class="sr-only" ${isSel ? 'checked' : ''}>
                 </label>`;
               }).join('')}
             </div>
@@ -1035,12 +1053,12 @@ async function shop(params){
             <!-- Panel: Fabric -->
             <div id="tab-panel-fabric" class="f-tab-panel hidden space-y-2.5">
               ${allFabrics.map(fb => {
-                const isSel = (f.fabric.toLowerCase() === fb.val.toLowerCase());
+                const isSel = (!f.fabric && !fb.val) || (f.fabric && fb.val && f.fabric.split(',').map(s=>s.trim().toLowerCase()).includes(fb.val.toLowerCase()));
                 return `
                 <label class="f-opt-row flex items-center justify-between p-3.5 rounded-2xl border-2 cursor-pointer transition ${isSel ? 'border-slate-900 bg-slate-900 text-white font-bold shadow-sm' : 'border-gray-200 bg-white text-slate-800 font-semibold hover:border-gray-300'}" data-type="fabric" data-val="${esc(fb.val)}" data-label="${esc(fb.label)}">
                   <span class="text-sm capitalize">${esc(fb.label)}</span>
                   <div class="f-check w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${isSel ? 'border-white bg-white text-slate-900 font-black text-xs' : 'border-gray-300 bg-white'}">${isSel ? '✓' : ''}</div>
-                  <input type="radio" name="opt-fabric" value="${esc(fb.val)}" class="sr-only" ${isSel ? 'checked' : ''}>
+                  <input type="checkbox" name="opt-fabric" value="${esc(fb.val)}" class="sr-only" ${isSel ? 'checked' : ''}>
                 </label>`;
               }).join('')}
             </div>
@@ -1102,7 +1120,7 @@ async function shop(params){
             <!-- Panel: Colour -->
             <div id="tab-panel-colour" class="f-tab-panel hidden space-y-2.5">
               ${allColours.map(cl => {
-                const isSel = (f.color.toLowerCase() === cl.val.toLowerCase());
+                const isSel = (!f.color && !cl.val) || (f.color && cl.val && f.color.split(',').map(s=>s.trim().toLowerCase()).includes(cl.val.toLowerCase()));
                 return `
                 <label class="f-opt-row flex items-center justify-between p-3.5 rounded-2xl border-2 cursor-pointer transition ${isSel ? 'border-slate-900 bg-slate-900 text-white font-bold shadow-sm' : 'border-gray-200 bg-white text-slate-800 font-semibold hover:border-gray-300'}" data-type="color" data-val="${esc(cl.val)}" data-label="${esc(cl.label)}">
                   <div class="flex items-center gap-3">
@@ -1110,7 +1128,7 @@ async function shop(params){
                     <span class="text-sm capitalize">${esc(cl.label)}</span>
                   </div>
                   <div class="f-check w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${isSel ? 'border-white bg-white text-slate-900 font-black text-xs' : 'border-gray-300 bg-white'}">${isSel ? '✓' : ''}</div>
-                  <input type="radio" name="opt-color" value="${esc(cl.val)}" class="sr-only" ${isSel ? 'checked' : ''}>
+                  <input type="checkbox" name="opt-color" value="${esc(cl.val)}" class="sr-only" ${isSel ? 'checked' : ''}>
                 </label>`;
               }).join('')}
             </div>
@@ -1244,14 +1262,16 @@ async function shop(params){
   });
 
   // Helper function to update option row UI with crisp box styling
-  const updateOptionRowUI = (containerId, selectedVal) => {
+  const updateOptionRowUI = (containerId, selectedVal, isMulti = false) => {
     const panel = $(containerId);
     if(!panel) return;
+    const selArray = isMulti ? String(selectedVal || '').split(',').map(s=>s.trim().toLowerCase()).filter(Boolean) : [(selectedVal || '').toLowerCase()];
     panel.querySelectorAll('.f-opt-row').forEach(row => {
-      const isSelected = (row.dataset.val.toLowerCase() === (selectedVal || '').toLowerCase());
-      const radio = row.querySelector('input');
+      const rVal = (row.dataset.val || '').toLowerCase();
+      const isSelected = isMulti ? (!selArray.length && !rVal) || (rVal && selArray.includes(rVal)) : (rVal === (selectedVal || '').toLowerCase());
+      const input = row.querySelector('input');
       const check = row.querySelector('.f-check');
-      if(radio) radio.checked = isSelected;
+      if(input) input.checked = isSelected;
       if(isSelected){
         row.className = 'f-opt-row flex items-center justify-between p-3.5 rounded-2xl border-2 cursor-pointer transition border-slate-900 bg-slate-900 text-white font-bold shadow-sm';
         if(check){
@@ -1278,19 +1298,31 @@ async function shop(params){
     }
   };
 
+  const toggleMultiVal = (currentStr, val) => {
+    if(!val) return ''; // clicked All -> clear
+    let arr = String(currentStr || '').split(',').map(s=>s.trim()).filter(Boolean);
+    const idx = arr.findIndex(x => x.toLowerCase() === val.toLowerCase());
+    if(idx >= 0){
+      arr.splice(idx, 1);
+    } else {
+      arr.push(val);
+    }
+    return arr.join(',');
+  };
+
   // Option row click handlers
   $$('#fl .f-opt-row').forEach(row => {
     row.onclick = (e) => {
       const type = row.dataset.type;
       const val = row.dataset.val;
       if(type === 'cat'){
-        pendingCat = val;
-        updateOptionRowUI('#tab-panel-categories', val);
-        updateBadge('#badge-categories', !!val);
+        pendingCat = toggleMultiVal(pendingCat, val);
+        updateOptionRowUI('#tab-panel-categories', pendingCat, true);
+        updateBadge('#badge-categories', !!pendingCat);
       } else if(type === 'fabric'){
-        pendingFabric = val;
-        updateOptionRowUI('#tab-panel-fabric', val);
-        updateBadge('#badge-fabric', !!val);
+        pendingFabric = toggleMultiVal(pendingFabric, val);
+        updateOptionRowUI('#tab-panel-fabric', pendingFabric, true);
+        updateBadge('#badge-fabric', !!pendingFabric);
       } else if(type === 'rating'){
         pendingRating = val;
         updateOptionRowUI('#tab-panel-ratings', val);
@@ -1300,9 +1332,9 @@ async function shop(params){
         updateOptionRowUI('#tab-panel-availability', val);
         updateBadge('#badge-availability', !!val);
       } else if(type === 'color'){
-        pendingColor = val;
-        updateOptionRowUI('#tab-panel-colour', val);
-        updateBadge('#badge-colour', !!val);
+        pendingColor = toggleMultiVal(pendingColor, val);
+        updateOptionRowUI('#tab-panel-colour', pendingColor, true);
+        updateBadge('#badge-colour', !!pendingColor);
       } else if(type === 'sort'){
         pendingSort = val;
         updateOptionRowUI('#tab-panel-sort', val);
