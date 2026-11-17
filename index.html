@@ -14,7 +14,6 @@
 <script src="https://cdn.tailwindcss.com/3.4.17"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script defer src="./site-enhancements.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+Tamil:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -784,9 +783,13 @@ async function shop(params){
           q = q.or(`category_id.eq.${cVal},fabric.ilike.%${cVal.replace(/[%,()]/g,'')}%,name.ilike.%${cVal.replace(/[%,()]/g,'')}%`);
         }
       } else if(catList.length > 1){
-        const matchedIds = catList.map(cv => cats.find(c => c.id === cv || (c.name && c.name.toLowerCase() === cv.toLowerCase()))?.id).filter(Boolean);
-        if(matchedIds.length){
-          q = q.in('category_id', matchedIds);
+        const matchedIds = catList.map(cv => cats.find(c => c.id === cv || (c.name && c.name.toLowerCase() === cv.toLowerCase()))?.id || cv).filter(Boolean);
+        const orClauses = [];
+        if(matchedIds.length) orClauses.push(...matchedIds.map(id => `category_id.eq.${id}`));
+        orClauses.push(...catList.map(cv => `fabric.ilike.%${cv.replace(/[%,()]/g,'')}%`));
+        orClauses.push(...catList.map(cv => `name.ilike.%${cv.replace(/[%,()]/g,'')}%`));
+        if(orClauses.length){
+          q = q.or(orClauses.join(','));
         }
       }
     }
@@ -1299,7 +1302,7 @@ async function shop(params){
   };
 
   const toggleMultiVal = (currentStr, val) => {
-    if(!val) return ''; // clicked All -> clear
+    if(!val) return ''; // clicked All -> clear all selections
     let arr = String(currentStr || '').split(',').map(s=>s.trim()).filter(Boolean);
     const idx = arr.findIndex(x => x.toLowerCase() === val.toLowerCase());
     if(idx >= 0){
@@ -1313,6 +1316,7 @@ async function shop(params){
   // Option row click handlers
   $$('#fl .f-opt-row').forEach(row => {
     row.onclick = (e) => {
+      e.preventDefault(); // prevent native label double trigger on child input
       const type = row.dataset.type;
       const val = row.dataset.val;
       if(type === 'cat'){
@@ -1667,122 +1671,603 @@ async function checkout(){
   }
 
   let sub = L.reduce((s,l) => s + l.p.price * l.qty, 0);
-  let d = await couponDiscount(sub), method = 'COD';
-  const pf = profile(), AL = await getAddrs(), def = AL.find(a => a.def) || AL[0] || {}, saved = { ...(pf ? { name: pf.name, phone: pf.phone } : {}), ...def };
+  let d = await couponDiscount(sub);
+  let method = 'COD';
+  let utrNumber = '';
+  let currentStep = 1; // 1: Products, 2: Address, 3: Payment, 4: Confirmation Check
 
-  function renderCheckoutItems(){
-    return L.map(l => `
-      <div class="flex items-center gap-3 bg-gray-50/80 p-3.5 rounded-2xl border border-gray-100">
-        <img src="${img(l.p)}" alt="" class="w-14 h-16 object-cover rounded-xl bg-white border border-gray-200 shrink-0">
-        <div class="min-w-0 flex-1">
-          <div class="flex items-center gap-1.5 flex-wrap">
-            <span class="font-mono text-[9px] font-black text-slate-800 bg-white border border-gray-200 px-1.5 py-0.5 rounded select-all">ID: ${esc(getProductId(l.p))}</span>
-            <p class="font-bold text-xs text-gray-900 truncate">${esc(l.p.name)}</p>
-          </div>
-          <p class="text-[11px] text-gray-500 mt-0.5 font-medium">${inr(l.p.price)} each</p>
-          
-          <!-- QUANTITY EDIT CONTROLS IN CHECKOUT -->
-          <div class="flex items-center justify-between mt-2 pt-2 border-t border-gray-200/60">
-            <div class="flex items-center gap-2">
-              <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Qty:</span>
-              <div class="inline-flex items-center rounded-full border border-gray-200 bg-white shadow-sm p-0.5">
-                <button type="button" data-cq="${esc(l.id)}" data-d="-1" aria-label="Decrease quantity" class="w-6 h-6 rounded-full bg-gray-50 text-gray-700 hover:bg-slate-900 hover:text-white font-bold text-xs flex items-center justify-center transition active:scale-95">−</button>
-                <b class="w-7 text-center text-xs font-black text-slate-900">${l.qty}</b>
-                <button type="button" data-cq="${esc(l.id)}" data-d="1" aria-label="Increase quantity" class="w-6 h-6 rounded-full bg-gray-50 text-gray-700 hover:bg-slate-900 hover:text-white font-bold text-xs flex items-center justify-center transition active:scale-95">+</button>
-              </div>
-            </div>
-            <b class="text-xs font-black text-slate-900">${inr(l.p.price * l.qty)}</b>
-          </div>
-        </div>
-      </div>
-    `).join('');
-  }
+  const pf = profile(), AL = await getAddrs(), def = AL.find(a => a.def) || AL[0] || {};
+  let saved = { ...(pf ? { name: pf.name, phone: pf.phone } : {}), ...def };
 
-  app.innerHTML = `
-    <div class="grid md:grid-cols-[1fr_340px] gap-6 items-start">
-      <form id="cf" class="bg-white border border-gray-100 rounded-3xl p-6 space-y-4 shadow-soft">
-        <div class="flex items-center justify-between border-b pb-3">
-          <h2 class="font-extrabold text-sm text-gray-900">Delivery Address</h2>
-          <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Step 1 of 2</span>
-        </div>
-        ${AL.length?`<select id="sa" class="w-full border border-gray-200 rounded-2xl p-2.5 text-xs bg-white"><option value="">Use a saved address…</option>${AL.map(a=>`<option value="${esc(a.id)}">${esc(a.name)} – ${esc(a.line.slice(0,30))}, ${esc(a.pincode)}</option>`).join('')}</select>`:''}
-        ${input('a-name','Full name',`required value="${esc(saved.name||'')}"`)}
-        ${input('a-phone','Mobile (10 digits)',`required pattern="[6-9][0-9]{9}" maxlength="10" value="${esc(saved.phone||'')}"`)}
-        ${input('a-pin','Pincode',`required pattern="[1-9][0-9]{5}" maxlength="6" value="${esc(saved.pincode||'')}"`)}
-        <div class="grid grid-cols-2 gap-2">${input('a-city','City / District',`required value="${esc(saved.city||'')}"`)}${input('a-state','State',`required value="${esc(saved.state||'Tamil Nadu')}"`)}</div>
-        <label class="block text-xs font-semibold text-gray-700">Door no, street, area<textarea id="a-line" required rows="2" class="mt-1 w-full border border-gray-200 rounded-2xl p-2.5 text-xs outline-none focus:border-slate-900">${esc(saved.line||'')}</textarea></label>
-        
-        <div class="border-t pt-3">
-          <h2 class="font-extrabold text-sm text-gray-900 mb-2">Payment Method</h2>
-          <div class="space-y-2">
-            <label class="flex items-center gap-2.5 border border-gray-200 rounded-2xl p-3 text-xs cursor-pointer hover:bg-gray-50 transition"><input type="radio" name="pm" value="COD" checked class="accent-slate-900"> ${ICONS.cash} Cash on Delivery</label>
-            <label class="flex items-center gap-2.5 border border-gray-200 rounded-2xl p-3 text-xs cursor-pointer hover:bg-gray-50 transition"><input type="radio" name="pm" value="UPI" class="accent-slate-900"> ${ICONS.upi} Pay Online (UPI / QR)</label>
-          </div>
-        </div>
-
-        <div id="upi" class="hidden border border-emerald-100 rounded-2xl p-4 bg-emerald-50 text-xs space-y-2.5 text-center">
-          <p>Pay exactly <b id="upa" class="text-sm"></b> to this UPI ID</p>
-          <p class="font-mono bg-white border border-emerald-200 rounded-xl py-2 font-bold select-all text-xs">${esc(UPI_ID)}</p>
-          <div id="qr" class="flex justify-center py-1"></div>
-          <a id="upl" class="${btn} inline-block !py-2 text-xs">Open UPI App</a>
-          <input id="utr" maxlength="22" placeholder="Enter UPI transaction / UTR number" class="w-full border border-emerald-200 rounded-xl p-2.5 text-xs outline-none focus:border-slate-900 bg-white">
-          <p class="text-[10px] text-gray-500">We confirm your order once the payment is verified.</p>
-        </div>
-
-        <button id="po" class="${btn} w-full !py-3.5"></button>
-      </form>
-
-      <aside class="bg-white border border-gray-100 rounded-3xl p-5 h-fit text-xs space-y-3.5 shadow-soft">
-        <div class="flex items-center justify-between border-b pb-2.5">
-          <div>
-            <h3 class="font-extrabold text-xs text-gray-900 uppercase tracking-wider">
-              ${isBuyNow ? 'Instant Purchase' : 'Order Summary'}
-            </h3>
-            <p class="text-[10px] text-gray-500 mt-0.5">${isBuyNow ? 'Buy Now direct checkout' : 'From your shopping bag'}</p>
-          </div>
-          ${isBuyNow ? '<span class="text-[10px] font-black bg-emerald-50 text-emerald-800 border border-emerald-200 px-2.5 py-0.5 rounded-full">Buy Now</span>' : ''}
-        </div>
-
-        <!-- ITEMS LIST WITH LIVE QUANTITY EDITING -->
-        <div id="c-items-box" class="space-y-2.5">
-          ${renderCheckoutItems()}
-        </div>
-
-        <div class="flex gap-2 pt-1 border-t">
-          <input id="cp" value="${esc(coupon)}" placeholder="Coupon code" class="border border-gray-200 bg-gray-50 rounded-xl p-2 flex-1 uppercase text-xs outline-none focus:bg-white focus:border-slate-900">
-          <button type="button" id="cpb" class="bg-gray-100 hover:bg-gray-200 px-3.5 rounded-xl font-bold transition">Apply</button>
-        </div>
-
-        <div class="space-y-1.5 border-t pt-2.5 text-xs">
-          <div class="flex justify-between text-gray-500"><span>Subtotal</span><span id="c-sub" class="font-bold text-gray-800">${inr(sub)}</span></div>
-          <div class="flex justify-between text-emerald-700 font-bold"><span>Discount</span><span id="sd">−${inr(d)}</span></div>
-          <div class="flex justify-between text-gray-500"><span>Delivery</span><span class="text-emerald-700 font-bold">FREE</span></div>
-          <div class="flex justify-between font-extrabold text-sm border-t pt-2.5 text-gray-900"><span>Total</span><span id="st">${inr(sub - d)}</span></div>
-        </div>
-      </aside>
-    </div>
-  `;
-
-  const recalculate = async () => {
-    sub = L.reduce((s,l) => s + l.p.price * l.qty, 0);
-    d = await couponDiscount(sub);
-    const t = sub - d;
-    $('#c-items-box').innerHTML = renderCheckoutItems();
-    $('#c-sub').textContent = inr(sub);
-    $('#sd').textContent = '−' + inr(d);
-    $('#st').textContent = inr(t);
-    $('#upa').textContent = inr(t);
-    const link = `upi://pay?pa=${encodeURIComponent(UPI_ID)}&pn=${encodeURIComponent(UPI_NAME)}&am=${t}&cu=INR&tn=${encodeURIComponent((SET.brand?.name||'Thaarai Tex')+' order')}`;
-    $('#upl').href = link;
-    $('#po').textContent = 'Review Order · ' + inr(t);
-    $('#qr').innerHTML = '';
-    if(method === 'UPI' && window.QRCode) new QRCode($('#qr'), { text: link, width: 140, height: 140 });
+  let addr = {
+    name: saved.name || '',
+    phone: saved.phone || '',
+    pincode: saved.pincode || '',
+    city: saved.city || '',
+    state: saved.state || 'Tamil Nadu',
+    line: saved.line || ''
   };
 
-  const refresh = () => recalculate();
-  refresh();
+  const recalculateTotals = async () => {
+    sub = L.reduce((s,l) => s + l.p.price * l.qty, 0);
+    d = await couponDiscount(sub);
+  };
 
-  // QUANTITY EDIT HANDLER ON CHECKOUT PAGE
+  function renderStepperHeader(activeStep){
+    const steps = [
+      { num: 1, label: 'Products' },
+      { num: 2, label: 'Address' },
+      { num: 3, label: 'Payment' },
+      { num: 4, label: 'Confirm' }
+    ];
+    return `
+      <div class="w-full max-w-2xl mx-auto mb-6 px-1">
+        <div class="flex items-center justify-between relative">
+          <div class="absolute top-1/2 left-4 right-4 h-0.5 bg-gray-200 -translate-y-1/2 z-0"></div>
+          <div class="absolute top-1/2 left-4 h-0.5 bg-slate-900 -translate-y-1/2 z-0 transition-all duration-300" style="width: ${((activeStep-1)/3)*100}%"></div>
+          ${steps.map(st => {
+            const isCompleted = activeStep > st.num;
+            const isCurrent = activeStep === st.num;
+            return `
+              <div class="relative z-10 flex flex-col items-center">
+                <div class="w-8 h-8 rounded-full flex items-center justify-center font-black text-xs transition-all shadow-sm ${
+                  isCurrent ? 'bg-slate-900 text-white ring-4 ring-slate-100 scale-105' : 
+                  (isCompleted ? 'bg-emerald-600 text-white' : 'bg-white border-2 border-gray-300 text-gray-400')
+                }">
+                  ${isCompleted ? '✓' : st.num}
+                </div>
+                <span class="text-[10px] sm:text-xs font-bold mt-1.5 ${isCurrent ? 'text-slate-900 font-extrabold' : (isCompleted ? 'text-emerald-700' : 'text-gray-400')}">
+                  ${st.label}
+                </span>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  function renderStepView(){
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // ==========================================
+    // STEP 1: PRODUCT DETAILS
+    // ==========================================
+    if(currentStep === 1){
+      app.innerHTML = `
+        <div class="max-w-2xl mx-auto space-y-5 animate-fadeIn">
+          ${renderStepperHeader(1)}
+          <div class="bg-white border border-gray-100 rounded-3xl p-5 sm:p-7 shadow-soft space-y-4">
+            <div class="flex items-center justify-between border-b pb-3">
+              <div>
+                <h2 class="font-extrabold text-base text-slate-900">Step 1: Product Details</h2>
+                <p class="text-xs text-gray-500 mt-0.5">Review items in your order and quantities</p>
+              </div>
+              <span class="text-[11px] font-black bg-slate-100 text-slate-800 px-3 py-1 rounded-full">${L.length} ${L.length === 1 ? 'Item' : 'Items'}</span>
+            </div>
+
+            <div class="space-y-3 pt-1">
+              ${L.map(l => `
+                <div class="flex items-start sm:items-center gap-3.5 bg-slate-50/80 p-3.5 sm:p-4 rounded-2xl border border-gray-100">
+                  <img src="${img(l.p)}" alt="" class="w-16 h-20 object-cover rounded-xl bg-white border border-gray-200 shrink-0 shadow-sm">
+                  <div class="min-w-0 flex-1">
+                    <div class="flex items-center gap-1.5 flex-wrap">
+                      <span class="font-mono text-[9px] font-black text-slate-800 bg-white border border-gray-200 px-1.5 py-0.5 rounded select-all shadow-2xs">ID: ${esc(getProductId(l.p))}</span>
+                      <h3 class="font-extrabold text-xs sm:text-sm text-slate-900 truncate">${esc(l.p.name)}</h3>
+                    </div>
+                    <div class="flex items-center gap-2 mt-1 text-xs text-gray-500 font-medium">
+                      <span>${inr(l.p.price)} each</span>
+                      ${l.p.fabric ? `<span>·</span><span class="capitalize">${esc(l.p.fabric)}</span>` : ''}
+                      ${l.p.color ? `<span>·</span><span class="capitalize">${esc(l.p.color)}</span>` : ''}
+                    </div>
+
+                    <!-- Quantity Modifiers -->
+                    <div class="flex items-center justify-between mt-3 pt-2.5 border-t border-gray-200/60">
+                      <div class="flex items-center gap-2">
+                        <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Quantity:</span>
+                        <div class="inline-flex items-center rounded-full border border-gray-200 bg-white shadow-sm p-0.5">
+                          <button type="button" data-cq="${esc(l.id)}" data-d="-1" aria-label="Decrease quantity" class="w-6 h-6 rounded-full bg-gray-50 text-gray-700 hover:bg-slate-900 hover:text-white font-bold text-xs flex items-center justify-center transition active:scale-95">−</button>
+                          <b class="w-7 text-center text-xs font-black text-slate-900">${l.qty}</b>
+                          <button type="button" data-cq="${esc(l.id)}" data-d="1" aria-label="Increase quantity" class="w-6 h-6 rounded-full bg-gray-50 text-gray-700 hover:bg-slate-900 hover:text-white font-bold text-xs flex items-center justify-center transition active:scale-95">+</button>
+                        </div>
+                      </div>
+                      <b class="text-sm font-black text-slate-900">${inr(l.p.price * l.qty)}</b>
+                    </div>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+
+            <!-- Coupon Code Section -->
+            <div class="pt-3 border-t">
+              <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">Apply Discount Coupon</label>
+              <div class="flex gap-2">
+                <input id="step-cp" value="${esc(coupon)}" placeholder="Enter coupon code (e.g. THAARAI10)" class="border border-gray-200 bg-gray-50 rounded-2xl px-4 py-2.5 flex-1 uppercase text-xs font-bold text-slate-800 outline-none focus:bg-white focus:border-slate-900">
+                <button type="button" id="step-cpb" class="bg-slate-900 hover:bg-slate-800 text-white px-5 rounded-2xl font-bold text-xs transition shadow-sm">Apply</button>
+              </div>
+            </div>
+
+            <!-- Pricing Breakdown Card -->
+            <div class="bg-slate-50 border border-gray-100 rounded-2xl p-4 text-xs space-y-2">
+              <div class="flex justify-between text-gray-600"><span>Items Subtotal</span><span class="font-bold text-slate-900">${inr(sub)}</span></div>
+              <div class="flex justify-between text-emerald-700 font-bold"><span>Coupon Discount</span><span>−${inr(d)}</span></div>
+              <div class="flex justify-between text-gray-600"><span>Delivery Charges</span><span class="text-emerald-700 font-bold">FREE</span></div>
+              <div class="flex justify-between font-black text-base border-t border-gray-200 pt-2 text-slate-900">
+                <span>Total Amount</span>
+                <span class="text-slate-950">${inr(sub - d)}</span>
+              </div>
+            </div>
+
+            <div class="pt-3">
+              <button id="btn-to-step2" type="button" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-black py-4 rounded-full text-sm shadow-soft transition flex items-center justify-center gap-2">
+                <span>Proceed to Delivery Address</span>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      // Step 1 Events
+      $('#step-cpb').onclick = async () => {
+        coupon = $('#step-cp').value.trim().toUpperCase();
+        await recalculateTotals();
+        toast(coupon ? (d ? 'Coupon applied ✓' : 'Coupon not valid or minimum not met') : 'Coupon removed');
+        renderStepView();
+      };
+
+      $('#btn-to-step2').onclick = () => {
+        currentStep = 2;
+        renderStepView();
+      };
+
+      return;
+    }
+
+    // ==========================================
+    // STEP 2: ADDRESS DETAILS
+    // ==========================================
+    if(currentStep === 2){
+      app.innerHTML = `
+        <div class="max-w-2xl mx-auto space-y-5 animate-fadeIn">
+          ${renderStepperHeader(2)}
+          <form id="step-addr-form" class="bg-white border border-gray-100 rounded-3xl p-5 sm:p-7 shadow-soft space-y-4">
+            <div class="flex items-center justify-between border-b pb-3">
+              <div>
+                <h2 class="font-extrabold text-base text-slate-900">Step 2: Delivery Address</h2>
+                <p class="text-xs text-gray-500 mt-0.5">Where should we deliver your order?</p>
+              </div>
+              <button type="button" id="btn-back-to-step1" class="text-xs font-bold text-slate-600 hover:text-slate-900 underline flex items-center gap-1">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                Back to Products
+              </button>
+            </div>
+
+            ${AL.length ? `
+              <div>
+                <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">Select from saved addresses</label>
+                <select id="step-sa" class="w-full border border-gray-200 rounded-2xl p-3 text-xs bg-white font-medium text-slate-800 outline-none focus:border-slate-900">
+                  <option value="">Use a saved address…</option>
+                  ${AL.map(a => `<option value="${esc(a.id)}">${esc(a.name)} – ${esc(a.line.slice(0,35))}, ${esc(a.pincode)}</option>`).join('')}
+                </select>
+              </div>
+            ` : ''}
+
+            <div class="space-y-3 pt-1">
+              ${input('a-name','Full name',`required value="${esc(addr.name||'')}"`)}
+              ${input('a-phone','Mobile Number (10 digits)',`required pattern="[6-9][0-9]{9}" maxlength="10" value="${esc(addr.phone||'')}"`)}
+              ${input('a-pin','Pincode',`required pattern="[1-9][0-9]{5}" maxlength="6" value="${esc(addr.pincode||'')}"`)}
+              <div class="grid grid-cols-2 gap-3">
+                ${input('a-city','City / District',`required value="${esc(addr.city||'')}"`)}
+                ${input('a-state','State',`required value="${esc(addr.state||'Tamil Nadu')}"`)}
+              </div>
+              <label class="block text-xs font-semibold text-gray-700">Door No, Building Name, Street & Area
+                <textarea id="a-line" required rows="2" class="mt-1 w-full border border-gray-200 rounded-2xl p-3 text-xs outline-none focus:border-slate-900 font-medium">${esc(addr.line||'')}</textarea>
+              </label>
+            </div>
+
+            <div class="pt-3 flex gap-3">
+              <button type="button" id="btn-back-to-step1-bottom" class="flex-1 py-3.5 px-4 rounded-full border border-gray-200 bg-white hover:bg-gray-50 text-slate-800 font-bold text-xs transition">
+                ← Back
+              </button>
+              <button type="submit" class="flex-[2] bg-slate-900 hover:bg-slate-800 text-white font-black py-3.5 px-4 rounded-full text-xs shadow-soft transition flex items-center justify-center gap-2">
+                <span>Proceed to Payment</span>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+              </button>
+            </div>
+          </form>
+        </div>
+      `;
+
+      // Saved address dropdown
+      const saEl = $('#step-sa');
+      if(saEl){
+        saEl.onchange = () => {
+          const a = AL.find(x => x.id === saEl.value);
+          if(!a) return;
+          $('#a-name').value = a.name;
+          $('#a-phone').value = a.phone;
+          $('#a-pin').value = a.pincode;
+          $('#a-city').value = a.city;
+          $('#a-state').value = a.state;
+          $('#a-line').value = a.line;
+        };
+      }
+
+      const goBackStep1 = () => {
+        addr.name = $('#a-name')?.value.trim() || addr.name;
+        addr.phone = $('#a-phone')?.value.trim() || addr.phone;
+        addr.pincode = $('#a-pin')?.value.trim() || addr.pincode;
+        addr.city = $('#a-city')?.value.trim() || addr.city;
+        addr.state = $('#a-state')?.value.trim() || addr.state;
+        addr.line = $('#a-line')?.value.trim() || addr.line;
+        currentStep = 1;
+        renderStepView();
+      };
+
+      $('#btn-back-to-step1').onclick = goBackStep1;
+      $('#btn-back-to-step1-bottom').onclick = goBackStep1;
+
+      $('#step-addr-form').onsubmit = e => {
+        e.preventDefault();
+        addr = {
+          name: $('#a-name').value.trim(),
+          phone: $('#a-phone').value.trim(),
+          pincode: $('#a-pin').value.trim(),
+          city: $('#a-city').value.trim(),
+          state: $('#a-state').value.trim(),
+          line: $('#a-line').value.trim()
+        };
+        currentStep = 3;
+        renderStepView();
+      };
+
+      return;
+    }
+
+    // ==========================================
+    // STEP 3: PAYMENT DETAILS
+    // ==========================================
+    if(currentStep === 3){
+      const totalPayable = sub - d;
+      const upiLink = `upi://pay?pa=${encodeURIComponent(UPI_ID)}&pn=${encodeURIComponent(UPI_NAME)}&am=${totalPayable}&cu=INR&tn=${encodeURIComponent((SET.brand?.name||'Thaarai Tex')+' order')}`;
+
+      app.innerHTML = `
+        <div class="max-w-2xl mx-auto space-y-5 animate-fadeIn">
+          ${renderStepperHeader(3)}
+          <div class="bg-white border border-gray-100 rounded-3xl p-5 sm:p-7 shadow-soft space-y-4">
+            <div class="flex items-center justify-between border-b pb-3">
+              <div>
+                <h2 class="font-extrabold text-base text-slate-900">Step 3: Payment Details</h2>
+                <p class="text-xs text-gray-500 mt-0.5">Select how you want to pay for this order</p>
+              </div>
+              <button type="button" id="btn-back-to-step2" class="text-xs font-bold text-slate-600 hover:text-slate-900 underline flex items-center gap-1">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                Back to Address
+              </button>
+            </div>
+
+            <div class="space-y-3 pt-1">
+              <label class="flex items-center justify-between border-2 rounded-2xl p-4 cursor-pointer transition ${method === 'COD' ? 'border-slate-900 bg-slate-50 shadow-sm' : 'border-gray-200 hover:bg-gray-50'}">
+                <div class="flex items-center gap-3">
+                  <input type="radio" name="step-pm" value="COD" ${method === 'COD' ? 'checked' : ''} class="accent-slate-900 w-4 h-4">
+                  <div>
+                    <p class="text-sm font-extrabold text-slate-900 flex items-center gap-2">${ICONS.cash} Cash on Delivery (COD)</p>
+                    <p class="text-[11px] text-gray-500 mt-0.5 font-medium">Pay safely in cash when your sarees are delivered to your door</p>
+                  </div>
+                </div>
+                <span class="text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">No Extra Fee</span>
+              </label>
+
+              <label class="flex items-center justify-between border-2 rounded-2xl p-4 cursor-pointer transition ${method === 'UPI' ? 'border-slate-900 bg-slate-50 shadow-sm' : 'border-gray-200 hover:bg-gray-50'}">
+                <div class="flex items-center gap-3">
+                  <input type="radio" name="step-pm" value="UPI" ${method === 'UPI' ? 'checked' : ''} class="accent-slate-900 w-4 h-4">
+                  <div>
+                    <p class="text-sm font-extrabold text-slate-900 flex items-center gap-2">${ICONS.upi} Online Payment (UPI / QR / GPay / PhonePe)</p>
+                    <p class="text-[11px] text-gray-500 mt-0.5 font-medium">Instant scan & pay via any UPI application</p>
+                  </div>
+                </div>
+                <span class="text-xs font-bold text-sky-700 bg-sky-50 px-2.5 py-1 rounded-full border border-sky-200">Instant</span>
+              </label>
+            </div>
+
+            <!-- UPI details section -->
+            <div id="step-upi-container" class="${method === 'UPI' ? '' : 'hidden'} border border-emerald-200 rounded-3xl p-5 bg-emerald-50/70 text-xs space-y-3.5 text-center">
+              <div>
+                <p class="text-xs text-emerald-900 font-medium">Pay exactly <b class="text-base font-black text-emerald-950">${inr(totalPayable)}</b> to this UPI ID:</p>
+                <p class="font-mono bg-white border border-emerald-300 rounded-2xl py-2.5 font-black select-all text-sm text-slate-900 shadow-2xs mt-2">${esc(UPI_ID)}</p>
+              </div>
+
+              <div id="step-qr-box" class="flex justify-center py-2 bg-white rounded-2xl border border-emerald-100 p-3 max-w-[200px] mx-auto shadow-sm"></div>
+
+              <div class="flex flex-col sm:flex-row gap-2 justify-center">
+                <a id="step-upi-app-link" href="${upiLink}" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-5 rounded-full inline-flex items-center justify-center gap-1.5 shadow-sm text-xs transition">
+                  <span>Open UPI App</span>
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                </a>
+              </div>
+
+              <div class="text-left pt-2">
+                <label class="block text-[11px] font-bold text-emerald-950 uppercase tracking-wider mb-1">UPI Transaction ID / UTR Number <span class="text-rose-600">*</span></label>
+                <input id="step-utr-input" maxlength="22" placeholder="e.g. 331234567890 (12 digits)" value="${esc(utrNumber)}" class="w-full border border-emerald-300 rounded-2xl p-3 text-xs outline-none focus:border-slate-900 bg-white font-bold text-slate-900">
+                <p class="text-[10px] text-emerald-800 mt-1">Please enter the 12-digit UPI reference number after making payment.</p>
+              </div>
+            </div>
+
+            <!-- Amount summary footer -->
+            <div class="bg-slate-50 rounded-2xl p-4 flex items-center justify-between border border-gray-100">
+              <span class="text-xs font-bold text-gray-500">Payable Amount:</span>
+              <span class="text-lg font-black text-slate-900">${inr(totalPayable)}</span>
+            </div>
+
+            <div class="pt-3 flex gap-3">
+              <button type="button" id="btn-back-to-step2-bottom" class="flex-1 py-3.5 px-4 rounded-full border border-gray-200 bg-white hover:bg-gray-50 text-slate-800 font-bold text-xs transition">
+                ← Back
+              </button>
+              <button type="button" id="btn-to-step4" class="flex-[2] bg-slate-900 hover:bg-slate-800 text-white font-black py-3.5 px-4 rounded-full text-xs shadow-soft transition flex items-center justify-center gap-2">
+                <span>Proceed to Confirmation Check</span>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      if(method === 'UPI' && window.QRCode){
+        const qrEl = $('#step-qr-box');
+        if(qrEl){
+          qrEl.innerHTML = '';
+          new QRCode(qrEl, { text: upiLink, width: 140, height: 140 });
+        }
+      }
+
+      document.querySelectorAll('input[name=step-pm]').forEach(r => {
+        r.onchange = () => {
+          method = r.value;
+          renderStepView();
+        };
+      });
+
+      const goBackStep2 = () => {
+        if(method === 'UPI') utrNumber = $('#step-utr-input')?.value.trim() || utrNumber;
+        currentStep = 2;
+        renderStepView();
+      };
+
+      $('#btn-back-to-step2').onclick = goBackStep2;
+      $('#btn-back-to-step2-bottom').onclick = goBackStep2;
+
+      $('#btn-to-step4').onclick = () => {
+        if(method === 'UPI'){
+          const val = $('#step-utr-input')?.value.trim() || '';
+          if(!/^[A-Za-z0-9]{8,22}$/.test(val)){
+            return toast('Please pay via UPI and enter the valid 8-22 character UTR / transaction number');
+          }
+          utrNumber = val;
+        }
+        currentStep = 4;
+        renderStepView();
+      };
+
+      return;
+    }
+
+    // ==========================================
+    // STEP 4: CONFIRMATION CHECK (SEPARATE DEDICATED PAGE VIEW WITH BACK BUTTON)
+    // ==========================================
+    if(currentStep === 4){
+      const totalPayable = sub - d;
+
+      app.innerHTML = `
+        <div class="max-w-3xl mx-auto space-y-6 animate-fadeIn pb-12">
+          
+          <!-- Back navigation & Stepper Header -->
+          <div class="flex items-center justify-between px-1">
+            <button type="button" id="btn-back-to-step3" class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 bg-white hover:bg-gray-100 text-slate-800 font-bold text-xs shadow-soft transition">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+              <span>Back to Payment</span>
+            </button>
+            <span class="text-xs font-black text-slate-500 uppercase tracking-widest">Step 4 of 4</span>
+          </div>
+
+          ${renderStepperHeader(4)}
+
+          <!-- Order Confirmation Review Card -->
+          <div class="bg-white border border-gray-100 rounded-3xl p-5 sm:p-8 shadow-soft space-y-6">
+            <div class="border-b pb-4">
+              <div class="inline-block bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full mb-2">Final Review</div>
+              <h1 class="text-xl sm:text-2xl font-black text-slate-900">Order Confirmation Check</h1>
+              <p class="text-xs text-gray-500 mt-1">Please inspect all order details thoroughly before placing your order.</p>
+            </div>
+
+            <!-- 1. Ordered Products Breakdown -->
+            <div class="space-y-3">
+              <div class="flex items-center justify-between">
+                <h3 class="text-xs font-black text-slate-800 uppercase tracking-wider">1. Ordered Items (${L.length})</h3>
+                <button type="button" id="review-edit-items" class="text-xs font-bold text-indigo-600 hover:text-indigo-800 underline">Edit Items</button>
+              </div>
+              <div class="space-y-2.5 bg-slate-50 rounded-2xl p-3.5 sm:p-4 border border-gray-100">
+                ${L.map(l => `
+                  <div class="flex items-center justify-between gap-3 bg-white p-3 rounded-xl border border-gray-100 shadow-2xs">
+                    <div class="flex items-center gap-3 min-w-0">
+                      <img src="${img(l.p)}" alt="" class="w-12 h-14 object-cover rounded-lg bg-gray-50 border border-gray-200 shrink-0">
+                      <div class="min-w-0">
+                        <div class="flex items-center gap-1.5">
+                          <span class="font-mono text-[9px] font-black text-slate-800 bg-gray-100 px-1 py-0.5 rounded">ID: ${esc(getProductId(l.p))}</span>
+                          <p class="font-bold text-xs text-slate-900 truncate">${esc(l.p.name)}</p>
+                        </div>
+                        <p class="text-[11px] text-gray-500 mt-0.5 font-medium">${inr(l.p.price)} × <b>${l.qty}</b></p>
+                      </div>
+                    </div>
+                    <span class="font-black text-xs sm:text-sm text-slate-900 shrink-0">${inr(l.p.price * l.qty)}</span>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+
+            <!-- 2. Delivery Address Verification -->
+            <div class="space-y-3">
+              <div class="flex items-center justify-between">
+                <h3 class="text-xs font-black text-slate-800 uppercase tracking-wider">2. Delivery Address</h3>
+                <button type="button" id="review-edit-address" class="text-xs font-bold text-indigo-600 hover:text-indigo-800 underline">Change Address</button>
+              </div>
+              <div class="bg-slate-50 rounded-2xl p-4 border border-gray-100 text-xs space-y-1 leading-relaxed">
+                <div class="flex items-center gap-2">
+                  <span class="font-black text-sm text-slate-900">${esc(addr.name)}</span>
+                  <span class="bg-white border border-gray-200 px-2 py-0.5 rounded-full text-[10px] font-bold text-slate-700">📞 ${esc(addr.phone)}</span>
+                </div>
+                <p class="text-slate-700 font-medium mt-1">${esc(addr.line)}</p>
+                <p class="text-slate-600 font-medium">${esc(addr.city)}, ${esc(addr.state)} - <span class="font-bold text-slate-900 font-mono">${esc(addr.pincode)}</span></p>
+              </div>
+            </div>
+
+            <!-- 3. Payment Method Verification -->
+            <div class="space-y-3">
+              <div class="flex items-center justify-between">
+                <h3 class="text-xs font-black text-slate-800 uppercase tracking-wider">3. Payment Details</h3>
+                <button type="button" id="review-edit-payment" class="text-xs font-bold text-indigo-600 hover:text-indigo-800 underline">Change Payment</button>
+              </div>
+              <div class="bg-slate-50 rounded-2xl p-4 border border-gray-100 text-xs space-y-2">
+                <div class="flex items-center justify-between">
+                  <span class="font-bold text-gray-500">Method</span>
+                  <span class="font-black text-slate-900 flex items-center gap-1.5">
+                    ${method === 'UPI' ? `${ICONS.upi} Online UPI / QR` : `${ICONS.cash} Cash on Delivery`}
+                  </span>
+                </div>
+                ${method === 'UPI' ? `
+                  <div class="flex items-center justify-between border-t border-gray-200 pt-2">
+                    <span class="font-bold text-gray-500">UPI Ref / UTR</span>
+                    <span class="font-mono font-black text-slate-900 bg-white border border-gray-200 px-2 py-0.5 rounded select-all">${esc(utrNumber)}</span>
+                  </div>
+                ` : `
+                  <div class="flex items-center justify-between border-t border-gray-200 pt-2">
+                    <span class="font-bold text-gray-500">Payment Status</span>
+                    <span class="text-amber-800 font-bold bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-full text-[10px]">Pay Cash on Arrival</span>
+                  </div>
+                `}
+              </div>
+            </div>
+
+            <!-- 4. Price & Bill Summary -->
+            <div class="space-y-3">
+              <h3 class="text-xs font-black text-slate-800 uppercase tracking-wider">4. Price Summary</h3>
+              <div class="bg-slate-50 rounded-2xl p-4 border border-gray-100 text-xs space-y-2">
+                <div class="flex justify-between text-gray-600"><span>Items Total (${L.reduce((s,i)=>s+i.qty,0)} sarees)</span><span class="font-bold text-slate-900">${inr(sub)}</span></div>
+                <div class="flex justify-between text-emerald-700 font-bold"><span>Discount ${coupon ? `(${coupon})` : ''}</span><span>−${inr(d)}</span></div>
+                <div class="flex justify-between text-gray-600"><span>Shipping / Delivery</span><span class="text-emerald-700 font-bold">FREE DELIVERY</span></div>
+                <div class="flex justify-between font-black text-base border-t border-gray-200 pt-2.5 text-slate-900">
+                  <span>${method === 'UPI' ? 'Total Amount Paid' : 'Amount to Pay on Delivery'}</span>
+                  <span class="text-emerald-700 font-black text-lg">${inr(totalPayable)}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Final Confirm Button -->
+            <div class="pt-4 border-t space-y-3">
+              <button id="btn-final-confirm-order" type="button" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-4 rounded-full text-sm sm:text-base tracking-wide shadow-lg hover:shadow-xl transition flex items-center justify-center gap-2">
+                <span>Confirm & Place Order · ${inr(totalPayable)}</span>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+              </button>
+              <p class="text-[11px] text-center text-gray-400">By confirming, you agree to place this order with Thaarai Tex.</p>
+            </div>
+
+          </div>
+        </div>
+      `;
+
+      // Back navigation & Edit links
+      $('#btn-back-to-step3').onclick = () => { currentStep = 3; renderStepView(); };
+      $('#review-edit-items').onclick = () => { currentStep = 1; renderStepView(); };
+      $('#review-edit-address').onclick = () => { currentStep = 2; renderStepView(); };
+      $('#review-edit-payment').onclick = () => { currentStep = 3; renderStepView(); };
+
+      // Final Confirm Click
+      $('#btn-final-confirm-order').onclick = async () => {
+        const b = $('#btn-final-confirm-order');
+        b.disabled = true;
+        b.innerHTML = `
+          <svg class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
+          <span>Placing Order…</span>
+        `;
+
+        try{
+          if(!sb) throw new Error('Database connection missing');
+          const orderItems = isBuyNow 
+            ? [{ id: buyNowItem.id, qty: buyNowItem.qty }] 
+            : cart.map(i => ({ id: i.id, qty: i.qty }));
+
+          const { data: orderId, error } = await sb.rpc('place_order_guest', {
+            p_items: orderItems,
+            p_address: addr,
+            p_coupon: coupon || null,
+            p_method: method,
+            p_ref: utrNumber || null
+          });
+
+          if(error){
+            toast(error.message);
+            b.disabled = false;
+            b.textContent = 'Confirm & Place Order · ' + inr(totalPayable);
+            return;
+          }
+
+          const owner = profile()?.phone || addr.phone;
+          await sb.rpc('set_order_account', { p_id: orderId, p_account: owner });
+          if(!profile()) await setProfile(addr.name, addr.phone);
+          const L2 = await getAddrs();
+          if(!L2.some(x => x.line === addr.line && x.pincode === addr.pincode)){
+            await setAddrs([...L2, { ...addr, id: Date.now().toString(36), def: !L2.length }]);
+          }
+
+          if(isBuyNow){
+            buyNowItem = null;
+          } else {
+            cart = [];
+            saveCart();
+          }
+          OC = { list: [] };
+
+          // Show dedicated full-screen blank page animation for order placed
+          window.scrollTo({ top: 0, behavior: 'instant' });
+          $('#tabbar')?.classList.add('hidden');
+
+          document.body.innerHTML = `
+            <div class="fixed inset-0 z-[999999] bg-white flex flex-col items-center justify-center text-center p-6 select-none animate-fadeIn">
+              <div class="py-4">
+                <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+                  <circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none"/>
+                  <path class="checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+                </svg>
+              </div>
+              <h1 class="text-3xl font-black text-slate-950 tracking-tight mt-3">Order Placed Successfully!</h1>
+              <p class="text-sm font-semibold text-slate-500 mt-2 max-w-sm mx-auto leading-relaxed">
+                உங்கள் ஆர்டர் வெற்றிகரமாகப் பதிவானது.<br>
+                Order No: <span class="font-mono font-black text-slate-900 text-base">#${esc(String(orderId).slice(0,8).toUpperCase())}</span>
+                ${method==='UPI'?'<br><span class="text-emerald-700 font-bold text-xs mt-1 inline-block">We will verify your UPI payment shortly.</span>':''}
+              </p>
+              <p class="text-[11px] text-slate-400 mt-6 font-medium animate-pulse">Redirecting to your orders...</p>
+            </div>
+          `;
+
+          // Automatically close after 3 seconds and go to orders tab
+          setTimeout(() => {
+            location.href = '#/account/orders';
+            location.reload();
+          }, 3000);
+          return;
+
+        } catch(err){
+          toast(err.message || 'Error placing order');
+          b.disabled = false;
+          b.textContent = 'Confirm & Place Order · ' + inr(totalPayable);
+        }
+      };
+
+      return;
+    }
+  }
+
+  // Live item quantity adjuster handler in Step 1
   app.onclick = async e => {
     const qbtn = e.target.closest('[data-cq]');
     if(qbtn){
@@ -1795,7 +2280,8 @@ async function checkout(){
         if(next > max) return toast(`Only ${max} available in stock`);
         buyNowItem.qty = next;
         L[0].qty = next;
-        await recalculate();
+        await recalculateTotals();
+        renderStepView();
       } else {
         const itm = cart.find(x => x.id === id);
         if(!itm) return;
@@ -1808,7 +2294,8 @@ async function checkout(){
             saveCart();
             L = await cartLines();
             if(!L.length){ location.hash = '#/cart'; return; }
-            await recalculate();
+            await recalculateTotals();
+            renderStepView();
           }
           return;
         }
@@ -1816,160 +2303,13 @@ async function checkout(){
         itm.qty = next;
         line.qty = next;
         saveCart();
-        await recalculate();
+        await recalculateTotals();
+        renderStepView();
       }
     }
   };
 
-  document.querySelectorAll('input[name=pm]').forEach(r => r.onchange = () => {
-    method = r.value;
-    $('#upi').classList.toggle('hidden', method !== 'UPI');
-    $('#utr').required = method === 'UPI';
-    refresh();
-  });
-
-  $('#cpb').onclick = async () => {
-    coupon = $('#cp').value.trim().toUpperCase();
-    d = await couponDiscount(sub);
-    toast(coupon ? (d ? 'Coupon applied ✓' : 'Coupon not valid or minimum not met') : 'Coupon removed');
-    refresh();
-  };
-
-  const sa = $('#sa');
-  if(sa) sa.onchange = () => {
-    const a = AL.find(x => x.id === sa.value);
-    if(!a) return;
-    $('#a-name').value = a.name;
-    $('#a-phone').value = a.phone;
-    $('#a-pin').value = a.pincode;
-    $('#a-city').value = a.city;
-    $('#a-state').value = a.state;
-    $('#a-line').value = a.line;
-  };
-
-  $('#cf').onsubmit = e => {
-    e.preventDefault();
-    const addr = {
-      name: $('#a-name').value.trim(),
-      phone: $('#a-phone').value.trim(),
-      pincode: $('#a-pin').value.trim(),
-      city: $('#a-city').value.trim(),
-      state: $('#a-state').value.trim(),
-      line: $('#a-line').value.trim()
-    };
-    const utr = method === 'UPI' ? $('#utr').value.trim() : '';
-    if(method === 'UPI' && !/^[A-Za-z0-9]{8,22}$/.test(utr)) return toast('Pay first, then enter the UPI transaction number');
-    confirmBox(addr, utr);
-  };
-
-  function confirmBox(addr, utr){
-    const ov = document.createElement('div');
-    ov.className = 'fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm';
-    ov.innerHTML = `
-      <div class="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-100">
-        <h3 class="font-extrabold text-sm text-gray-900">Please confirm your order</h3>
-        <div class="bg-gray-50 border rounded-2xl p-3 text-xs space-y-2">
-          ${L.map(l => `
-            <div class="flex justify-between items-center gap-2">
-              <span class="truncate"><b class="font-mono text-[10px] text-slate-800 bg-white px-1.5 py-0.5 rounded border mr-1">ID: ${esc(getProductId(l.p))}</b>${esc(l.p.name)} × ${l.qty}</span>
-              <span class="font-bold shrink-0">${inr(l.p.price * l.qty)}</span>
-            </div>
-          `).join('')}
-        </div>
-        <div class="text-xs text-gray-700 leading-relaxed bg-gray-50 p-3 rounded-2xl border">
-          <b>${esc(addr.name)}</b> · ${esc(addr.phone)}<br>
-          ${esc(addr.line)}, ${esc(addr.city)}, ${esc(addr.state)} - ${esc(addr.pincode)}
-        </div>
-        <div class="flex justify-between text-xs"><span>Payment</span><b>${method === 'UPI' ? 'UPI · Ref ' + esc(utr) : 'Cash on Delivery'}</b></div>
-        <div class="flex justify-between text-xs"><span>Delivery</span><b class="text-emerald-700 font-bold">FREE</b></div>
-        <div class="flex justify-between font-extrabold text-sm border-t pt-2">
-          <span>${method === 'UPI' ? 'Amount paid' : 'Amount to pay on delivery'}</span>
-          <span class="text-emerald-700 font-black">${inr(sub - d)}</span>
-        </div>
-        <div class="flex gap-2 pt-2">
-          <button id="cE" class="flex-1 border border-gray-200 rounded-full py-3 text-xs font-bold text-gray-700 flex items-center justify-center hover:bg-gray-50 transition">${ICONS.edit}Edit</button>
-          <button id="cO" class="flex-1 ${btn} !py-3 text-xs">Confirm Order</button>
-        </div>
-      </div>
-    `;
-    document.body.appendChild(ov);
-    ov.querySelector('#cE').onclick = () => ov.remove();
-    ov.querySelector('#cO').onclick = async () => {
-      const b = ov.querySelector('#cO');
-      b.disabled = true;
-      b.textContent = 'Placing order…';
-      try{
-        if(!sb) throw new Error('Database connection missing');
-        const orderItems = isBuyNow 
-          ? [{ id: buyNowItem.id, qty: buyNowItem.qty }] 
-          : cart.map(i => ({ id: i.id, qty: i.qty }));
-
-        const { data: orderId, error } = await sb.rpc('place_order_guest', {
-          p_items: orderItems,
-          p_address: addr,
-          p_coupon: coupon || null,
-          p_method: method,
-          p_ref: utr || null
-        });
-        if(error){
-          toast(error.message);
-          b.disabled = false;
-          b.textContent = 'Confirm Order';
-          return;
-        }
-        const owner = profile()?.phone || addr.phone;
-        await sb.rpc('set_order_account', { p_id: orderId, p_account: owner });
-        if(!profile()) await setProfile(addr.name, addr.phone);
-        const L2 = await getAddrs();
-        if(!L2.some(x => x.line === addr.line && x.pincode === addr.pincode)){
-          await setAddrs([...L2, { ...addr, id: Date.now().toString(36), def: !L2.length }]);
-        }
-
-        // Clean up: if it was Buy Now, leave the cart untouched! If cart checkout, clear cart.
-        if(isBuyNow){
-          buyNowItem = null;
-        } else {
-          cart = [];
-          saveCart();
-        }
-        OC = { list: [] };
-        ov.remove();
-
-        // Show dedicated full-screen blank page animation for order placed
-        window.scrollTo({ top: 0, behavior: 'instant' });
-        $('#tabbar')?.classList.add('hidden');
-
-        document.body.innerHTML = `
-          <div class="fixed inset-0 z-[999999] bg-white flex flex-col items-center justify-center text-center p-6 select-none animate-fadeIn">
-            <div class="py-4">
-              <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
-                <circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none"/>
-                <path class="checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
-              </svg>
-            </div>
-            <h1 class="text-3xl font-black text-slate-950 tracking-tight mt-3">Order Placed Successfully!</h1>
-            <p class="text-sm font-semibold text-slate-500 mt-2 max-w-sm mx-auto leading-relaxed">
-              உங்கள் ஆர்டர் வெற்றிகரமாகப் பதிவானது.<br>
-              Order No: <span class="font-mono font-black text-slate-900 text-base">#${esc(String(orderId).slice(0,8).toUpperCase())}</span>
-              ${method==='UPI'?'<br><span class="text-emerald-700 font-bold text-xs mt-1 inline-block">We will verify your UPI payment shortly.</span>':''}
-            </p>
-            <p class="text-[11px] text-slate-400 mt-6 font-medium animate-pulse">Redirecting to your orders...</p>
-          </div>
-        `;
-
-        // Automatically close after 3 seconds and go to orders tab
-        setTimeout(() => {
-          location.href = '#/account/orders';
-          location.reload();
-        }, 3000);
-        return;
-      } catch(err){
-        toast(err.message || 'Error placing order');
-        b.disabled = false;
-        b.textContent = 'Confirm Order';
-      }
-    };
-  }
+  renderStepView();
 }
 
 /* ===== LOGIN ===== */
