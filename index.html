@@ -3204,7 +3204,7 @@ $('#brand').addEventListener('click', e => {
   }
 });
 
-/* ===== SHOP & APP NAVIGATION LOCK (NEVER EXIT TO BROWSER / STAY IN STORE) ===== */
+/* ===== ANDROID GESTURE & MOBILE BACK TRAP (NEVER CLOSE BROWSER) ===== */
 let currentRoute = location.hash || '#/';
 let isLinkNavigation = false;
 
@@ -3219,38 +3219,42 @@ document.addEventListener('click', (e) => {
   }
 }, true);
 
-// Keep a buffer of history states so pressing back NEVER closes the browser tab
-function pushExitGuard(){
+// Pre-fill deep history stack on Android so edge swipes have dummy states to consume
+function seedHistoryStack(){
   try {
-    const s = { thaaraiGuard: true, t: Date.now() };
-    history.pushState(s, '', location.href);
+    for(let i = 0; i < 8; i++){
+      history.pushState({ thaaraiGuard: true, i, t: Date.now() }, '', location.href);
+    }
   } catch(e){}
 }
 
-// Continuous guard injection so double back never escapes the website
 function maintainHistoryGuard(){
   try {
-    const s = { thaaraiGuard: true, t: Date.now() };
-    history.replaceState(s, '', location.href);
-    history.pushState(s, '', location.href);
+    history.pushState({ thaaraiGuard: true, t: Date.now() }, '', location.href);
   } catch(e){}
 }
 
+// Seed on startup & on first user touch
+seedHistoryStack();
+window.addEventListener('touchstart', () => maintainHistoryGuard(), { once: true, passive: true });
+
+// Prevent Android swipe back or mobile back button from closing browser
 window.addEventListener('popstate', event => {
-  // 1. If user clicked a tab or link (Profile, Orders, Home, Bag, Product), let it navigate naturally!
+  // Always immediately push back a dummy state so Android swipe gesture can NEVER pop to 0
+  maintainHistoryGuard();
+
+  // If user tapped a tab or link (Profile, Orders, Bag, etc.), let it navigate naturally
   if(isLinkNavigation){
     currentRoute = location.hash || '#/';
-    maintainHistoryGuard();
     return;
   }
 
-  // 2. Close open filter or sort modals first
+  // Close modals if open
   const sortModal = $('#sort-page-modal');
   if(sortModal && !sortModal.classList.contains('hidden')){
     sortModal.classList.add('hidden');
     document.documentElement.classList.remove('overflow-hidden');
     document.body.classList.remove('overflow-hidden', 'touch-none');
-    maintainHistoryGuard();
     return;
   }
   const fl = $('#fl');
@@ -3258,22 +3262,19 @@ window.addEventListener('popstate', event => {
     fl.classList.add('hidden');
     document.documentElement.classList.remove('overflow-hidden');
     document.body.classList.remove('overflow-hidden', 'touch-none');
-    maintainHistoryGuard();
     return;
   }
 
   const h = location.hash || '#/';
 
-  // 3. If user is in an inner page (like product detail, cart, order details, addresses, profile), let back go to previous view
+  // Inner detail screens can step back to previous screen
   if(h.startsWith('#/p/') || h.startsWith('#/account/order-detail') || h.startsWith('#/account/addresses') || h.startsWith('#/account/profile') || h.startsWith('#/account/wishlist')){
-    maintainHistoryGuard();
     return;
   }
 
-  // 4. If already on home, or on shop, or pressing back from a main tab: LOCK firmly into Shop so browser NEVER exits!
-  maintainHistoryGuard();
+  // Trapped at base: Android swipe gesture forces reload to Shop tab
   if(location.hash !== '#/shop'){
-    location.hash = '#/shop';
+    location.replace('#/shop');
   } else {
     route();
   }
