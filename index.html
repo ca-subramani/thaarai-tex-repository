@@ -1352,32 +1352,47 @@ async function shop(params){
   </div>`;
 
   // Open / Close Split Filter Page Modal with total background scroll lock
+  // Open / Close Split Filter Page Modal with total background scroll lock
   const openFilters = () => {
     $('#fl').classList.remove('hidden');
     document.documentElement.classList.add('overflow-hidden');
     document.body.classList.add('overflow-hidden', 'touch-none');
+    try {
+      history.pushState({ thaaraiModal: 'filter' }, '', location.href);
+    } catch(e){}
   };
-  const closeFilters = () => {
+  const closeFilters = (fromPop = false) => {
+    if($('#fl').classList.contains('hidden')) return;
     $('#fl').classList.add('hidden');
     document.documentElement.classList.remove('overflow-hidden');
     document.body.classList.remove('overflow-hidden', 'touch-none');
+    if(!fromPop && history.state && history.state.thaaraiModal === 'filter'){
+      history.back();
+    }
   };
   $('#ftg').onclick = openFilters;
-  $('#filter-close').onclick = closeFilters;
+  $('#filter-close').onclick = () => closeFilters();
 
   // Separate Sort Page Modal Open / Close with total background scroll lock
   const openSortPage = () => {
     $('#sort-page-modal').classList.remove('hidden');
     document.documentElement.classList.add('overflow-hidden');
     document.body.classList.add('overflow-hidden', 'touch-none');
+    try {
+      history.pushState({ thaaraiModal: 'sort' }, '', location.href);
+    } catch(e){}
   };
-  const closeSortPage = () => {
+  const closeSortPage = (fromPop = false) => {
+    if($('#sort-page-modal').classList.contains('hidden')) return;
     $('#sort-page-modal').classList.add('hidden');
     document.documentElement.classList.remove('overflow-hidden');
     document.body.classList.remove('overflow-hidden', 'touch-none');
+    if(!fromPop && history.state && history.state.thaaraiModal === 'sort'){
+      history.back();
+    }
   };
   $('#sort-open').onclick = openSortPage;
-  $('#sort-page-back').onclick = closeSortPage;
+  $('#sort-page-back').onclick = () => closeSortPage();
 
   // Pending filter states
   let pendingCat = f.cat;
@@ -3391,13 +3406,7 @@ window.addEventListener('popstate', event => {
 
   const current = location.hash || '#/';
 
-  // 2. Sub-routes allow normal back traversal
-  if(isLinkNavigation || current.startsWith('#/cart') || current.startsWith('#/account') || current.startsWith('#/p/') || current.startsWith('#/checkout')){
-    currentRoute = current;
-    return;
-  }
-
-  // 3. Traps any back swipe / back button on Home: ALWAYS hard reload home
+  // 2. Traps back swipe / back button on Home: ALWAYS hard reload home
   if(current === '#/' || current === '#' || current === ''){
     try {
       history.pushState({ thaaraiHomeGuard: true }, '', '#/');
@@ -3407,6 +3416,7 @@ window.addEventListener('popstate', event => {
     return;
   }
 
+  // 3. For all other pages, route() immediately renders the previous page
   route();
 });
 
