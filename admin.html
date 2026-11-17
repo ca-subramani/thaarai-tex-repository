@@ -1624,17 +1624,17 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
 
           <!-- Box 4: Photos Gallery Card Box -->
           <div class="bg-white rounded-3xl p-5 sm:p-6 shadow-soft border border-slate-200/80 space-y-4 min-w-0">
-            <div class="flex items-center justify-between pb-2 border-b border-slate-100 min-w-0">
+            <div class="pb-3 border-b border-slate-100 space-y-3 min-w-0">
               <div>
                 <h3 class="font-extrabold text-xs text-slate-900 uppercase tracking-wider">Product Photos</h3>
                 <p class="text-[11px] text-slate-500 mt-0.5">First photo is automatically the storefront cover image.</p>
               </div>
-              <div class="flex gap-2">
-                <button type="button" data-product-local class="rounded-full bg-slate-900 hover:bg-slate-800 px-3.5 py-1.5 text-xs font-bold text-white transition shadow-soft flex items-center gap-1 active:scale-95">
-                  ${SVG.plus} <span>Upload</span>
+              <div class="flex items-center gap-2 pt-1">
+                <button type="button" data-product-local class="flex-1 sm:flex-none justify-center rounded-full bg-slate-900 hover:bg-slate-800 px-4 py-2 text-xs font-bold text-white transition shadow-soft flex items-center gap-1.5 active:scale-95">
+                  ${SVG.plus} <span>Upload Photo</span>
                 </button>
-                <button type="button" data-product-library class="rounded-full border border-slate-200 bg-white hover:bg-slate-50 px-3.5 py-1.5 text-xs font-bold text-slate-700 transition flex items-center gap-1 shadow-soft">
-                  ${SVG.media} <span>Library</span>
+                <button type="button" data-product-library class="flex-1 sm:flex-none justify-center rounded-full border border-slate-200 bg-white hover:bg-slate-50 px-4 py-2 text-xs font-bold text-slate-700 transition flex items-center gap-1.5 shadow-soft">
+                  ${SVG.media} <span>Media Library</span>
                 </button>
               </div>
             </div>
