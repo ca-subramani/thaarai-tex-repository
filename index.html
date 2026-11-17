@@ -1819,14 +1819,21 @@ async function product(id){
     lb.classList.remove('hidden');
     document.documentElement.classList.add('overflow-hidden');
     document.body.classList.add('overflow-hidden', 'touch-none');
+    try {
+      history.pushState({ thaaraiLightbox: true, pid: p.id }, '', location.href);
+    } catch(e){}
   };
 
-  const closeLb = () => {
+  const closeLb = (fromPopstate = false) => {
+    if(lb.classList.contains('hidden')) return;
     lb.classList.add('hidden');
     document.documentElement.classList.remove('overflow-hidden');
     document.body.classList.remove('overflow-hidden', 'touch-none');
     lbScale = 1;
     resetLightboxZoom();
+    if(!fromPopstate && history.state && history.state.thaaraiLightbox){
+      history.back();
+    }
   };
 
   // Open on clicking main image stage or zoom icon
