@@ -1688,6 +1688,8 @@ async function checkout(){
     line: saved.line || ''
   };
 
+  let showingSavedAddressPage = false;
+
   const recalculateTotals = async () => {
     sub = L.reduce((s,l) => s + l.p.price * l.qty, 0);
     d = await couponDiscount(sub);
@@ -1701,10 +1703,12 @@ async function checkout(){
       { num: 4, label: 'Confirm' }
     ];
     return `
-      <div class="w-full max-w-2xl mx-auto mb-6 px-1">
-        <div class="flex items-center justify-between relative">
-          <div class="absolute top-1/2 left-4 right-4 h-0.5 bg-gray-200 -translate-y-1/2 z-0"></div>
-          <div class="absolute top-1/2 left-4 h-0.5 bg-slate-900 -translate-y-1/2 z-0 transition-all duration-300" style="width: ${((activeStep-1)/3)*100}%"></div>
+      <div class="w-full max-w-2xl mx-auto mb-6 px-4 sm:px-6">
+        <div class="relative flex items-center justify-between">
+          <!-- Constrained background progress line bounded strictly inside the step numbers -->
+          <div class="absolute left-6 right-6 top-4 h-1 bg-gray-200 -translate-y-1/2 z-0 rounded-full">
+            <div class="h-full bg-slate-900 rounded-full transition-all duration-300" style="width: ${((activeStep - 1) / 3) * 100}%"></div>
+          </div>
           ${steps.map(st => {
             const isCompleted = activeStep > st.num;
             const isCurrent = activeStep === st.num;
@@ -1828,6 +1832,91 @@ async function checkout(){
     // STEP 2: ADDRESS DETAILS
     // ==========================================
     if(currentStep === 2){
+      // SUB-VIEW: SEPARATE DEDICATED SAVED ADDRESSES SELECTION PAGE
+      if(showingSavedAddressPage){
+        app.innerHTML = `
+          <div class="max-w-2xl mx-auto space-y-5 animate-fadeIn">
+            <div class="flex items-center justify-between px-1">
+              <button type="button" id="btn-back-from-saved-addr" class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 bg-white hover:bg-gray-100 text-slate-800 font-bold text-xs shadow-soft transition">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+                <span>Back to Address Form</span>
+              </button>
+              <span class="text-xs font-bold text-slate-500">Select Delivery Location</span>
+            </div>
+
+            <div class="bg-white border border-gray-100 rounded-3xl p-5 sm:p-7 shadow-soft space-y-4">
+              <div class="border-b pb-3">
+                <h2 class="font-extrabold text-base text-slate-900">Your Saved Addresses</h2>
+                <p class="text-xs text-gray-500 mt-0.5">Tap on any saved address to use it for this delivery.</p>
+              </div>
+
+              <div class="space-y-3 pt-1">
+                ${AL.map((a, idx) => {
+                  const isCurrentSelected = (addr.line === a.line && addr.pincode === a.pincode && addr.name === a.name);
+                  return `
+                    <div class="select-saved-addr-card border-2 rounded-2xl p-4 cursor-pointer transition flex items-start justify-between gap-3 ${
+                      isCurrentSelected ? 'border-slate-900 bg-slate-50 shadow-sm' : 'border-gray-200 bg-white hover:border-gray-300'
+                    }" data-aid="${esc(a.id)}">
+                      <div class="space-y-1 min-w-0">
+                        <div class="flex items-center gap-2">
+                          <span class="font-black text-sm text-slate-900">${esc(a.name)}</span>
+                          ${a.def ? `<span class="text-[9px] font-black uppercase tracking-wider bg-slate-900 text-white px-2 py-0.5 rounded-full">Default</span>` : ''}
+                        </div>
+                        <p class="text-xs font-bold text-slate-700">📞 ${esc(a.phone)}</p>
+                        <p class="text-xs text-slate-600 mt-1 leading-relaxed">${esc(a.line)}</p>
+                        <p class="text-xs text-slate-800 font-bold">${esc(a.city)}, ${esc(a.state)} - <span class="font-mono">${esc(a.pincode)}</span></p>
+                      </div>
+                      <button type="button" class="shrink-0 rounded-full px-4 py-2 text-xs font-black transition ${
+                        isCurrentSelected ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-900 hover:text-white'
+                      }">
+                        ${isCurrentSelected ? 'Selected ✓' : 'Use This'}
+                      </button>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+
+              <div class="pt-2">
+                <button type="button" id="btn-enter-new-addr" class="w-full py-3.5 px-4 rounded-2xl border-2 border-dashed border-gray-300 text-slate-700 hover:border-slate-900 font-bold text-xs transition flex items-center justify-center gap-2">
+                  <span>+ Enter a Different / New Address</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+
+        $('#btn-back-from-saved-addr').onclick = () => {
+          showingSavedAddressPage = false;
+          renderStepView();
+        };
+
+        $('#btn-enter-new-addr').onclick = () => {
+          showingSavedAddressPage = false;
+          renderStepView();
+        };
+
+        $$('.select-saved-addr-card').forEach(card => {
+          card.onclick = () => {
+            const aid = card.dataset.aid;
+            const chosen = AL.find(x => x.id === aid);
+            if(chosen){
+              addr.name = chosen.name;
+              addr.phone = chosen.phone;
+              addr.pincode = chosen.pincode;
+              addr.city = chosen.city;
+              addr.state = chosen.state;
+              addr.line = chosen.line;
+              toast('Address selected ✓');
+            }
+            showingSavedAddressPage = false;
+            renderStepView();
+          };
+        });
+
+        return;
+      }
+
+      // STANDARD STEP 2 ADDRESS FORM
       app.innerHTML = `
         <div class="max-w-2xl mx-auto space-y-5 animate-fadeIn">
           ${renderStepperHeader(2)}
@@ -1844,12 +1933,17 @@ async function checkout(){
             </div>
 
             ${AL.length ? `
-              <div>
-                <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">Select from saved addresses</label>
-                <select id="step-sa" class="w-full border border-gray-200 rounded-2xl p-3 text-xs bg-white font-medium text-slate-800 outline-none focus:border-slate-900">
-                  <option value="">Use a saved address…</option>
-                  ${AL.map(a => `<option value="${esc(a.id)}">${esc(a.name)} – ${esc(a.line.slice(0,35))}, ${esc(a.pincode)}</option>`).join('')}
-                </select>
+              <!-- Separate Dedicated Page Trigger Button for Saved Addresses -->
+              <div class="bg-slate-50 border border-slate-200 rounded-2xl p-3.5 flex items-center justify-between gap-3">
+                <div class="min-w-0">
+                  <span class="text-[10px] font-black uppercase tracking-wider text-slate-400 block">Saved Addresses (${AL.length})</span>
+                  <p class="text-xs font-bold text-slate-900 truncate mt-0.5">
+                    ${addr.line ? `Current: ${esc(addr.name)} – ${esc(addr.line.slice(0,25))}…` : 'Choose from your saved addresses'}
+                  </p>
+                </div>
+                <button type="button" id="btn-open-saved-addr-page" class="shrink-0 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs px-4 py-2 rounded-xl transition shadow-sm flex items-center gap-1.5 active:scale-95">
+                  <span>Choose Address ➔</span>
+                </button>
               </div>
             ` : ''}
 
@@ -1879,18 +1973,18 @@ async function checkout(){
         </div>
       `;
 
-      // Saved address dropdown
-      const saEl = $('#step-sa');
-      if(saEl){
-        saEl.onchange = () => {
-          const a = AL.find(x => x.id === saEl.value);
-          if(!a) return;
-          $('#a-name').value = a.name;
-          $('#a-phone').value = a.phone;
-          $('#a-pin').value = a.pincode;
-          $('#a-city').value = a.city;
-          $('#a-state').value = a.state;
-          $('#a-line').value = a.line;
+      // Trigger button to open the dedicated saved addresses selection page
+      const openBtn = $('#btn-open-saved-addr-page');
+      if(openBtn){
+        openBtn.onclick = () => {
+          addr.name = $('#a-name')?.value.trim() || addr.name;
+          addr.phone = $('#a-phone')?.value.trim() || addr.phone;
+          addr.pincode = $('#a-pin')?.value.trim() || addr.pincode;
+          addr.city = $('#a-city')?.value.trim() || addr.city;
+          addr.state = $('#a-state')?.value.trim() || addr.state;
+          addr.line = $('#a-line')?.value.trim() || addr.line;
+          showingSavedAddressPage = true;
+          renderStepView();
         };
       }
 
@@ -1926,7 +2020,7 @@ async function checkout(){
     }
 
     // ==========================================
-    // STEP 3: PAYMENT DETAILS
+    // STEP 3: PAYMENT DETAILS (RESPONSIVE ALIGNMENT FIX FOR MOBILE)
     // ==========================================
     if(currentStep === 3){
       const totalPayable = sub - d;
@@ -1948,26 +2042,50 @@ async function checkout(){
             </div>
 
             <div class="space-y-3 pt-1">
-              <label class="flex items-center justify-between border-2 rounded-2xl p-4 cursor-pointer transition ${method === 'COD' ? 'border-slate-900 bg-slate-50 shadow-sm' : 'border-gray-200 hover:bg-gray-50'}">
-                <div class="flex items-center gap-3">
-                  <input type="radio" name="step-pm" value="COD" ${method === 'COD' ? 'checked' : ''} class="accent-slate-900 w-4 h-4">
-                  <div>
-                    <p class="text-sm font-extrabold text-slate-900 flex items-center gap-2">${ICONS.cash} Cash on Delivery (COD)</p>
-                    <p class="text-[11px] text-gray-500 mt-0.5 font-medium">Pay safely in cash when your sarees are delivered to your door</p>
+              <!-- Cash on Delivery Option Card -->
+              <label class="block border-2 rounded-2xl p-4 cursor-pointer transition ${method === 'COD' ? 'border-slate-900 bg-slate-50 shadow-sm' : 'border-gray-200 hover:bg-gray-50'}">
+                <div class="flex items-start gap-3">
+                  <input type="radio" name="step-pm" value="COD" ${method === 'COD' ? 'checked' : ''} class="accent-slate-900 w-4 h-4 mt-0.5 shrink-0">
+                  <div class="flex-1 min-w-0">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5">
+                      <p class="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+                        ${ICONS.cash} <span>Cash on Delivery (COD)</span>
+                      </p>
+                      <!-- Clean alignment: badge sits below title on mobile, inline on desktop -->
+                      <div>
+                        <span class="inline-block text-[11px] font-bold text-emerald-800 bg-emerald-100/80 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                          ✓ No Extra Fee
+                        </span>
+                      </div>
+                    </div>
+                    <p class="text-[11px] text-gray-500 mt-1 font-medium leading-relaxed">
+                      Pay safely in cash when your sarees are delivered to your door.
+                    </p>
                   </div>
                 </div>
-                <span class="text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">No Extra Fee</span>
               </label>
 
-              <label class="flex items-center justify-between border-2 rounded-2xl p-4 cursor-pointer transition ${method === 'UPI' ? 'border-slate-900 bg-slate-50 shadow-sm' : 'border-gray-200 hover:bg-gray-50'}">
-                <div class="flex items-center gap-3">
-                  <input type="radio" name="step-pm" value="UPI" ${method === 'UPI' ? 'checked' : ''} class="accent-slate-900 w-4 h-4">
-                  <div>
-                    <p class="text-sm font-extrabold text-slate-900 flex items-center gap-2">${ICONS.upi} Online Payment (UPI / QR / GPay / PhonePe)</p>
-                    <p class="text-[11px] text-gray-500 mt-0.5 font-medium">Instant scan & pay via any UPI application</p>
+              <!-- UPI / Online Payment Option Card -->
+              <label class="block border-2 rounded-2xl p-4 cursor-pointer transition ${method === 'UPI' ? 'border-slate-900 bg-slate-50 shadow-sm' : 'border-gray-200 hover:bg-gray-50'}">
+                <div class="flex items-start gap-3">
+                  <input type="radio" name="step-pm" value="UPI" ${method === 'UPI' ? 'checked' : ''} class="accent-slate-900 w-4 h-4 mt-0.5 shrink-0">
+                  <div class="flex-1 min-w-0">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5">
+                      <p class="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+                        ${ICONS.upi} <span>Online Payment (UPI / QR / GPay / PhonePe)</span>
+                      </p>
+                      <!-- Clean alignment: badge sits below title on mobile, inline on desktop -->
+                      <div>
+                        <span class="inline-block text-[11px] font-bold text-sky-800 bg-sky-100/80 px-2.5 py-0.5 rounded-full border border-sky-200">
+                          ⚡ Instant
+                        </span>
+                      </div>
+                    </div>
+                    <p class="text-[11px] text-gray-500 mt-1 font-medium leading-relaxed">
+                      Instant scan & pay via any UPI application (GPay, PhonePe, Paytm).
+                    </p>
                   </div>
                 </div>
-                <span class="text-xs font-bold text-sky-700 bg-sky-50 px-2.5 py-1 rounded-full border border-sky-200">Instant</span>
               </label>
             </div>
 
@@ -1977,6 +2095,22 @@ async function checkout(){
                 <p class="text-xs text-emerald-900 font-medium">Pay exactly <b class="text-base font-black text-emerald-950">${inr(totalPayable)}</b> to this UPI ID:</p>
                 <p class="font-mono bg-white border border-emerald-300 rounded-2xl py-2.5 font-black select-all text-sm text-slate-900 shadow-2xs mt-2">${esc(UPI_ID)}</p>
               </div>
+
+              <div id="step-qr-box" class="flex justify-center py-2 bg-white rounded-2xl border border-emerald-100 p-3 max-w-[200px] mx-auto shadow-sm"></div>
+
+              <div class="flex flex-col sm:flex-row gap-2 justify-center">
+                <a id="step-upi-app-link" href="${upiLink}" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-5 rounded-full inline-flex items-center justify-center gap-1.5 shadow-sm text-xs transition">
+                  <span>Open UPI App</span>
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                </a>
+              </div>
+
+              <div class="text-left pt-2">
+                <label class="block text-[11px] font-bold text-emerald-950 uppercase tracking-wider mb-1">UPI Transaction ID / UTR Number <span class="text-rose-600">*</span></label>
+                <input id="step-utr-input" maxlength="22" placeholder="e.g. 331234567890 (12 digits)" value="${esc(utrNumber)}" class="w-full border border-emerald-300 rounded-2xl p-3 text-xs outline-none focus:border-slate-900 bg-white font-bold text-slate-900">
+                <p class="text-[10px] text-emerald-800 mt-1">Please enter the 12-digit UPI reference number after making payment.</p>
+              </div>
+            </div>
 
               <div id="step-qr-box" class="flex justify-center py-2 bg-white rounded-2xl border border-emerald-100 p-3 max-w-[200px] mx-auto shadow-sm"></div>
 
