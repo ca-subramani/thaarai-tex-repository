@@ -2531,102 +2531,29 @@ async function checkout(){
     }
 
     // ==========================================
-    // STEP 2: ADDRESS DETAILS
+    // STEP 2: ADDRESS DETAILS (SELECT ONE BOX & CONFIRM)
     // ==========================================
     if(currentStep === 2){
-      // SUB-VIEW: SEPARATE DEDICATED SAVED ADDRESSES SELECTION PAGE
-      if(showingSavedAddressPage){
-        app.innerHTML = `
-          <div class="max-w-2xl mx-auto space-y-5 animate-fadeIn">
-            <div class="flex items-center justify-between px-1">
-              <button type="button" id="btn-back-from-saved-addr" class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 bg-white hover:bg-gray-100 text-slate-800 font-bold text-xs shadow-soft transition">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
-                <span>Back to Address Form</span>
-              </button>
-              <span class="text-xs font-bold text-slate-500">Select Delivery Location</span>
-            </div>
+      // Ensure we have a selected address ID if addresses exist
+      let selectedAddrId = addr.id || (AL.find(a => a.def)?.id || AL[0]?.id || '');
+      let isEnteringNew = (!AL.length || showingSavedAddressPage === 'new');
 
-            <div class="bg-white border border-gray-100 rounded-3xl p-5 sm:p-7 shadow-soft space-y-4">
-              <div class="border-b pb-3">
-                <h2 class="font-extrabold text-base text-slate-900">Your Saved Addresses</h2>
-                <p class="text-xs text-gray-500 mt-0.5">Tap on any saved address to use it for this delivery.</p>
-              </div>
-
-              <div class="space-y-3 pt-1">
-                ${AL.map((a, idx) => {
-                  const isCurrentSelected = (addr.line === a.line && addr.pincode === a.pincode && addr.name === a.name);
-                  return `
-                    <div class="select-saved-addr-card border-2 rounded-2xl p-4 cursor-pointer transition flex items-start justify-between gap-3 ${
-                      isCurrentSelected ? 'border-slate-900 bg-slate-50 shadow-sm' : 'border-gray-200 bg-white hover:border-gray-300'
-                    }" data-aid="${esc(a.id)}">
-                      <div class="space-y-1 min-w-0">
-                        <div class="flex items-center gap-2">
-                          <span class="font-black text-sm text-slate-900">${esc(a.name)}</span>
-                          ${a.def ? `<span class="text-[9px] font-black uppercase tracking-wider bg-slate-900 text-white px-2 py-0.5 rounded-full">Default</span>` : ''}
-                        </div>
-                        <p class="text-xs font-bold text-slate-700">📞 ${esc(a.phone)}</p>
-                        <p class="text-xs text-slate-600 mt-1 leading-relaxed">${esc(a.line)}</p>
-                        <p class="text-xs text-slate-800 font-bold">${esc(a.city)}, ${esc(a.state)} - <span class="font-mono">${esc(a.pincode)}</span></p>
-                      </div>
-                      <button type="button" class="shrink-0 rounded-full px-4 py-2 text-xs font-black transition ${
-                        isCurrentSelected ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-900 hover:text-white'
-                      }">
-                        ${isCurrentSelected ? 'Selected ✓' : 'Use This'}
-                      </button>
-                    </div>
-                  `;
-                }).join('')}
-              </div>
-
-              <div class="pt-2">
-                <button type="button" id="btn-enter-new-addr" class="w-full py-3.5 px-4 rounded-2xl border-2 border-dashed border-gray-300 text-slate-700 hover:border-slate-900 font-bold text-xs transition flex items-center justify-center gap-2">
-                  <span>+ Enter a Different / New Address</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        `;
-
-        $('#btn-back-from-saved-addr').onclick = () => {
-          showingSavedAddressPage = false;
-          renderStepView();
-        };
-
-        $('#btn-enter-new-addr').onclick = () => {
-          showingSavedAddressPage = false;
-          renderStepView();
-        };
-
-        $$('.select-saved-addr-card').forEach(card => {
-          card.onclick = () => {
-            const aid = card.dataset.aid;
-            const chosen = AL.find(x => x.id === aid);
-            if(chosen){
-              addr.name = chosen.name;
-              addr.phone = chosen.phone;
-              addr.pincode = chosen.pincode;
-              addr.city = chosen.city;
-              addr.state = chosen.state;
-              addr.line = chosen.line;
-              toast('Address selected ✓');
-            }
-            showingSavedAddressPage = false;
-            renderStepView();
-          };
-        });
-
-        return;
+      // Sync addr object with currently selectedAddrId if not entering new
+      if(!isEnteringNew && selectedAddrId){
+        const match = AL.find(a => a.id === selectedAddrId);
+        if(match){
+          addr = { ...match };
+        }
       }
 
-      // STANDARD STEP 2 ADDRESS FORM
       app.innerHTML = `
         <div class="max-w-2xl mx-auto space-y-5 animate-fadeIn">
           ${renderStepperHeader(2)}
-          <form id="step-addr-form" class="bg-white border border-gray-100 rounded-3xl p-5 sm:p-7 shadow-soft space-y-4">
+          <div class="bg-white border border-gray-100 rounded-3xl p-5 sm:p-7 shadow-soft space-y-4">
             <div class="flex items-center justify-between border-b pb-3">
               <div>
                 <h2 class="font-extrabold text-base text-slate-900">Step 2: Delivery Address</h2>
-                <p class="text-xs text-gray-500 mt-0.5">Where should we deliver your order?</p>
+                <p class="text-xs text-gray-500 mt-0.5">Select a delivery address and click Confirm</p>
               </div>
               <button type="button" id="btn-back-to-step1" class="text-xs font-bold text-slate-600 hover:text-slate-900 underline flex items-center gap-1">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
@@ -2634,69 +2561,85 @@ async function checkout(){
               </button>
             </div>
 
-            ${AL.length ? `
-              <!-- Separate Dedicated Page Trigger Button for Saved Addresses -->
-              <div class="bg-slate-50 border border-slate-200 rounded-2xl p-3.5 flex items-center justify-between gap-3">
-                <div class="min-w-0">
-                  <span class="text-[10px] font-black uppercase tracking-wider text-slate-400 block">Saved Addresses (${AL.length})</span>
-                  <p class="text-xs font-bold text-slate-900 truncate mt-0.5">
-                    ${addr.line ? `Current: ${esc(addr.name)} – ${esc(addr.line.slice(0,25))}…` : 'Choose from your saved addresses'}
-                  </p>
-                </div>
-                <button type="button" id="btn-open-saved-addr-page" class="shrink-0 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs px-4 py-2 rounded-xl transition shadow-sm flex items-center gap-1.5 active:scale-95">
-                  <span>Choose Address ➔</span>
+            ${AL.length && !isEnteringNew ? `
+              <!-- List of Saved Address Selection Boxes -->
+              <div class="space-y-3 pt-1" id="checkout-addr-list">
+                ${AL.map((a) => {
+                  const isSel = (a.id === selectedAddrId);
+                  return `
+                    <label class="checkout-addr-box block relative border-2 rounded-2xl p-4 cursor-pointer transition select-none ${
+                      isSel ? 'border-slate-900 bg-slate-50 dark:bg-slate-800/60 dark:border-sky-400 shadow-sm ring-1 ring-slate-900 dark:ring-sky-400' : 'border-gray-200 bg-white hover:border-gray-300 dark:border-slate-700'
+                    }" data-aid="${esc(a.id)}">
+                      <div class="flex items-start gap-3.5">
+                        <input type="radio" name="chk_sel_addr" value="${esc(a.id)}" ${isSel ? 'checked' : ''} class="w-4 h-4 mt-1 shrink-0 accent-slate-900 dark:accent-sky-400 cursor-pointer">
+                        <div class="flex-1 min-w-0">
+                          <div class="flex items-center gap-2 flex-wrap">
+                            <span class="font-black text-sm text-slate-900">${esc(a.name)}</span>
+                            ${a.def ? `<span class="text-[9px] font-black uppercase tracking-wider bg-slate-900 text-white px-2 py-0.5 rounded-full dark:bg-sky-400 dark:text-slate-950">Default</span>` : ''}
+                            <span class="text-xs font-bold text-slate-600 ml-auto">📞 ${esc(a.phone)}</span>
+                          </div>
+                          <p class="text-xs text-slate-700 mt-1.5 leading-relaxed font-medium">${esc(a.line)}</p>
+                          <p class="text-xs text-slate-900 font-bold mt-1">${esc(a.city)}, ${esc(a.state)} - <span class="font-mono">${esc(a.pincode)}</span></p>
+                        </div>
+                      </div>
+                    </label>
+                  `;
+                }).join('')}
+              </div>
+
+              <!-- Option to add new address -->
+              <div class="pt-2">
+                <button type="button" id="btn-show-new-addr" class="w-full py-3 px-4 rounded-2xl border-2 border-dashed border-gray-300 text-slate-700 hover:border-slate-900 hover:text-slate-900 font-bold text-xs transition flex items-center justify-center gap-2">
+                  <span>+ Add New Address</span>
                 </button>
               </div>
-            ` : ''}
 
-            <div class="space-y-3 pt-1">
-              ${input('a-name','Full name',`required value="${esc(addr.name||'')}"`)}
-              ${input('a-phone','Mobile Number (10 digits)',`required pattern="[6-9][0-9]{9}" maxlength="10" value="${esc(addr.phone||'')}"`)}
-              ${input('a-pin','Pincode',`required pattern="[1-9][0-9]{5}" maxlength="6" value="${esc(addr.pincode||'')}"`)}
-              <div class="grid grid-cols-2 gap-3">
-                ${input('a-city','City / District',`required value="${esc(addr.city||'')}"`)}
-                ${input('a-state','State',`required value="${esc(addr.state||'Tamil Nadu')}"`)}
+              <!-- Action Confirmation Button for Selected Address -->
+              <div class="pt-4 border-t flex gap-3">
+                <button type="button" id="btn-back-to-step1-bottom" class="flex-1 py-3.5 px-4 rounded-full border border-gray-200 bg-white hover:bg-gray-50 text-slate-800 font-bold text-xs transition">
+                  ← Back
+                </button>
+                <button type="button" id="btn-confirm-selected-addr" class="flex-[2] bg-slate-900 hover:bg-slate-800 text-white font-black py-3.5 px-4 rounded-full text-xs shadow-soft transition flex items-center justify-center gap-2">
+                  <span>Confirm Address & Proceed</span>
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                </button>
               </div>
-              <label class="block text-xs font-semibold text-gray-700">Door No, Building Name, Street & Area
-                <textarea id="a-line" required rows="2" class="mt-1 w-full border border-gray-200 rounded-2xl p-3 text-xs outline-none focus:border-slate-900 font-medium">${esc(addr.line||'')}</textarea>
-              </label>
-            </div>
+            ` : `
+              <!-- New / Manual Address Form -->
+              <form id="step-new-addr-form" class="space-y-3 pt-1">
+                ${AL.length ? `
+                  <div class="flex items-center justify-between pb-2">
+                    <span class="text-xs font-bold text-slate-800">Enter New Delivery Address</span>
+                    <button type="button" id="btn-cancel-new-addr" class="text-xs font-bold text-slate-500 hover:text-slate-800 underline">Choose Saved Address</button>
+                  </div>
+                ` : ''}
+                ${input('a-name','Full name',`required value="${esc(addr.name||'')}"`)}
+                ${input('a-phone','Mobile Number (10 digits)',`required pattern="[6-9][0-9]{9}" maxlength="10" value="${esc(addr.phone||'')}"`)}
+                ${input('a-pin','Pincode',`required pattern="[1-9][0-9]{5}" maxlength="6" value="${esc(addr.pincode||'')}"`)}
+                <div class="grid grid-cols-2 gap-3">
+                  ${input('a-city','City / District',`required value="${esc(addr.city||'')}"`)}
+                  ${input('a-state','State',`required value="${esc(addr.state||'Tamil Nadu')}"`)}
+                </div>
+                <label class="block text-xs font-semibold text-gray-700">Door No, Building Name, Street & Area
+                  <textarea id="a-line" required rows="2" class="mt-1 w-full border border-gray-200 rounded-2xl p-3 text-xs outline-none focus:border-slate-900 font-medium">${esc(addr.line||'')}</textarea>
+                </label>
 
-            <div class="pt-3 flex gap-3">
-              <button type="button" id="btn-back-to-step1-bottom" class="flex-1 py-3.5 px-4 rounded-full border border-gray-200 bg-white hover:bg-gray-50 text-slate-800 font-bold text-xs transition">
-                ← Back
-              </button>
-              <button type="submit" class="flex-[2] bg-slate-900 hover:bg-slate-800 text-white font-black py-3.5 px-4 rounded-full text-xs shadow-soft transition flex items-center justify-center gap-2">
-                <span>Proceed to Payment</span>
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
-              </button>
-            </div>
-          </form>
+                <div class="pt-3 flex gap-3">
+                  <button type="button" id="btn-back-to-step1-bottom" class="flex-1 py-3.5 px-4 rounded-full border border-gray-200 bg-white hover:bg-gray-50 text-slate-800 font-bold text-xs transition">
+                    ← Back
+                  </button>
+                  <button type="submit" class="flex-[2] bg-slate-900 hover:bg-slate-800 text-white font-black py-3.5 px-4 rounded-full text-xs shadow-soft transition flex items-center justify-center gap-2">
+                    <span>Confirm Address & Proceed</span>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                  </button>
+                </div>
+              </form>
+            `}
+          </div>
         </div>
       `;
 
-      // Trigger button to open the dedicated saved addresses selection page
-      const openBtn = $('#btn-open-saved-addr-page');
-      if(openBtn){
-        openBtn.onclick = () => {
-          addr.name = $('#a-name')?.value.trim() || addr.name;
-          addr.phone = $('#a-phone')?.value.trim() || addr.phone;
-          addr.pincode = $('#a-pin')?.value.trim() || addr.pincode;
-          addr.city = $('#a-city')?.value.trim() || addr.city;
-          addr.state = $('#a-state')?.value.trim() || addr.state;
-          addr.line = $('#a-line')?.value.trim() || addr.line;
-          showingSavedAddressPage = true;
-          renderStepView();
-        };
-      }
-
       const goBackStep1 = () => {
-        addr.name = $('#a-name')?.value.trim() || addr.name;
-        addr.phone = $('#a-phone')?.value.trim() || addr.phone;
-        addr.pincode = $('#a-pin')?.value.trim() || addr.pincode;
-        addr.city = $('#a-city')?.value.trim() || addr.city;
-        addr.state = $('#a-state')?.value.trim() || addr.state;
-        addr.line = $('#a-line')?.value.trim() || addr.line;
         currentStep = 1;
         renderStepView();
       };
@@ -2704,19 +2647,83 @@ async function checkout(){
       $('#btn-back-to-step1').onclick = goBackStep1;
       $('#btn-back-to-step1-bottom').onclick = goBackStep1;
 
-      $('#step-addr-form').onsubmit = e => {
-        e.preventDefault();
-        addr = {
-          name: $('#a-name').value.trim(),
-          phone: $('#a-phone').value.trim(),
-          pincode: $('#a-pin').value.trim(),
-          city: $('#a-city').value.trim(),
-          state: $('#a-state').value.trim(),
-          line: $('#a-line').value.trim()
+      // Handle selecting an address box directly
+      $$('.checkout-addr-box').forEach(box => {
+        box.onclick = () => {
+          const aid = box.dataset.aid;
+          selectedAddrId = aid;
+          const chosen = AL.find(x => x.id === aid);
+          if(chosen){
+            addr = { ...chosen };
+          }
+          // Visual selection update
+          $$('.checkout-addr-box').forEach(b => {
+            const isMatch = b.dataset.aid === aid;
+            b.className = `checkout-addr-box block relative border-2 rounded-2xl p-4 cursor-pointer transition select-none ${
+              isMatch ? 'border-slate-900 bg-slate-50 dark:bg-slate-800/60 dark:border-sky-400 shadow-sm ring-1 ring-slate-900 dark:ring-sky-400' : 'border-gray-200 bg-white hover:border-gray-300 dark:border-slate-700'
+            }`;
+            const radio = b.querySelector('input[type="radio"]');
+            if(radio) radio.checked = isMatch;
+          });
         };
-        currentStep = 3;
-        renderStepView();
-      };
+      });
+
+      // Confirm button for saved address
+      const confirmBtn = $('#btn-confirm-selected-addr');
+      if(confirmBtn){
+        confirmBtn.onclick = () => {
+          if(!addr || !addr.line || !addr.phone){
+            return toast('Please select a delivery address');
+          }
+          toast('Address confirmed ✓');
+          currentStep = 3;
+          renderStepView();
+        };
+      }
+
+      // Add new address toggle
+      const newAddrBtn = $('#btn-show-new-addr');
+      if(newAddrBtn){
+        newAddrBtn.onclick = () => {
+          showingSavedAddressPage = 'new';
+          renderStepView();
+        };
+      }
+
+      const cancelNewBtn = $('#btn-cancel-new-addr');
+      if(cancelNewBtn){
+        cancelNewBtn.onclick = () => {
+          showingSavedAddressPage = false;
+          renderStepView();
+        };
+      }
+
+      // New address form submission
+      const newForm = $('#step-new-addr-form');
+      if(newForm){
+        newForm.onsubmit = async e => {
+          e.preventDefault();
+          const n = {
+            id: Date.now().toString(36),
+            name: $('#a-name').value.trim(),
+            phone: $('#a-phone').value.trim(),
+            pincode: $('#a-pin').value.trim(),
+            city: $('#a-city').value.trim(),
+            state: $('#a-state').value.trim(),
+            line: $('#a-line').value.trim(),
+            def: !AL.length
+          };
+          addr = { ...n };
+          try {
+            AL.push(n);
+            await setAddrs(AL);
+          } catch(err){}
+          toast('Address confirmed ✓');
+          showingSavedAddressPage = false;
+          currentStep = 3;
+          renderStepView();
+        };
+      }
 
       return;
     }
