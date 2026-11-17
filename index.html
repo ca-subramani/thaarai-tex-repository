@@ -2442,6 +2442,14 @@ async function checkout(){
     `;
   }
 
+  // Checkout state controller for popstate & back gesture handling
+  window._checkoutState = {
+    getStep: () => currentStep,
+    setStep: s => { currentStep = s; renderStepView(); },
+    getSubView: () => showingSavedAddressPage,
+    setSubView: v => { showingSavedAddressPage = v; renderStepView(); }
+  };
+
   function renderStepView(){
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
@@ -2767,7 +2775,6 @@ async function checkout(){
                 <span class="text-xs font-bold text-slate-700 uppercase tracking-wider">
                   ${addr.line ? 'Delivery Address Details (Autofilled)' : 'Enter Delivery Address'}
                 </span>
-                ${addr.line ? `<span class="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full border border-emerald-200">✓ Verified</span>` : ''}
               </div>
 
               ${input('a-name','Full name',`required placeholder="Enter full name" value="${esc(addr.name||'')}"`)}
@@ -4076,6 +4083,27 @@ window.addEventListener('popstate', event => {
 
   const current = location.hash || '#/';
 
+  // Handle Checkout Stepper back navigation (Steps 2, 3, 4, and sub-pages)
+  if(current.startsWith('#/checkout') && window._checkoutState){
+    const sub = window._checkoutState.getSubView();
+    if(sub === 'new'){
+      try { history.pushState({ inCheckout: true }, '', location.href); } catch(e){}
+      window._checkoutState.setSubView('list');
+      return;
+    }
+    if(sub === 'list'){
+      try { history.pushState({ inCheckout: true }, '', location.href); } catch(e){}
+      window._checkoutState.setSubView(false);
+      return;
+    }
+    const step = window._checkoutState.getStep();
+    if(step > 1){
+      try { history.pushState({ inCheckout: true }, '', location.href); } catch(e){}
+      window._checkoutState.setStep(step - 1);
+      return;
+    }
+  }
+
   // 2. Traps back swipe / back button on Home: ALWAYS hard reload home
   if(current === '#/' || current === '#' || current === ''){
     try {
@@ -4121,6 +4149,24 @@ $('#nav-back').onclick = () => {
   if(current.startsWith('#/shop?')){
     location.hash = '#/shop';
     return;
+  }
+
+  // Header back button handling in checkout
+  if(current.startsWith('#/checkout') && window._checkoutState){
+    const sub = window._checkoutState.getSubView();
+    if(sub === 'new'){
+      window._checkoutState.setSubView('list');
+      return;
+    }
+    if(sub === 'list'){
+      window._checkoutState.setSubView(false);
+      return;
+    }
+    const step = window._checkoutState.getStep();
+    if(step > 1){
+      window._checkoutState.setStep(step - 1);
+      return;
+    }
   }
 
   history.back();
