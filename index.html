@@ -219,7 +219,30 @@ html.dark #foot {
   border-top: 1px solid #1e293b;
 }
 
-/* Filter & Modal Modals */
+/* Profile Logo & Avatar Contrast */
+html.dark .profile-avatar-circle {
+  background-color: #38bdf8 !important;
+  color: #0f172a !important;
+}
+html.dark .profile-avatar-ring {
+  border-color: #38bdf8 !important;
+  background-color: #131c2e !important;
+}
+
+/* Loader Dynamic Theme Styling: Green for White theme, Deep Blue for Dark theme */
+html.dark #neon-loader {
+  background-color: #050811 !important;
+}
+html.dark #neon-loader-glow {
+  background: radial-gradient(circle, rgba(14, 165, 233, 0.45) 0%, rgba(2, 132, 199, 0.25) 50%, rgba(3, 105, 161, 0) 75%) !important;
+}
+html.dark #neon-loader-brand-accent {
+  color: #38bdf8 !important;
+}
+html.dark #neon-counter-num {
+  color: #ffffff !important;
+  text-shadow: 0 0 16px rgba(56, 189, 248, 0.95);
+}
 html.dark #fl, html.dark #sort-page-modal {
   background-color: #0b0f17 !important;
 }
@@ -374,25 +397,25 @@ input,select,textarea{font-size:16px!important}
 </div>
 <!-- Back navigation is permanently locked to Shop tab (no exit popups) -->
 
-<!-- Premium Deep Dark Green Ring Counter Loader (Pure Dark Background) -->
+<!-- Premium Neon Ring Counter Loader (Deep Green for White theme, Blue for Dark theme) -->
 <div id="neon-loader" class="fixed inset-0 z-[999999] bg-[#000000] flex flex-col items-center justify-center opacity-0 pointer-events-none select-none transition-all duration-200" style="visibility:hidden">
   <div class="relative w-44 h-44 flex items-center justify-center">
-    <!-- Ambient Radial Deep Emerald Green Glow -->
-    <div class="absolute inset-0 rounded-full bg-gradient-to-tr from-[#064e3b]/45 via-[#047857]/30 to-[#059669]/20 blur-2xl pointer-events-none"></div>
+    <!-- Ambient Radial Glow -->
+    <div id="neon-loader-glow" class="absolute inset-0 rounded-full bg-gradient-to-tr from-[#064e3b]/45 via-[#047857]/30 to-[#059669]/20 blur-2xl pointer-events-none transition-all duration-300"></div>
 
     <!-- Dual Animated Arc Rings SVG -->
     <svg class="w-full h-full" viewBox="0 0 150 150">
       <defs>
-        <!-- Forest Emerald to Rich Jade Green Gradient -->
+        <!-- Forest Emerald to Rich Jade Green Gradient (Default / White Theme) -->
         <linearGradient id="neonGrad1" x1="0%" y1="100%" x2="100%" y2="0%">
-          <stop offset="0%" stop-color="#047857" stop-opacity="0.95" />
-          <stop offset="60%" stop-color="#059669" stop-opacity="0.9" />
-          <stop offset="100%" stop-color="#10b981" stop-opacity="0.85" />
+          <stop id="grad1-stop1" offset="0%" stop-color="#047857" stop-opacity="0.95" />
+          <stop id="grad1-stop2" offset="60%" stop-color="#059669" stop-opacity="0.9" />
+          <stop id="grad1-stop3" offset="100%" stop-color="#10b981" stop-opacity="0.85" />
         </linearGradient>
         <linearGradient id="neonGrad2" x1="100%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stop-color="#10b981" stop-opacity="0.9" />
-          <stop offset="50%" stop-color="#047857" stop-opacity="0.85" />
-          <stop offset="100%" stop-color="#064e3b" stop-opacity="0.75" />
+          <stop id="grad2-stop1" offset="0%" stop-color="#10b981" stop-opacity="0.9" />
+          <stop id="grad2-stop2" offset="50%" stop-color="#047857" stop-opacity="0.85" />
+          <stop id="grad2-stop3" offset="100%" stop-color="#064e3b" stop-opacity="0.75" />
         </linearGradient>
         <!-- Soft Outer Glow Filter -->
         <filter id="neonGlow" x="-30%" y="-30%" width="160%" height="160%">
@@ -405,14 +428,14 @@ input,select,textarea{font-size:16px!important}
         </filter>
       </defs>
 
-      <!-- Outer Deep Emerald Green Arc Ring -->
-      <circle class="neon-spinner-circle" cx="75" cy="75" r="54" fill="none" stroke="url(#neonGrad1)" stroke-width="3" stroke-linecap="round" stroke-dasharray="190 150" filter="url(#neonGlow)"/>
+      <!-- Outer Arc Ring -->
+      <circle id="neon-ring-outer" class="neon-spinner-circle" cx="75" cy="75" r="54" fill="none" stroke="url(#neonGrad1)" stroke-width="3" stroke-linecap="round" stroke-dasharray="190 150" filter="url(#neonGlow)"/>
 
-      <!-- Middle Counter-Rotating Forest Green Arc Ring -->
-      <circle class="neon-spinner-circle-reverse" cx="75" cy="75" r="48" fill="none" stroke="url(#neonGrad2)" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="150 150" filter="url(#neonGlow)"/>
+      <!-- Middle Counter-Rotating Arc Ring -->
+      <circle id="neon-ring-mid" class="neon-spinner-circle-reverse" cx="75" cy="75" r="48" fill="none" stroke="url(#neonGrad2)" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="150 150" filter="url(#neonGlow)"/>
 
-      <!-- Inner Subtle Jade Accent Arc Ring -->
-      <circle class="neon-spinner-circle" cx="75" cy="75" r="42" fill="none" stroke="#10b981" stroke-width="1.8" stroke-linecap="round" stroke-dasharray="100 160" opacity="0.65"/>
+      <!-- Inner Accent Arc Ring -->
+      <circle id="neon-ring-inner" class="neon-spinner-circle" cx="75" cy="75" r="42" fill="none" stroke="#10b981" stroke-width="1.8" stroke-linecap="round" stroke-dasharray="100 160" opacity="0.65"/>
     </svg>
 
     <!-- Center Glowing Live Percentage Counter -->
@@ -420,7 +443,7 @@ input,select,textarea{font-size:16px!important}
       <span id="neon-counter-num" class="text-2xl font-black tracking-tight text-white drop-shadow-[0_0_12px_rgba(5,150,105,0.9)] font-mono">0</span>
     </div>
   </div>
-  <p class="mt-4 text-[11px] font-black uppercase tracking-[0.26em] text-white/90 drop-shadow-[0_0_8px_rgba(16,185,129,0.5)]">THAARAI <span class="text-[#10b981]">TEX</span></p>
+  <p class="mt-4 text-[11px] font-black uppercase tracking-[0.26em] text-white/90 drop-shadow-[0_0_8px_rgba(16,185,129,0.5)]">THAARAI <span id="neon-loader-brand-accent" class="text-[#10b981]">TEX</span></p>
 </div>
 
 <script>
@@ -550,10 +573,51 @@ function toast(m, isError=false){
 /* Futuristic Neon Ring Counter Loader Control */
 let _neonTimer = null;
 let _neonProgress = 0;
+function applyLoaderTheme(){
+  const isDark = document.documentElement.classList.contains('dark');
+  const g1s1 = $('#grad1-stop1'), g1s2 = $('#grad1-stop2'), g1s3 = $('#grad1-stop3');
+  const g2s1 = $('#grad2-stop1'), g2s2 = $('#grad2-stop2'), g2s3 = $('#grad2-stop3');
+  const innerRing = $('#neon-ring-inner');
+  const glow = $('#neon-loader-glow');
+  const accent = $('#neon-loader-brand-accent');
+  const num = $('#neon-counter-num');
+
+  if(isDark){
+    // Deep Ocean / Neon Sky Blue for Dark Theme
+    if(g1s1) g1s1.setAttribute('stop-color', '#0284c7');
+    if(g1s2) g1s2.setAttribute('stop-color', '#0ea5e9');
+    if(g1s3) g1s3.setAttribute('stop-color', '#38bdf8');
+
+    if(g2s1) g2s1.setAttribute('stop-color', '#38bdf8');
+    if(g2s2) g2s2.setAttribute('stop-color', '#0284c7');
+    if(g2s3) g2s3.setAttribute('stop-color', '#0369a1');
+
+    if(innerRing) innerRing.setAttribute('stroke', '#38bdf8');
+    if(glow) glow.className = 'absolute inset-0 rounded-full bg-gradient-to-tr from-[#0284c7]/45 via-[#0ea5e9]/30 to-[#38bdf8]/20 blur-2xl pointer-events-none transition-all duration-300';
+    if(accent) { accent.className = 'text-[#38bdf8]'; }
+    if(num) { num.style.filter = 'drop-shadow(0 0 14px rgba(14,165,233,0.95))'; }
+  } else {
+    // Rich Forest / Jade Green for White Theme
+    if(g1s1) g1s1.setAttribute('stop-color', '#047857');
+    if(g1s2) g1s2.setAttribute('stop-color', '#059669');
+    if(g1s3) g1s3.setAttribute('stop-color', '#10b981');
+
+    if(g2s1) g2s1.setAttribute('stop-color', '#10b981');
+    if(g2s2) g2s2.setAttribute('stop-color', '#047857');
+    if(g2s3) g2s3.setAttribute('stop-color', '#064e3b');
+
+    if(innerRing) innerRing.setAttribute('stroke', '#10b981');
+    if(glow) glow.className = 'absolute inset-0 rounded-full bg-gradient-to-tr from-[#064e3b]/45 via-[#047857]/30 to-[#059669]/20 blur-2xl pointer-events-none transition-all duration-300';
+    if(accent) { accent.className = 'text-[#10b981]'; }
+    if(num) { num.style.filter = 'drop-shadow(0 0 12px rgba(5,150,105,0.9))'; }
+  }
+}
+
 function showNeonLoader(){
   const el = $('#neon-loader');
   const num = $('#neon-counter-num');
   if(!el || !num) return;
+  applyLoaderTheme();
   if(_neonTimer) clearInterval(_neonTimer);
   _neonProgress = Math.floor(Math.random() * 8) + 12; // Start quickly around 12-20%
   num.textContent = _neonProgress;
@@ -3356,7 +3420,7 @@ function hubHtml(pf){
   return `<div class="max-w-md mx-auto bg-white rounded-3xl p-6 shadow-soft border border-gray-100 my-2">
     <div class="flex items-center justify-between pb-3"><button onclick="location.hash='#/'" aria-label="Back" class="w-9 h-9 rounded-full bg-gray-50 flex items-center justify-center text-gray-700 hover:bg-gray-100">${ICONS.back}</button><h2 class="font-extrabold text-base text-gray-900">Profile</h2><div class="w-9"></div></div>
     <div class="flex flex-col items-center mt-3">
-      <div class="w-24 h-24 rounded-full p-1 border-2 border-slate-200 shadow-soft flex items-center justify-center bg-white"><div class="w-full h-full rounded-full bg-slate-900 flex items-center justify-center text-white text-3xl font-extrabold">${esc((pf.name[0]||'C').toUpperCase())}</div></div>
+      <div class="profile-avatar-ring w-24 h-24 rounded-full p-1 border-2 border-slate-200 shadow-soft flex items-center justify-center bg-white"><div class="profile-avatar-circle w-full h-full rounded-full bg-slate-900 flex items-center justify-center text-white text-3xl font-extrabold">${esc((pf.name[0]||'C').toUpperCase())}</div></div>
       <h3 class="text-base font-bold text-gray-900 mt-3">${esc(pf.name)}</h3>
       <p class="text-[11px] text-gray-500 font-medium mt-0.5">+91 ${esc(pf.phone)}</p>
     </div>
