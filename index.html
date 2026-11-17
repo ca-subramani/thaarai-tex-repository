@@ -80,6 +80,29 @@ input,select,textarea{font-size:16px!important}
   stroke: #10b981;
   animation: stroke .3s cubic-bezier(.65,0,.45,1) .55s forwards;
 }
+
+/* Futuristic Neon Ring Counter Loader */
+#neon-loader {
+  transition: opacity 0.25s ease-out, visibility 0.25s ease-out;
+}
+.neon-spinner-circle {
+  transform-origin: 75px 75px;
+  animation: neonSpin 1.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+.neon-spinner-circle-reverse {
+  transform-origin: 75px 75px;
+  animation: neonSpinRev 2.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+@keyframes neonSpin {
+  0% { transform: rotate(0deg); }
+  50% { transform: rotate(180deg); }
+  100% { transform: rotate(360deg); }
+}
+@keyframes neonSpinRev {
+  0% { transform: rotate(360deg); }
+  50% { transform: rotate(180deg); }
+  100% { transform: rotate(0deg); }
+}
 </style>
 </head>
 <body class="text-gray-900 antialiased selection:bg-slate-900 selection:text-white">
@@ -129,6 +152,55 @@ input,select,textarea{font-size:16px!important}
   </div>
 </div>
 <!-- Back navigation is permanently locked to Shop tab (no exit popups) -->
+
+<!-- Futuristic Neon Ring Counter Loader (Matches Video Reference) -->
+<div id="neon-loader" class="fixed inset-0 z-[999999] bg-black/90 backdrop-blur-md flex flex-col items-center justify-center opacity-0 pointer-events-none select-none transition-all duration-200" style="visibility:hidden">
+  <div class="relative w-44 h-44 flex items-center justify-center">
+    <!-- Outer ambient radial neon glow -->
+    <div class="absolute inset-0 rounded-full bg-gradient-to-tr from-rose-600/30 via-red-500/20 to-purple-600/25 blur-2xl pointer-events-none"></div>
+
+    <!-- Dual Animated Neon Arc Rings SVG -->
+    <svg class="w-full h-full" viewBox="0 0 150 150">
+      <defs>
+        <!-- Red to Violet/Blue Neon Gradient -->
+        <linearGradient id="neonGrad1" x1="0%" y1="100%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#ff1e42" stop-opacity="0.95" />
+          <stop offset="65%" stop-color="#ff3366" stop-opacity="0.9" />
+          <stop offset="100%" stop-color="#8054ff" stop-opacity="0.8" />
+        </linearGradient>
+        <linearGradient id="neonGrad2" x1="100%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#ff2a55" stop-opacity="0.9" />
+          <stop offset="70%" stop-color="#e01235" stop-opacity="0.8" />
+          <stop offset="100%" stop-color="#5544ff" stop-opacity="0.7" />
+        </linearGradient>
+        <!-- Soft Outer Glow Filter -->
+        <filter id="neonGlow" x="-30%" y="-30%" width="160%" height="160%">
+          <feGaussianBlur stdDeviation="3.5" result="coloredBlur"/>
+          <feMerge>
+            <feMergeNode in="coloredBlur"/>
+            <feMergeNode in="coloredBlur"/>
+            <feMergeNode in="SourceGraphic"/>
+          </feMerge>
+        </filter>
+      </defs>
+
+      <!-- Outer Neon Arc Ring -->
+      <circle class="neon-spinner-circle" cx="75" cy="75" r="54" fill="none" stroke="url(#neonGrad1)" stroke-width="3" stroke-linecap="round" stroke-dasharray="190 150" filter="url(#neonGlow)"/>
+
+      <!-- Middle Counter-Rotating Neon Arc Ring -->
+      <circle class="neon-spinner-circle-reverse" cx="75" cy="75" r="48" fill="none" stroke="url(#neonGrad2)" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="150 150" filter="url(#neonGlow)"/>
+
+      <!-- Inner Subtle Ambient Arc Ring -->
+      <circle class="neon-spinner-circle" cx="75" cy="75" r="42" fill="none" stroke="#ff2040" stroke-width="1.8" stroke-linecap="round" stroke-dasharray="100 160" opacity="0.6"/>
+    </svg>
+
+    <!-- Center Glowing Live Percentage Counter -->
+    <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+      <span id="neon-counter-num" class="text-2xl font-black tracking-tight text-white drop-shadow-[0_0_12px_rgba(255,40,70,0.85)] font-mono">0</span>
+    </div>
+  </div>
+  <p class="mt-4 text-xs font-black uppercase tracking-[0.22em] text-white/80">Thaarai Tex</p>
+</div>
 
 <script>
 /* ===== CONFIG ===== */
@@ -252,6 +324,48 @@ function toast(m, isError=false){
       }
     }, 320);
   }, 2600);
+}
+
+/* Futuristic Neon Ring Counter Loader Control */
+let _neonTimer = null;
+let _neonProgress = 0;
+function showNeonLoader(){
+  const el = $('#neon-loader');
+  const num = $('#neon-counter-num');
+  if(!el || !num) return;
+  if(_neonTimer) clearInterval(_neonTimer);
+  _neonProgress = Math.floor(Math.random() * 8) + 12; // Start quickly around 12-20%
+  num.textContent = _neonProgress;
+  el.style.visibility = 'visible';
+  el.classList.remove('opacity-0', 'pointer-events-none');
+  el.classList.add('opacity-100');
+
+  _neonTimer = setInterval(() => {
+    if(_neonProgress < 90){
+      _neonProgress += Math.floor(Math.random() * 12) + 6;
+      if(_neonProgress > 92) _neonProgress = 92;
+      num.textContent = _neonProgress;
+    }
+  }, 70);
+}
+
+function hideNeonLoader(){
+  const el = $('#neon-loader');
+  const num = $('#neon-counter-num');
+  if(!el || !num) return;
+  if(_neonTimer) clearInterval(_neonTimer);
+  _neonProgress = 100;
+  num.textContent = '100';
+
+  setTimeout(() => {
+    el.classList.remove('opacity-100');
+    el.classList.add('opacity-0', 'pointer-events-none');
+    setTimeout(() => {
+      if(el.classList.contains('opacity-0')){
+        el.style.visibility = 'hidden';
+      }
+    }, 220);
+  }, 120);
 }
 
 /* Custom In-App Modal Dialog for Confirmations & Alerts */
@@ -3331,6 +3445,7 @@ async function route(){
     const footEl = $('#foot');
     if(footEl) footEl.classList.toggle('hidden', !isHomePage);
     document.querySelectorAll('.tb').forEach(a=>{const on=a.dataset.tb.split('|').some(k=>k==='/'?(path==='/'||path===''):path.startsWith(k));a.style.color=on?'#0f172a':'#94a3b8'});
+    showNeonLoader();
     try{
       if(path==='/'||path==='')await home();
       else if(path==='/shop')await shop(params);
@@ -3341,6 +3456,9 @@ async function route(){
       else if(path==='/login'){ await loginView(); }
       else app.innerHTML='<p class="text-center py-20 text-xs text-gray-400">Page not found.</p>';
     }catch(err){console.error(err);app.innerHTML='<p class="text-center text-rose-600 py-20 text-xs">Error: '+esc(err.message||err)+'</p>';}
+    finally {
+      hideNeonLoader();
+    }
     window.scrollTo(0,0);
   } finally {
     _routing = false;
