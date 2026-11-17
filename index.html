@@ -2832,10 +2832,34 @@ async function orderDetailView(orderId,pf){
   const state=ord.state||ship.state||'';
   const pincode=ord.pincode||ship.pincode||'';
 
-  // Format full combined shipping address string
-  const formattedAddress = (typeof ord.address === 'string' && ord.address.trim())
-    ? ord.address.trim()
-    : [addressLine, [city, state].filter(Boolean).join(', '), pincode ? `Pincode: ${pincode}` : '', 'India'].filter(Boolean).join('\n');
+  // Format full combined shipping address string guaranteeing complete door no, street, area, city, state, pin
+  let fullAddrParts = [];
+  if(typeof ord.address === 'string' && ord.address.trim()){
+    try {
+      const parsed = JSON.parse(ord.address);
+      if(parsed && typeof parsed === 'object') Object.assign(ship, parsed);
+      else fullAddrParts.push(ord.address.trim());
+    } catch(e){
+      fullAddrParts.push(ord.address.trim());
+    }
+  }
+
+  const doorStreet = ship.line || ship.address_line || ship.street || ship.address || ord.line || ord.address_line || '';
+  const area = ship.area || '';
+  const cityVal = ship.city || ord.city || '';
+  const stateVal = ship.state || ord.state || 'Tamil Nadu';
+  const pinVal = ship.pincode || ship.pin || ord.pincode || '';
+
+  if(!fullAddrParts.length){
+    if(doorStreet) fullAddrParts.push(doorStreet);
+    if(area && !doorStreet.toLowerCase().includes(area.toLowerCase())) fullAddrParts.push(area);
+    const loc = [cityVal, stateVal].filter(Boolean).join(', ');
+    if(loc) fullAddrParts.push(loc);
+    if(pinVal) fullAddrParts.push(`Pincode: ${pinVal}`);
+    fullAddrParts.push('India');
+  }
+
+  const formattedAddress = fullAddrParts.join('\n');
   const supportMsg = SET.account_ui?.supportText || 'Contact support on WhatsApp';
   app.innerHTML=`<div class="max-w-md mx-auto space-y-4 my-2">
     ${topbar('Order #'+esc(shortNo),'#/account/orders')}
