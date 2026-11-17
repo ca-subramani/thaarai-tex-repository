@@ -831,20 +831,27 @@ async function shop(params){
       
       // Category conditions (OR)
       catList.forEach(cVal => {
-        const matchedCat = cats.find(c => c.id === cVal || (c.name && c.name.toLowerCase() === cVal.toLowerCase()));
-        if(matchedCat && matchedCat.id){
+        const cleanVal = cVal.replace(/[-_]/g, ' ').replace(/[%,()]/g, '').trim();
+        const matchedCat = cats.find(c => String(c.id) === String(cVal) || (c.name && c.name.toLowerCase() === cleanVal.toLowerCase()) || (c.slug && c.slug.toLowerCase() === cVal.toLowerCase()));
+        if(matchedCat && matchedCat.id && !isNaN(Number(matchedCat.id))){
           orClauses.push(`category_id.eq.${matchedCat.id}`);
-        } else {
+        } else if(!isNaN(Number(cVal))){
           orClauses.push(`category_id.eq.${cVal}`);
         }
-        orClauses.push(`fabric.ilike.%${cVal.replace(/[%,()]/g,'')}%`);
-        orClauses.push(`name.ilike.%${cVal.replace(/[%,()]/g,'')}%`);
+        if(cleanVal){
+          orClauses.push(`fabric.ilike.%${cleanVal}%`);
+          orClauses.push(`name.ilike.%${cleanVal}%`);
+          orClauses.push(`description.ilike.%${cleanVal}%`);
+        }
       });
 
       // Fabric conditions (OR)
       fabList.forEach(fb => {
-        orClauses.push(`fabric.ilike.%${fb.replace(/[%,()]/g,'')}%`);
-        orClauses.push(`name.ilike.%${fb.replace(/[%,()]/g,'')}%`);
+        const cleanFb = fb.replace(/[%,()]/g, '').trim();
+        if(cleanFb){
+          orClauses.push(`fabric.ilike.%${cleanFb}%`);
+          orClauses.push(`name.ilike.%${cleanFb}%`);
+        }
       });
 
       if(orClauses.length){
@@ -921,21 +928,21 @@ async function shop(params){
   // Standard category options
   const defaultCats = [
     { id: '', name: 'All Categories' },
-    { id: 'cotton', name: 'Cotton' },
-    { id: 'silk', name: 'Silk' },
-    { id: 'poonam', name: 'Poonam' },
-    { id: 'soft-silk', name: 'Soft Silk' },
-    { id: 'pure-silk', name: 'Pure Silk' },
-    { id: 'kanjivaram', name: 'Kanjivaram' },
-    { id: 'handloom', name: 'Handloom' },
-    { id: 'fancy', name: 'Fancy Sarees' },
-    { id: 'daily-wear', name: 'Daily Wear' }
+    { id: 'Cotton', name: 'Cotton' },
+    { id: 'Silk', name: 'Silk' },
+    { id: 'Poonam', name: 'Poonam' },
+    { id: 'Soft Silk', name: 'Soft Silk' },
+    { id: 'Pure Silk', name: 'Pure Silk' },
+    { id: 'Kanjivaram', name: 'Kanjivaram' },
+    { id: 'Handloom', name: 'Handloom' },
+    { id: 'Fancy Sarees', name: 'Fancy Sarees' },
+    { id: 'Daily Wear', name: 'Daily Wear' }
   ];
   const allCategoryOptions = [{ id: '', name: 'All Categories' }];
   if(cats && cats.length){
     cats.forEach(c => {
       if(!allCategoryOptions.some(x => x.name.toLowerCase() === c.name.toLowerCase())){
-        allCategoryOptions.push({ id: c.id, name: c.name });
+        allCategoryOptions.push({ id: c.name, name: c.name, dbId: c.id });
       }
     });
   }
@@ -2824,6 +2831,11 @@ async function orderDetailView(orderId,pf){
   const city=ord.city||ship.city||'';
   const state=ord.state||ship.state||'';
   const pincode=ord.pincode||ship.pincode||'';
+
+  // Format full combined shipping address string
+  const formattedAddress = (typeof ord.address === 'string' && ord.address.trim())
+    ? ord.address.trim()
+    : [addressLine, [city, state].filter(Boolean).join(', '), pincode ? `Pincode: ${pincode}` : '', 'India'].filter(Boolean).join('\n');
   const supportMsg = SET.account_ui?.supportText || 'Contact support on WhatsApp';
   app.innerHTML=`<div class="max-w-md mx-auto space-y-4 my-2">
     ${topbar('Order #'+esc(shortNo),'#/account/orders')}
@@ -2844,18 +2856,16 @@ async function orderDetailView(orderId,pf){
         </h3>
         <span class="text-[10px] font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full">Shipping Destination</span>
       </div>
-      <div class="space-y-1.5 pt-1">
+      <div class="space-y-2 pt-1">
         <div class="flex items-center justify-between">
           <span class="font-bold text-slate-900 text-sm">${esc(recipient || pf.name || 'Customer')}</span>
-          ${phone ? `<a href="tel:${esc(phone)}" class="text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full flex items-center gap-1 hover:underline">📞 +91 ${esc(phone)}</a>` : ''}
+          ${phone ? `<span class="text-[11px] font-bold text-slate-800 bg-slate-100 border border-slate-200 px-2.5 py-0.5 rounded-full select-all">+91 ${esc(phone)}</span>` : ''}
         </div>
-        ${addressLine ? `<p class="text-slate-800 font-medium leading-relaxed bg-slate-50 p-2.5 rounded-xl border border-gray-100">${esc(addressLine)}</p>` : ''}
-        <div class="grid grid-cols-2 gap-2 text-slate-600 font-medium pt-1">
-          <div><span class="text-gray-400 block text-[10px] uppercase">City</span><b class="text-slate-900">${esc(city || '—')}</b></div>
-          <div><span class="text-gray-400 block text-[10px] uppercase">State</span><b class="text-slate-900">${esc(state || 'Tamil Nadu')}</b></div>
-          <div><span class="text-gray-400 block text-[10px] uppercase">Pincode</span><b class="text-slate-900 font-mono">${esc(pincode || '—')}</b></div>
-          <div><span class="text-gray-400 block text-[10px] uppercase">Country</span><b class="text-slate-900">India</b></div>
-        </div>
+        ${formattedAddress ? `
+          <div class="text-slate-800 font-medium leading-relaxed bg-slate-50 p-3 rounded-2xl border border-gray-100 space-y-1">
+            <p class="whitespace-pre-line">${esc(formattedAddress)}</p>
+          </div>
+        ` : ''}
       </div>
     </div>
 
