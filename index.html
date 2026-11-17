@@ -1718,17 +1718,13 @@ async function product(id){
     </div>
 
     <!-- Main Zoomable Image Stage -->
-    <div id="lb-stage" class="flex-1 flex items-center justify-center overflow-hidden p-2 relative my-auto cursor-pointer">
-      <img id="lightbox-img" src="${esc(imgs[0])}" alt="" class="max-w-full max-h-[72vh] sm:max-h-[75vh] object-contain rounded-xl select-none pointer-events-none transition-transform duration-100 ease-out">
-      ${imgs.length > 1 ? `
-        <button id="lb-prev" class="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-black/60 hover:bg-black/90 active:scale-95 text-white flex items-center justify-center text-2xl font-bold transition z-10">‹</button>
-        <button id="lb-next" class="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-black/60 hover:bg-black/90 active:scale-95 text-white flex items-center justify-center text-2xl font-bold transition z-10">›</button>
-      ` : ''}
+    <div id="lb-stage" class="flex-1 flex items-center justify-center overflow-hidden p-2 relative my-auto">
+      <img id="lightbox-img" src="${esc(imgs[0])}" alt="" class="max-w-full max-h-[72vh] sm:max-h-[75vh] object-contain rounded-xl select-none transition-transform duration-100 ease-out cursor-default">
     </div>
 
     <!-- Bottom Thumbnail Carousel List & Hint -->
     <div class="shrink-0 space-y-2 pb-[max(0.75rem,env(safe-area-inset-bottom,0px))] z-10">
-      <p class="text-center text-gray-400 text-[11px] font-medium tracking-wide">Tap image or background to close</p>
+      <p class="text-center text-gray-400 text-[11px] font-medium tracking-wide">Tap outside image to close</p>
       ${imgs.length > 1 ? `
         <div id="lb-thumbs" class="flex items-center justify-center gap-2.5 overflow-x-auto py-1 px-4 no-scrollbar">
           ${imgs.map((u, idx) => `
@@ -1840,41 +1836,23 @@ async function product(id){
     openLb();
   };
 
-  // Close via back button, close button, or tap anywhere on lightbox background
+  // Close via back button or top close button
   $('#close-lightbox').onclick = (e) => { e.stopPropagation(); closeLb(); };
   const lbBack = $('#lb-back-btn');
   if(lbBack) lbBack.onclick = (e) => { e.stopPropagation(); closeLb(); };
 
-  // Tap anywhere on image stage or background closes fullscreen view
+  // Only touching the background closes the full screen view; touching the image itself does NOT close
   lb.onclick = (e) => {
-    if(e.target.closest('#lb-prev') || e.target.closest('#lb-next') || e.target.closest('#lb-thumbs') || e.target.closest('#close-lightbox') || e.target.closest('#lb-back-btn')) return;
+    if(e.target.closest('#lightbox-img') || e.target.closest('#lb-thumbs') || e.target.closest('#close-lightbox') || e.target.closest('#lb-back-btn')) return;
     closeLb();
   };
 
-  // Lightbox Next / Prev
-  if($('#lb-prev')) $('#lb-prev').onclick = (e) => { e.stopPropagation(); switchImage(cur - 1); };
-  if($('#lb-next')) $('#lb-next').onclick = (e) => { e.stopPropagation(); switchImage(cur + 1); };
-
-  // Lightbox Bottom Thumbnails click
+  // Lightbox Bottom Thumbnails click (move to another image only by touching below image list)
   document.querySelectorAll('.lb-thumb-btn').forEach(tb => {
     tb.onclick = (e) => {
       e.stopPropagation();
       switchImage(Number(tb.dataset.idx));
     };
-  });
-
-  // Swipe gesture in Lightbox
-  let lbX0 = null;
-  lbStage.addEventListener('touchstart', e => {
-    lbX0 = (e.touches.length === 1) ? e.touches[0].clientX : null;
-  }, { passive: true });
-  lbStage.addEventListener('touchend', e => {
-    if(e.touches.length || lbX0 === null) { lbX0 = null; return; }
-    const dx = e.changedTouches[0].clientX - lbX0;
-    if(imgs.length > 1 && Math.abs(dx) > 40) {
-      switchImage(cur + (dx < 0 ? 1 : -1));
-    }
-    lbX0 = null;
   });
   const onAdd=()=>addCart(p.id,1,p.stock);
   const onBuy=()=>{
