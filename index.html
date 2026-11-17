@@ -951,211 +951,196 @@ async function shop(params){
   const currentSortLabel = (currentSortObj && f.sort !== 'new') ? currentSortObj.label : '';
 
   app.innerHTML = `
-  <div class="grid md:grid-cols-[280px_1fr] gap-6 items-start">
+  <div class="space-y-4">
     
-    <!-- Mobile Filter & Sort Control Buttons -->
-    <div class="md:hidden col-span-full grid grid-cols-2 gap-2">
-      <button id="ftg" type="button" class="flex items-center justify-center gap-2 bg-white rounded-2xl px-4 py-3.5 text-xs font-bold border border-gray-200 shadow-soft text-slate-800 hover:bg-slate-50 transition">
-        ${ICONS.filter} Filter
+    <!-- Top Filter & Sort Bar (Clean buttons on both Desktop and Mobile) -->
+    <div class="w-full max-w-xl mx-auto grid grid-cols-2 gap-3 px-1">
+      <button id="ftg" type="button" class="flex items-center justify-center gap-2.5 bg-white rounded-2xl px-5 py-3.5 text-sm font-bold border-2 border-gray-200 shadow-soft text-slate-900 hover:border-slate-900 transition">
+        ${ICONS.filter} <span>Filters</span>
       </button>
-      <button id="sort-open" type="button" class="flex items-center justify-center gap-2 bg-white rounded-2xl px-4 py-3.5 text-xs font-bold border border-gray-200 shadow-soft text-slate-800 hover:bg-slate-50 transition">
-        ↕ Sort by
+      <button id="sort-open" type="button" class="flex items-center justify-center gap-2.5 bg-white rounded-2xl px-5 py-3.5 text-sm font-bold border-2 border-gray-200 shadow-soft text-slate-900 hover:border-slate-900 transition">
+        <span class="text-base">↕</span> <span>Sort By</span>
       </button>
     </div>
 
-    <!-- Filter Drawer (Mobile full page sheet & Desktop sticky sidebar) -->
-    <aside id="fl" class="hidden fixed inset-0 z-50 bg-white flex flex-col md:sticky md:top-24 md:z-auto md:block md:max-h-[88vh] md:rounded-3xl md:border md:border-gray-100 md:shadow-soft overflow-hidden">
-      
-      <!-- Drawer Top Bar -->
-      <div class="sticky top-0 z-10 flex items-center justify-between bg-white px-5 py-4 border-b border-gray-100">
-        <button id="filter-close" class="md:hidden w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-700 text-lg font-bold" aria-label="Close filters">×</button>
-        <h2 class="text-sm font-extrabold text-slate-900 uppercase tracking-wider">Filters</h2>
-        <button id="f-reset" type="button" class="text-xs font-bold text-rose-600 hover:text-rose-700 transition flex items-center gap-1">Reset All</button>
-      </div>
-
-      <!-- 7 Collapsible Accordion Toggle Lines -->
-      <div class="flex-1 overflow-y-auto p-4 space-y-1 divide-y divide-gray-100/80">
+    <!-- Flipkart/Amazon Style 2-Column Split Filter Page Modal (Left categories tab, Right options panel) -->
+    <div id="fl" class="hidden fixed inset-0 z-[70] bg-white flex flex-col md:inset-0 md:bg-slate-900/50 md:backdrop-blur-sm md:items-center md:justify-center p-0 md:p-6">
+      <div class="w-full h-full md:h-[88vh] md:max-w-4xl bg-white md:rounded-3xl flex flex-col shadow-2xl overflow-hidden border border-gray-100">
         
-        <!-- 1. Categories > -->
-        <div class="py-1">
-          <button type="button" class="f-acc-toggle w-full flex items-center justify-between py-3 px-2 rounded-xl text-left hover:bg-slate-50 transition group" data-acc="categories">
-            <div class="flex items-center gap-2">
-              <span class="text-sm font-bold text-slate-900 group-hover:text-rose-600 transition">Categories</span>
-              <span class="f-badge text-[10px] font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full ${currentCatLabel ? '' : 'hidden'}" id="badge-categories">${esc(currentCatLabel)}</span>
-            </div>
-            <span class="f-chevron text-xs font-bold text-gray-400 group-hover:text-slate-800 transition-transform duration-200">›</span>
-          </button>
-          <div id="acc-categories" class="f-acc-panel hidden pt-2 pb-3 px-1 space-y-2">
-            ${allCategoryOptions.map(c => {
-              const isSel = (!f.cat && !c.id) || (f.cat && (f.cat === c.id || f.cat.toLowerCase() === c.name.toLowerCase()));
-              return `
-              <label class="f-opt-row flex items-center justify-between p-3.5 rounded-2xl border-2 cursor-pointer transition ${isSel ? 'border-slate-900 bg-slate-900 text-white font-bold shadow-sm' : 'border-gray-200 bg-white text-slate-800 font-semibold hover:border-gray-300'}" data-type="cat" data-val="${esc(c.id || c.name)}" data-label="${esc(c.name)}">
-                <span class="text-sm capitalize">${esc(c.name)}</span>
-                <div class="f-check w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${isSel ? 'border-white bg-white text-slate-900 font-black text-xs' : 'border-gray-300 bg-white'}">${isSel ? '✓' : ''}</div>
-                <input type="radio" name="opt-cat" value="${esc(c.id || c.name)}" class="sr-only" ${isSel ? 'checked' : ''}>
-              </label>`;
-            }).join('')}
+        <!-- Filter Top Bar with Back Button -->
+        <div class="sticky top-0 z-20 flex items-center justify-between px-5 py-4 bg-white border-b border-gray-100 shrink-0">
+          <div class="flex items-center gap-3">
+            <button id="filter-close" type="button" aria-label="Close filters" class="w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-800 flex items-center justify-center transition shadow-sm">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M15 19l-7-7 7-7"/></svg>
+            </button>
+            <h2 class="text-base font-extrabold text-slate-900">Filters</h2>
           </div>
+          <button id="f-reset" type="button" class="text-xs font-bold text-rose-600 hover:text-rose-700 px-3 py-1.5 rounded-full hover:bg-rose-50 transition">Clear All</button>
         </div>
 
-        <!-- 2. Fabric > -->
-        <div class="py-1">
-          <button type="button" class="f-acc-toggle w-full flex items-center justify-between py-3 px-2 rounded-xl text-left hover:bg-slate-50 transition group" data-acc="fabric">
-            <div class="flex items-center gap-2">
-              <span class="text-sm font-bold text-slate-900 group-hover:text-rose-600 transition">Fabric</span>
-              <span class="f-badge text-[10px] font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full ${currentFabLabel ? '' : 'hidden'}" id="badge-fabric">${esc(currentFabLabel)}</span>
-            </div>
-            <span class="f-chevron text-xs font-bold text-gray-400 group-hover:text-slate-800 transition-transform duration-200">›</span>
-          </button>
-          <div id="acc-fabric" class="f-acc-panel hidden pt-2 pb-3 px-1 space-y-2">
-            ${allFabrics.map(fb => {
-              const isSel = (f.fabric.toLowerCase() === fb.val.toLowerCase());
-              return `
-              <label class="f-opt-row flex items-center justify-between p-3.5 rounded-2xl border-2 cursor-pointer transition ${isSel ? 'border-slate-900 bg-slate-900 text-white font-bold shadow-sm' : 'border-gray-200 bg-white text-slate-800 font-semibold hover:border-gray-300'}" data-type="fabric" data-val="${esc(fb.val)}" data-label="${esc(fb.label)}">
-                <span class="text-sm capitalize">${esc(fb.label)}</span>
-                <div class="f-check w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${isSel ? 'border-white bg-white text-slate-900 font-black text-xs' : 'border-gray-300 bg-white'}">${isSel ? '✓' : ''}</div>
-                <input type="radio" name="opt-fabric" value="${esc(fb.val)}" class="sr-only" ${isSel ? 'checked' : ''}>
-              </label>`;
-            }).join('')}
-          </div>
-        </div>
+        <!-- Split Filter Body: Left Sidebar (Categories list ~38%) + Right Panel (Options content ~62%) -->
+        <div class="flex-1 flex overflow-hidden min-h-0">
+          
+          <!-- Left Sidebar Menu Tabs -->
+          <div class="w-[38%] max-w-[200px] sm:max-w-[240px] bg-slate-50 border-r border-gray-200 overflow-y-auto no-scrollbar py-2 shrink-0 flex flex-col">
+            <button type="button" class="f-nav-item w-full flex items-center justify-between px-3.5 py-4 text-left font-bold text-sm transition border-l-4 border-slate-900 bg-white text-slate-950 shadow-sm" data-tab="categories">
+              <span class="truncate">Categories</span>
+              <span class="f-badge w-2 h-2 rounded-full bg-rose-500 shrink-0 ${currentCatLabel ? '' : 'hidden'}" id="badge-categories"></span>
+            </button>
 
-        <!-- 3. Ratings > -->
-        <div class="py-1">
-          <button type="button" class="f-acc-toggle w-full flex items-center justify-between py-3 px-2 rounded-xl text-left hover:bg-slate-50 transition group" data-acc="ratings">
-            <div class="flex items-center gap-2">
-              <span class="text-sm font-bold text-slate-900 group-hover:text-rose-600 transition">Ratings</span>
-              <span class="f-badge text-[10px] font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full ${currentRatingLabel ? '' : 'hidden'}" id="badge-ratings">${esc(currentRatingLabel)}</span>
-            </div>
-            <span class="f-chevron text-xs font-bold text-gray-400 group-hover:text-slate-800 transition-transform duration-200">›</span>
-          </button>
-          <div id="acc-ratings" class="f-acc-panel hidden pt-2 pb-3 px-1 space-y-2">
-            ${allRatings.map(rt => {
-              const isSel = (f.rating === rt.val);
-              return `
-              <label class="f-opt-row flex items-center justify-between p-3.5 rounded-2xl border-2 cursor-pointer transition ${isSel ? 'border-slate-900 bg-slate-900 text-white font-bold shadow-sm' : 'border-gray-200 bg-white text-slate-800 font-semibold hover:border-gray-300'}" data-type="rating" data-val="${esc(rt.val)}" data-label="${esc(rt.label)}">
-                <span class="text-sm">${esc(rt.label)}</span>
-                <div class="f-check w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${isSel ? 'border-white bg-white text-slate-900 font-black text-xs' : 'border-gray-300 bg-white'}">${isSel ? '✓' : ''}</div>
-                <input type="radio" name="opt-rating" value="${esc(rt.val)}" class="sr-only" ${isSel ? 'checked' : ''}>
-              </label>`;
-            }).join('')}
-          </div>
-        </div>
+            <button type="button" class="f-nav-item w-full flex items-center justify-between px-3.5 py-4 text-left font-semibold text-sm transition border-l-4 border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100/60" data-tab="fabric">
+              <span class="truncate">Fabric</span>
+              <span class="f-badge w-2 h-2 rounded-full bg-rose-500 shrink-0 ${currentFabLabel ? '' : 'hidden'}" id="badge-fabric"></span>
+            </button>
 
-        <!-- 4. Price > -->
-        <div class="py-1">
-          <button type="button" class="f-acc-toggle w-full flex items-center justify-between py-3 px-2 rounded-xl text-left hover:bg-slate-50 transition group" data-acc="price">
-            <div class="flex items-center gap-2">
-              <span class="text-sm font-bold text-slate-900 group-hover:text-rose-600 transition">Price</span>
-              <span class="f-badge text-[10px] font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full ${currentPriceLabel ? '' : 'hidden'}" id="badge-price">${esc(currentPriceLabel)}</span>
+            <button type="button" class="f-nav-item w-full flex items-center justify-between px-3.5 py-4 text-left font-semibold text-sm transition border-l-4 border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100/60" data-tab="ratings">
+              <span class="truncate">Ratings</span>
+              <span class="f-badge w-2 h-2 rounded-full bg-rose-500 shrink-0 ${currentRatingLabel ? '' : 'hidden'}" id="badge-ratings"></span>
+            </button>
+
+            <button type="button" class="f-nav-item w-full flex items-center justify-between px-3.5 py-4 text-left font-semibold text-sm transition border-l-4 border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100/60" data-tab="price">
+              <span class="truncate">Price</span>
+              <span class="f-badge w-2 h-2 rounded-full bg-rose-500 shrink-0 ${currentPriceLabel ? '' : 'hidden'}" id="badge-price"></span>
+            </button>
+
+            <button type="button" class="f-nav-item w-full flex items-center justify-between px-3.5 py-4 text-left font-semibold text-sm transition border-l-4 border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100/60" data-tab="availability">
+              <span class="truncate">Availability</span>
+              <span class="f-badge w-2 h-2 rounded-full bg-rose-500 shrink-0 ${currentAvailLabel ? '' : 'hidden'}" id="badge-availability"></span>
+            </button>
+
+            <button type="button" class="f-nav-item w-full flex items-center justify-between px-3.5 py-4 text-left font-semibold text-sm transition border-l-4 border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100/60" data-tab="colour">
+              <span class="truncate">Colour</span>
+              <span class="f-badge w-2 h-2 rounded-full bg-rose-500 shrink-0 ${currentColorLabel ? '' : 'hidden'}" id="badge-colour"></span>
+            </button>
+
+            <button type="button" class="f-nav-item w-full flex items-center justify-between px-3.5 py-4 text-left font-semibold text-sm transition border-l-4 border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100/60" data-tab="sort">
+              <span class="truncate">Sort</span>
+              <span class="f-badge w-2 h-2 rounded-full bg-rose-500 shrink-0 ${currentSortLabel ? '' : 'hidden'}" id="badge-sort"></span>
+            </button>
+          </div>
+
+          <!-- Right Content Panel (Options expansions) -->
+          <div class="flex-1 bg-white overflow-y-auto p-4 sm:p-5">
+            
+            <!-- Panel: Categories -->
+            <div id="tab-panel-categories" class="f-tab-panel space-y-2.5">
+              ${allCategoryOptions.map(c => {
+                const isSel = (!f.cat && !c.id) || (f.cat && (f.cat === c.id || f.cat.toLowerCase() === c.name.toLowerCase()));
+                return `
+                <label class="f-opt-row flex items-center justify-between p-3.5 rounded-2xl border-2 cursor-pointer transition ${isSel ? 'border-slate-900 bg-slate-900 text-white font-bold shadow-sm' : 'border-gray-200 bg-white text-slate-800 font-semibold hover:border-gray-300'}" data-type="cat" data-val="${esc(c.id || c.name)}" data-label="${esc(c.name)}">
+                  <span class="text-sm capitalize">${esc(c.name)}</span>
+                  <div class="f-check w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${isSel ? 'border-white bg-white text-slate-900 font-black text-xs' : 'border-gray-300 bg-white'}">${isSel ? '✓' : ''}</div>
+                  <input type="radio" name="opt-cat" value="${esc(c.id || c.name)}" class="sr-only" ${isSel ? 'checked' : ''}>
+                </label>`;
+              }).join('')}
             </div>
-            <span class="f-chevron text-xs font-bold text-gray-400 group-hover:text-slate-800 transition-transform duration-200">›</span>
-          </button>
-          <div id="acc-price" class="f-acc-panel hidden pt-2 pb-3 px-1 space-y-2">
-            <div class="space-y-2">
-              ${allPriceTiers.map(pt => `
-                <button type="button" class="price-tier-btn w-full flex items-center justify-between p-3.5 rounded-2xl border-2 border-gray-200 bg-white hover:border-gray-300 text-left text-sm font-semibold text-slate-800 transition" data-min="${esc(pt.min)}" data-max="${esc(pt.max)}" data-label="${esc(pt.label)}">
-                  <span>${esc(pt.label)}</span>
-                  <span class="text-xs text-gray-400 font-bold">₹</span>
-                </button>
-              `).join('')}
+
+            <!-- Panel: Fabric -->
+            <div id="tab-panel-fabric" class="f-tab-panel hidden space-y-2.5">
+              ${allFabrics.map(fb => {
+                const isSel = (f.fabric.toLowerCase() === fb.val.toLowerCase());
+                return `
+                <label class="f-opt-row flex items-center justify-between p-3.5 rounded-2xl border-2 cursor-pointer transition ${isSel ? 'border-slate-900 bg-slate-900 text-white font-bold shadow-sm' : 'border-gray-200 bg-white text-slate-800 font-semibold hover:border-gray-300'}" data-type="fabric" data-val="${esc(fb.val)}" data-label="${esc(fb.label)}">
+                  <span class="text-sm capitalize">${esc(fb.label)}</span>
+                  <div class="f-check w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${isSel ? 'border-white bg-white text-slate-900 font-black text-xs' : 'border-gray-300 bg-white'}">${isSel ? '✓' : ''}</div>
+                  <input type="radio" name="opt-fabric" value="${esc(fb.val)}" class="sr-only" ${isSel ? 'checked' : ''}>
+                </label>`;
+              }).join('')}
             </div>
-            <div class="pt-2 border-t border-gray-100">
-              <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1.5">Custom Price Range</span>
-              <div class="flex items-center gap-2">
-                <div class="relative flex-1">
-                  <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs font-semibold">₹</span>
-                  <input id="f-min" type="number" placeholder="Min" value="${esc(f.min)}" class="w-full pl-7 pr-2 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 outline-none focus:bg-white focus:border-slate-900 transition">
-                </div>
-                <span class="text-gray-300 font-bold">-</span>
-                <div class="relative flex-1">
-                  <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs font-semibold">₹</span>
-                  <input id="f-max" type="number" placeholder="Max" value="${esc(f.max)}" class="w-full pl-7 pr-2 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 outline-none focus:bg-white focus:border-slate-900 transition">
+
+            <!-- Panel: Ratings -->
+            <div id="tab-panel-ratings" class="f-tab-panel hidden space-y-2.5">
+              ${allRatings.map(rt => {
+                const isSel = (f.rating === rt.val);
+                return `
+                <label class="f-opt-row flex items-center justify-between p-3.5 rounded-2xl border-2 cursor-pointer transition ${isSel ? 'border-slate-900 bg-slate-900 text-white font-bold shadow-sm' : 'border-gray-200 bg-white text-slate-800 font-semibold hover:border-gray-300'}" data-type="rating" data-val="${esc(rt.val)}" data-label="${esc(rt.label)}">
+                  <span class="text-sm">${esc(rt.label)}</span>
+                  <div class="f-check w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${isSel ? 'border-white bg-white text-slate-900 font-black text-xs' : 'border-gray-300 bg-white'}">${isSel ? '✓' : ''}</div>
+                  <input type="radio" name="opt-rating" value="${esc(rt.val)}" class="sr-only" ${isSel ? 'checked' : ''}>
+                </label>`;
+              }).join('')}
+            </div>
+
+            <!-- Panel: Price -->
+            <div id="tab-panel-price" class="f-tab-panel hidden space-y-3">
+              <div class="space-y-2.5">
+                ${allPriceTiers.map(pt => `
+                  <button type="button" class="price-tier-btn w-full flex items-center justify-between p-3.5 rounded-2xl border-2 border-gray-200 bg-white hover:border-gray-300 text-left text-sm font-semibold text-slate-800 transition" data-min="${esc(pt.min)}" data-max="${esc(pt.max)}" data-label="${esc(pt.label)}">
+                    <span>${esc(pt.label)}</span>
+                    <span class="text-xs text-gray-400 font-bold">₹</span>
+                  </button>
+                `).join('')}
+              </div>
+              <div class="pt-3 border-t border-gray-100">
+                <span class="text-[11px] font-bold text-gray-400 uppercase tracking-wider block mb-2">Custom Price Range</span>
+                <div class="flex items-center gap-2">
+                  <div class="relative flex-1">
+                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs font-semibold">₹</span>
+                    <input id="f-min" type="number" placeholder="Min" value="${esc(f.min)}" class="w-full pl-7 pr-2 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 outline-none focus:bg-white focus:border-slate-900 transition">
+                  </div>
+                  <span class="text-gray-300 font-bold">-</span>
+                  <div class="relative flex-1">
+                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs font-semibold">₹</span>
+                    <input id="f-max" type="number" placeholder="Max" value="${esc(f.max)}" class="w-full pl-7 pr-2 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 outline-none focus:bg-white focus:border-slate-900 transition">
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </div>
 
-        <!-- 5. Availability > -->
-        <div class="py-1">
-          <button type="button" class="f-acc-toggle w-full flex items-center justify-between py-3 px-2 rounded-xl text-left hover:bg-slate-50 transition group" data-acc="availability">
-            <div class="flex items-center gap-2">
-              <span class="text-sm font-bold text-slate-900 group-hover:text-rose-600 transition">Availability</span>
-              <span class="f-badge text-[10px] font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full ${currentAvailLabel ? '' : 'hidden'}" id="badge-availability">${esc(currentAvailLabel)}</span>
+            <!-- Panel: Availability -->
+            <div id="tab-panel-availability" class="f-tab-panel hidden space-y-2.5">
+              ${allAvailability.map(av => {
+                const isSel = (f.stock === av.val);
+                return `
+                <label class="f-opt-row flex items-center justify-between p-3.5 rounded-2xl border-2 cursor-pointer transition ${isSel ? 'border-slate-900 bg-slate-900 text-white font-bold shadow-sm' : 'border-gray-200 bg-white text-slate-800 font-semibold hover:border-gray-300'}" data-type="stock" data-val="${esc(av.val)}" data-label="${esc(av.label)}">
+                  <span class="text-sm">${esc(av.label)}</span>
+                  <div class="f-check w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${isSel ? 'border-white bg-white text-slate-900 font-black text-xs' : 'border-gray-300 bg-white'}">${isSel ? '✓' : ''}</div>
+                  <input type="radio" name="opt-stock" value="${esc(av.val)}" class="sr-only" ${isSel ? 'checked' : ''}>
+                </label>`;
+              }).join('')}
             </div>
-            <span class="f-chevron text-xs font-bold text-gray-400 group-hover:text-slate-800 transition-transform duration-200">›</span>
-          </button>
-          <div id="acc-availability" class="f-acc-panel hidden pt-2 pb-3 px-1 space-y-2">
-            ${allAvailability.map(av => {
-              const isSel = (f.stock === av.val);
-              return `
-              <label class="f-opt-row flex items-center justify-between p-3.5 rounded-2xl border-2 cursor-pointer transition ${isSel ? 'border-slate-900 bg-slate-900 text-white font-bold shadow-sm' : 'border-gray-200 bg-white text-slate-800 font-semibold hover:border-gray-300'}" data-type="stock" data-val="${esc(av.val)}" data-label="${esc(av.label)}">
-                <span class="text-sm">${esc(av.label)}</span>
-                <div class="f-check w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${isSel ? 'border-white bg-white text-slate-900 font-black text-xs' : 'border-gray-300 bg-white'}">${isSel ? '✓' : ''}</div>
-                <input type="radio" name="opt-stock" value="${esc(av.val)}" class="sr-only" ${isSel ? 'checked' : ''}>
-              </label>`;
-            }).join('')}
-          </div>
-        </div>
 
-        <!-- 6. Colour > -->
-        <div class="py-1">
-          <button type="button" class="f-acc-toggle w-full flex items-center justify-between py-3 px-2 rounded-xl text-left hover:bg-slate-50 transition group" data-acc="colour">
-            <div class="flex items-center gap-2">
-              <span class="text-sm font-bold text-slate-900 group-hover:text-rose-600 transition">Colour</span>
-              <span class="f-badge text-[10px] font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full ${currentColorLabel ? '' : 'hidden'}" id="badge-colour">${esc(currentColorLabel)}</span>
+            <!-- Panel: Colour -->
+            <div id="tab-panel-colour" class="f-tab-panel hidden space-y-2.5">
+              ${allColours.map(cl => {
+                const isSel = (f.color.toLowerCase() === cl.val.toLowerCase());
+                return `
+                <label class="f-opt-row flex items-center justify-between p-3.5 rounded-2xl border-2 cursor-pointer transition ${isSel ? 'border-slate-900 bg-slate-900 text-white font-bold shadow-sm' : 'border-gray-200 bg-white text-slate-800 font-semibold hover:border-gray-300'}" data-type="color" data-val="${esc(cl.val)}" data-label="${esc(cl.label)}">
+                  <div class="flex items-center gap-3">
+                    ${cl.val ? (cl.gradient ? `<span class="w-5 h-5 rounded-full bg-gradient-to-tr from-pink-500 via-yellow-400 to-blue-500 shrink-0 shadow-sm"></span>` : `<span class="w-5 h-5 rounded-full shrink-0 ${cl.border ? 'border border-gray-300' : ''}" style="background-color: ${cl.hex};"></span>`) : `<span class="w-5 h-5 rounded-full border-2 border-dashed border-gray-300 shrink-0"></span>`}
+                    <span class="text-sm capitalize">${esc(cl.label)}</span>
+                  </div>
+                  <div class="f-check w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${isSel ? 'border-white bg-white text-slate-900 font-black text-xs' : 'border-gray-300 bg-white'}">${isSel ? '✓' : ''}</div>
+                  <input type="radio" name="opt-color" value="${esc(cl.val)}" class="sr-only" ${isSel ? 'checked' : ''}>
+                </label>`;
+              }).join('')}
             </div>
-            <span class="f-chevron text-xs font-bold text-gray-400 group-hover:text-slate-800 transition-transform duration-200">›</span>
-          </button>
-          <div id="acc-colour" class="f-acc-panel hidden pt-2 pb-3 px-1 space-y-2">
-            ${allColours.map(cl => {
-              const isSel = (f.color.toLowerCase() === cl.val.toLowerCase());
-              return `
-              <label class="f-opt-row flex items-center justify-between p-3.5 rounded-2xl border-2 cursor-pointer transition ${isSel ? 'border-slate-900 bg-slate-900 text-white font-bold shadow-sm' : 'border-gray-200 bg-white text-slate-800 font-semibold hover:border-gray-300'}" data-type="color" data-val="${esc(cl.val)}" data-label="${esc(cl.label)}">
-                <div class="flex items-center gap-3">
-                  ${cl.val ? (cl.gradient ? `<span class="w-5 h-5 rounded-full bg-gradient-to-tr from-pink-500 via-yellow-400 to-blue-500 shrink-0 shadow-sm"></span>` : `<span class="w-5 h-5 rounded-full shrink-0 ${cl.border ? 'border border-gray-300' : ''}" style="background-color: ${cl.hex};"></span>`) : `<span class="w-5 h-5 rounded-full border-2 border-dashed border-gray-300 shrink-0"></span>`}
-                  <span class="text-sm capitalize">${esc(cl.label)}</span>
-                </div>
-                <div class="f-check w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${isSel ? 'border-white bg-white text-slate-900 font-black text-xs' : 'border-gray-300 bg-white'}">${isSel ? '✓' : ''}</div>
-                <input type="radio" name="opt-color" value="${esc(cl.val)}" class="sr-only" ${isSel ? 'checked' : ''}>
-              </label>`;
-            }).join('')}
-          </div>
-        </div>
 
-        <!-- 7. Sort > -->
-        <div class="py-1">
-          <button type="button" class="f-acc-toggle w-full flex items-center justify-between py-3 px-2 rounded-xl text-left hover:bg-slate-50 transition group" data-acc="sort">
-            <div class="flex items-center gap-2">
-              <span class="text-sm font-bold text-slate-900 group-hover:text-rose-600 transition">Sort</span>
-              <span class="f-badge text-[10px] font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full ${currentSortLabel ? '' : 'hidden'}" id="badge-sort">${esc(currentSortLabel)}</span>
+            <!-- Panel: Sort -->
+            <div id="tab-panel-sort" class="f-tab-panel hidden space-y-2.5">
+              ${allSorts.map(st => {
+                const isSel = (f.sort === st.val);
+                return `
+                <label class="f-opt-row flex items-center justify-between p-3.5 rounded-2xl border-2 cursor-pointer transition ${isSel ? 'border-slate-900 bg-slate-900 text-white font-bold shadow-sm' : 'border-gray-200 bg-white text-slate-800 font-semibold hover:border-gray-300'}" data-type="sort" data-val="${esc(st.val)}" data-label="${esc(st.label)}">
+                  <span class="text-sm font-semibold">${esc(st.label)}</span>
+                  <div class="f-check w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${isSel ? 'border-white bg-white text-slate-900 font-black text-xs' : 'border-gray-300 bg-white'}">${isSel ? '✓' : ''}</div>
+                  <input type="radio" name="opt-sort" value="${esc(st.val)}" class="sr-only" ${isSel ? 'checked' : ''}>
+                </label>`;
+              }).join('')}
             </div>
-            <span class="f-chevron text-xs font-bold text-gray-400 group-hover:text-slate-800 transition-transform duration-200">›</span>
-          </button>
-          <div id="acc-sort" class="f-acc-panel hidden pt-2 pb-3 px-1 space-y-2">
-            ${allSorts.map(st => {
-              const isSel = (f.sort === st.val);
-              return `
-              <label class="f-opt-row flex items-center justify-between p-3.5 rounded-2xl border-2 cursor-pointer transition ${isSel ? 'border-slate-900 bg-slate-900 text-white font-bold shadow-sm' : 'border-gray-200 bg-white text-slate-800 font-semibold hover:border-gray-300'}" data-type="sort" data-val="${esc(st.val)}" data-label="${esc(st.label)}">
-                <span class="text-sm font-semibold">${esc(st.label)}</span>
-                <div class="f-check w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${isSel ? 'border-white bg-white text-slate-900 font-black text-xs' : 'border-gray-300 bg-white'}">${isSel ? '✓' : ''}</div>
-                <input type="radio" name="opt-sort" value="${esc(st.val)}" class="sr-only" ${isSel ? 'checked' : ''}>
-              </label>`;
-            }).join('')}
+
           </div>
         </div>
 
+        <!-- Sticky Bottom Bar -->
+        <div class="sticky bottom-0 bg-white p-4 border-t border-gray-100 flex items-center gap-3 shrink-0">
+          <button id="f-clear-btn" type="button" class="flex-1 py-3.5 px-4 rounded-full border-2 border-gray-200 text-xs font-bold text-slate-700 hover:bg-slate-50 transition text-center">Reset</button>
+          <button id="apply" type="button" class="flex-[2] py-3.5 px-4 rounded-full bg-slate-900 hover:bg-slate-800 text-white text-xs font-extrabold shadow-soft transition text-center">Apply Filters</button>
+        </div>
       </div>
+    </div>
 
-      <!-- Drawer Bottom Sticky Action Bar -->
-      <div class="sticky bottom-0 bg-white p-4 border-t border-gray-100 flex items-center gap-3">
-        <button id="f-clear-btn" type="button" class="flex-1 py-3.5 px-4 rounded-full border border-gray-200 text-xs font-bold text-slate-700 hover:bg-slate-50 transition text-center">Clear</button>
-        <button id="apply" type="button" class="flex-[2] py-3.5 px-4 rounded-full bg-slate-900 hover:bg-slate-800 text-white text-xs font-extrabold shadow-soft transition text-center">Apply Filters</button>
-      </div>
-    </aside>
-
-    <!-- Separate Sort Page Modal (Dedicated Page View, NOT a Slidebar) -->
+    <!-- Separate Sort Page Modal (Dedicated Page View on Desktop & Mobile) -->
     <div id="sort-page-modal" class="hidden fixed inset-0 z-[70] bg-white flex flex-col md:inset-0 md:bg-slate-900/50 md:backdrop-blur-sm md:items-center md:justify-center p-0 md:p-6">
       <div class="w-full h-full md:h-auto md:max-h-[88vh] md:max-w-lg bg-white md:rounded-3xl flex flex-col shadow-2xl overflow-hidden border border-gray-100">
         <!-- Header with Circular Back Button -->
@@ -1194,7 +1179,7 @@ async function shop(params){
     </div>
 
     <!-- Product Listing Grid -->
-    <section class="min-w-0">
+    <section class="min-w-0 pt-2">
       <div class="flex items-center justify-between mb-4 px-1">
         <p class="text-xs font-semibold text-gray-500">Showing <span class="text-gray-900 font-extrabold">${data.length}</span> sarees${f.q ? ` for "<span class="text-gray-900">${esc(f.q)}</span>"` : ''}</p>
       </div>
@@ -1202,7 +1187,7 @@ async function shop(params){
     </section>
   </div>`;
 
-  // Open / Close Drawer
+  // Open / Close Split Filter Page Modal
   const openFilters = () => { $('#fl').classList.remove('hidden'); document.body.style.overflow = 'hidden'; };
   const closeFilters = () => { $('#fl').classList.add('hidden'); document.body.style.overflow = ''; };
   $('#ftg').onclick = openFilters;
@@ -1224,23 +1209,22 @@ async function shop(params){
   let pendingColor = f.color;
   let pendingSort = f.sort;
 
-  // Accordion Toggle Handlers
-  $$('.f-acc-toggle').forEach(btn => {
+  // Flipkart/Amazon style Left Sidebar Tab Switching
+  $$('.f-nav-item').forEach(btn => {
     btn.onclick = (e) => {
       e.preventDefault();
-      const accKey = btn.dataset.acc;
-      const panel = $(`#acc-${accKey}`);
-      const chevron = btn.querySelector('.f-chevron');
-      if(panel){
-        const isHidden = panel.classList.contains('hidden');
-        if(isHidden){
-          panel.classList.remove('hidden');
-          if(chevron) chevron.style.transform = 'rotate(90deg)';
-        } else {
-          panel.classList.add('hidden');
-          if(chevron) chevron.style.transform = 'rotate(0deg)';
-        }
-      }
+      const tabName = btn.dataset.tab;
+      
+      // Update sidebar tab item styles
+      $$('.f-nav-item').forEach(item => {
+        item.className = 'f-nav-item w-full flex items-center justify-between px-3.5 py-4 text-left font-semibold text-sm transition border-l-4 border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100/60';
+      });
+      btn.className = 'f-nav-item w-full flex items-center justify-between px-3.5 py-4 text-left font-bold text-sm transition border-l-4 border-slate-900 bg-white text-slate-950 shadow-sm';
+
+      // Switch right panel view
+      $$('.f-tab-panel').forEach(panel => panel.classList.add('hidden'));
+      const activePanel = $(`#tab-panel-${tabName}`);
+      if(activePanel) activePanel.classList.remove('hidden');
     };
   });
 
@@ -1269,14 +1253,12 @@ async function shop(params){
     });
   };
 
-  const updateBadge = (badgeId, label) => {
+  const updateBadge = (badgeId, hasVal) => {
     const el = $(badgeId);
     if(!el) return;
-    if(label){
-      el.textContent = label;
+    if(hasVal){
       el.classList.remove('hidden');
     } else {
-      el.textContent = '';
       el.classList.add('hidden');
     }
   };
@@ -1286,31 +1268,30 @@ async function shop(params){
     row.onclick = (e) => {
       const type = row.dataset.type;
       const val = row.dataset.val;
-      const label = row.dataset.label;
       if(type === 'cat'){
         pendingCat = val;
-        updateOptionRowUI('#acc-categories', val);
-        updateBadge('#badge-categories', val ? label : '');
+        updateOptionRowUI('#tab-panel-categories', val);
+        updateBadge('#badge-categories', !!val);
       } else if(type === 'fabric'){
         pendingFabric = val;
-        updateOptionRowUI('#acc-fabric', val);
-        updateBadge('#badge-fabric', val ? label : '');
+        updateOptionRowUI('#tab-panel-fabric', val);
+        updateBadge('#badge-fabric', !!val);
       } else if(type === 'rating'){
         pendingRating = val;
-        updateOptionRowUI('#acc-ratings', val);
-        updateBadge('#badge-ratings', val ? `${val}★ & above` : '');
+        updateOptionRowUI('#tab-panel-ratings', val);
+        updateBadge('#badge-ratings', !!val);
       } else if(type === 'stock'){
         pendingStock = val;
-        updateOptionRowUI('#acc-availability', val);
-        updateBadge('#badge-availability', val ? 'In Stock' : '');
+        updateOptionRowUI('#tab-panel-availability', val);
+        updateBadge('#badge-availability', !!val);
       } else if(type === 'color'){
         pendingColor = val;
-        updateOptionRowUI('#acc-colour', val);
-        updateBadge('#badge-colour', val ? label : '');
+        updateOptionRowUI('#tab-panel-colour', val);
+        updateBadge('#badge-colour', !!val);
       } else if(type === 'sort'){
         pendingSort = val;
-        updateOptionRowUI('#acc-sort', val);
-        updateBadge('#badge-sort', (val && val !== 'new') ? label : '');
+        updateOptionRowUI('#tab-panel-sort', val);
+        updateBadge('#badge-sort', (val && val !== 'new'));
         syncSortPageModalUI(val);
       }
     };
@@ -1321,24 +1302,21 @@ async function shop(params){
     btn.onclick = () => {
       const minV = btn.dataset.min || '';
       const maxV = btn.dataset.max || '';
-      const label = btn.dataset.label;
       $('#f-min').value = minV;
       $('#f-max').value = maxV;
       pendingMin = minV;
       pendingMax = maxV;
-      updateBadge('#badge-price', (minV || maxV) ? label : '');
+      updateBadge('#badge-price', !!(minV || maxV));
     };
   });
 
   $('#f-min').oninput = (e) => {
     pendingMin = e.target.value.trim();
-    const lbl = (pendingMin || pendingMax) ? `₹${pendingMin || '0'}-₹${pendingMax || '∞'}` : '';
-    updateBadge('#badge-price', lbl);
+    updateBadge('#badge-price', !!(pendingMin || pendingMax));
   };
   $('#f-max').oninput = (e) => {
     pendingMax = e.target.value.trim();
-    const lbl = (pendingMin || pendingMax) ? `₹${pendingMin || '0'}-₹${pendingMax || '∞'}` : '';
-    updateBadge('#badge-price', lbl);
+    updateBadge('#badge-price', !!(pendingMin || pendingMax));
   };
 
   // Sync separate sort page modal UI
@@ -1367,9 +1345,8 @@ async function shop(params){
       const val = card.dataset.sort;
       pendingSort = val;
       syncSortPageModalUI(val);
-      updateOptionRowUI('#acc-sort', val);
-      const opt = allSorts.find(s => s.val === val);
-      updateBadge('#badge-sort', (opt && val !== 'new') ? opt.label : '');
+      updateOptionRowUI('#tab-panel-sort', val);
+      updateBadge('#badge-sort', (val && val !== 'new'));
     };
   });
 
@@ -1381,8 +1358,8 @@ async function shop(params){
   $('#sort-page-reset').onclick = () => {
     pendingSort = 'new';
     syncSortPageModalUI('new');
-    updateOptionRowUI('#acc-sort', 'new');
-    updateBadge('#badge-sort', '');
+    updateOptionRowUI('#tab-panel-sort', 'new');
+    updateBadge('#badge-sort', false);
   };
 
   const executeFilter = () => {
@@ -2481,7 +2458,6 @@ $('#brand').addEventListener('click', e => {
 let currentRoute = location.hash || '#/';
 let isLinkNavigation = false;
 
-// Intercept link clicks so normal links update currentRoute cleanly
 document.addEventListener('click', (e) => {
   const link = e.target.closest('a[href]');
   if(link){
@@ -2496,22 +2472,20 @@ document.addEventListener('click', (e) => {
 function armShopGuard(){
   try {
     history.pushState({ thaaraiShopGuard: true }, '', location.href);
+    history.pushState({ thaaraiShopGuard: true }, '', location.href);
   } catch(e){}
 }
 
-// Window popstate: ALWAYS keep user locked inside shop tab by reloading
 window.addEventListener('popstate', event => {
   const current = location.hash || '#/';
 
-  // 1. If sort page modal is open, close it first
+  // 1. Close open modals first
   const sortModal = $('#sort-page-modal');
   if(sortModal && !sortModal.classList.contains('hidden')){
     sortModal.classList.add('hidden');
     document.body.style.overflow = '';
     return;
   }
-
-  // 2. If filter drawer is open, close it
   const fl = $('#fl');
   if(fl && !fl.classList.contains('hidden')){
     fl.classList.add('hidden');
@@ -2519,77 +2493,33 @@ window.addEventListener('popstate', event => {
     return;
   }
 
-  // 3. If confirming login details, lock on #/login
-  if(window._confirmingDetails && !profile()){
-    if(current !== '#/login'){
-      location.hash = '#/login';
-      toast('Please click Confirm & Complete Login to continue');
-    }
-    return;
-  }
-
-  // 4. Sub-routes (cart, account, product details) allow normal back traversal
+  // 2. Sub-routes (cart, account, product details) allow normal back traversal
   if(isLinkNavigation || current.startsWith('#/cart') || current.startsWith('#/account') || current.startsWith('#/p/') || current.startsWith('#/checkout')){
     currentRoute = current;
     return;
   }
 
-  const prev = currentRoute;
-  const next = current;
-
-  // 5. Back from filtered shop (#/shop?...) to clean shop (#/shop)
-  if(prev.startsWith('#/shop?') && (next === '#/shop' || next.startsWith('#/shop'))){
-    currentRoute = next;
-    return;
+  // 3. Traps any back button press on shop or home: ALWAYS lock in shop and reload shop
+  try {
+    history.pushState({ thaaraiShopGuard: true }, '', '#/shop');
+    history.pushState({ thaaraiShopGuard: true }, '', '#/shop');
+  } catch(e){}
+  currentRoute = '#/shop';
+  if(location.hash !== '#/shop'){
+    location.hash = '#/shop';
+  } else {
+    route();
   }
-
-  // 6. If user attempts to exit or clicks back on shop tab: reload and stay in shop!
-  if(prev.startsWith('#/shop') || next === '' || next === '#' || next === '#/' || next.startsWith('#/shop')){
-    try {
-      history.pushState({ thaaraiShopGuard: true }, '', '#/shop');
-    } catch(e){}
-    currentRoute = '#/shop';
-    if(location.hash !== '#/shop'){
-      location.hash = '#/shop';
-    } else {
-      route();
-    }
-    return;
-  }
-
-  currentRoute = next;
 });
-
-// Click lock for login confirmation
-document.addEventListener('click', e => {
-  if(window._confirmingDetails && !profile() && (location.hash||'').startsWith('#/login')){
-    if(e.target.closest('#toast')){
-      return;
-    }
-    const insideCard = e.target.closest('#confirm-details-card');
-    if(!insideCard){
-      e.preventDefault();
-      e.stopPropagation();
-      toast('Please click Confirm & Complete Login to continue');
-      $('#lp')?.focus();
-    }
-  }
-}, true);
 
 // Header back navigation button: permanently stays inside store, locks on Shop
 $('#nav-back').onclick = () => {
-  if(window._confirmingDetails && !profile() && (location.hash||'').startsWith('#/login')){
-    toast('Please click Confirm & Complete Login to continue');
-    return;
-  }
-
   const sortModal = $('#sort-page-modal');
   if(sortModal && !sortModal.classList.contains('hidden')){
     sortModal.classList.add('hidden');
     document.body.style.overflow = '';
     return;
   }
-
   const fl = $('#fl');
   if(fl && !fl.classList.contains('hidden')){
     fl.classList.add('hidden');
@@ -2598,20 +2528,14 @@ $('#nav-back').onclick = () => {
   }
 
   const current = location.hash || '#/';
-
   if(current.startsWith('#/shop?')){
     location.hash = '#/shop';
     return;
   }
-
-  if(current === '#/shop' || current === '#/shop/'){
+  if(current === '#/shop' || current === '#/shop/' || current === '#/' || current === '' || current === '#'){
+    location.hash = '#/shop';
     route();
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    return;
-  }
-
-  if(current === '#/' || current === '' || current === '#'){
-    location.hash = '#/shop';
     return;
   }
 
