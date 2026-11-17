@@ -1963,7 +1963,6 @@ async function loginView(passedUser = null){
   // --- STATE 1: ALREADY LOGGED IN ---
   if(p){
     window._confirmingDetails = false;
-    hideExitModal();
     $('#tabbar')?.classList.remove('hidden');
     app.innerHTML = `
       <div class="max-w-sm mx-auto bg-white border border-gray-100 rounded-3xl p-6 sm:p-7 space-y-4 shadow-soft my-6">
@@ -2033,7 +2032,6 @@ async function loginView(passedUser = null){
   // --- STATE 2: GOOGLE SIGN-IN COMPLETE -> ASK PROFILE NAME & MOBILE NUMBER ---
   if(googleUser){
     window._confirmingDetails = true;
-    hideExitModal();
     $('#tabbar')?.classList.add('hidden');
     const googleRealName = (googleUser.user_metadata?.full_name || googleUser.user_metadata?.name || '').trim();
     const defaultProfileName = (existingCust?.name || googleRealName || (googleUser.email ? googleUser.email.split('@')[0] : '')).trim();
@@ -2129,7 +2127,6 @@ async function loginView(passedUser = null){
 
   // --- STATE 3: INITIAL SCREEN (ONLY GOOGLE LOGIN BUTTON) ---
   window._confirmingDetails = false;
-  hideExitModal();
   $('#tabbar')?.classList.remove('hidden');
   app.innerHTML = `
     <div class="max-w-sm mx-auto bg-white border border-gray-100 rounded-3xl p-6 sm:p-7 space-y-5 shadow-soft my-6">
@@ -2450,7 +2447,7 @@ async function route(){
       else if(path==='/cart')await cartView();
       else if(path==='/checkout')await checkout();
       else if(path.startsWith('/account'))await account(path.split('/')[2]||'hub',params);
-      else if(path==='/login'){ hideExitModal(); await loginView(); }
+      else if(path==='/login'){ await loginView(); }
       else app.innerHTML='<p class="text-center py-20 text-xs text-gray-400">Page not found.</p>';
     }catch(err){console.error(err);app.innerHTML='<p class="text-center text-rose-600 py-20 text-xs">Error: '+esc(err.message||err)+'</p>';}
     window.scrollTo(0,0);
