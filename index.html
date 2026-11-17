@@ -12,6 +12,11 @@
 <title>Thaarai Tex | Pure Sarees & Handloom</title>
 <meta name="description" content="Handloom silk and cotton sarees direct from weavers. Free delivery, Cash on Delivery.">
 <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<script>
+  tailwind.config = {
+    darkMode: 'class'
+  };
+</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -176,9 +181,9 @@ html.dark .active\:bg-gray-100:active {
   background-color: #273754 !important;
 }
 
-/* Buttons */
+/* Buttons (In Dark mode only) */
 html.dark .bg-slate-900.text-white,
-html.dark button.bg-slate-900,
+html.dark button.bg-slate-900:not(#neon-loader button),
 html.dark a.bg-slate-900 {
   background-color: #38bdf8 !important;
   color: #0f172a !important;
@@ -229,22 +234,7 @@ html.dark .profile-avatar-ring {
   background-color: #131c2e !important;
 }
 
-/* Loader Dynamic Theme Styling: Light background in White Theme, Dark background in Dark Theme */
-#neon-loader {
-  background-color: rgba(248, 250, 252, 0.98) !important;
-}
-#neon-loader-glow {
-  background: radial-gradient(circle, rgba(16, 185, 129, 0.25) 0%, rgba(5, 150, 105, 0.12) 50%, rgba(4, 120, 87, 0) 75%) !important;
-}
-#neon-counter-num {
-  color: #0f172a !important;
-  text-shadow: none !important;
-}
-#neon-loader p {
-  color: #0f172a !important;
-  text-shadow: none !important;
-}
-
+/* Loader Dynamic Theme Styling */
 html.dark #neon-loader {
   background-color: #050811 !important;
 }
@@ -416,8 +406,8 @@ input,select,textarea{font-size:16px!important}
 </div>
 <!-- Back navigation is permanently locked to Shop tab (no exit popups) -->
 
-<!-- Premium Neon Ring Counter Loader -->
-<div id="neon-loader" class="fixed inset-0 z-[999999] bg-[#f8fafc]/95 dark:bg-[#050811] flex flex-col items-center justify-center opacity-0 pointer-events-none select-none transition-all duration-200" style="visibility:hidden">
+<!-- Premium Neon Ring Counter Loader (Pure Dark Background) -->
+<div id="neon-loader" class="fixed inset-0 z-[999999] bg-[#000000] flex flex-col items-center justify-center opacity-0 pointer-events-none select-none transition-all duration-200" style="visibility:hidden">
   <div class="relative w-44 h-44 flex items-center justify-center">
     <!-- Ambient Radial Glow -->
     <div id="neon-loader-glow" class="absolute inset-0 rounded-full bg-gradient-to-tr from-[#064e3b]/45 via-[#047857]/30 to-[#059669]/20 blur-2xl pointer-events-none transition-all duration-300"></div>
@@ -2572,7 +2562,7 @@ async function checkout(){
                   <h2 class="font-extrabold text-base text-slate-900">Choose Saved Address</h2>
                   <p class="text-xs text-gray-500 mt-0.5">Click an address box and click Confirm</p>
                 </div>
-                <button type="button" id="btn-open-create-addr" class="text-xs font-bold text-slate-700 hover:text-slate-900 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-full border border-gray-200 dark:border-slate-700 transition">
+                <button type="button" id="btn-open-create-addr" class="text-xs font-bold text-slate-800 hover:text-slate-950 bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-full border border-gray-200 transition">
                   + Add New Address
                 </button>
               </div>
@@ -2583,14 +2573,14 @@ async function checkout(){
                   const isSel = (a.id === tempChosenId);
                   return `
                     <label class="saved-choice-card block relative border-2 rounded-2xl p-4 cursor-pointer transition select-none ${
-                      isSel ? 'border-slate-900 bg-slate-50 dark:bg-slate-800/60 dark:border-sky-400 shadow-sm ring-1 ring-slate-900 dark:ring-sky-400' : 'border-gray-200 bg-white hover:border-gray-300 dark:border-slate-700'
+                      isSel ? 'border-slate-900 bg-gray-50 shadow-sm ring-1 ring-slate-900' : 'border-gray-200 bg-white hover:border-gray-300'
                     }" data-aid="${esc(a.id)}">
                       <div class="flex items-start gap-3.5">
-                        <input type="radio" name="chk_saved_choice" value="${esc(a.id)}" ${isSel ? 'checked' : ''} class="w-4 h-4 mt-1 shrink-0 accent-slate-900 dark:accent-sky-400 cursor-pointer">
+                        <input type="radio" name="chk_saved_choice" value="${esc(a.id)}" ${isSel ? 'checked' : ''} class="w-4 h-4 mt-1 shrink-0 accent-slate-900 cursor-pointer">
                         <div class="flex-1 min-w-0">
                           <div class="flex items-center gap-2 flex-wrap">
                             <span class="font-black text-sm text-slate-900">${esc(a.name)}</span>
-                            ${a.def ? `<span class="text-[9px] font-black uppercase tracking-wider bg-slate-900 text-white px-2 py-0.5 rounded-full dark:bg-sky-400 dark:text-slate-950">Default</span>` : ''}
+                            ${a.def ? `<span class="text-[9px] font-black uppercase tracking-wider bg-slate-900 text-white px-2 py-0.5 rounded-full">Default</span>` : ''}
                             <span class="text-xs font-bold text-slate-600 ml-auto">📞 ${esc(a.phone)}</span>
                           </div>
                           <p class="text-xs text-slate-700 mt-1.5 leading-relaxed font-medium">${esc(a.line)}</p>
@@ -2635,7 +2625,7 @@ async function checkout(){
             $$('.saved-choice-card').forEach(c => {
               const isMatch = (c.dataset.aid === tempChosenId);
               c.className = `saved-choice-card block relative border-2 rounded-2xl p-4 cursor-pointer transition select-none ${
-                isMatch ? 'border-slate-900 bg-slate-50 dark:bg-slate-800/60 dark:border-sky-400 shadow-sm ring-1 ring-slate-900 dark:ring-sky-400' : 'border-gray-200 bg-white hover:border-gray-300 dark:border-slate-700'
+                isMatch ? 'border-slate-900 bg-gray-50 shadow-sm ring-1 ring-slate-900' : 'border-gray-200 bg-white hover:border-gray-300'
               }`;
               const rad = c.querySelector('input[type="radio"]');
               if(rad) rad.checked = isMatch;
@@ -2755,17 +2745,17 @@ async function checkout(){
 
             <!-- First Line: Choose Saved Address Option -->
             ${AL.length ? `
-              <div class="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl p-3.5 flex items-center justify-between gap-3">
+              <div class="bg-gray-50 border border-gray-200 rounded-2xl p-3.5 flex items-center justify-between gap-3">
                 <div class="min-w-0">
                   <div class="flex items-center gap-2">
-                    <svg class="w-4 h-4 text-emerald-600 dark:text-sky-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                    <span class="text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">Choose Saved Address (${AL.length} Available)</span>
+                    <svg class="w-4 h-4 text-gray-700 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    <span class="text-[11px] font-black uppercase tracking-wider text-gray-500">Choose Saved Address (${AL.length} Available)</span>
                   </div>
-                  <p class="text-xs font-bold text-slate-900 truncate mt-1">
+                  <p class="text-xs font-bold text-gray-900 truncate mt-1">
                     ${addr.line ? `${esc(addr.name)} – ${esc(addr.line.slice(0, 30))}…` : 'Tap to select an existing saved address'}
                   </p>
                 </div>
-                <button type="button" id="btn-open-saved-addr-page" class="shrink-0 bg-slate-900 hover:bg-slate-800 dark:bg-sky-400 dark:text-slate-950 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition shadow-sm flex items-center gap-1.5 active:scale-95">
+                <button type="button" id="btn-open-saved-addr-page" class="shrink-0 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition shadow-sm flex items-center gap-1.5 active:scale-95">
                   <span>Choose Address ➔</span>
                 </button>
               </div>
