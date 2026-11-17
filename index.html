@@ -773,9 +773,9 @@ async function shop(params){
   let data = [];
   if(q){
     if(f.q) q = q.or(`name.ilike.%${f.q.replace(/[%,()]/g,'')}%,description.ilike.%${f.q.replace(/[%,()]/g,'')}%`);
-    if(f.cat){
+    if(f.cat && f.cat !== 'All Categories' && f.cat !== 'all'){
       const matchedCat = cats.find(c => c.id === f.cat || (c.name && c.name.toLowerCase() === f.cat.toLowerCase()));
-      if(matchedCat){
+      if(matchedCat && matchedCat.id){
         q = q.eq('category_id', matchedCat.id);
       } else {
         q = q.or(`category_id.eq.${f.cat},fabric.ilike.%${f.cat.replace(/[%,()]/g,'')}%,name.ilike.%${f.cat.replace(/[%,()]/g,'')}%`);
@@ -936,12 +936,9 @@ async function shop(params){
     { val: 'discount', label: 'Biggest Discounts' }
   ];
 
-  // Helper labels for active badges
-  const currentCatObj = allCategoryOptions.find(c => c.id === f.cat || (f.cat && c.name.toLowerCase() === f.cat.toLowerCase()));
-  const currentCatLabel = currentCatObj ? currentCatObj.name : (f.cat || '');
-
-  const currentFabObj = allFabrics.find(fb => fb.val.toLowerCase() === f.fabric.toLowerCase());
-  const currentFabLabel = currentFabObj ? currentFabObj.label : (f.fabric || '');
+  // Helper labels for active badges (dots only show when an actual filter is selected, never for All)
+  const currentCatLabel = (f.cat && f.cat !== 'All Categories' && f.cat !== 'all') ? f.cat : '';
+  const currentFabLabel = (f.fabric && f.fabric !== 'All Fabrics' && f.fabric !== 'all') ? f.fabric : '';
 
   const currentRatingLabel = f.rating ? `${f.rating}★ & above` : '';
   const currentPriceLabel = (f.min || f.max) ? (f.min && f.max ? `₹${f.min}-₹${f.max}` : f.min ? `>₹${f.min}` : `<₹${f.max}`) : '';
@@ -1027,7 +1024,7 @@ async function shop(params){
               ${allCategoryOptions.map(c => {
                 const isSel = (!f.cat && !c.id) || (f.cat && (f.cat === c.id || f.cat.toLowerCase() === c.name.toLowerCase()));
                 return `
-                <label class="f-opt-row flex items-center justify-between p-3.5 rounded-2xl border-2 cursor-pointer transition ${isSel ? 'border-slate-900 bg-slate-900 text-white font-bold shadow-sm' : 'border-gray-200 bg-white text-slate-800 font-semibold hover:border-gray-300'}" data-type="cat" data-val="${esc(c.id || c.name)}" data-label="${esc(c.name)}">
+                <label class="f-opt-row flex items-center justify-between p-3.5 rounded-2xl border-2 cursor-pointer transition ${isSel ? 'border-slate-900 bg-slate-900 text-white font-bold shadow-sm' : 'border-gray-200 bg-white text-slate-800 font-semibold hover:border-gray-300'}" data-type="cat" data-val="${esc(c.id ? c.id : (c.name === 'All Categories' ? '' : c.name))}" data-label="${esc(c.name)}">
                   <span class="text-sm capitalize">${esc(c.name)}</span>
                   <div class="f-check w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${isSel ? 'border-white bg-white text-slate-900 font-black text-xs' : 'border-gray-300 bg-white'}">${isSel ? '✓' : ''}</div>
                   <input type="radio" name="opt-cat" value="${esc(c.id || c.name)}" class="sr-only" ${isSel ? 'checked' : ''}>
@@ -1064,12 +1061,14 @@ async function shop(params){
             <!-- Panel: Price -->
             <div id="tab-panel-price" class="f-tab-panel hidden space-y-3">
               <div class="space-y-2.5">
-                ${allPriceTiers.map(pt => `
-                  <button type="button" class="price-tier-btn w-full flex items-center justify-between p-3.5 rounded-2xl border-2 border-gray-200 bg-white hover:border-gray-300 text-left text-sm font-semibold text-slate-800 transition" data-min="${esc(pt.min)}" data-max="${esc(pt.max)}" data-label="${esc(pt.label)}">
+                ${allPriceTiers.map(pt => {
+                  const isPtSel = (f.min === pt.min && f.max === pt.max);
+                  return `
+                  <button type="button" class="price-tier-btn w-full flex items-center justify-between p-3.5 rounded-2xl border-2 text-left text-sm font-semibold transition ${isPtSel ? 'border-slate-900 bg-slate-900 text-white font-bold shadow-sm' : 'border-gray-200 bg-white text-slate-800 hover:border-gray-300'}" data-min="${esc(pt.min)}" data-max="${esc(pt.max)}" data-label="${esc(pt.label)}">
                     <span>${esc(pt.label)}</span>
-                    <span class="text-xs text-gray-400 font-bold">₹</span>
-                  </button>
-                `).join('')}
+                    <span class="text-xs font-bold ${isPtSel ? 'text-white' : 'text-gray-400'}">₹</span>
+                  </button>`;
+                }).join('')}
               </div>
               <div class="pt-3 border-t border-gray-100">
                 <span class="text-[11px] font-bold text-gray-400 uppercase tracking-wider block mb-2">Custom Price Range</span>
@@ -1306,6 +1305,14 @@ async function shop(params){
       $('#f-max').value = maxV;
       pendingMin = minV;
       pendingMax = maxV;
+      $$('.price-tier-btn').forEach(b => {
+        b.className = 'price-tier-btn w-full flex items-center justify-between p-3.5 rounded-2xl border-2 border-gray-200 bg-white text-slate-800 hover:border-gray-300 text-left text-sm font-semibold transition';
+        const span = b.querySelector('span:last-child');
+        if(span) span.className = 'text-xs text-gray-400 font-bold';
+      });
+      btn.className = 'price-tier-btn w-full flex items-center justify-between p-3.5 rounded-2xl border-2 border-slate-900 bg-slate-900 text-white font-bold shadow-sm text-left text-sm transition';
+      const lastSpan = btn.querySelector('span:last-child');
+      if(lastSpan) lastSpan.className = 'text-xs text-white font-bold';
       updateBadge('#badge-price', !!(minV || maxV));
     };
   });
