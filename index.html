@@ -1554,11 +1554,13 @@ async function shop(params){
   });
 
   // Sort Page Apply & Reset
-  $('#sort-page-apply').onclick = () => {
+  $('#sort-page-apply').onclick = (e) => {
+    if(e){ e.preventDefault(); e.stopPropagation(); }
     closeSortPage();
     executeFilter();
   };
-  $('#sort-page-reset').onclick = () => {
+  $('#sort-page-reset').onclick = (e) => {
+    if(e){ e.preventDefault(); e.stopPropagation(); }
     pendingSort = 'new';
     syncSortPageModalUI('new');
     updateOptionRowUI('#tab-panel-sort', 'new');
@@ -1586,15 +1588,18 @@ async function shop(params){
     }
   };
 
-  $('#apply').onclick = () => {
+  $('#apply').onclick = (e) => {
+    if(e){ e.preventDefault(); e.stopPropagation(); }
     closeFilters();
     executeFilter();
   };
-  $('#f-clear-btn').onclick = () => {
+  $('#f-clear-btn').onclick = (e) => {
+    if(e){ e.preventDefault(); e.stopPropagation(); }
     closeFilters();
     location.hash = '#/shop';
   };
-  $('#f-reset').onclick = () => {
+  $('#f-reset').onclick = (e) => {
+    if(e){ e.preventDefault(); e.stopPropagation(); }
     closeFilters();
     location.hash = '#/shop';
   };
