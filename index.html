@@ -3323,6 +3323,9 @@ async function route(){
     const [path,qs]=(location.hash||'#/').slice(1).split('?'), params=new URLSearchParams(qs||'');
     app.innerHTML='<p class="text-center text-gray-400 py-20 text-xs">ஏற்றப்படுகிறது…</p>';
     $('#tabbar').classList.toggle('hidden',path.startsWith('/p/')||path==='/checkout');
+    const isHomePage = (path === '/' || path === '');
+    const footEl = $('#foot');
+    if(footEl) footEl.classList.toggle('hidden', !isHomePage);
     document.querySelectorAll('.tb').forEach(a=>{const on=a.dataset.tb.split('|').some(k=>k==='/'?(path==='/'||path===''):path.startsWith(k));a.style.color=on?'#0f172a':'#94a3b8'});
     try{
       if(path==='/'||path==='')await home();
