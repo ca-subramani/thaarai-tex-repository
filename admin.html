@@ -109,9 +109,9 @@
       </div>
 
       <!-- Navigation Links List -->
-      <div class="px-3 pt-4 overflow-y-auto flex-1 no-scrollbar space-y-1">
-        <p class="px-3 text-[9px] font-black uppercase tracking-[.2em] text-slate-400">MANAGEMENT</p>
-        <nav id="navigation" class="mt-2 space-y-1"></nav>
+      <div class="px-3 sm:px-3 pt-4 pb-2 overflow-y-auto flex-1 no-scrollbar space-y-1">
+        <p class="px-3 text-[10px] sm:text-[9px] font-black uppercase tracking-[.2em] text-slate-400">MANAGEMENT</p>
+        <nav id="navigation" class="mt-2.5 sm:mt-2 space-y-2 sm:space-y-1"></nav>
       </div>
 
       <!-- Sidebar Footer (Live Store Link & Logout) -->
@@ -443,9 +443,9 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
 
     const nav=$('#navigation');
     nav.innerHTML=sections.map(([id,label,icon])=>`
-      <button data-section="${id}" class="nav-item flex w-full items-center gap-3 rounded-2xl px-3.5 py-2.5 text-left text-xs font-semibold text-slate-600 transition hover:bg-slate-100 hover:text-slate-900">
-        <span class="grid h-5 w-5 place-items-center text-slate-400">${icon}</span>
-        <span class="truncate">${label}</span>
+      <button data-section="${id}" class="nav-item flex w-full items-center gap-3.5 sm:gap-3 rounded-2xl px-4 py-3 sm:px-3.5 sm:py-2.5 text-left text-sm sm:text-xs font-semibold text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 active:scale-[0.98]">
+        <span class="grid h-6 w-6 sm:h-5 sm:w-5 place-items-center text-slate-400 shrink-0">${icon}</span>
+        <span class="truncate font-bold sm:font-semibold">${label}</span>
       </button>`).join('');
 
     const toast=message=>{
@@ -510,9 +510,9 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
       $('#crumb').textContent=s[1].toUpperCase();
       nav.querySelectorAll('.nav-item').forEach(b=>{
         const on = b.dataset.section === id;
-        b.className=`nav-item flex w-full items-center gap-3 rounded-2xl px-3.5 py-2.5 text-left text-xs transition ${on ? 'bg-slate-900 text-white shadow-soft font-bold' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 font-semibold'}`;
+        b.className=`nav-item flex w-full items-center gap-3.5 sm:gap-3 rounded-2xl px-4 py-3 sm:px-3.5 sm:py-2.5 text-left text-sm sm:text-xs transition active:scale-[0.98] ${on ? 'bg-slate-900 text-white shadow-soft font-bold' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 font-bold sm:font-semibold'}`;
         const iconSpan = b.querySelector('span:first-child');
-        if(iconSpan) iconSpan.className = `grid h-5 w-5 place-items-center ${on ? 'text-white' : 'text-slate-400'}`;
+        if(iconSpan) iconSpan.className = `grid h-6 w-6 sm:h-5 sm:w-5 place-items-center shrink-0 ${on ? 'text-white' : 'text-slate-400'}`;
       });
       document.querySelectorAll('#admin-mobile-tabbar button[data-m-sec]').forEach(b=>{
         const on = b.dataset.mSec === id;
@@ -3271,9 +3271,9 @@ else if(editing.row.id){
 
       nav.querySelectorAll('.nav-item').forEach(b=>{
         const on = b.dataset.section === section;
-        b.className=`nav-item flex w-full items-center gap-3 rounded-2xl px-3.5 py-2.5 text-left text-xs transition ${on ? 'bg-slate-900 text-white shadow-soft font-bold' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 font-semibold'}`;
+        b.className=`nav-item flex w-full items-center gap-3.5 sm:gap-3 rounded-2xl px-4 py-3 sm:px-3.5 sm:py-2.5 text-left text-sm sm:text-xs transition active:scale-[0.98] ${on ? 'bg-slate-900 text-white shadow-soft font-bold' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 font-bold sm:font-semibold'}`;
         const iconSpan = b.querySelector('span:first-child');
-        if(iconSpan) iconSpan.className = `grid h-5 w-5 place-items-center ${on ? 'text-white' : 'text-slate-400'}`;
+        if(iconSpan) iconSpan.className = `grid h-6 w-6 sm:h-5 sm:w-5 place-items-center shrink-0 ${on ? 'text-white' : 'text-slate-400'}`;
       });
       document.querySelectorAll('#admin-mobile-tabbar button[data-m-sec]').forEach(b=>{
         const on = b.dataset.mSec === section;
@@ -3328,9 +3328,9 @@ else if(editing.row.id){
         $('#crumb').textContent = s[1].toUpperCase();
         nav.querySelectorAll('.nav-item').forEach(b => {
           const on = b.dataset.section === section;
-          b.className = `nav-item flex w-full items-center gap-3 rounded-2xl px-3.5 py-2.5 text-left text-xs transition ${on ? 'bg-slate-900 text-white shadow-soft font-bold' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 font-semibold'}`;
+          b.className = `nav-item flex w-full items-center gap-3.5 sm:gap-3 rounded-2xl px-4 py-3 sm:px-3.5 sm:py-2.5 text-left text-sm sm:text-xs transition active:scale-[0.98] ${on ? 'bg-slate-900 text-white shadow-soft font-bold' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 font-bold sm:font-semibold'}`;
           const iconSpan = b.querySelector('span:first-child');
-          if(iconSpan) iconSpan.className = `grid h-5 w-5 place-items-center ${on ? 'text-white' : 'text-slate-400'}`;
+          if(iconSpan) iconSpan.className = `grid h-6 w-6 sm:h-5 sm:w-5 place-items-center shrink-0 ${on ? 'text-white' : 'text-slate-400'}`;
         });
         document.querySelectorAll('#admin-mobile-tabbar button[data-m-sec]').forEach(b=>{
           const on = b.dataset.mSec === section;
