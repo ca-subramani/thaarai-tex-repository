@@ -2447,7 +2447,25 @@ async function checkout(){
     getStep: () => currentStep,
     setStep: s => { currentStep = s; renderStepView(); },
     getSubView: () => showingSavedAddressPage,
-    setSubView: v => { showingSavedAddressPage = v; renderStepView(); }
+    setSubView: v => { showingSavedAddressPage = v; renderStepView(); },
+    goBack: () => {
+      if(showingSavedAddressPage === 'new'){
+        showingSavedAddressPage = 'list';
+        renderStepView();
+        return true;
+      }
+      if(showingSavedAddressPage === 'list'){
+        showingSavedAddressPage = false;
+        renderStepView();
+        return true;
+      }
+      if(currentStep > 1){
+        currentStep = currentStep - 1;
+        renderStepView();
+        return true;
+      }
+      return false; // at step 1, allow exiting checkout
+    }
   };
 
   function pushCheckoutState(step, sub){
@@ -4095,30 +4113,17 @@ window.addEventListener('popstate', event => {
   const current = location.hash || '#/';
 
   // Handle Checkout Stepper back navigation (Steps 2, 3, 4, and sub-pages)
-  if(current.startsWith('#/checkout') && window._checkoutState){
-    // If the popped state carried specific checkout state, apply it:
-    if(event.state && event.state.inCheckout){
-      if(typeof event.state.sub !== 'undefined') window._checkoutState.setSubView(event.state.sub);
-      if(typeof event.state.step !== 'undefined') window._checkoutState.setStep(event.state.step);
+  if(window._checkoutState){
+    const wasHandled = window._checkoutState.goBack();
+    if(wasHandled){
+      // Re-anchor checkout in history so back gesture stays inside checkout
+      try {
+        history.pushState({ inCheckout: true, step: window._checkoutState.getStep(), sub: window._checkoutState.getSubView() }, '', location.href);
+      } catch(e){}
       return;
-    }
-
-    const sub = window._checkoutState.getSubView();
-    if(sub === 'new'){
-      try { history.pushState({ inCheckout: true, step: window._checkoutState.getStep(), sub: 'list' }, '', location.href); } catch(e){}
-      window._checkoutState.setSubView('list');
-      return;
-    }
-    if(sub === 'list'){
-      try { history.pushState({ inCheckout: true, step: window._checkoutState.getStep(), sub: false }, '', location.href); } catch(e){}
-      window._checkoutState.setSubView(false);
-      return;
-    }
-    const step = window._checkoutState.getStep();
-    if(step > 1){
-      try { history.pushState({ inCheckout: true, step: step - 1, sub: false }, '', location.href); } catch(e){}
-      window._checkoutState.setStep(step - 1);
-      return;
+    } else {
+      // Step 1: User swiped back to exit checkout
+      window._checkoutState = null;
     }
   }
 
@@ -4170,21 +4175,9 @@ $('#nav-back').onclick = () => {
   }
 
   // Header back button handling in checkout
-  if(current.startsWith('#/checkout') && window._checkoutState){
-    const sub = window._checkoutState.getSubView();
-    if(sub === 'new'){
-      window._checkoutState.setSubView('list');
-      return;
-    }
-    if(sub === 'list'){
-      window._checkoutState.setSubView(false);
-      return;
-    }
-    const step = window._checkoutState.getStep();
-    if(step > 1){
-      window._checkoutState.setStep(step - 1);
-      return;
-    }
+  if(window._checkoutState){
+    const wasHandled = window._checkoutState.goBack();
+    if(wasHandled) return;
   }
 
   history.back();
