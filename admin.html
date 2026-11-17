@@ -182,7 +182,7 @@
           <span>Sarees</span>
         </button>
         <button data-m-sec="customers" class="flex flex-col items-center gap-0.5 py-1 text-slate-500 hover:text-slate-900 transition rounded-2xl">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
           <span>Users</span>
         </button>
         <button id="m-menu-btn" class="flex flex-col items-center gap-0.5 py-1 text-slate-500 hover:text-slate-900 transition rounded-2xl">
@@ -893,9 +893,6 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
             <div class="min-w-0 flex-1 space-y-1">
               <div class="flex items-center gap-2 min-w-0">
                 <h3 class="text-xs sm:text-sm font-extrabold text-slate-900 truncate min-w-0 flex-1">${esc(name)}</h3>
-                <span class="text-[9px] font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded-lg select-all badge-pill shrink-0">
-                  #TT-${esc(orderShortId)}
-                </span>
                 <span class="text-[9px] font-bold px-2 py-0.5 rounded-full badge-pill shrink-0 ${statusBadge}">
                   ${esc(statusLabels[st] || capFirst(st))}
                 </span>
@@ -1866,14 +1863,6 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
             <div class="min-w-0 flex-1 space-y-1">
               <div class="flex items-center gap-2 min-w-0">
                 <h3 class="text-xs sm:text-sm font-extrabold text-slate-900 truncate min-w-0 flex-1">${esc(name)}</h3>
-                <span class="text-[9px] font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded-lg select-all badge-pill shrink-0">
-                  ${esc(c.customer_id)}
-                </span>
-                ${googleName && googleName !== name ? `
-                  <span class="text-[9px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full flex items-center gap-1 badge-pill shrink-0">
-                    Google: ${esc(googleName)}
-                  </span>
-                ` : ''}
               </div>
               <p class="text-[11px] text-slate-500 truncate flex items-center gap-1.5 min-w-0">
                 <span class="font-semibold text-slate-700 shrink-0">${esc(c.phone || 'No Phone')}</span>
@@ -2222,18 +2211,143 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
                     </button>
                   </div>
                   
-                  <!-- Responsive iframe preview of front store -->
-                  <iframe id="studio-store-iframe" src="./index.html" class="w-full flex-1 border-0 bg-white" title="Storefront Live Preview"></iframe>
+                  <!-- Responsive iframe preview of front store with Live Visual Editing -->
+                  <div class="relative flex-1 w-full overflow-hidden flex flex-col">
+                    <div id="live-edit-indicator" class="bg-slate-900 text-white text-[10px] font-bold px-3 py-1.5 flex items-center justify-between shrink-0 shadow-sm">
+                      <div class="flex items-center gap-1.5">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                        <span>Touch or click any text or image in the preview to edit live</span>
+                      </div>
+                      <span class="bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded text-[9px] font-extrabold uppercase tracking-wide">Live Visual Mode</span>
+                    </div>
+                    <iframe id="studio-store-iframe" src="./index.html" class="w-full flex-1 border-0 bg-white" title="Storefront Live Preview" onload="attachLiveVisualStudioEditor(this)"></iframe>
+                  </div>
                 </div>
               </div>
 
-              <p class="text-[10px] text-center text-slate-400">Changes saved in Studio immediately sync and render in this live preview frame.</p>
+              <p class="text-[10px] text-center text-slate-400">💡 Direct visual editing: Tap any heading, subtitle, or photo directly in the preview frame above to modify it in real time.</p>
             </div>
           </div>
 
         </div>`;
 
       renderStorefrontSubTabContent();
+    }
+
+    /* ===== LIVE VISUAL IN-PLACE STUDIO EDITOR ===== */
+    function attachLiveVisualStudioEditor(ifr){
+      try {
+        const doc = ifr.contentDocument || ifr.contentWindow?.document;
+        if(!doc) return;
+
+        // Inject highlight & visual edit cue styles into the preview iframe
+        if(!doc.getElementById('thaarai-studio-live-styles')){
+          const style = doc.createElement('style');
+          style.id = 'thaarai-studio-live-styles';
+          style.textContent = `
+            [data-studio-editable="true"]:hover {
+              outline: 2px dashed #0f172a !important;
+              outline-offset: 2px !important;
+              cursor: pointer !important;
+              position: relative !important;
+            }
+            [data-studio-editable="img"]:hover {
+              outline: 3px solid #10b981 !important;
+              outline-offset: 2px !important;
+              cursor: pointer !important;
+              filter: brightness(0.95);
+            }
+          `;
+          doc.head.appendChild(style);
+        }
+
+        // Tag text and image elements for live interaction
+        function tagElements(){
+          // 1. Tag text elements
+          const textNodes = doc.querySelectorAll('h1, h2, h3, h4, p, span, a, button, label');
+          textNodes.forEach(el => {
+            // Ignore non-user-facing system elements or empty tags
+            if(el.children.length === 0 && el.innerText.trim().length > 0 && !el.closest('script') && !el.closest('style')){
+              el.setAttribute('data-studio-editable', 'true');
+              el.title = 'Click to edit text';
+            }
+          });
+
+          // 2. Tag images
+          const imgNodes = doc.querySelectorAll('img');
+          imgNodes.forEach(img => {
+            img.setAttribute('data-studio-editable', 'img');
+            img.title = 'Click to change or replace image';
+          });
+        }
+
+        tagElements();
+
+        // Attach click / touch event listener inside iframe
+        doc.addEventListener('click', async (e) => {
+          const target = e.target;
+          if(!target) return;
+
+          // IMAGE EDITING
+          const img = target.closest('img') || (target.tagName === 'IMG' ? target : null);
+          if(img){
+            e.preventDefault();
+            e.stopPropagation();
+            const currentSrc = img.src || '';
+            const newUrl = prompt('Enter new Image URL (or upload from Media Library):', currentSrc);
+            if(newUrl && newUrl.trim() && newUrl.trim() !== currentSrc){
+              img.src = newUrl.trim();
+              toast('Image updated in live view ✓');
+              // Automatically sync with hero image or store settings if it corresponds
+              if(img.closest('#hero') || img.src.includes('hero') || target.id === 'hero-img-display'){
+                const hero = settings.hero || defaultSettings.hero;
+                hero.image = newUrl.trim();
+                await saveSettingToDB('hero', hero);
+              } else if(img.closest('#brand-logo-img') || img.alt === 'Logo'){
+                const brand = settings.brand || defaultSettings.brand;
+                brand.logo_url = newUrl.trim();
+                await saveSettingToDB('brand', brand);
+              } else {
+                toast('Image updated live in preview');
+              }
+            }
+            return;
+          }
+
+          // TEXT EDITING
+          const textEl = target.closest('[data-studio-editable="true"]');
+          if(textEl){
+            e.preventDefault();
+            e.stopPropagation();
+
+            const oldText = textEl.innerText.trim();
+            const newText = prompt('Edit storefront text:', oldText);
+            if(newText !== null && newText.trim() !== oldText){
+              textEl.innerText = newText.trim();
+              toast('Text updated in live view ✓');
+
+              // Identify if text belongs to hero title, subtitle, eyebrow, or brand
+              const lowerText = oldText.toLowerCase();
+              if(textEl.closest('#hero') || textEl.classList.contains('hero-text')){
+                const hero = settings.hero || defaultSettings.hero;
+                if(textEl.tagName === 'H1' || textEl.classList.contains('hero-title')) hero.title = newText.trim();
+                else if(textEl.tagName === 'P') hero.subtitle = newText.trim();
+                else hero.eyebrow = newText.trim();
+                await saveSettingToDB('hero', hero);
+              } else if(textEl.closest('#brand') || textEl.innerText === (settings.brand?.name || 'THAARAI TEX')){
+                const brand = settings.brand || defaultSettings.brand;
+                brand.name = newText.trim();
+                await saveSettingToDB('brand', brand);
+              } else {
+                toast('Text updated live in preview');
+              }
+            }
+          }
+        }, true);
+
+      } catch(err){
+        console.warn('Studio live editor hook:', err);
+      }
     }
 
     function setStudioPreviewDevice(dev){
