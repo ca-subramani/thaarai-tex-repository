@@ -2864,11 +2864,11 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
       const fd=new FormData(form);
       const name = String(fd.get('name')||'').trim();
       const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-      return {
+      const payload = {
         name: name,
-        slug: slug || 'category',
-        description: `Authentic handpicked collection of ${name} sarees.`
+        slug: slug || 'category'
       };
+      return payload;
     }
 
     /* ===== REVIEWS ===== */
