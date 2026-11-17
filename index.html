@@ -11,28 +11,6 @@
 <link rel="manifest" href="manifest.json">
 <title>Thaarai Tex | Pure Sarees & Handloom</title>
 <meta name="description" content="Handloom silk and cotton sarees direct from weavers. Free delivery, Cash on Delivery.">
-<script>
-(function(){
-  // Instant back-swipe trap during HTML parse & page loading
-  try {
-    for(var i=0; i<6; i++){
-      history.pushState({ thaaraiSeed: true, i: i }, '', location.href);
-    }
-  }catch(e){}
-  window.addEventListener('popstate', function(){
-    try {
-      history.pushState({ thaaraiSeed: true }, '', location.href);
-    }catch(e){}
-    var h = location.hash || '';
-    if(h.indexOf('#/cart') === -1 && h.indexOf('#/account') === -1 && h.indexOf('#/p/') === -1 && h.indexOf('#/login') === -1){
-      if(location.hash !== '#/shop'){
-        location.href = '#/shop';
-      }
-      location.reload();
-    }
-  });
-})();
-</script>
 <script src="https://cdn.tailwindcss.com/3.4.17"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -3226,8 +3204,7 @@ $('#brand').addEventListener('click', e => {
   }
 });
 
-/* ===== ANDROID GESTURE & MOBILE BACK TRAP (NEVER CLOSE BROWSER) ===== */
-let currentRoute = location.hash || '#/';
+/* ===== NAVIGATION & SHOP BACK LOOP ===== */
 let isLinkNavigation = false;
 
 document.addEventListener('click', (e) => {
@@ -3241,35 +3218,20 @@ document.addEventListener('click', (e) => {
   }
 }, true);
 
-// Pre-fill deep history stack on Android so edge swipes have dummy states to consume
-function seedHistoryStack(){
+// Keep a buffer of history entries ONLY when on shop tab
+function ensureShopBuffer(){
   try {
-    for(let i = 0; i < 8; i++){
-      history.pushState({ thaaraiGuard: true, i, t: Date.now() }, '', location.href);
+    const h = location.hash || '#/';
+    if(h === '#/shop' || h.startsWith('#/shop?')){
+      history.pushState({ thaaraiShopTab: true, t: Date.now() }, '', location.href);
     }
   } catch(e){}
 }
 
-function maintainHistoryGuard(){
-  try {
-    history.pushState({ thaaraiGuard: true, t: Date.now() }, '', location.href);
-  } catch(e){}
-}
-
-// Seed on startup & on first user touch
-seedHistoryStack();
-window.addEventListener('touchstart', () => maintainHistoryGuard(), { once: true, passive: true });
-
-// Prevent Android swipe back or mobile back button from closing browser
+// Android Back Gesture & Popstate: ONLY loop/reload if user is on Shop tab
 window.addEventListener('popstate', event => {
-  // Always immediately push back a dummy state so Android swipe gesture can NEVER pop to 0
-  maintainHistoryGuard();
-
-  // If user tapped a tab or link (Profile, Orders, Bag, etc.), let it navigate naturally
-  if(isLinkNavigation){
-    currentRoute = location.hash || '#/';
-    return;
-  }
+  // If user clicked any link/tab, let navigation happen normally
+  if(isLinkNavigation) return;
 
   // Close modals if open
   const sortModal = $('#sort-page-modal');
@@ -3289,19 +3251,25 @@ window.addEventListener('popstate', event => {
 
   const h = location.hash || '#/';
 
-  // Inner detail screens can step back to previous screen
-  if(h.startsWith('#/p/') || h.startsWith('#/account/order-detail') || h.startsWith('#/account/addresses') || h.startsWith('#/account/profile') || h.startsWith('#/account/wishlist')){
+  // ONLY IF USER IS ON SHOP TAB: Trap back swipe gesture, prevent closing, and reload Shop
+  if(h === '#/shop' || h.startsWith('#/shop?')){
+    try {
+      history.pushState({ thaaraiShopTab: true, t: Date.now() }, '', '#/shop');
+    } catch(e){}
+    if(location.hash !== '#/shop'){
+      location.replace('#/shop');
+    } else {
+      route();
+    }
     return;
   }
 
-  // Trapped at base: Android swipe gesture forces hard reload to Shop tab
-  if(location.hash !== '#/shop'){
-    location.href = '#/shop';
-  }
-  window.location.reload();
+  // ALL OTHER TABS (Home, Profile, Bag, Orders, Product Details):
+  // Work 100% normally using standard browser/SPA routing!
+  route();
 });
 
-// Website Back Button: smart navigation that falls back to Shop
+// Website Back Button
 $('#nav-back').onclick = e => {
   e.preventDefault();
   e.stopPropagation();
@@ -3319,27 +3287,31 @@ $('#nav-back').onclick = e => {
   }
 
   const h = location.hash || '#/';
-  if(h.startsWith('#/shop?') || h === '#/shop' || h === '#/' || h === ''){
+  // Only from shop tab does it reload/stay on shop
+  if(h === '#/shop' || h.startsWith('#/shop?')){
     location.hash = '#/shop';
     route();
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    maintainHistoryGuard();
     return;
   }
 
-  history.back();
+  // All other pages: natural history back
+  if(history.length > 1){
+    history.back();
+  } else {
+    location.hash = '#/';
+  }
 };
 
 window.addEventListener('hashchange', () => {
   route();
-  maintainHistoryGuard();
+  ensureShopBuffer();
 });
 
 const originalRoute = route;
 route = async function(){
-  currentRoute = location.hash || '#/';
   await originalRoute();
-  maintainHistoryGuard();
+  ensureShopBuffer();
 };
 
 
