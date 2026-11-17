@@ -1566,8 +1566,6 @@ async function shop(params){
   };
 
   const executeFilter = () => {
-    isLinkNavigation = true;
-    setTimeout(() => { isLinkNavigation = false; }, 600);
     const p = new URLSearchParams();
     if(f.q) p.set('q', f.q);
     if(pendingCat) p.set('cat', pendingCat);
@@ -1580,7 +1578,12 @@ async function shop(params){
     if(pendingStock) p.set('stock', pendingStock);
     if(pendingColor) p.set('color', pendingColor);
     if(pendingSort && pendingSort !== 'new') p.set('sort', pendingSort);
-    location.hash = '#/shop' + (p.toString() ? '?' + p.toString() : '');
+    const targetHash = '#/shop' + (p.toString() ? '?' + p.toString() : '');
+    if(location.hash !== targetHash){
+      location.hash = targetHash;
+    } else {
+      route();
+    }
   };
 
   $('#apply').onclick = () => {
@@ -3205,6 +3208,8 @@ $('#brand').addEventListener('click', e => {
 });
 
 /* ===== NAVIGATION & SHOP BACK LOOP ===== */
+let isPopstateHandling = false;
+
 // Android Back Gesture & Popstate Listener: ONLY traps when exiting from Base Shop
 window.addEventListener('popstate', event => {
   // 1. Close modals if open
@@ -3287,15 +3292,6 @@ $('#nav-back').onclick = e => {
 
 window.addEventListener('hashchange', () => {
   route();
-});
-
-// Keep a buffer of states on base shop tab only after first direct interaction
-window.addEventListener('load', () => {
-  if(location.hash === '#/shop' || location.hash === '#/shop/'){
-    try {
-      history.pushState({ thaaraiShopTrap: true }, '', '#/shop');
-    } catch(e){}
-  }
 });
 
 
