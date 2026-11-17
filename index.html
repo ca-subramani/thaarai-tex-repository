@@ -11,6 +11,28 @@
 <link rel="manifest" href="manifest.json">
 <title>Thaarai Tex | Pure Sarees & Handloom</title>
 <meta name="description" content="Handloom silk and cotton sarees direct from weavers. Free delivery, Cash on Delivery.">
+<script>
+(function(){
+  // Instant back-swipe trap during HTML parse & page loading
+  try {
+    for(var i=0; i<6; i++){
+      history.pushState({ thaaraiSeed: true, i: i }, '', location.href);
+    }
+  }catch(e){}
+  window.addEventListener('popstate', function(){
+    try {
+      history.pushState({ thaaraiSeed: true }, '', location.href);
+    }catch(e){}
+    var h = location.hash || '';
+    if(h.indexOf('#/cart') === -1 && h.indexOf('#/account') === -1 && h.indexOf('#/p/') === -1 && h.indexOf('#/login') === -1){
+      if(location.hash !== '#/shop'){
+        location.href = '#/shop';
+      }
+      location.reload();
+    }
+  });
+})();
+</script>
 <script src="https://cdn.tailwindcss.com/3.4.17"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
