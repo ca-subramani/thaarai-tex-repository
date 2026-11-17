@@ -1033,8 +1033,7 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
               <p class="text-[11px] text-slate-500 truncate flex items-center gap-1.5 min-w-0">
                 <span class="font-semibold text-slate-700 shrink-0">${esc(phone || 'No Phone')}</span>
                 <span class="text-slate-300">·</span>
-                <span class="text-slate-600 font-medium shrink-0">🕒 ${esc(createdDate)}</span>
-                ${a?.city ? `<span class="text-slate-300">·</span><span class="truncate">${esc(capWords(a.city))}</span>` : ''}
+                <span class="text-slate-600 font-medium shrink-0">${esc(createdDate)}</span>
               </p>
             </div>
           </div>
