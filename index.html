@@ -1629,7 +1629,7 @@ async function product(id){
           ${imgs.map((u,idx)=>`<div data-idx="${idx}" class="thumb-btn relative w-16 h-20 md:w-20 md:h-24 rounded-2xl overflow-hidden cursor-pointer border-2 transition-all shrink-0 bg-white shadow-sm ${idx===0?'border-slate-900 shadow-md':'border-gray-200 opacity-70 hover:opacity-100'}"><img src="${esc(u)}" alt="" class="w-full h-full object-cover"></div>`).join('')}
         </div>
         <div class="flex-1 w-full bg-white rounded-3xl border border-gray-100 shadow-soft p-3 relative">
-          <div id="zoom-stage" class="lens-zoom-container aspect-[3/4] sm:aspect-[4/5] rounded-2xl bg-gray-50 flex items-center justify-center relative overflow-hidden select-none">
+          <div id="zoom-stage" class="lens-zoom-container aspect-[3/4] sm:aspect-[4/5] rounded-2xl bg-gray-50 flex items-center justify-center relative overflow-hidden select-none cursor-pointer">
             <img id="main-product-img" src="${esc(imgs[0])}" alt="${esc(p.name)}" class="w-full h-full object-cover">
             <button id="open-lightbox-btn" title="View fullscreen" class="absolute top-3 right-3 bg-white/90 backdrop-blur w-9 h-9 rounded-full shadow-sm flex items-center justify-center hover:bg-slate-900 hover:text-white transition">
               <svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
@@ -1702,23 +1702,72 @@ async function product(id){
     ${sim?.length?`<div class="space-y-4 pt-4"><h2 class="font-extrabold text-base text-gray-900">Similar Sarees</h2>${grid(sim)}</div>`:''}
   </div>
 
-  <div id="hd-lightbox" class="fixed inset-0 bg-black/95 z-50 hidden flex flex-col justify-between p-4 backdrop-blur-md">
-    <div class="flex justify-between items-center text-white px-2"><span class="text-xs font-bold tracking-wider">${esc(p.name)}</span><button id="close-lightbox" class="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white text-xl font-bold">&times;</button></div>
-    <div class="flex-1 flex items-center justify-center overflow-hidden p-2"><img id="lightbox-img" src="${esc(imgs[0])}" alt="" class="max-w-full max-h-[85vh] object-contain rounded-xl cursor-zoom-out"></div>
-    <div class="text-center text-gray-400 text-xs pb-3">Tap anywhere to close</div>
+  <div id="hd-lightbox" class="fixed inset-0 bg-black/95 z-[99999] hidden flex flex-col justify-between p-3 sm:p-4 backdrop-blur-md overscroll-contain select-none">
+    <!-- Header with Back Button, Title, and Close -->
+    <div class="flex justify-between items-center text-white px-2 pt-[max(0.5rem,env(safe-area-inset-top,0px))] shrink-0 z-10">
+      <div class="flex items-center gap-3">
+        <button id="lb-back-btn" aria-label="Back" class="w-10 h-10 rounded-full bg-white/10 active:bg-white/30 hover:bg-white/20 flex items-center justify-center text-white shadow-sm transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M15 19l-7-7 7-7"/></svg>
+        </button>
+        <div class="truncate max-w-[200px] sm:max-w-md">
+          <span class="text-xs sm:text-sm font-bold tracking-wide block truncate">${esc(p.name)}</span>
+          <span id="lb-counter" class="text-[10px] text-gray-400 font-semibold block">1 / ${imgs.length}</span>
+        </div>
+      </div>
+      <button id="close-lightbox" aria-label="Close" class="w-10 h-10 rounded-full bg-white/10 active:bg-white/30 hover:bg-white/20 flex items-center justify-center text-white text-2xl font-light transition">&times;</button>
+    </div>
+
+    <!-- Main Zoomable Image Stage -->
+    <div id="lb-stage" class="flex-1 flex items-center justify-center overflow-hidden p-2 relative my-auto cursor-pointer">
+      <img id="lightbox-img" src="${esc(imgs[0])}" alt="" class="max-w-full max-h-[72vh] sm:max-h-[75vh] object-contain rounded-xl select-none pointer-events-none transition-transform duration-100 ease-out">
+      ${imgs.length > 1 ? `
+        <button id="lb-prev" class="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-black/60 hover:bg-black/90 active:scale-95 text-white flex items-center justify-center text-2xl font-bold transition z-10">‹</button>
+        <button id="lb-next" class="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-black/60 hover:bg-black/90 active:scale-95 text-white flex items-center justify-center text-2xl font-bold transition z-10">›</button>
+      ` : ''}
+    </div>
+
+    <!-- Bottom Thumbnail Carousel List & Hint -->
+    <div class="shrink-0 space-y-2 pb-[max(0.75rem,env(safe-area-inset-bottom,0px))] z-10">
+      <p class="text-center text-gray-400 text-[11px] font-medium tracking-wide">Tap image or background to close</p>
+      ${imgs.length > 1 ? `
+        <div id="lb-thumbs" class="flex items-center justify-center gap-2.5 overflow-x-auto py-1 px-4 no-scrollbar">
+          ${imgs.map((u, idx) => `
+            <div data-idx="${idx}" class="lb-thumb-btn relative w-12 h-16 sm:w-14 sm:h-18 rounded-xl overflow-hidden cursor-pointer border-2 transition-all shrink-0 ${idx === 0 ? 'border-white scale-105 shadow-md opacity-100' : 'border-white/20 opacity-50 hover:opacity-100'}">
+              <img src="${esc(u)}" alt="" class="w-full h-full object-cover pointer-events-none">
+            </div>
+          `).join('')}
+        </div>
+      ` : ''}
+    </div>
   </div>`;
 
   const mainImg=$('#main-product-img'), stage=$('#zoom-stage'), thumbs=document.querySelectorAll('.thumb-btn');
   let cur=0,stageScale=1;
   function switchImage(i){
-    cur=(i+imgs.length)%imgs.length;mainImg.src=imgs[cur];resetStageZoom();
-    thumbs.forEach((t,k)=>{t.classList.toggle('border-slate-900',k===cur);t.classList.toggle('shadow-md',k===cur);t.classList.toggle('border-gray-200',k!==cur);t.classList.toggle('opacity-70',k!==cur)});
+    cur=(i+imgs.length)%imgs.length;
+    mainImg.src=imgs[cur];
+    resetStageZoom();
+    thumbs.forEach((t,k)=>{
+      t.classList.toggle('border-slate-900',k===cur);
+      t.classList.toggle('shadow-md',k===cur);
+      t.classList.toggle('border-gray-200',k!==cur);
+      t.classList.toggle('opacity-70',k!==cur);
+    });
+    updateLightboxUI();
   }
-  thumbs.forEach(t=>t.onclick=()=>switchImage(Number(t.dataset.idx)));
-  if($('#img-prev'))$('#img-prev').onclick=()=>switchImage(cur-1);
-  if($('#img-next'))$('#img-next').onclick=()=>switchImage(cur+1);
-  let x0=null;stage.addEventListener('touchstart',e=>{x0=e.touches.length===1&&stageScale===1?e.touches[0].clientX:null},{passive:true});
-  stage.addEventListener('touchend',e=>{if(e.touches.length||x0===null){x0=null;return}const dx=e.changedTouches[0].clientX-x0;if(stageScale===1&&imgs.length>1&&Math.abs(dx)>40)switchImage(cur+(dx<0?1:-1));x0=null});
+  thumbs.forEach(t=>t.onclick=(e)=>{e.stopPropagation();switchImage(Number(t.dataset.idx))});
+  if($('#img-prev'))$('#img-prev').onclick=(e)=>{e.stopPropagation();switchImage(cur-1)};
+  if($('#img-next'))$('#img-next').onclick=(e)=>{e.stopPropagation();switchImage(cur+1)};
+
+  let x0=null;
+  stage.addEventListener('touchstart',e=>{x0=e.touches.length===1&&stageScale===1?e.touches[0].clientX:null},{passive:true});
+  stage.addEventListener('touchend',e=>{
+    if(e.touches.length||x0===null){x0=null;return}
+    const dx=e.changedTouches[0].clientX-x0;
+    if(stageScale===1&&imgs.length>1&&Math.abs(dx)>40)switchImage(cur+(dx<0?1:-1));
+    x0=null;
+  });
+
   const attachPinchZoom=(surface,img,onScale=()=>{})=>{
     let startDistance=0,startScale=1,scale=1,offsetX=0,offsetY=0,dragStart=null,baseX=0,baseY=0;
     const distance=touches=>Math.hypot(touches[0].clientX-touches[1].clientX,touches[0].clientY-touches[1].clientY);
@@ -1729,16 +1778,104 @@ async function product(id){
     },{passive:true});
     surface.addEventListener('touchmove',e=>{
       const rect=surface.getBoundingClientRect();
-      if(e.touches.length===2&&startDistance){e.preventDefault();scale=Math.max(1,Math.min(4,startScale*distance(e.touches)/startDistance));const maxX=rect.width*(scale-1)/2,maxY=rect.height*(scale-1)/2;offsetX=Math.max(-maxX,Math.min(maxX,offsetX));offsetY=Math.max(-maxY,Math.min(maxY,offsetY));render()}
-      else if(e.touches.length===1&&dragStart&&scale>1){e.preventDefault();const maxX=rect.width*(scale-1)/2,maxY=rect.height*(scale-1)/2;offsetX=Math.max(-maxX,Math.min(maxX,baseX+e.touches[0].clientX-dragStart.x));offsetY=Math.max(-maxY,Math.min(maxY,baseY+e.touches[0].clientY-dragStart.y));render()}
+      if(e.touches.length===2&&startDistance){
+        e.preventDefault();
+        scale=Math.max(1,Math.min(4,startScale*distance(e.touches)/startDistance));
+        const maxX=rect.width*(scale-1)/2,maxY=rect.height*(scale-1)/2;
+        offsetX=Math.max(-maxX,Math.min(maxX,offsetX));
+        offsetY=Math.max(-maxY,Math.min(maxY,offsetY));
+        render();
+      }
+      else if(e.touches.length===1&&dragStart&&scale>1){
+        e.preventDefault();
+        const maxX=rect.width*(scale-1)/2,maxY=rect.height*(scale-1)/2;
+        offsetX=Math.max(-maxX,Math.min(maxX,baseX+e.touches[0].clientX-dragStart.x));
+        offsetY=Math.max(-maxY,Math.min(maxY,baseY+e.touches[0].clientY-dragStart.y));
+        render();
+      }
     },{passive:false});
     surface.addEventListener('touchend',e=>{if(e.touches.length<2)startDistance=0;if(e.touches.length===1&&scale>1){dragStart={x:e.touches[0].clientX,y:e.touches[0].clientY};baseX=offsetX;baseY=offsetY}else if(!e.touches.length)dragStart=null},{passive:true});
     return()=>{scale=1;startScale=1;startDistance=0;offsetX=0;offsetY=0;dragStart=null;img.style.transform='translate(0px, 0px) scale(1)';img.style.transformOrigin='center center';onScale(1)};
   };
+
   const resetStageZoom=attachPinchZoom(stage,mainImg,value=>stageScale=value);
-  const lb=$('#hd-lightbox'),lbImg=$('#lightbox-img'),resetLightboxZoom=attachPinchZoom(lb,lbImg),closeLb=()=>{lb.classList.add('hidden');resetLightboxZoom()};
-  $('#open-lightbox-btn').onclick=()=>{lbImg.src=imgs[cur];lb.classList.remove('hidden')};
-  $('#close-lightbox').onclick=closeLb;lb.onclick=e=>{if(e.target===lb)closeLb()};
+
+  // Fullscreen Lightbox Controls
+  const lb=$('#hd-lightbox'), lbImg=$('#lightbox-img'), lbStage=$('#lb-stage');
+  const resetLightboxZoom=attachPinchZoom(lbStage, lbImg);
+  
+  function updateLightboxUI(){
+    if(!lb || lb.classList.contains('hidden')) return;
+    lbImg.src = imgs[cur];
+    resetLightboxZoom();
+    const counter = $('#lb-counter');
+    if(counter) counter.textContent = `${cur + 1} / ${imgs.length}`;
+    document.querySelectorAll('.lb-thumb-btn').forEach((tb, idx) => {
+      const active = (idx === cur);
+      tb.className = `lb-thumb-btn relative w-12 h-16 sm:w-14 sm:h-18 rounded-xl overflow-hidden cursor-pointer border-2 transition-all shrink-0 ${active ? 'border-white scale-105 shadow-md opacity-100' : 'border-white/20 opacity-50 hover:opacity-100'}`;
+    });
+  }
+
+  const openLb = () => {
+    updateLightboxUI();
+    lb.classList.remove('hidden');
+    document.documentElement.classList.add('overflow-hidden');
+    document.body.classList.add('overflow-hidden', 'touch-none');
+  };
+
+  const closeLb = () => {
+    lb.classList.add('hidden');
+    document.documentElement.classList.remove('overflow-hidden');
+    document.body.classList.remove('overflow-hidden', 'touch-none');
+    resetLightboxZoom();
+  };
+
+  // Open on clicking main image stage or zoom icon
+  stage.onclick = (e) => {
+    if(e.target.closest('#img-prev') || e.target.closest('#img-next')) return;
+    openLb();
+  };
+  $('#open-lightbox-btn').onclick = (e) => {
+    e.stopPropagation();
+    openLb();
+  };
+
+  // Close via back button, close button, or tap anywhere on lightbox background
+  $('#close-lightbox').onclick = (e) => { e.stopPropagation(); closeLb(); };
+  const lbBack = $('#lb-back-btn');
+  if(lbBack) lbBack.onclick = (e) => { e.stopPropagation(); closeLb(); };
+
+  // Tap anywhere on image stage or background closes fullscreen view
+  lb.onclick = (e) => {
+    if(e.target.closest('#lb-prev') || e.target.closest('#lb-next') || e.target.closest('#lb-thumbs') || e.target.closest('#close-lightbox') || e.target.closest('#lb-back-btn')) return;
+    closeLb();
+  };
+
+  // Lightbox Next / Prev
+  if($('#lb-prev')) $('#lb-prev').onclick = (e) => { e.stopPropagation(); switchImage(cur - 1); };
+  if($('#lb-next')) $('#lb-next').onclick = (e) => { e.stopPropagation(); switchImage(cur + 1); };
+
+  // Lightbox Bottom Thumbnails click
+  document.querySelectorAll('.lb-thumb-btn').forEach(tb => {
+    tb.onclick = (e) => {
+      e.stopPropagation();
+      switchImage(Number(tb.dataset.idx));
+    };
+  });
+
+  // Swipe gesture in Lightbox
+  let lbX0 = null;
+  lbStage.addEventListener('touchstart', e => {
+    lbX0 = (e.touches.length === 1) ? e.touches[0].clientX : null;
+  }, { passive: true });
+  lbStage.addEventListener('touchend', e => {
+    if(e.touches.length || lbX0 === null) { lbX0 = null; return; }
+    const dx = e.changedTouches[0].clientX - lbX0;
+    if(imgs.length > 1 && Math.abs(dx) > 40) {
+      switchImage(cur + (dx < 0 ? 1 : -1));
+    }
+    lbX0 = null;
+  });
   const onAdd=()=>addCart(p.id,1,p.stock);
   const onBuy=()=>{
     // Buy Now is strictly 1 quantity, does NOT touch or increase the shopping bag, and goes directly to checkout
@@ -3228,6 +3365,13 @@ function armHomeGuard(){
 
 window.addEventListener('popstate', event => {
   // 1. Close open modals first
+  const lb = $('#hd-lightbox');
+  if(lb && !lb.classList.contains('hidden')){
+    lb.classList.add('hidden');
+    document.documentElement.classList.remove('overflow-hidden');
+    document.body.classList.remove('overflow-hidden', 'touch-none');
+    return;
+  }
   const sortModal = $('#sort-page-modal');
   if(sortModal && !sortModal.classList.contains('hidden')){
     sortModal.classList.add('hidden');
@@ -3266,6 +3410,13 @@ window.addEventListener('popstate', event => {
 
 // Header back navigation button: If on home, reload home
 $('#nav-back').onclick = () => {
+  const lb = $('#hd-lightbox');
+  if(lb && !lb.classList.contains('hidden')){
+    lb.classList.add('hidden');
+    document.documentElement.classList.remove('overflow-hidden');
+    document.body.classList.remove('overflow-hidden', 'touch-none');
+    return;
+  }
   const sortModal = $('#sort-page-modal');
   if(sortModal && !sortModal.classList.contains('hidden')){
     sortModal.classList.add('hidden');
