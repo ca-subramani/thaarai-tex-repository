@@ -2188,8 +2188,8 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
               <!-- Toolbar for Live Preview Page: Preview Mode vs Edit Mode -->
               <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
                 <div class="flex items-center gap-2">
-                  <span class="w-2.5 h-2.5 rounded-full ${liveEditActive ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500'}"></span>
-                  <span class="text-sm font-extrabold text-slate-900">
+                  <span id="live-mode-indicator-dot" class="w-2.5 h-2.5 rounded-full ${liveEditActive ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500'}"></span>
+                  <span id="live-mode-indicator-text" class="text-sm font-extrabold text-slate-900">
                     ${liveEditActive ? 'Visual Edit Mode (Page Frozen · Tap text/images to edit)' : 'Live Preview Mode (Interactive Store)'}
                   </span>
                 </div>
@@ -2197,10 +2197,10 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
                 <div class="flex items-center gap-2 flex-wrap">
                   <!-- Mode Switcher: Click Preview vs Click Edit -->
                   <div class="bg-slate-100 p-1 rounded-2xl flex items-center gap-1 border border-slate-200">
-                    <button type="button" onclick="setLiveEditMode(false)" class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition ${!liveEditActive ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'}">
+                    <button type="button" id="live-mode-btn-preview" onclick="setLiveEditMode(false)" class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition ${!liveEditActive ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'}">
                       👁️ Preview
                     </button>
-                    <button type="button" onclick="setLiveEditMode(true)" class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition ${liveEditActive ? 'bg-amber-500 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'}">
+                    <button type="button" id="live-mode-btn-edit" onclick="setLiveEditMode(true)" class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition ${liveEditActive ? 'bg-amber-500 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'}">
                       ✏️ Edit
                     </button>
                   </div>
@@ -2233,7 +2233,7 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
                       <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
                     </div>
                     <span class="text-[10px] font-mono font-bold text-slate-500 truncate max-w-[200px]">thaaraitex.in</span>
-                    <span class="text-[9px] font-bold ${liveEditActive ? 'text-amber-700 bg-amber-100 border border-amber-200' : 'text-emerald-700 bg-emerald-100 border border-emerald-200'} px-2 py-0.5 rounded-full">
+                    <span id="live-mode-badge-status" class="text-[9px] font-bold ${liveEditActive ? 'text-amber-700 bg-amber-100 border border-amber-200' : 'text-emerald-700 bg-emerald-100 border border-emerald-200'} px-2 py-0.5 rounded-full">
                       ${liveEditActive ? 'FROZEN FOR EDITING' : 'NORMAL PREVIEW'}
                     </span>
                   </div>
@@ -2245,7 +2245,7 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
                 </div>
               </div>
 
-              <p class="text-[11px] text-center text-slate-500 font-medium">
+              <p id="live-mode-helper-text" class="text-[11px] text-center text-slate-500 font-medium">
                 ${liveEditActive 
                   ? '🔒 In Edit Mode: Navigation is frozen so the page never moves away while scrolling and tapping text or images to edit.' 
                   : '🌐 In Preview Mode: The store behaves exactly like the live website for customer interaction testing.'}
@@ -2266,9 +2266,42 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
 
     function setLiveEditMode(isEdit){
       liveEditActive = isEdit;
+      
+      // Update UI buttons in-place WITHOUT re-rendering or reloading the iframe
+      const btnPreview = $('#live-mode-btn-preview');
+      const btnEdit = $('#live-mode-btn-edit');
+      const modeDot = $('#live-mode-indicator-dot');
+      const modeText = $('#live-mode-indicator-text');
+      const badgeStatus = $('#live-mode-badge-status');
+      const helperText = $('#live-mode-helper-text');
+
+      if(btnPreview && btnEdit){
+        if(liveEditActive){
+          btnPreview.className = 'px-3.5 py-1.5 rounded-xl text-xs font-bold transition text-slate-600 hover:text-slate-900';
+          btnEdit.className = 'px-3.5 py-1.5 rounded-xl text-xs font-bold transition bg-amber-500 text-white shadow-sm';
+          if(modeDot) modeDot.className = 'w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse';
+          if(modeText) modeText.textContent = 'Visual Edit Mode (Page Frozen · Tap text/images to edit)';
+          if(badgeStatus){
+            badgeStatus.className = 'text-[9px] font-bold text-amber-700 bg-amber-100 border border-amber-200 px-2 py-0.5 rounded-full';
+            badgeStatus.textContent = 'FROZEN FOR EDITING';
+          }
+          if(helperText) helperText.textContent = '🔒 In Edit Mode: Navigation is frozen so the page never moves away while scrolling and tapping text or images to edit.';
+        } else {
+          btnPreview.className = 'px-3.5 py-1.5 rounded-xl text-xs font-bold transition bg-white text-slate-900 shadow-sm';
+          btnEdit.className = 'px-3.5 py-1.5 rounded-xl text-xs font-bold transition text-slate-600 hover:text-slate-900';
+          if(modeDot) modeDot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-500';
+          if(modeText) modeText.textContent = 'Live Preview Mode (Interactive Store)';
+          if(badgeStatus){
+            badgeStatus.className = 'text-[9px] font-bold text-emerald-700 bg-emerald-100 border border-emerald-200 px-2 py-0.5 rounded-full';
+            badgeStatus.textContent = 'NORMAL PREVIEW';
+          }
+          if(helperText) helperText.textContent = '🌐 In Preview Mode: The store behaves exactly like the live website for customer interaction testing.';
+        }
+      }
+
+      // Attach/detach visual edit handles without reloading or resetting iframe URL/scroll position
       const ifr = $('#studio-store-iframe');
       if(ifr) attachLiveVisualStudioEditor(ifr);
-      renderStorefrontCMS();
     }
 
     /* ===== LIVE VISUAL IN-PLACE STUDIO EDITOR ===== */
