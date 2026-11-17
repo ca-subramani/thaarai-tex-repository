@@ -3204,7 +3204,7 @@ $('#brand').addEventListener('click', e => {
   }
 });
 
-/* ===== SHOP TAB NAVIGATION LOCK (NEVER EXIT TO BROWSER / STAY ON SHOP) ===== */
+/* ===== SHOP & APP NAVIGATION LOCK (NEVER EXIT TO BROWSER / STAY IN STORE) ===== */
 let currentRoute = location.hash || '#/';
 let isLinkNavigation = false;
 
@@ -3214,52 +3214,72 @@ document.addEventListener('click', (e) => {
     const h = link.getAttribute('href');
     if(h && (h.startsWith('#') || h.startsWith('/#'))){
       isLinkNavigation = true;
-      setTimeout(() => { isLinkNavigation = false; }, 400);
+      setTimeout(() => { isLinkNavigation = false; }, 350);
     }
   }
 }, true);
 
-function lockInShop(){
+// Keep a buffer of history states so pressing back NEVER closes the browser tab
+function pushExitGuard(){
   try {
-    const s = { thaaraiShopGuard: true, t: Date.now() };
-    history.pushState(s, '', '#/shop');
-    history.pushState(s, '', '#/shop');
-  } catch(e){}
-  if(location.hash !== '#/shop'){
-    location.replace('#/shop');
-  }
-  route();
-}
-
-function armShopGuard(){
-  try {
-    const s = { thaaraiShopGuard: true, t: Date.now() };
-    history.pushState(s, '', '#/shop');
-    history.pushState(s, '', '#/shop');
+    const s = { thaaraiGuard: true, t: Date.now() };
+    history.pushState(s, '', location.href);
   } catch(e){}
 }
 
-// Instant permanent lock: Any back attempt (mobile hardware back, browser back gesture, etc.) instantly reloads into Shop
+// Continuous guard injection so double back never escapes the website
+function maintainHistoryGuard(){
+  try {
+    const s = { thaaraiGuard: true, t: Date.now() };
+    history.replaceState(s, '', location.href);
+    history.pushState(s, '', location.href);
+  } catch(e){}
+}
+
 window.addEventListener('popstate', event => {
-  // Close any open filter or sort modals immediately
+  // 1. If user clicked a tab or link (Profile, Orders, Home, Bag, Product), let it navigate naturally!
+  if(isLinkNavigation){
+    currentRoute = location.hash || '#/';
+    maintainHistoryGuard();
+    return;
+  }
+
+  // 2. Close open filter or sort modals first
   const sortModal = $('#sort-page-modal');
   if(sortModal && !sortModal.classList.contains('hidden')){
     sortModal.classList.add('hidden');
     document.documentElement.classList.remove('overflow-hidden');
     document.body.classList.remove('overflow-hidden', 'touch-none');
+    maintainHistoryGuard();
+    return;
   }
   const fl = $('#fl');
   if(fl && !fl.classList.contains('hidden')){
     fl.classList.add('hidden');
     document.documentElement.classList.remove('overflow-hidden');
     document.body.classList.remove('overflow-hidden', 'touch-none');
+    maintainHistoryGuard();
+    return;
   }
 
-  // Lightning-fast loop: Always reload and redirect to shop instantly
-  lockInShop();
+  const h = location.hash || '#/';
+
+  // 3. If user is in an inner page (like product detail, cart, order details, addresses, profile), let back go to previous view
+  if(h.startsWith('#/p/') || h.startsWith('#/account/order-detail') || h.startsWith('#/account/addresses') || h.startsWith('#/account/profile') || h.startsWith('#/account/wishlist')){
+    maintainHistoryGuard();
+    return;
+  }
+
+  // 4. If already on home, or on shop, or pressing back from a main tab: LOCK firmly into Shop so browser NEVER exits!
+  maintainHistoryGuard();
+  if(location.hash !== '#/shop'){
+    location.hash = '#/shop';
+  } else {
+    route();
+  }
 });
 
-// Website Back Button: Always instantly redirects and reloads shop
+// Website Back Button: smart navigation that falls back to Shop
 $('#nav-back').onclick = e => {
   e.preventDefault();
   e.stopPropagation();
@@ -3267,26 +3287,37 @@ $('#nav-back').onclick = e => {
   if(sortModal && !sortModal.classList.contains('hidden')){
     sortModal.classList.add('hidden');
     document.body.style.overflow = '';
+    return;
   }
   const fl = $('#fl');
   if(fl && !fl.classList.contains('hidden')){
     fl.classList.add('hidden');
     document.body.style.overflow = '';
+    return;
   }
-  lockInShop();
+
+  const h = location.hash || '#/';
+  if(h.startsWith('#/shop?') || h === '#/shop' || h === '#/' || h === ''){
+    location.hash = '#/shop';
+    route();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    maintainHistoryGuard();
+    return;
+  }
+
+  history.back();
 };
 
 window.addEventListener('hashchange', () => {
   route();
+  maintainHistoryGuard();
 });
 
 const originalRoute = route;
 route = async function(){
   currentRoute = location.hash || '#/';
   await originalRoute();
-  if(currentRoute === '#/shop' || currentRoute === '#/shop/'){
-    armShopGuard();
-  }
+  maintainHistoryGuard();
 };
 
 
