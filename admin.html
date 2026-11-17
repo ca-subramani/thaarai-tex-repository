@@ -997,12 +997,20 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
         `Thank you for shopping with us!`
       );
 
+      const doorStreet = a?.line || a?.address_line || a?.street || a?.door_no || (typeof o.address === 'string' && !o.address.trim().startsWith('{') ? o.address.trim() : '') || '';
+      const area = a?.area || '';
+      const city = a?.city || o.city || '';
+      const state = a?.state || o.state || 'Tamil Nadu';
+      const pincode = a?.pincode || a?.pin || o.pincode || '';
+
       const fullAddressLines = [
         name,
-        cleanPhone ? `Phone: ${cleanPhone}` : '',
-        a?.line || a?.address || (typeof o.address === 'string' ? o.address : ''),
-        [a?.city, a?.state].filter(Boolean).join(', '),
-        a?.pincode ? `PIN: ${a.pincode}` : ''
+        cleanPhone ? `Phone: +91 ${cleanPhone}` : '',
+        doorStreet,
+        area && !doorStreet.toLowerCase().includes(area.toLowerCase()) ? area : '',
+        [city, state].filter(Boolean).join(', '),
+        pincode ? `Pincode: ${pincode}` : '',
+        'India'
       ].filter(Boolean).join('\n');
 
       view.innerHTML = `
