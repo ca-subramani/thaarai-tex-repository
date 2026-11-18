@@ -3100,10 +3100,12 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
               <h3 class="font-extrabold text-xs text-slate-900 uppercase tracking-wider">Sarees in this collection (${catProducts.length})</h3>
             </div>
             <div class="space-y-2.5 min-w-0">
-              ${catProducts.map(p => `
+              ${catProducts.map(p => {
+                const img = (p.images && p.images[0]) || p.image_url || '';
+                return `
                 <div onclick="selectedProductId='${esc(p.id)}';setSection('products')" class="p-3 bg-slate-50/70 hover:bg-slate-100 rounded-2xl border border-slate-200/80 flex items-center justify-between gap-3 cursor-pointer transition active:scale-[0.99]">
                   <div class="flex items-center gap-3 min-w-0 flex-1">
-                    <img src="${esc((p.images&&p.images[0])||p.image_url||'data:image/svg+xml,%3Csvg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'40\\' height=\\'40\\'%3E%3Crect width=\\'100%25\\' height=\\'100%25\\' fill=\\'%23e2e8f0\\'/ %3E%3C/svg%3E')}" class="w-10 h-10 rounded-xl object-cover border border-slate-200 shrink-0">
+                    ${img ? `<img src="${esc(img)}" class="w-10 h-10 rounded-xl object-cover border border-slate-200 shrink-0">` : `<div class="w-10 h-10 rounded-xl bg-slate-200 border border-slate-300 shrink-0"></div>`}
                     <div class="min-w-0 flex-1">
                       <p class="text-xs font-extrabold text-slate-900 truncate">${esc(p.name)}</p>
                       <p class="text-[11px] text-slate-500 font-semibold">${fmt(p.price)} · Stock: ${Number(p.stock||0)}</p>
@@ -3112,8 +3114,8 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
                   <span class="w-7 h-7 rounded-full border border-slate-200 bg-white flex items-center justify-center text-slate-500 shrink-0">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
                   </span>
-                </div>
-              `).join('') || '<p class="text-xs text-slate-400 py-6 text-center">No products assigned to this category yet.</p>'}
+                </div>`;
+              }).join('') || '<p class="text-xs text-slate-400 py-6 text-center">No products assigned to this category yet.</p>'}
             </div>
           </div>
         </div>`;
