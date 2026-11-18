@@ -656,6 +656,19 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
       } catch(e){}
     }
 
+    // Keep an unbroken stack buffer so swipe-back gesture never reaches browser history boundary
+    function keepAdminStackBuffered(){
+      try {
+        const s = { adminSection: section, adminGuard: true, t: Date.now() };
+        history.pushState(s, '', location.href);
+      } catch(e){}
+    }
+    // Arm stack buffer on page load and interaction
+    window.addEventListener('touchstart', function armOnce(){
+      keepAdminStackBuffered();
+      window.removeEventListener('touchstart', armOnce);
+    }, {passive: true});
+
     function adminBack(){
       if(section==='orders' && selectedOrderId){
         backToOrdersList();
@@ -667,6 +680,10 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
       }
       if(section==='products' && selectedProductId !== null){
         backToProductsList();
+        return;
+      }
+      if(section==='categories' && selectedCategoryId){
+        backToCategoriesList();
         return;
       }
       if(sectionHistory.length>1){
@@ -681,27 +698,26 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
       else render();
     }
 
-    // Unbreakable Overview Lock: Never exit admin workspace on back button
+    // Unbreakable Admin Lock: Never exit admin workspace or close browser on back gesture
     window.addEventListener('popstate', event => {
-      // 1. If currently in deep detail view (single order, customer, product edit), pop to their parent list
+      // Always immediately recharge history stack so repeated swipe gestures never hit the end of history
+      keepAdminStackBuffered();
+
+      // 1. If currently in deep detail view (single order, customer, product edit, category detail), pop to their parent list
       if(section==='orders' && selectedOrderId){
         backToOrdersList();
-        armAdminExitGuard();
         return;
       }
       if(section==='customers' && selectedCustomerId){
         backToCustomersList();
-        armAdminExitGuard();
         return;
       }
       if(section==='products' && selectedProductId !== null){
         backToProductsList();
-        armAdminExitGuard();
         return;
       }
       if(section==='categories' && selectedCategoryId){
         backToCategoriesList();
-        armAdminExitGuard();
         return;
       }
 
@@ -710,13 +726,10 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
         sectionHistory.pop();
         const target = sectionHistory[sectionHistory.length - 1] || 'overview';
         setSection(target, true);
-        armAdminExitGuard();
         return;
       }
 
-      // 3. Traps any exit: immediately lock onto Overview, refresh view, and re-arm guard
-      armAdminExitGuard();
-      armAdminExitGuard();
+      // 3. Traps any exit: immediately lock onto Overview and re-render without closing browser
       if(section !== 'overview'){
         setSection('overview');
       } else {
@@ -1066,7 +1079,7 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
 
     function viewOrderDetail(orderId){
       selectedOrderId = orderId;
-      syncRouteToUrl();
+      try { history.pushState({adminSection: 'orders', subId: orderId}, '', '#orders/' + orderId); } catch(e){ syncRouteToUrl(); }
       renderOrderDetailPage(orderId);
       window.scrollTo({top: 0, behavior: 'smooth'});
     }
@@ -1503,7 +1516,7 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
 
     function openProduct(productOrId){
       selectedProductId = typeof productOrId === 'object' && productOrId ? productOrId.id : (productOrId || 'new');
-      syncRouteToUrl();
+      try { history.pushState({adminSection: 'products', subId: selectedProductId}, '', '#products/' + selectedProductId); } catch(e){ syncRouteToUrl(); }
       renderProductEditPage(selectedProductId);
       window.scrollTo({top: 0, behavior: 'smooth'});
     }
@@ -2066,7 +2079,7 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
 
     function viewCustomerDetail(customerId){
       selectedCustomerId = customerId;
-      syncRouteToUrl();
+      try { history.pushState({adminSection: 'customers', subId: customerId}, '', '#customers/' + customerId); } catch(e){ syncRouteToUrl(); }
       renderCustomerDetailPage(customerId);
       window.scrollTo({top: 0, behavior: 'smooth'});
     }
@@ -3016,7 +3029,7 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
 
     function viewCategoryDetail(categoryId){
       selectedCategoryId = categoryId;
-      syncRouteToUrl();
+      try { history.pushState({adminSection: 'categories', subId: categoryId}, '', '#categories/' + categoryId); } catch(e){ syncRouteToUrl(); }
       renderCategoryDetailPage(categoryId);
       window.scrollTo({top: 0, behavior: 'smooth'});
     }
@@ -3058,38 +3071,38 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
             </div>
           </div>
 
-          <!-- Main Info Card -->
-          <div class="bg-white rounded-3xl p-5 sm:p-6 shadow-soft border border-slate-200/80 space-y-4 min-w-0">
-            <div class="flex items-center gap-4 min-w-0 pb-4 border-b border-slate-100">
-              <div class="w-14 h-14 rounded-3xl bg-emerald-50 text-emerald-800 border border-emerald-200 flex items-center justify-center font-black text-xl shrink-0 select-none">
+          <!-- Main Info Card (Dark Theme) -->
+          <div class="bg-slate-900 text-white rounded-3xl p-5 sm:p-6 shadow-soft border border-slate-800 space-y-4 min-w-0">
+            <div class="flex items-center gap-4 min-w-0 pb-4 border-b border-slate-800">
+              <div class="w-14 h-14 rounded-3xl bg-slate-800 text-emerald-400 border border-slate-700 flex items-center justify-center font-black text-xl shrink-0 select-none shadow-inner">
                 ${esc((c.name || 'C').charAt(0).toUpperCase())}
               </div>
               <div class="min-w-0 flex-1">
-                <span class="text-[10px] font-black uppercase tracking-[.18em] text-emerald-600 block">CATEGORY PROFILE</span>
-                <h2 class="text-xl sm:text-2xl font-black text-slate-900 truncate mt-0.5">${esc(c.name)}</h2>
+                <span class="text-[10px] font-black uppercase tracking-[.18em] text-emerald-400 block">CATEGORY PROFILE</span>
+                <h2 class="text-xl sm:text-2xl font-black text-white truncate mt-0.5">${esc(c.name)}</h2>
                 <p class="text-xs text-slate-400 mt-0.5 font-mono">Slug: /${esc(c.slug || 'category')}</p>
               </div>
             </div>
 
             <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-1">
-              <div class="bg-slate-50/80 p-3.5 rounded-2xl border border-slate-200/70">
+              <div class="bg-slate-800/80 p-3.5 rounded-2xl border border-slate-700/80">
                 <p class="text-[10px] uppercase font-bold text-slate-400">Total Sarees</p>
-                <p class="text-lg font-black text-slate-900 mt-0.5">${catProducts.length}</p>
+                <p class="text-lg font-black text-white mt-0.5">${catProducts.length}</p>
               </div>
-              <div class="bg-slate-50/80 p-3.5 rounded-2xl border border-slate-200/70">
+              <div class="bg-slate-800/80 p-3.5 rounded-2xl border border-slate-700/80">
                 <p class="text-[10px] uppercase font-bold text-slate-400">Active Stock</p>
-                <p class="text-lg font-black text-emerald-600 mt-0.5">${catProducts.filter(p=>Number(p.stock||0)>0).length}</p>
+                <p class="text-lg font-black text-emerald-400 mt-0.5">${catProducts.filter(p=>Number(p.stock||0)>0).length}</p>
               </div>
-              <div class="bg-slate-50/80 p-3.5 rounded-2xl border border-slate-200/70 col-span-2 sm:col-span-1">
+              <div class="bg-slate-800/80 p-3.5 rounded-2xl border border-slate-700/80 col-span-2 sm:col-span-1">
                 <p class="text-[10px] uppercase font-bold text-slate-400">Out of Stock</p>
-                <p class="text-lg font-black text-rose-600 mt-0.5">${catProducts.filter(p=>Number(p.stock||0)<=0).length}</p>
+                <p class="text-lg font-black text-rose-400 mt-0.5">${catProducts.filter(p=>Number(p.stock||0)<=0).length}</p>
               </div>
             </div>
 
             ${c.description ? `
               <div class="pt-2">
-                <p class="text-xs font-bold text-slate-700">Description</p>
-                <p class="text-xs text-slate-600 leading-relaxed bg-slate-50 p-3.5 rounded-2xl border border-slate-200/70 mt-1.5">${esc(c.description)}</p>
+                <p class="text-xs font-bold text-slate-300">Description</p>
+                <p class="text-xs text-slate-200 leading-relaxed bg-slate-800/90 p-3.5 rounded-2xl border border-slate-700/80 mt-1.5">${esc(c.description)}</p>
               </div>
             ` : ''}
           </div>
