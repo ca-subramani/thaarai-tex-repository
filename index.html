@@ -3153,13 +3153,13 @@ async function loginView(passedUser = null){
       sessionStorage.setItem('tt_confirming_details', '1');
     } catch(e){}
     $('#tabbar')?.classList.add('hidden');
-    $('#nav-back')?.classList.add('!hidden');
+    $('#nav-back')?.classList.remove('!hidden', 'hidden');
+    $('#nav-back')?.classList.remove('sm:hidden');
+    $('#msb')?.classList.add('!hidden');
+    $('#msearch')?.classList.add('!hidden');
     $('#foot')?.classList.add('!hidden');
     try {
-      history.replaceState({ confirmingDetailsGuard: true, base: true }, '', location.pathname + '#/login');
-      for(let i=0; i<3; i++){
-        history.pushState({ confirmingDetailsGuard: true, level: i }, '', location.pathname + '#/login');
-      }
+      history.pushState({ confirmingDetailsGuard: true, level: 1 }, '', location.pathname + '#/login');
     } catch(e){}
     const googleRealName = (googleUser.user_metadata?.full_name || googleUser.user_metadata?.name || '').trim();
     const defaultProfileName = (existingCust?.name || googleRealName || (googleUser.email ? googleUser.email.split('@')[0] : '')).trim();
@@ -3239,7 +3239,9 @@ async function loginView(passedUser = null){
       } catch(e){}
       $('#confirm-login-modal')?.remove();
       $('#tabbar')?.classList.remove('hidden');
-      $('#nav-back')?.classList.remove('!hidden');
+      $('#nav-back')?.classList.add('sm:hidden');
+      $('#msb')?.classList.remove('!hidden');
+      $('#msearch')?.classList.remove('!hidden');
       $('#foot')?.classList.remove('!hidden');
       localStorage.removeItem('tt_oauth_in_flight');
       localStorage.removeItem('tt_oauth_pending');
@@ -3258,7 +3260,9 @@ async function loginView(passedUser = null){
       } catch(e){}
       $('#confirm-login-modal')?.remove();
       $('#tabbar')?.classList.remove('hidden');
-      $('#nav-back')?.classList.remove('!hidden');
+      $('#nav-back')?.classList.add('sm:hidden');
+      $('#msb')?.classList.remove('!hidden');
+      $('#msearch')?.classList.remove('!hidden');
       $('#foot')?.classList.remove('!hidden');
       await clearProfile();
       location.hash = '#/login';
@@ -3667,10 +3671,7 @@ async function route(){
 
     // 1. If returning from OAuth and profile is not yet completed:
     if(isOAuthReturn && !p){
-      if(location.hash !== '#/login'){
-        try { history.replaceState(null, '', location.pathname + '#/login'); } catch(e){}
-        location.hash = '#/login';
-      }
+      location.hash = '#/login';
       app.innerHTML = `
         <div class="max-w-sm mx-auto bg-white border border-gray-100 rounded-3xl p-8 text-center space-y-4 shadow-soft my-10">
           <div class="w-12 h-12 mx-auto rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center animate-spin">
@@ -3681,10 +3682,13 @@ async function route(){
         </div>
       `;
       const user = await resolveOAuthUser();
-      try {
-        history.replaceState(null, '', location.pathname + '#/login');
-        history.pushState({ confirmingDetailsGuard: true }, '', location.pathname + '#/login');
-      } catch(e){}
+      if(user && user.email){
+        try {
+          history.pushState({ confirmingDetailsGuard: true, base: true }, '', location.pathname + '#/login');
+          history.pushState({ confirmingDetailsGuard: true, active: true }, '', location.pathname + '#/login');
+        } catch(e){}
+        return await loginView(user);
+      }
       return await loginView(user);
     }
 
