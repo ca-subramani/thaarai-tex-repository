@@ -1026,17 +1026,21 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
             <div class="min-w-0 flex-1 space-y-1">
               <div class="flex items-center justify-between gap-2 min-w-0">
                 <h3 class="text-xs sm:text-sm font-extrabold text-slate-900 truncate min-w-0 flex-1 pr-2">${esc(name)}</h3>
-                <span class="text-[9px] font-bold px-2 py-0.5 rounded-full badge-pill shrink-0 w-[72px] text-center ${statusBadge}">
-                  ${esc(statusLabels[st] || capFirst(st))}
-                </span>
+                <div class="w-[125px] sm:w-[135px] shrink-0 flex justify-center">
+                  <span class="text-[9px] font-bold px-2.5 py-0.5 rounded-full badge-pill ${statusBadge}">
+                    ${esc(statusLabels[st] || capFirst(st))}
+                  </span>
+                </div>
               </div>
               <div class="flex items-center justify-between gap-2 min-w-0">
                 <span class="text-[11px] text-slate-700 font-semibold truncate shrink-0">
                   ${esc(phone || 'No Phone')}
                 </span>
-                <span class="text-[10px] text-slate-500 font-medium whitespace-nowrap shrink-0 text-right">
-                  ${esc(createdDate)}
-                </span>
+                <div class="w-[125px] sm:w-[135px] shrink-0 text-center">
+                  <span class="text-[10px] text-slate-500 font-medium whitespace-nowrap">
+                    ${esc(createdDate)}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
