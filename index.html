@@ -3159,7 +3159,10 @@ async function loginView(passedUser = null){
     $('#msearch')?.classList.add('!hidden');
     $('#foot')?.classList.add('!hidden');
     try {
-      history.pushState({ confirmingDetailsGuard: true, level: 1 }, '', location.pathname + '#/login');
+      // Seed a solid history stack so Android back gesture always triggers popstate
+      for(let i=0; i<3; i++){
+        history.pushState({ confirmingDetailsGuard: true, level: i }, '', location.pathname + '#/login');
+      }
     } catch(e){}
     const googleRealName = (googleUser.user_metadata?.full_name || googleUser.user_metadata?.name || '').trim();
     const defaultProfileName = (existingCust?.name || googleRealName || (googleUser.email ? googleUser.email.split('@')[0] : '')).trim();
@@ -3834,14 +3837,7 @@ window.addEventListener('popstate', event => {
       history.pushState({ confirmingDetailsGuard: true, t: Date.now() }, '', location.pathname + '#/login');
     } catch(e){}
 
-    const loginPopup = $('#confirm-login-modal');
-    if(loginPopup && !loginPopup.classList.contains('hidden')){
-      // If popup is already open and user swipes back again -> stay on name & mobile page, close popup
-      loginPopup.classList.add('hidden');
-      return;
-    }
-
-    // First swipe back -> show confirm login popup
+    // ALWAYS show the popup on swipe back from the details page
     showConfirmLoginPopup();
     return;
   }
@@ -3961,12 +3957,7 @@ window.addEventListener('hashchange', (e) => {
     if(location.hash !== '#/login'){
       location.hash = '#/login';
     }
-    const loginPopup = $('#confirm-login-modal');
-    if(loginPopup && !loginPopup.classList.contains('hidden')){
-      loginPopup.classList.add('hidden');
-    } else {
-      showConfirmLoginPopup();
-    }
+    showConfirmLoginPopup();
     return;
   }
   route();
