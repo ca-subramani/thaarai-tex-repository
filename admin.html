@@ -1023,26 +1023,25 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
             <div class="w-10 h-10 rounded-2xl bg-slate-900 text-white flex items-center justify-center font-black text-xs shrink-0 select-none">
               ${esc(initials)}
             </div>
-            <div class="min-w-0 flex-1 space-y-1">
-              <div class="flex items-center justify-between gap-2 min-w-0">
-                <h3 class="text-xs sm:text-sm font-extrabold text-slate-900 truncate min-w-0">${esc(name)}</h3>
-              </div>
+            <div class="min-w-0 flex-1 space-y-0.5">
+              <h3 class="text-xs sm:text-sm font-extrabold text-slate-900 truncate min-w-0">${esc(name)}</h3>
               <p class="text-[11px] text-slate-700 font-semibold truncate min-w-0">
                 ${esc(phone || 'No Phone')}
-              </p>
-              <div class="flex items-center gap-1.5 pt-0.5">
-                <span class="text-[9px] font-bold px-2 py-0.5 rounded-full badge-pill shrink-0 ${statusBadge}">
-                  ${esc(statusLabels[st] || capFirst(st))}
-                </span>
-              </div>
-              <p class="text-[11px] text-slate-500 font-medium truncate min-w-0">
-                ${esc(createdDate)}
               </p>
             </div>
           </div>
 
-          <div class="flex items-center gap-3 shrink-0">
-            <span class="w-8 h-8 rounded-full border border-slate-200 group-hover:border-slate-900 group-hover:bg-slate-900 group-hover:text-white text-slate-700 font-bold flex items-center justify-center transition shadow-soft">
+          <!-- Status badge and Date/Time aligned on the right before the arrow button -->
+          <div class="flex items-center gap-2.5 shrink-0">
+            <div class="flex flex-col items-end gap-1 text-right">
+              <span class="text-[9px] font-bold px-2 py-0.5 rounded-full badge-pill shrink-0 ${statusBadge}">
+                ${esc(statusLabels[st] || capFirst(st))}
+              </span>
+              <span class="text-[10px] text-slate-500 font-medium whitespace-nowrap">
+                ${esc(createdDate)}
+              </span>
+            </div>
+            <span class="w-8 h-8 rounded-full border border-slate-200 group-hover:border-slate-900 group-hover:bg-slate-900 group-hover:text-white text-slate-700 font-bold flex items-center justify-center transition shadow-soft shrink-0">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
             </span>
           </div>
