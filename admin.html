@@ -651,22 +651,24 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
     let adminGuardReady=false;
     function armAdminExitGuard(){
       try {
-        const s = { adminSection: 'overview', adminGuard: true, t: Date.now() };
-        history.pushState(s, '', location.href);
+        history.pushState({ adminSection: section, adminGuard: true, t: Date.now() }, '', location.href);
       } catch(e){}
     }
 
     // Keep an unbroken stack buffer so swipe-back gesture never reaches browser history boundary
     function keepAdminStackBuffered(){
       try {
-        const s = { adminSection: section, adminGuard: true, t: Date.now() };
-        history.pushState(s, '', location.href);
+        history.pushState({ adminSection: section, adminGuard: true, t: Date.now() }, '', location.href);
       } catch(e){}
     }
-    // Arm stack buffer on page load and interaction
+
+    // Arm stack buffer immediately on load and touch
+    try {
+      history.pushState({ adminRoot: true, adminSection: 'overview' }, '', location.href);
+      history.pushState({ adminGuard: true, adminSection: 'overview' }, '', location.href);
+    } catch(e){}
     window.addEventListener('touchstart', function armOnce(){
       keepAdminStackBuffered();
-      window.removeEventListener('touchstart', armOnce);
     }, {passive: true});
 
     function adminBack(){
@@ -700,10 +702,12 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
 
     // Unbreakable Admin Lock: Never exit admin workspace or close browser on back gesture
     window.addEventListener('popstate', event => {
-      // Always immediately recharge history stack so repeated swipe gestures never hit the end of history
-      keepAdminStackBuffered();
+      // 1. Immediately recharge history stack so repeated swipe gestures NEVER hit the history boundary
+      try {
+        history.pushState({ adminSection: section, adminGuard: true, t: Date.now() }, '', location.href);
+      } catch(e){}
 
-      // 1. If currently in deep detail view (single order, customer, product edit, category detail), pop to their parent list
+      // 2. If currently in deep detail view (single order, customer, product edit, category detail), pop to their parent list
       if(section==='orders' && selectedOrderId){
         backToOrdersList();
         return;
@@ -721,7 +725,7 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
         return;
       }
 
-      // 2. If user traversed multiple subtabs, step back through history
+      // 3. If user traversed multiple subtabs, step back through history
       if(sectionHistory.length > 1){
         sectionHistory.pop();
         const target = sectionHistory[sectionHistory.length - 1] || 'overview';
@@ -729,7 +733,7 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
         return;
       }
 
-      // 3. Traps any exit: immediately lock onto Overview and re-render without closing browser
+      // 4. Traps any exit: immediately lock onto Overview and re-render without closing browser
       if(section !== 'overview'){
         setSection('overview');
       } else {
@@ -3006,7 +3010,7 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
             ${categories.map(c=>`
               <div onclick="viewCategoryDetail('${esc(c.id)}')" class="bg-white rounded-3xl p-4 sm:p-5 shadow-soft border border-slate-200/80 hover:border-slate-400 hover:shadow-md transition active:scale-[0.99] cursor-pointer flex items-center justify-between gap-3 min-w-0 group">
                 <div class="flex items-center gap-3.5 min-w-0 flex-1">
-                  <div class="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-800 border border-emerald-200 flex items-center justify-center font-black text-xs shrink-0 select-none">
+                  <div class="w-10 h-10 rounded-2xl bg-slate-900 text-white flex items-center justify-center font-black text-xs shrink-0 select-none">
                     ${esc((c.name || 'C').charAt(0).toUpperCase())}
                   </div>
                   <div class="min-w-0 flex-1 space-y-0.5">
