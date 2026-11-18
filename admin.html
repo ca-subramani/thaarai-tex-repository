@@ -505,7 +505,7 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
     };
 
     let section='overview', products=[], categories=[], orders=[], reviews=[], coupons=[], settings={}, editing={}, mediaItems=[];
-    let customers=[], profiles=[], customerFilter='all', customerSearchQuery='', selectedCustomerId=null, selectedProductId=null;
+    let customers=[], profiles=[], customerFilter='all', customerSearchQuery='', selectedCustomerId=null, selectedProductId=null, selectedCategoryId=null;
     let currentStorefrontSubTab='home';
     let studioMode = 'text'; // 'text' (normal text edit form) or 'live' (live website preview edit page)
     let liveEditActive = false; // in live mode: false = Preview (interactive store), true = Edit (frozen, editable)
@@ -604,6 +604,7 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
       if(section === 'orders' && selectedOrderId) h += '/' + selectedOrderId;
       else if(section === 'products' && selectedProductId !== null) h += '/' + selectedProductId;
       else if(section === 'customers' && selectedCustomerId) h += '/' + selectedCustomerId;
+      else if(section === 'categories' && selectedCategoryId) h += '/' + selectedCategoryId;
       else if(section === 'storefront' && currentStorefrontSubTab && currentStorefrontSubTab !== 'home') h += '/' + currentStorefrontSubTab;
 
       try {
@@ -627,6 +628,7 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
       if(id==='orders' && !fromHistory) selectedOrderId = null;
       if(id==='customers' && !fromHistory) selectedCustomerId = null;
       if(id==='products' && !fromHistory) selectedProductId = null;
+      if(id==='categories' && !fromHistory) selectedCategoryId = null;
       section=id;
       const s=sections.find(x=>x[0]===id)||sections[0];
       $('#page-title').textContent=s[1];
@@ -694,6 +696,11 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
       }
       if(section==='products' && selectedProductId !== null){
         backToProductsList();
+        armAdminExitGuard();
+        return;
+      }
+      if(section==='categories' && selectedCategoryId){
+        backToCategoriesList();
         armAdminExitGuard();
         return;
       }
@@ -766,6 +773,10 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
       } else if(section==='customers' && selectedCustomerId){
         $('#crumb').textContent='CUSTOMERS';
         $('#page-title').textContent='Customer ' + selectedCustomerId;
+      } else if(section==='categories' && selectedCategoryId){
+        const cat = categories.find(c=>String(c.id)===String(selectedCategoryId));
+        $('#crumb').textContent='CATEGORIES';
+        $('#page-title').textContent=cat ? cat.name : 'Category Details';
       } else {
         $('#crumb').textContent='WORKSPACE';
         $('#page-title').textContent=s[1];
@@ -785,7 +796,10 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
         else renderCustomers();
       }
       if(section==='storefront')renderStorefrontCMS();
-      if(section==='categories')renderCategories();
+      if(section==='categories'){
+        if(selectedCategoryId) renderCategoryDetailPage(selectedCategoryId);
+        else renderCategories();
+      }
       if(section==='reviews')renderReviews();
       if(section==='coupons')renderCoupons();
       if(section==='media')renderMedia();
@@ -2975,24 +2989,147 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
             </button>
           </div>
 
-          <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 pt-1 min-w-0">
+          <div class="space-y-3 pt-1 min-w-0">
             ${categories.map(c=>`
-              <div class="bg-slate-50/70 rounded-3xl p-4 sm:p-5 border border-slate-200/80 flex flex-col justify-between min-w-0">
-                <div class="min-w-0">
-                  <div class="flex items-center justify-between min-w-0 gap-2">
-                    <h3 class="text-base sm:text-lg font-black text-slate-900 truncate min-w-0 flex-1">${esc(c.name)}</h3>
-                    <span class="rounded-full bg-white border border-slate-200 text-slate-700 px-2.5 py-0.5 text-[10px] font-bold shrink-0 badge-pill">
-                      ${products.filter(p=>String(p.category_id)===String(c.id)).length} sarees
-                    </span>
+              <div onclick="viewCategoryDetail('${esc(c.id)}')" class="bg-white rounded-3xl p-4 sm:p-5 shadow-soft border border-slate-200/80 hover:border-slate-400 hover:shadow-md transition active:scale-[0.99] cursor-pointer flex items-center justify-between gap-3 min-w-0 group">
+                <div class="flex items-center gap-3.5 min-w-0 flex-1">
+                  <div class="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-800 border border-emerald-200 flex items-center justify-center font-black text-xs shrink-0 select-none">
+                    ${esc((c.name || 'C').charAt(0).toUpperCase())}
+                  </div>
+                  <div class="min-w-0 flex-1 space-y-0.5">
+                    <h3 class="text-sm sm:text-base font-extrabold text-slate-900 truncate min-w-0">${esc(c.name)}</h3>
+                    <p class="text-[11px] text-slate-500 font-medium truncate min-w-0">
+                      ${products.filter(p=>String(p.category_id)===String(c.id)).length} sarees in this collection
+                    </p>
                   </div>
                 </div>
-                <div class="mt-4 pt-2.5 border-t border-slate-200/80 flex gap-2">
-                  <button data-edit-category="${esc(c.id)}" class="rounded-full border border-slate-200 bg-white px-3.5 py-1 text-xs font-bold text-slate-700 hover:bg-slate-50 transition shadow-soft">Edit</button>
-                  <button data-delete-category="${esc(c.id)}" class="rounded-full px-3.5 py-1 text-xs font-bold text-rose-600 hover:bg-rose-50 transition">Delete</button>
+
+                <div class="flex items-center gap-3 shrink-0">
+                  <span class="w-8 h-8 rounded-full border border-slate-200 group-hover:border-slate-900 group-hover:bg-slate-900 group-hover:text-white text-slate-700 font-bold flex items-center justify-center transition shadow-soft shrink-0">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                  </span>
                 </div>
-              </div>`).join('')||'<div class="col-span-full py-10 text-center text-xs text-slate-400">No categories created yet.</div>'}
+              </div>`).join('')||'<div class="py-10 text-center text-xs text-slate-400">No categories created yet.</div>'}
           </div>
         </div>`;
+    }
+
+    function viewCategoryDetail(categoryId){
+      selectedCategoryId = categoryId;
+      syncRouteToUrl();
+      renderCategoryDetailPage(categoryId);
+      window.scrollTo({top: 0, behavior: 'smooth'});
+    }
+
+    function backToCategoriesList(){
+      selectedCategoryId = null;
+      syncRouteToUrl();
+      render();
+    }
+
+    function renderCategoryDetailPage(catId){
+      const c = categories.find(x => String(x.id) === String(catId));
+      if(!c){
+        view.innerHTML = `
+          <div class="bg-white rounded-3xl p-10 text-center border border-slate-200/80 shadow-soft space-y-3">
+            <p class="text-xs text-slate-400">Category not found.</p>
+            <button onclick="backToCategoriesList()" class="rounded-full bg-slate-900 text-white px-5 py-2 text-xs font-bold">Back to Categories</button>
+          </div>`;
+        return;
+      }
+
+      const catProducts = products.filter(p => String(p.category_id) === String(c.id));
+
+      view.innerHTML = `
+        <div class="space-y-4 fade-in min-w-0">
+          <!-- Top Bar: Back & Action Buttons -->
+          <div class="flex items-center justify-between gap-3 min-w-0">
+            <button onclick="backToCategoriesList()" class="rounded-full border border-slate-200 bg-white hover:bg-slate-50 px-4 py-2 text-xs font-bold text-slate-700 transition shadow-soft flex items-center gap-2 active:scale-95 shrink-0">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+              <span>Back to Categories</span>
+            </button>
+            <div class="flex items-center gap-2 shrink-0">
+              <button onclick="openCategory(categories.find(x=>String(x.id)==='${esc(c.id)}'))" class="rounded-full border border-slate-200 bg-white hover:bg-slate-900 hover:text-white px-4 py-2 text-xs font-bold text-slate-800 transition shadow-soft active:scale-95">
+                Edit Category
+              </button>
+              <button onclick="deleteCategoryFromDetail('${esc(c.id)}')" class="rounded-full border border-rose-200 bg-rose-50 hover:bg-rose-600 hover:text-white px-4 py-2 text-xs font-bold text-rose-700 transition shadow-soft active:scale-95">
+                Delete
+              </button>
+            </div>
+          </div>
+
+          <!-- Main Info Card -->
+          <div class="bg-white rounded-3xl p-5 sm:p-6 shadow-soft border border-slate-200/80 space-y-4 min-w-0">
+            <div class="flex items-center gap-4 min-w-0 pb-4 border-b border-slate-100">
+              <div class="w-14 h-14 rounded-3xl bg-emerald-50 text-emerald-800 border border-emerald-200 flex items-center justify-center font-black text-xl shrink-0 select-none">
+                ${esc((c.name || 'C').charAt(0).toUpperCase())}
+              </div>
+              <div class="min-w-0 flex-1">
+                <span class="text-[10px] font-black uppercase tracking-[.18em] text-emerald-600 block">CATEGORY PROFILE</span>
+                <h2 class="text-xl sm:text-2xl font-black text-slate-900 truncate mt-0.5">${esc(c.name)}</h2>
+                <p class="text-xs text-slate-400 mt-0.5 font-mono">Slug: /${esc(c.slug || 'category')}</p>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-1">
+              <div class="bg-slate-50/80 p-3.5 rounded-2xl border border-slate-200/70">
+                <p class="text-[10px] uppercase font-bold text-slate-400">Total Sarees</p>
+                <p class="text-lg font-black text-slate-900 mt-0.5">${catProducts.length}</p>
+              </div>
+              <div class="bg-slate-50/80 p-3.5 rounded-2xl border border-slate-200/70">
+                <p class="text-[10px] uppercase font-bold text-slate-400">Active Stock</p>
+                <p class="text-lg font-black text-emerald-600 mt-0.5">${catProducts.filter(p=>Number(p.stock||0)>0).length}</p>
+              </div>
+              <div class="bg-slate-50/80 p-3.5 rounded-2xl border border-slate-200/70 col-span-2 sm:col-span-1">
+                <p class="text-[10px] uppercase font-bold text-slate-400">Out of Stock</p>
+                <p class="text-lg font-black text-rose-600 mt-0.5">${catProducts.filter(p=>Number(p.stock||0)<=0).length}</p>
+              </div>
+            </div>
+
+            ${c.description ? `
+              <div class="pt-2">
+                <p class="text-xs font-bold text-slate-700">Description</p>
+                <p class="text-xs text-slate-600 leading-relaxed bg-slate-50 p-3.5 rounded-2xl border border-slate-200/70 mt-1.5">${esc(c.description)}</p>
+              </div>
+            ` : ''}
+          </div>
+
+          <!-- Associated Products in this Category -->
+          <div class="bg-white rounded-3xl p-5 sm:p-6 shadow-soft border border-slate-200/80 space-y-3 min-w-0">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100 min-w-0">
+              <h3 class="font-extrabold text-xs text-slate-900 uppercase tracking-wider">Sarees in this collection (${catProducts.length})</h3>
+            </div>
+            <div class="space-y-2.5 min-w-0">
+              ${catProducts.map(p => `
+                <div onclick="selectedProductId='${esc(p.id)}';setSection('products')" class="p-3 bg-slate-50/70 hover:bg-slate-100 rounded-2xl border border-slate-200/80 flex items-center justify-between gap-3 cursor-pointer transition active:scale-[0.99]">
+                  <div class="flex items-center gap-3 min-w-0 flex-1">
+                    <img src="${esc((p.images&&p.images[0])||p.image_url||'data:image/svg+xml,%3Csvg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'40\\' height=\\'40\\'%3E%3Crect width=\\'100%25\\' height=\\'100%25\\' fill=\\'%23e2e8f0\\'/ %3E%3C/svg%3E')}" class="w-10 h-10 rounded-xl object-cover border border-slate-200 shrink-0">
+                    <div class="min-w-0 flex-1">
+                      <p class="text-xs font-extrabold text-slate-900 truncate">${esc(p.name)}</p>
+                      <p class="text-[11px] text-slate-500 font-semibold">${fmt(p.price)} · Stock: ${Number(p.stock||0)}</p>
+                    </div>
+                  </div>
+                  <span class="w-7 h-7 rounded-full border border-slate-200 bg-white flex items-center justify-center text-slate-500 shrink-0">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                  </span>
+                </div>
+              `).join('') || '<p class="text-xs text-slate-400 py-6 text-center">No products assigned to this category yet.</p>'}
+            </div>
+          </div>
+        </div>`;
+    }
+
+    async function deleteCategoryFromDetail(id){
+      const ok = await showConfirmModal('Are you sure you want to delete this category?', 'Delete Category', 'Delete');
+      if(!ok) return;
+      const res = await db.from('categories').delete().eq('id', id);
+      if(res.error){
+        toast('Error: ' + res.error.message, 'error');
+        return;
+      }
+      categories = categories.filter(c => String(c.id) !== String(id));
+      toast('Category deleted ✓');
+      backToCategoriesList();
     }
 
     async function openCategory(category){
