@@ -1024,18 +1024,18 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
               ${esc(initials)}
             </div>
             <div class="min-w-0 flex-1 space-y-1">
-              <h3 class="text-xs sm:text-sm font-extrabold text-slate-900 truncate min-w-0">${esc(name)}</h3>
-              <p class="text-[11px] text-slate-700 font-semibold truncate min-w-0">
-                ${esc(phone || 'No Phone')}
-              </p>
-              <div class="flex items-center gap-2 pt-0.5">
+              <div class="flex items-center justify-between gap-2 min-w-0">
+                <h3 class="text-xs sm:text-sm font-extrabold text-slate-900 truncate min-w-0">${esc(name)}</h3>
                 <span class="text-[9px] font-bold px-2 py-0.5 rounded-full badge-pill shrink-0 ${statusBadge}">
                   ${esc(statusLabels[st] || capFirst(st))}
                 </span>
-                <span class="text-[10px] text-slate-500 font-medium truncate">
-                  ${esc(createdDate)}
-                </span>
               </div>
+              <p class="text-[11px] text-slate-700 font-semibold truncate min-w-0">
+                ${esc(phone || 'No Phone')}
+              </p>
+              <p class="text-[10px] text-slate-500 font-medium truncate min-w-0">
+                ${esc(createdDate)}
+              </p>
             </div>
           </div>
 
@@ -2025,7 +2025,7 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
       const initials = (name || 'C').split(' ').map(w=>w[0]).filter(Boolean).slice(0,2).join('').toUpperCase() || 'C';
 
       return `
-        <div class="bg-white rounded-3xl p-4 sm:p-5 shadow-soft border border-slate-200/80 flex items-center justify-between gap-3 min-w-0">
+        <div onclick="viewCustomerDetail('${esc(c.customer_id)}')" class="bg-white rounded-3xl p-4 sm:p-5 shadow-soft border border-slate-200/80 hover:border-slate-400 hover:shadow-md transition active:scale-[0.99] cursor-pointer flex items-center justify-between gap-3 min-w-0 group">
           <div class="flex items-center gap-3 min-w-0 flex-1">
             <div class="w-10 h-10 rounded-2xl bg-slate-900 text-white flex items-center justify-center font-black text-xs shrink-0 select-none">
               ${esc(initials)}
@@ -2041,7 +2041,7 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
           </div>
 
           <div class="flex items-center gap-3 shrink-0">
-            <button onclick="viewCustomerDetail('${esc(c.customer_id)}')" class="border border-slate-200 hover:border-slate-900 hover:bg-slate-900 hover:text-white text-slate-800 text-xs font-bold px-3.5 py-1.5 rounded-full transition shadow-soft">
+            <button type="button" class="border border-slate-200 group-hover:border-slate-900 group-hover:bg-slate-900 group-hover:text-white text-slate-800 text-xs font-bold px-3.5 py-1.5 rounded-full transition shadow-soft pointer-events-none">
               Details
             </button>
           </div>
