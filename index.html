@@ -3267,6 +3267,11 @@ async function loginView(passedUser = null){
   }
 
   // --- STATE 3: INITIAL SCREEN (ONLY GOOGLE LOGIN BUTTON) ---
+  // If user was in middle of confirming details or has active session, do not show State 3
+  if(localStorage.getItem('tt_confirming_details') === '1' && !p){
+    const u = await resolveOAuthUser();
+    if(u && u.email) return await loginView(u);
+  }
   window._confirmingDetails = false;
   $('#tabbar')?.classList.remove('hidden');
   $('#nav-back')?.classList.remove('!hidden');
@@ -3661,7 +3666,10 @@ async function route(){
 
     // 1. If returning from OAuth and profile is not yet completed:
     if(isOAuthReturn && !p){
-      location.hash = '#/login';
+      if(location.hash !== '#/login'){
+        try { history.replaceState(null, '', location.pathname + '#/login'); } catch(e){}
+        location.hash = '#/login';
+      }
       app.innerHTML = `
         <div class="max-w-sm mx-auto bg-white border border-gray-100 rounded-3xl p-8 text-center space-y-4 shadow-soft my-10">
           <div class="w-12 h-12 mx-auto rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center animate-spin">
@@ -3674,12 +3682,13 @@ async function route(){
       const user = await resolveOAuthUser();
       try {
         history.replaceState(null, '', location.pathname + '#/login');
+        history.pushState({ confirmingDetailsGuard: true }, '', location.pathname + '#/login');
       } catch(e){}
       return await loginView(user);
     }
 
     // 2. If user is visiting root/home or login, has no profile, but an active Google OAuth session exists:
-    if(!p && (rawHash === '' || rawHash === '#' || rawHash === '#/' || rawHash.startsWith('#/login')) && localStorage.getItem('tt_logged_out') !== '1'){
+    if(!p && (rawHash === '' || rawHash === '#' || rawHash === '#/' || rawHash.startsWith('#/login') || localStorage.getItem('tt_confirming_details') === '1') && localStorage.getItem('tt_logged_out') !== '1'){
       const user = await resolveOAuthUser();
       if(user && user.email){
         location.hash = '#/login';
