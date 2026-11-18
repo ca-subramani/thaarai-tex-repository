@@ -2979,18 +2979,14 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
             ${categories.map(c=>`
               <div class="bg-slate-50/70 rounded-3xl p-4 sm:p-5 border border-slate-200/80 flex flex-col justify-between min-w-0">
                 <div class="min-w-0">
-                  <div class="flex items-start justify-between min-w-0 gap-2">
-                    <div class="min-w-0">
-                      <h3 class="text-xs sm:text-sm font-extrabold text-slate-900 truncate">${esc(c.name)}</h3>
-                      <p class="text-[10px] text-slate-400 mt-0.5 truncate">/${esc(c.slug||'')}</p>
-                    </div>
+                  <div class="flex items-center justify-between min-w-0 gap-2">
+                    <h3 class="text-base sm:text-lg font-black text-slate-900 truncate min-w-0 flex-1">${esc(c.name)}</h3>
                     <span class="rounded-full bg-white border border-slate-200 text-slate-700 px-2.5 py-0.5 text-[10px] font-bold shrink-0 badge-pill">
                       ${products.filter(p=>String(p.category_id)===String(c.id)).length} sarees
                     </span>
                   </div>
-                  <p class="mt-2 text-xs text-slate-600 line-clamp-2 break-words leading-relaxed">${esc(c.description||'No description.')}</p>
                 </div>
-                <div class="mt-3.5 pt-2.5 border-t border-slate-200/80 flex gap-2">
+                <div class="mt-4 pt-2.5 border-t border-slate-200/80 flex gap-2">
                   <button data-edit-category="${esc(c.id)}" class="rounded-full border border-slate-200 bg-white px-3.5 py-1 text-xs font-bold text-slate-700 hover:bg-slate-50 transition shadow-soft">Edit</button>
                   <button data-delete-category="${esc(c.id)}" class="rounded-full px-3.5 py-1 text-xs font-bold text-rose-600 hover:bg-rose-50 transition">Delete</button>
                 </div>
