@@ -3542,7 +3542,7 @@ async function account(section,params){
   app.innerHTML=body;
   window._cancelAddrEdit = () => {
     addrEdit = null;
-    account(section, params);
+    history.back();
   };
   app.onclick=async e=>{
     const t=e.target,d=t.dataset,again=()=>account(section,params);
@@ -3559,12 +3559,17 @@ async function account(section,params){
       if(name.length<2)return toast('Enter your name');
       if(!/^[6-9]\d{9}$/.test(phone))return toast('Enter a valid mobile number');
       await setProfile(name,phone,pf.email,pf.google_name);toast('Saved ✓');location.hash='#/account/hub'}
-    if(t.id==='addA'){addrEdit={};again()}
+    if(t.id==='addA'){
+      addrEdit={};
+      try { history.pushState({ inAddrEdit: true }, '', location.href); } catch(e){}
+      again();
+    }
     if(d.ae){
       showNeonLoader();
       try {
         const L=await getAddrs();
         addrEdit=L.find(x=>x.id===d.ae);
+        try { history.pushState({ inAddrEdit: true }, '', location.href); } catch(e){}
         await again();
       } finally {
         hideNeonLoader();
@@ -3586,7 +3591,10 @@ async function account(section,params){
       }
     }
     if(d.adef){let L=await getAddrs();await setAddrs(L.map(x=>({...x,def:x.id===d.adef})));again()}
-    if(t.id==='acn'){addrEdit=null;again()}
+    if(t.id==='acn'){
+      addrEdit=null;
+      history.back();
+    }
     if(t.id==='asv'){
       const n={name:$('#a-name').value.trim(),phone:$('#a-phone').value.trim(),pincode:$('#a-pin').value.trim(),city:$('#a-city').value.trim(),state:$('#a-state').value.trim(),line:$('#a-line').value.trim()};
       if(!n.name||!n.city||!n.state||!n.line)return toast('Please fill all fields');
@@ -3753,8 +3761,7 @@ window.addEventListener('popstate', event => {
   const current = location.hash || '#/';
 
   // Handle Address Edit cancellation on Back gesture
-  if(current.startsWith('#/account/addresses') && addrEdit){
-    try { history.pushState(null, '', location.href); } catch(e){}
+  if(addrEdit){
     addrEdit = null;
     account('addresses');
     return;
@@ -3811,9 +3818,9 @@ $('#nav-back').onclick = () => {
   }
 
   const current = location.hash || '#/';
-  if(current.startsWith('#/account/addresses') && addrEdit){
+  if(addrEdit){
     addrEdit = null;
-    account('addresses');
+    history.back();
     return;
   }
   if(current === '#/' || current === '' || current === '#'){
