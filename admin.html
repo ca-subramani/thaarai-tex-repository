@@ -9,7 +9,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="TT Admin">
   <link rel="manifest" href="admin-manifest.json">
-  <title>Thaarai Tex — Executive Admin Studio</title>
+  <title>Thaarai Tex ‚Äî Executive Admin Studio</title>
   <script>
     (function(){
       try {
@@ -118,7 +118,7 @@
 
         <div class="mt-5 border-t border-slate-100 pt-4 flex items-center justify-between text-[11px] text-slate-400 font-medium">
           <span>Protected by Supabase Auth</span>
-          <a href="/" target="_blank" class="text-slate-700 hover:text-slate-900 font-bold transition">Storefront ↗</a>
+          <a href="/" target="_blank" class="text-slate-700 hover:text-slate-900 font-bold transition">Storefront ‚Üó</a>
         </div>
       </form>
     </div>
@@ -154,7 +154,7 @@
         <a href="/" target="_blank" class="flex items-center gap-2.5 rounded-2xl px-3.5 py-2.5 text-xs font-bold text-slate-700 bg-slate-50 border border-slate-200/70 hover:bg-slate-100 transition shadow-soft">
           <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
           <span>Open Live Store</span>
-          <span class="ml-auto text-[10px] text-slate-400">↗</span>
+          <span class="ml-auto text-[10px] text-slate-400">‚Üó</span>
         </a>
         <div class="rounded-2xl border border-slate-100 bg-slate-50/60 p-2.5 flex items-center justify-between">
           <div class="min-w-0 flex-1 pr-2">
@@ -190,7 +190,7 @@
           <a href="/" target="_blank" class="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-bold text-slate-800 shadow-soft hover:bg-slate-50 transition">
             <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
             <span class="hidden sm:inline">Live Store</span>
-            <span class="text-[10px] text-slate-400">↗</span>
+            <span class="text-[10px] text-slate-400">‚Üó</span>
           </a>
           <span id="today" class="hidden text-xs text-slate-400 md:block font-medium"></span>
           <div class="grid h-8 w-8 place-items-center rounded-full bg-slate-900 text-[11px] font-black text-white shadow-soft select-none">AD</div>
@@ -236,7 +236,7 @@
           <p id="editor-kicker" class="text-[9px] font-black uppercase tracking-[.2em] text-emerald-600">RECORD</p>
           <h2 id="editor-title" class="mt-0.5 text-base font-extrabold text-slate-900">Edit</h2>
         </div>
-        <button type="button" id="editor-close" class="grid h-9 w-9 place-items-center rounded-full bg-white border border-slate-200 text-lg font-bold text-slate-700 hover:bg-slate-50 transition shadow-soft" aria-label="Close">×</button>
+        <button type="button" id="editor-close" class="grid h-9 w-9 place-items-center rounded-full bg-white border border-slate-200 text-lg font-bold text-slate-700 hover:bg-slate-50 transition shadow-soft" aria-label="Close">√ó</button>
       </div>
       <div id="editor-fields" class="space-y-4 overflow-y-auto px-6 py-5"></div>
       <div class="flex justify-end gap-2.5 border-t border-slate-100 bg-[#f8fafc] px-6 py-4 rounded-b-3xl">
@@ -253,10 +253,10 @@
         <h3 class="text-base font-extrabold text-slate-900">Choose from Media Library</h3>
         <p class="mt-0.5 text-xs text-slate-500">Tap any photo to select it directly for this section.</p>
       </div>
-      <button type="button" id="library-picker-close" class="grid h-9 w-9 place-items-center rounded-full bg-slate-50 border border-slate-200 text-lg font-bold text-slate-700 hover:bg-slate-100 transition">×</button>
+      <button type="button" id="library-picker-close" class="grid h-9 w-9 place-items-center rounded-full bg-slate-50 border border-slate-200 text-lg font-bold text-slate-700 hover:bg-slate-100 transition">√ó</button>
     </div>
     <div id="library-picker-content" class="mt-4 grid max-h-[62vh] grid-cols-2 sm:grid-cols-4 gap-3 overflow-y-auto">
-      <p class="col-span-full py-12 text-center text-xs text-slate-400">Loading images…</p>
+      <p class="col-span-full py-12 text-center text-xs text-slate-400">Loading images‚Ä¶</p>
     </div>
   </dialog>
 
@@ -313,7 +313,7 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
           </button>
         </div>
         <div class="rounded-2xl bg-emerald-50 border border-emerald-200 p-3.5 text-[11px] text-emerald-900 leading-relaxed">
-          <p class="font-bold text-emerald-950 flex items-center gap-1">✓ Instant Fallback Active</p>
+          <p class="font-bold text-emerald-950 flex items-center gap-1">‚úì Instant Fallback Active</p>
           <p class="mt-0.5">Even before running this script, the admin Customers directory automatically compiles customer records, Customer IDs, phone numbers, and addresses from all store orders!</p>
         </div>
       </div>
@@ -377,8 +377,8 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
     const MEDIA_BUCKET='product-images';
     const $=s=>document.querySelector(s), view=$('#view'), editor=$('#editor');
     const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-    const fmt=n=>'₹'+Number(n||0).toLocaleString('en-IN');
-    const date=v=>v?new Date(v).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}):'—';
+    const fmt=n=>'‚Çπ'+Number(n||0).toLocaleString('en-IN');
+    const date=v=>v?new Date(v).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}):'‚Äî';
 
     /* Website UI Confirm Popup Replacement */
     function showConfirmModal(message, title='Are you sure?', btnText='Delete'){
@@ -541,7 +541,7 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
       const iconEl=$('#toast-icon');
       if(!el || !msgEl) return;
 
-      // Clean message: remove trailing checkmarks or tick emojis like ✓ or ✔
+      // Clean message: remove trailing checkmarks or tick emojis like ‚úì or ‚úî
       const cleanMsg = String(message||'').replace(/[\u2705\u2713\u2714\uFE0F]/g, '').trim();
       const isErr = isError || /error|failed|cannot|exceeds/i.test(cleanMsg);
       msgEl.textContent = cleanMsg;
@@ -549,7 +549,7 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
       if(iconEl){
         if(isErr){
           iconEl.className = 'w-6 h-6 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center shrink-0 border border-rose-100';
-          iconEl.innerHTML = '<span class="text-xs font-black">✕</span>';
+          iconEl.innerHTML = '<span class="text-xs font-black">‚úï</span>';
         } else {
           iconEl.className = '';
           iconEl.innerHTML = `
@@ -881,7 +881,7 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
               <p class="text-xs text-slate-500 mt-0.5 truncate">Incoming saree purchases from your storefront</p>
             </div>
             <button data-go="orders" class="rounded-full border border-slate-200 bg-white hover:bg-slate-50 px-3.5 py-1.5 text-xs font-bold text-slate-800 transition shadow-soft shrink-0">
-              View All (${orders.length}) →
+              View All (${orders.length}) ‚Üí
             </button>
           </div>
 
@@ -938,7 +938,7 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
           <!-- Search Input -->
           <div class="relative pt-1">
             <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs">${SVG.search}</span>
-            <input id="order-search" placeholder="Search customer, phone, order #, city, or pincode…" class="w-full pl-9 pr-4 py-2.5 rounded-full border border-slate-200 bg-[#f1f5f9] text-xs text-slate-900 outline-none focus:border-slate-900 focus:bg-white transition shadow-soft">
+            <input id="order-search" placeholder="Search customer, phone, order #, city, or pincode‚Ä¶" class="w-full pl-9 pr-4 py-2.5 rounded-full border border-slate-200 bg-[#f1f5f9] text-xs text-slate-900 outline-none focus:border-slate-900 focus:bg-white transition shadow-soft">
           </div>
         </div>
 
@@ -1019,14 +1019,14 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
 
       return `
         <div onclick="viewOrderDetail('${esc(o.id)}')" class="bg-white rounded-3xl p-4 sm:p-5 shadow-soft border border-slate-200/80 hover:border-slate-400 hover:shadow-md transition active:scale-[0.99] cursor-pointer flex items-center justify-between gap-3 min-w-0 group">
-          <div class="flex items-center gap-3 min-w-0 flex-1">
+          <div class="flex items-center gap-3 min-w-0 flex-1 pr-6 sm:pr-10">
             <div class="w-10 h-10 rounded-2xl bg-slate-900 text-white flex items-center justify-center font-black text-xs shrink-0 select-none">
               ${esc(initials)}
             </div>
             <div class="min-w-0 flex-1 space-y-1">
               <div class="flex items-center justify-between gap-2 min-w-0">
-                <h3 class="text-xs sm:text-sm font-extrabold text-slate-900 truncate min-w-0">${esc(name)}</h3>
-                <span class="text-[9px] font-bold px-2 py-0.5 rounded-full badge-pill shrink-0 ${statusBadge}">
+                <h3 class="text-xs sm:text-sm font-extrabold text-slate-900 truncate min-w-0 flex-1 pr-2">${esc(name)}</h3>
+                <span class="text-[9px] font-bold px-2 py-0.5 rounded-full badge-pill shrink-0 w-[72px] text-center ${statusBadge}">
                   ${esc(statusLabels[st] || capFirst(st))}
                 </span>
               </div>
@@ -1119,7 +1119,7 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
         `Regarding your Order #TT-${orderShortId}:\n` +
         `Current Status: ${statusLabels[st] || st}\n` +
         (o.tracking_id ? `Courier Tracking ID: ${o.tracking_id}\n` : '') +
-        `Total: ₹${Number(o.total||0).toLocaleString('en-IN')}\n\n` +
+        `Total: ‚Çπ${Number(o.total||0).toLocaleString('en-IN')}\n\n` +
         `Thank you for shopping with us!`
       );
 
@@ -1271,7 +1271,7 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
                       </span>
                     </div>
                     <p class="text-[11px] text-slate-500 truncate">
-                      Unit price: ${fmt(unitPrice)} · Qty: <b class="text-slate-900 font-bold">${qty}</b>
+                      Unit price: ${fmt(unitPrice)} ¬∑ Qty: <b class="text-slate-900 font-bold">${qty}</b>
                     </p>
                     <b class="text-xs text-slate-900 block font-black">${fmt(lineTotal)}</b>
                   </div>
@@ -1302,7 +1302,7 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
             <b class="text-slate-900">${esc((o.payment_method || 'COD').toUpperCase())}</b>
           </div>
           ${o.coupon ? `<div class="flex justify-between text-slate-600"><span>Coupon</span><b class="text-slate-900">${esc(o.coupon)}</b></div>` : ''}
-          ${o.discount ? `<div class="flex justify-between text-slate-600"><span>Discount</span><b class="text-emerald-700">−${fmt(o.discount)}</b></div>` : ''}
+          ${o.discount ? `<div class="flex justify-between text-slate-600"><span>Discount</span><b class="text-emerald-700">‚àí${fmt(o.discount)}</b></div>` : ''}
           <div class="flex justify-between text-slate-600"><span>Delivery Charge</span><b class="text-emerald-700">FREE</b></div>
           <div class="flex justify-between text-sm font-black text-slate-900 border-t border-slate-100 pt-2.5 mt-2">
             <span>Total Amount</span>
@@ -1325,7 +1325,7 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
           ord.order_status = newStatus;
           ord.tracking_id = trackingId;
         }
-        toast('Delivery & tracking updated ✓');
+        toast('Delivery & tracking updated ‚úì');
         renderOrderDetailPage(orderId);
       } catch(err) {
         toast('Error updating: ' + err.message);
@@ -1336,7 +1336,7 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
       if(!text) return;
       if(navigator.clipboard && navigator.clipboard.writeText){
         navigator.clipboard.writeText(text)
-          .then(() => toast(`${label || 'Details'} copied to clipboard ✓`))
+          .then(() => toast(`${label || 'Details'} copied to clipboard ‚úì`))
           .catch(() => fallbackCopyText(text, label));
       } else {
         fallbackCopyText(text, label);
@@ -1353,7 +1353,7 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
       ta.select();
       try {
         document.execCommand('copy');
-        toast(`${label || 'Details'} copied to clipboard ✓`);
+        toast(`${label || 'Details'} copied to clipboard ‚úì`);
       } catch(err) {
         toast('Could not copy to clipboard');
       }
@@ -1399,7 +1399,7 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
           <!-- Search Input -->
           <div class="relative pt-1">
             <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs">${SVG.search}</span>
-            <input id="product-search" placeholder="Search by product name, Product ID (e.g. TT-1001), fabric…" class="w-full pl-9 pr-4 py-2.5 rounded-full border border-slate-200 bg-[#f1f5f9] text-xs text-slate-900 outline-none focus:border-slate-900 focus:bg-white transition shadow-soft">
+            <input id="product-search" placeholder="Search by product name, Product ID (e.g. TT-1001), fabric‚Ä¶" class="w-full pl-9 pr-4 py-2.5 rounded-full border border-slate-200 bg-[#f1f5f9] text-xs text-slate-900 outline-none focus:border-slate-900 focus:bg-white transition shadow-soft">
           </div>
         </div>
 
@@ -1611,11 +1611,11 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
 
             <div class="grid grid-cols-3 gap-3">
               <div>
-                <label class="block text-xs font-bold text-slate-700">Selling Price (₹) *</label>
+                <label class="block text-xs font-bold text-slate-700">Selling Price (‚Çπ) *</label>
                 <input id="edit-prod-price" name="price" type="number" step="any" required value="${esc(p.price||'')}" placeholder="1999" class="mt-1.5 w-full rounded-2xl border border-slate-200 bg-white p-2.5 text-xs font-black text-slate-900 outline-none focus:border-slate-900 transition shadow-soft" oninput="updateLivePriceCalc()">
               </div>
               <div>
-                <label class="block text-xs font-bold text-slate-700">MRP Strike (₹)</label>
+                <label class="block text-xs font-bold text-slate-700">MRP Strike (‚Çπ)</label>
                 <input id="edit-prod-mrp" name="mrp" type="number" step="any" value="${esc(p.mrp||'')}" placeholder="2999" class="mt-1.5 w-full rounded-2xl border border-slate-200 bg-white p-2.5 text-xs font-bold text-slate-900 outline-none focus:border-slate-900 transition shadow-soft" oninput="updateLivePriceCalc()">
               </div>
               <div>
@@ -1685,7 +1685,7 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
           <img src="${esc(url)}" alt="" class="w-full h-full object-cover">
           ${idx === 0 ? `
             <span class="absolute top-2 left-2 bg-slate-900 text-white text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-lg shadow-sm badge-pill">
-              ★ Cover Photo
+              ‚òÖ Cover Photo
             </span>
           ` : `
             <button type="button" data-set-main-image="${idx}" class="absolute top-2 left-2 bg-white/95 hover:bg-white text-slate-900 text-[9px] font-bold px-2 py-0.5 rounded-lg shadow-sm transition badge-pill">
@@ -1694,8 +1694,8 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
           `}
           <div class="absolute bottom-2 inset-x-2 flex items-center justify-between bg-white/90 backdrop-blur rounded-full px-2 py-1 shadow-sm opacity-90 group-hover:opacity-100 transition">
             <div class="flex items-center gap-1">
-              ${idx > 0 ? `<button type="button" data-move-image="${idx}" data-dir="-1" class="text-slate-700 hover:text-black font-bold text-xs p-1">←</button>` : ''}
-              ${idx < images.length - 1 ? `<button type="button" data-move-image="${idx}" data-dir="1" class="text-slate-700 hover:text-black font-bold text-xs p-1">→</button>` : ''}
+              ${idx > 0 ? `<button type="button" data-move-image="${idx}" data-dir="-1" class="text-slate-700 hover:text-black font-bold text-xs p-1">‚Üê</button>` : ''}
+              ${idx < images.length - 1 ? `<button type="button" data-move-image="${idx}" data-dir="1" class="text-slate-700 hover:text-black font-bold text-xs p-1">‚Üí</button>` : ''}
             </div>
             <button type="button" data-remove-product-image="${idx}" class="text-rose-600 hover:text-rose-800 font-bold text-xs p-1">
               ${SVG.trash}
@@ -1764,13 +1764,13 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
         if(selectedProductId === 'new'){
           const { error } = await db.from('products').insert([payload]);
           if(error) throw error;
-          toast('New product created successfully ✓');
+          toast('New product created successfully ‚úì');
           await loadAll();
           backToProductsList();
         } else {
           const { error } = await db.from('products').update(payload).eq('id', selectedProductId);
           if(error) throw error;
-          toast('Product updated successfully ✓');
+          toast('Product updated successfully ‚úì');
           await loadAll();
           backToProductsList();
         }
@@ -1786,7 +1786,7 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
       try {
         const { error } = await db.from('products').delete().eq('id', productId);
         if(error) throw error;
-        toast('Product deleted ✓');
+        toast('Product deleted ‚úì');
         await loadAll();
         backToProductsList();
       } catch(err){
@@ -1979,7 +1979,7 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
           <!-- Search Input -->
           <div class="relative pt-1">
             <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs">${SVG.search}</span>
-            <input id="customer-search" value="${esc(customerSearchQuery)}" placeholder="Search customer name, phone, Customer ID, or city…" class="w-full pl-9 pr-4 py-2.5 rounded-full border border-slate-200 bg-[#f1f5f9] text-xs text-slate-900 outline-none focus:border-slate-900 focus:bg-white transition shadow-soft">
+            <input id="customer-search" value="${esc(customerSearchQuery)}" placeholder="Search customer name, phone, Customer ID, or city‚Ä¶" class="w-full pl-9 pr-4 py-2.5 rounded-full border border-slate-200 bg-[#f1f5f9] text-xs text-slate-900 outline-none focus:border-slate-900 focus:bg-white transition shadow-soft">
           </div>
         </div>
 
@@ -2131,12 +2131,12 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
                 </svg>
                 2. Google Verified Name
               </span>
-              <span class="font-extrabold text-slate-900 truncate">${esc(capWords(c.google_verified_name || c.name || '—'))}</span>
+              <span class="font-extrabold text-slate-900 truncate">${esc(capWords(c.google_verified_name || c.name || '‚Äî'))}</span>
             </div>
 
             <div class="flex items-center justify-between pt-1">
               <span class="text-slate-500 font-medium">Mobile Number</span>
-              <span class="font-bold text-slate-900">${esc(c.phone || '—')}</span>
+              <span class="font-bold text-slate-900">${esc(c.phone || '‚Äî')}</span>
             </div>
 
             ${c.email ? `
@@ -2202,10 +2202,10 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
         whatsapp:'919999999999'
       },
       header:{
-        searchPlaceholder:'சேலைகளைத் தேடுங்கள்… Search sarees'
+        searchPlaceholder:'‡Æö‡Øá‡Æ≤‡Øà‡Æï‡Æ≥‡Øà‡Æ§‡Øç ‡Æ§‡Øá‡Æü‡ØÅ‡Æô‡Øç‡Æï‡Æ≥‡Øç‚Ä¶ Search sarees'
       },
       hero:{
-        eyebrow:'THAARAI TEX · HANDLOOM',
+        eyebrow:'THAARAI TEX ¬∑ HANDLOOM',
         title:'A legacy woven into every thread',
         subtitle:'Discover handpicked authentic sarees, crafted with the art and patience of master weavers.',
         button:'Explore the collection',
@@ -2238,11 +2238,11 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
         title:'The collection',
         subtitle:'Explore our finest handwoven selections',
         fabrics:['Silk','Cotton','Semi Silk','Linen'],
-        emptyText:'பொருட்கள் எதுவும் இல்லை. No products found.'
+        emptyText:'‡Æ™‡Øä‡Æ∞‡ØÅ‡Æü‡Øç‡Æï‡Æ≥‡Øç ‡Æé‡Æ§‡ØÅ‡Æµ‡ØÅ‡ÆÆ‡Øç ‡Æá‡Æ≤‡Øç‡Æ≤‡Øà. No products found.'
       },
       account_ui:{
         title:'Your Profile Details',
-        subtitle:'உங்கள் பெயர் மற்றும் மொபைல் எண்ணை உள்ளிடவும்.',
+        subtitle:'‡Æâ‡Æô‡Øç‡Æï‡Æ≥‡Øç ‡Æ™‡ØÜ‡ÆØ‡Æ∞‡Øç ‡ÆÆ‡Æ±‡Øç‡Æ±‡ØÅ‡ÆÆ‡Øç ‡ÆÆ‡Øä‡Æ™‡Øà‡Æ≤‡Øç ‡Æé‡Æ£‡Øç‡Æ£‡Øà ‡Æâ‡Æ≥‡Øç‡Æ≥‡Æø‡Æü‡Æµ‡ØÅ‡ÆÆ‡Øç.',
         supportText:'Contact support on WhatsApp',
         emptyOrders:'No orders yet. Start shopping'
       },
@@ -2276,7 +2276,7 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
       if(!current.includes(fabric)){
         current.push(fabric);
         inp.value=current.join(', ');
-        toast(`Added "${fabric}" to fabric filters ✓`);
+        toast(`Added "${fabric}" to fabric filters ‚úì`);
       }
     }
 
@@ -2352,7 +2352,7 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
                 <div class="flex items-center gap-2">
                   <span id="live-mode-indicator-dot" class="w-2.5 h-2.5 rounded-full ${liveEditActive ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500'}"></span>
                   <span id="live-mode-indicator-text" class="text-sm font-extrabold text-slate-900">
-                    ${liveEditActive ? 'Visual Edit Mode (Page Frozen · Tap text/images to edit)' : 'Live Preview Mode (Interactive Store)'}
+                    ${liveEditActive ? 'Visual Edit Mode (Page Frozen ¬∑ Tap text/images to edit)' : 'Live Preview Mode (Interactive Store)'}
                   </span>
                 </div>
 
@@ -2360,10 +2360,10 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
                   <!-- Mode Switcher: Click Preview vs Click Edit -->
                   <div class="bg-slate-100 p-1 rounded-2xl flex items-center gap-1 border border-slate-200">
                     <button type="button" id="live-mode-btn-preview" onclick="setLiveEditMode(false)" class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition ${!liveEditActive ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'}">
-                      👁️ Preview
+                      üëÅÔ∏è Preview
                     </button>
                     <button type="button" id="live-mode-btn-edit" onclick="setLiveEditMode(true)" class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition ${liveEditActive ? 'bg-amber-500 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'}">
-                      ✏️ Edit
+                      ‚úèÔ∏è Edit
                     </button>
                   </div>
 
@@ -2376,7 +2376,7 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
 
                   <!-- Reload Live Storeframe -->
                   <button type="button" onclick="refreshStudioPreview()" class="rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 px-3 py-1.5 text-xs font-bold transition shadow-2xs">
-                    ↻ Refresh
+                    ‚Üª Refresh
                   </button>
                 </div>
               </div>
@@ -2409,8 +2409,8 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
 
               <p id="live-mode-helper-text" class="text-[11px] text-center text-slate-500 font-medium">
                 ${liveEditActive 
-                  ? '🔒 In Edit Mode: Navigation is frozen so the page never moves away while scrolling and tapping text or images to edit.' 
-                  : '🌐 In Preview Mode: The store behaves exactly like the live website for customer interaction testing.'}
+                  ? 'üîí In Edit Mode: Navigation is frozen so the page never moves away while scrolling and tapping text or images to edit.' 
+                  : 'üåê In Preview Mode: The store behaves exactly like the live website for customer interaction testing.'}
               </p>
             </div>
           </div>
@@ -2442,12 +2442,12 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
           btnPreview.className = 'px-3.5 py-1.5 rounded-xl text-xs font-bold transition text-slate-600 hover:text-slate-900';
           btnEdit.className = 'px-3.5 py-1.5 rounded-xl text-xs font-bold transition bg-amber-500 text-white shadow-sm';
           if(modeDot) modeDot.className = 'w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse';
-          if(modeText) modeText.textContent = 'Visual Edit Mode (Page Frozen · Tap text/images to edit)';
+          if(modeText) modeText.textContent = 'Visual Edit Mode (Page Frozen ¬∑ Tap text/images to edit)';
           if(badgeStatus){
             badgeStatus.className = 'text-[9px] font-bold text-amber-700 bg-amber-100 border border-amber-200 px-2 py-0.5 rounded-full';
             badgeStatus.textContent = 'FROZEN FOR EDITING';
           }
-          if(helperText) helperText.textContent = '🔒 In Edit Mode: Navigation is frozen so the page never moves away while scrolling and tapping text or images to edit.';
+          if(helperText) helperText.textContent = 'üîí In Edit Mode: Navigation is frozen so the page never moves away while scrolling and tapping text or images to edit.';
         } else {
           btnPreview.className = 'px-3.5 py-1.5 rounded-xl text-xs font-bold transition bg-white text-slate-900 shadow-sm';
           btnEdit.className = 'px-3.5 py-1.5 rounded-xl text-xs font-bold transition text-slate-600 hover:text-slate-900';
@@ -2457,7 +2457,7 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
             badgeStatus.className = 'text-[9px] font-bold text-emerald-700 bg-emerald-100 border border-emerald-200 px-2 py-0.5 rounded-full';
             badgeStatus.textContent = 'NORMAL PREVIEW';
           }
-          if(helperText) helperText.textContent = '🌐 In Preview Mode: The store behaves exactly like the live website for customer interaction testing.';
+          if(helperText) helperText.textContent = 'üåê In Preview Mode: The store behaves exactly like the live website for customer interaction testing.';
         }
       }
 
@@ -2538,7 +2538,7 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
             const newUrl = prompt('Enter new Image URL (or upload from Media Library):', currentSrc);
             if(newUrl && newUrl.trim() && newUrl.trim() !== currentSrc){
               img.src = newUrl.trim();
-              toast('Image updated in live view ✓');
+              toast('Image updated in live view ‚úì');
               if(img.closest('#hero') || img.src.includes('hero') || target.id === 'hero-img-display'){
                 const hero = settings.hero || defaultSettings.hero;
                 hero.image = newUrl.trim();
@@ -2561,7 +2561,7 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
             const newText = prompt('Edit storefront text:', oldText);
             if(newText !== null && newText.trim() !== oldText){
               textEl.innerText = newText.trim();
-              toast('Text updated ✓');
+              toast('Text updated ‚úì');
 
               if(textEl.closest('#hero') || textEl.classList.contains('hero-text')){
                 const hero = settings.hero || defaultSettings.hero;
@@ -2603,7 +2603,7 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
       const ifr = $('#studio-store-iframe');
       if(ifr){
         ifr.src = './index.html?t=' + Date.now();
-        toast('Preview reloaded ✓');
+        toast('Preview reloaded ‚úì');
       }
     }
 
@@ -2651,7 +2651,7 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
               </div>
             </div>
 
-            ${formText('hero-eyebrow','Eyebrow Badge Text',hero.eyebrow||'THAARAI TEX · HANDLOOM')}
+            ${formText('hero-eyebrow','Eyebrow Badge Text',hero.eyebrow||'THAARAI TEX ¬∑ HANDLOOM')}
             ${formText('hero-title','Hero Main Title',hero.title||'A legacy woven into every thread')}
             ${formArea('hero-subtitle','Hero Subtitle / Description',hero.subtitle||'Discover handpicked authentic sarees, crafted with the art and patience of master weavers.')}
 
@@ -2755,7 +2755,7 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
               </div>
             </div>
 
-            ${formText('header-search-placeholder','Search Input Placeholder Text',h.searchPlaceholder||'சேலைகளைத் தேடுங்கள்… Search sarees')}
+            ${formText('header-search-placeholder','Search Input Placeholder Text',h.searchPlaceholder||'‡Æö‡Øá‡Æ≤‡Øà‡Æï‡Æ≥‡Øà‡Æ§‡Øç ‡Æ§‡Øá‡Æü‡ØÅ‡Æô‡Øç‡Æï‡Æ≥‡Øç‚Ä¶ Search sarees')}
 
             <button onclick="saveHeaderSettings()" class="rounded-full bg-slate-900 hover:bg-slate-800 text-white px-7 py-3 text-xs font-black transition shadow-soft flex items-center justify-center gap-2 w-full sm:w-auto active:scale-95">
               ${SVG.check} <span>Save Header & Brand Settings</span>
@@ -2802,7 +2802,7 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
             </div>
 
             ${formText('profile-title','Login Profile Screen Title',acc.title||'Your Profile Details')}
-            ${formText('profile-sub','Login Screen Subtitle (Tamil/English)',acc.subtitle||'உங்கள் பெயர் மற்றும் மொபைல் எண்ணை உள்ளிடவும்.')}
+            ${formText('profile-sub','Login Screen Subtitle (Tamil/English)',acc.subtitle||'‡Æâ‡Æô‡Øç‡Æï‡Æ≥‡Øç ‡Æ™‡ØÜ‡ÆØ‡Æ∞‡Øç ‡ÆÆ‡Æ±‡Øç‡Æ±‡ØÅ‡ÆÆ‡Øç ‡ÆÆ‡Øä‡Æ™‡Øà‡Æ≤‡Øç ‡Æé‡Æ£‡Øç‡Æ£‡Øà ‡Æâ‡Æ≥‡Øç‡Æ≥‡Æø‡Æü‡Æµ‡ØÅ‡ÆÆ‡Øç.')}
 
             <button onclick="saveProfileUISettings()" class="rounded-full bg-slate-900 hover:bg-slate-800 text-white px-7 py-3 text-xs font-black transition shadow-soft flex items-center justify-center gap-2 w-full sm:w-auto active:scale-95">
               ${SVG.check} <span>Save Profile Texts</span>
@@ -2816,7 +2816,7 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
         const { error } = await db.from('store_settings').upsert({ key, value: val }, { onConflict: 'key' });
         if(error) throw error;
         settings[key] = val;
-        toast('Saved successfully ✓');
+        toast('Saved successfully ‚úì');
         refreshStudioPreview();
       } catch(err){
         toast('Error saving: ' + err.message);
@@ -2911,7 +2911,7 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
         if(!file)return;
         e.target.value = '';
         if(!file.type.startsWith('image/')){toast('Please select an image file');return;}
-        toast('Uploading image…');
+        toast('Uploading image‚Ä¶');
         const path = `site/${Date.now()}-${file.name.replace(/[^\w.-]/g,'_')}`;
         try{
           const {error} = await db.storage.from(MEDIA_BUCKET).upload(path, file, {contentType:file.type});
@@ -2923,7 +2923,7 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
             const prev = $(`#${previewImgId}`);
             if(prev) prev.src = url;
           }
-          toast('Uploaded successfully ✓');
+          toast('Uploaded successfully ‚úì');
         }catch(err){toast('Upload error: '+err.message);}
       };
       inp.click();
@@ -2933,7 +2933,7 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
       const modal = $('#library-picker-modal');
       const box = $('#library-picker-content');
       modal.showModal();
-      box.innerHTML = '<p class="col-span-full py-8 text-center text-xs text-slate-400">Loading library images…</p>';
+      box.innerHTML = '<p class="col-span-full py-8 text-center text-xs text-slate-400">Loading library images‚Ä¶</p>';
       try{
         const {data}=await db.storage.from(MEDIA_BUCKET).list('products',{limit:100,sortBy:{column:'created_at',order:'desc'}});
         const {data:d2}=await db.storage.from(MEDIA_BUCKET).list('site',{limit:100,sortBy:{column:'created_at',order:'desc'}});
@@ -2958,7 +2958,7 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
         if(prev) prev.src = url;
       }
       $('#library-picker-modal').close();
-      toast('Image selected ✓');
+      toast('Image selected ‚úì');
     }
     $('#library-picker-close').onclick=()=>$('#library-picker-modal').close();
     /* ===== CATEGORIES ===== */
@@ -3003,7 +3003,7 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
     async function openCategory(category){
       editing={type:'category',row:category||{}};
       const r=editing.row;
-      $('#editor-kicker').textContent=category?'MERCHANDISING · EDIT':'MERCHANDISING · NEW';
+      $('#editor-kicker').textContent=category?'MERCHANDISING ¬∑ EDIT':'MERCHANDISING ¬∑ NEW';
       $('#editor-title').textContent=category?'Edit Category':'Create Category';
       $('#editor-fields').innerHTML=`
         <div>
@@ -3040,7 +3040,7 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
                 <div class="space-y-0.5 min-w-0 flex-1">
                   <div class="flex items-center gap-2 flex-wrap min-w-0">
                     <span class="font-extrabold text-xs text-slate-900 truncate">${esc(r.author||'Customer')}</span>
-                    <span class="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-800 border border-amber-200 badge-pill">${Number(r.rating||5)}/5 ★</span>
+                    <span class="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-800 border border-amber-200 badge-pill">${Number(r.rating||5)}/5 ‚òÖ</span>
                     <span class="text-[10px] text-slate-400">${date(r.created_at)}</span>
                   </div>
                   <p class="text-xs text-slate-600 leading-relaxed break-words">${esc(r.body||'')}</p>
@@ -3074,8 +3074,8 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
                     <span class="text-xs font-black text-slate-900 bg-white px-2.5 py-1 rounded-xl border border-slate-200 select-all badge-pill truncate">${esc(c.code)}</span>
                     <span class="text-xs font-black text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full shrink-0 badge-pill">${Number(c.percent||c.discount_percent||c.discount||0)}% OFF</span>
                   </div>
-                  <p class="text-xs text-slate-500 mt-2 truncate">${c.active!==false?'● Active for shoppers':'○ Inactive'}</p>
-                  ${Number(c.min_total)>0 ? `<p class="text-[11px] text-slate-400 mt-0.5">Min. order: ₹${Number(c.min_total)}</p>` : ''}
+                  <p class="text-xs text-slate-500 mt-2 truncate">${c.active!==false?'‚óè Active for shoppers':'‚óã Inactive'}</p>
+                  ${Number(c.min_total)>0 ? `<p class="text-[11px] text-slate-400 mt-0.5">Min. order: ‚Çπ${Number(c.min_total)}</p>` : ''}
                 </div>
                 <div class="mt-3.5 pt-2.5 border-t border-slate-200/80 flex gap-2">
                   <button data-edit-coupon="${esc(c.code)}" class="rounded-full border border-slate-200 bg-white px-3.5 py-1 text-xs font-bold text-slate-700 hover:bg-slate-50 transition shadow-soft">Edit</button>
@@ -3089,7 +3089,7 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
     async function openCoupon(coupon){
       editing={type:'coupon',row:coupon||{},isEdit:!!coupon};
       const r=editing.row;
-      $('#editor-kicker').textContent=coupon?'PROMOTIONS · EDIT':'PROMOTIONS · NEW';
+      $('#editor-kicker').textContent=coupon?'PROMOTIONS ¬∑ EDIT':'PROMOTIONS ¬∑ NEW';
       $('#editor-title').textContent=coupon?'Edit Coupon':'Create Coupon';
       $('#editor-fields').innerHTML=`
         <div>
@@ -3101,7 +3101,7 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
           <input name="percent" type="number" min="1" max="100" value="${esc(r.percent||r.discount_percent||r.discount||10)}" required class="mt-1.5 w-full rounded-2xl border border-slate-200 bg-white p-2.5 text-xs text-slate-900 outline-none focus:border-slate-900 shadow-soft">
         </div>
         <div>
-          <label class="block text-xs font-bold text-slate-700">Minimum Order Amount (₹)</label>
+          <label class="block text-xs font-bold text-slate-700">Minimum Order Amount (‚Çπ)</label>
           <input name="min_total" type="number" min="0" value="${esc(r.min_total||0)}" class="mt-1.5 w-full rounded-2xl border border-slate-200 bg-white p-2.5 text-xs text-slate-900 outline-none focus:border-slate-900 shadow-soft" placeholder="0">
         </div>
         <label class="flex items-center gap-2 pt-1 text-xs font-bold text-slate-700 cursor-pointer">
@@ -3137,7 +3137,7 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
             </button>
           </div>
           <div id="media-grid" class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-3 pt-1 min-w-0">
-            <p class="col-span-full py-12 text-center text-xs text-slate-400">Loading media library…</p>
+            <p class="col-span-full py-12 text-center text-xs text-slate-400">Loading media library‚Ä¶</p>
           </div>
         </div>`;
 
@@ -3175,7 +3175,7 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
       try {
         const { error } = await db.storage.from(MEDIA_BUCKET).remove([path]);
         if(error) throw error;
-        toast('Photo deleted ✓');
+        toast('Photo deleted ‚úì');
         renderMedia();
       } catch(e){
         toast('Delete failed: ' + e.message);
@@ -3206,7 +3206,7 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
       a.href=URL.createObjectURL(blob);
       a.download=`thaarai-tex-backup-${new Date().toISOString().slice(0,10)}.json`;
       a.click();
-      toast('Backup file exported ✓');
+      toast('Backup file exported ‚úì');
     }
 
     /* ===== SAVE EDITOR MODAL ===== */
@@ -3237,7 +3237,7 @@ else if(editing.row.id){
       }
       if(res.error){toast('Error: '+res.error.message);return}
       editor.close();
-      toast('Saved successfully ✓');
+      toast('Saved successfully ‚úì');
       await loadAll();
     }
 
@@ -3246,7 +3246,7 @@ else if(editing.row.id){
       if(!ok) return;
       const {error}=await db.from(table).delete().eq(keyCol,id);
       if(error){toast(error.message);return}
-      toast('Deleted successfully ✓');
+      toast('Deleted successfully ‚úì');
       await loadAll();
     }
 
@@ -3257,10 +3257,10 @@ else if(editing.row.id){
       d.innerHTML=`
         <div class="flex items-center justify-between border-b border-slate-100 pb-4">
           <h3 class="text-sm font-extrabold text-slate-900">Select Photo from Media Library</h3>
-          <button class="close-library grid h-8 w-8 place-items-center rounded-full bg-slate-50 border border-slate-200 font-bold hover:bg-slate-100 transition">×</button>
+          <button class="close-library grid h-8 w-8 place-items-center rounded-full bg-slate-50 border border-slate-200 font-bold hover:bg-slate-100 transition">√ó</button>
         </div>
         <div class="library-grid mt-4 grid max-h-[60vh] grid-cols-2 gap-3 sm:grid-cols-4 overflow-y-auto">
-          <p class="col-span-full py-8 text-center text-xs text-slate-400">Loading…</p>
+          <p class="col-span-full py-8 text-center text-xs text-slate-400">Loading‚Ä¶</p>
         </div>`;
       document.body.append(d);
       d.showModal();
@@ -3300,7 +3300,7 @@ else if(editing.row.id){
       if(mSec){setSection(mSec.dataset.mSec);return}
 
       const action=e.target.closest('[data-action]')?.dataset.action;
-      if(action==='refresh'){await loadAll();toast('Dashboard refreshed ✓')}
+      if(action==='refresh'){await loadAll();toast('Dashboard refreshed ‚úì')}
       if(action==='product-new')openProduct('new');
       if(action==='category-new')openCategory(null);
       if(action==='coupon-new')openCoupon(null);
@@ -3322,7 +3322,7 @@ else if(editing.row.id){
           const selected=list.splice(idx,1)[0];
           list.unshift(selected);
           updateProductImages(list);
-          toast('Cover photo updated! This photo is now the main front image ✓');
+          toast('Cover photo updated! This photo is now the main front image ‚úì');
         }
         return;
       }
@@ -3512,3 +3512,4 @@ else if(editing.row.id){
   </script>
 </body>
 </html>
+
