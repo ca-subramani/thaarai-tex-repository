@@ -232,9 +232,6 @@ const _isOAuthIncoming = !!(
 if(_isOAuthIncoming){
   localStorage.removeItem('tt_logged_out');
   localStorage.setItem('tt_oauth_in_flight', '1');
-  try {
-    history.replaceState({ confirmingDetailsGuard: true, root: true }, '', location.pathname + '#/login');
-  } catch(e){}
 }
 
 const SUPABASE_URL="https://hjogdvqwwbgzgwtdlrak.supabase.co";
