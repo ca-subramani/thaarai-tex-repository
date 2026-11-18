@@ -3078,6 +3078,8 @@ async function loginView(passedUser = null){
   if(p){
     window._confirmingDetails = false;
     $('#tabbar')?.classList.remove('hidden');
+    $('#nav-back')?.classList.remove('!hidden');
+    $('#foot')?.classList.remove('!hidden');
     app.innerHTML = `
       <div class="max-w-sm mx-auto bg-white border border-gray-100 rounded-3xl p-6 sm:p-7 space-y-4 shadow-soft my-6">
         <div class="text-center">
@@ -3147,6 +3149,11 @@ async function loginView(passedUser = null){
   if(googleUser){
     window._confirmingDetails = true;
     $('#tabbar')?.classList.add('hidden');
+    $('#nav-back')?.classList.add('!hidden');
+    $('#foot')?.classList.add('!hidden');
+    try {
+      history.pushState({ confirmingDetailsGuard: true }, '', '#/login');
+    } catch(e){}
     const googleRealName = (googleUser.user_metadata?.full_name || googleUser.user_metadata?.name || '').trim();
     const defaultProfileName = (existingCust?.name || googleRealName || (googleUser.email ? googleUser.email.split('@')[0] : '')).trim();
     const defaultPhone = existingCust?.phone ? String(existingCust.phone).replace(/\D/g, '').slice(-10) : '';
@@ -3219,7 +3226,9 @@ async function loginView(passedUser = null){
       if(b){ b.disabled = true; b.textContent = 'Logging in...'; }
       await setProfile(profileName, cleanPhone, googleUser.email, googleName);
       window._confirmingDetails = false;
-      $('#tabbar').classList.remove('hidden');
+      $('#tabbar')?.classList.remove('hidden');
+      $('#nav-back')?.classList.remove('!hidden');
+      $('#foot')?.classList.remove('!hidden');
       localStorage.removeItem('tt_oauth_in_flight');
       localStorage.removeItem('tt_oauth_pending');
       sessionStorage.removeItem('tt_oauth_pending');
@@ -3231,7 +3240,9 @@ async function loginView(passedUser = null){
 
     $('#btn-switch-account').onclick = async () => {
       window._confirmingDetails = false;
-      $('#tabbar').classList.remove('hidden');
+      $('#tabbar')?.classList.remove('hidden');
+      $('#nav-back')?.classList.remove('!hidden');
+      $('#foot')?.classList.remove('!hidden');
       await clearProfile();
       location.hash = '#/login';
       await loginView();
@@ -3242,6 +3253,8 @@ async function loginView(passedUser = null){
   // --- STATE 3: INITIAL SCREEN (ONLY GOOGLE LOGIN BUTTON) ---
   window._confirmingDetails = false;
   $('#tabbar')?.classList.remove('hidden');
+  $('#nav-back')?.classList.remove('!hidden');
+  $('#foot')?.classList.remove('!hidden');
   app.innerHTML = `
     <div class="max-w-sm mx-auto bg-white border border-gray-100 rounded-3xl p-6 sm:p-7 space-y-5 shadow-soft my-6">
       <div class="text-center">
@@ -3734,7 +3747,67 @@ function armHomeGuard(){
   } catch(e){}
 }
 
+function showConfirmLoginPopup(){
+  let popup = $('#confirm-login-modal');
+  if(!popup){
+    popup = document.createElement('div');
+    popup.id = 'confirm-login-modal';
+    popup.className = 'fixed inset-0 z-[10002] bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 transition-opacity duration-200';
+    document.body.appendChild(popup);
+  }
+  popup.innerHTML = `
+    <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl border border-gray-100 space-y-4 animate-scaleUp text-center">
+      <div class="w-14 h-14 mx-auto rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center shadow-soft">
+        <svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+          <polyline points="22 4 12 14.01 9 11.01"/>
+        </svg>
+      </div>
+      <div>
+        <h3 class="font-extrabold text-base text-gray-900">Please Confirm Login</h3>
+        <p class="text-xs text-gray-500 mt-1.5 leading-relaxed">
+          Please enter your name and mobile number and click <strong>Confirm & Complete Login</strong> to proceed. You cannot go back until your details are confirmed.
+        </p>
+      </div>
+      <div class="pt-2">
+        <button id="btn-popup-confirm-login" type="button" class="${btn} w-full !py-3.5 text-xs font-bold shadow-soft">
+          Confirm Login
+        </button>
+      </div>
+    </div>
+  `;
+  popup.classList.remove('hidden');
+
+  const confirmBtn = $('#btn-popup-confirm-login');
+  if(confirmBtn){
+    confirmBtn.onclick = () => {
+      popup.classList.add('hidden');
+      const submitBtn = $('#btn-confirm-login');
+      if(submitBtn) submitBtn.click();
+      else $('#ln')?.focus();
+    };
+  }
+}
+
 window.addEventListener('popstate', event => {
+  // 0. If user is in State 2 (Confirming Google Details with Name & Phone): LOCKED LOOP
+  if(window._confirmingDetails && !profile()){
+    try {
+      history.pushState({ confirmingDetailsGuard: true, t: Date.now() }, '', '#/login');
+    } catch(e){}
+    location.hash = '#/login';
+
+    const loginPopup = $('#confirm-login-modal');
+    if(loginPopup && !loginPopup.classList.contains('hidden')){
+      // If popup is already open and user swipes back again -> stay on name & mobile page, close popup
+      loginPopup.classList.add('hidden');
+      return;
+    }
+
+    // First swipe back -> show confirm login popup
+    showConfirmLoginPopup();
+    return;
+  }
   // 1. Close open modals first
   const lb = $('#hd-lightbox');
   if(lb && !lb.classList.contains('hidden')){
@@ -3797,6 +3870,10 @@ window.addEventListener('popstate', event => {
 
 // Header back navigation button: If on home, reload home
 $('#nav-back').onclick = () => {
+  if(window._confirmingDetails && !profile()){
+    showConfirmLoginPopup();
+    return;
+  }
   const lb = $('#hd-lightbox');
   if(lb && !lb.classList.contains('hidden')){
     lb.classList.add('hidden');
