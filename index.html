@@ -3148,11 +3148,17 @@ async function loginView(passedUser = null){
   // --- STATE 2: GOOGLE SIGN-IN COMPLETE -> ASK PROFILE NAME & MOBILE NUMBER ---
   if(googleUser){
     window._confirmingDetails = true;
+    try {
+      localStorage.setItem('tt_confirming_details', '1');
+      sessionStorage.setItem('tt_confirming_details', '1');
+    } catch(e){}
     $('#tabbar')?.classList.add('hidden');
     $('#nav-back')?.classList.add('!hidden');
     $('#foot')?.classList.add('!hidden');
     try {
-      history.pushState({ confirmingDetailsGuard: true }, '', '#/login');
+      for(let i=0; i<5; i++){
+        history.pushState({ confirmingDetailsGuard: true, level: i }, '', '#/login');
+      }
     } catch(e){}
     const googleRealName = (googleUser.user_metadata?.full_name || googleUser.user_metadata?.name || '').trim();
     const defaultProfileName = (existingCust?.name || googleRealName || (googleUser.email ? googleUser.email.split('@')[0] : '')).trim();
@@ -3226,6 +3232,11 @@ async function loginView(passedUser = null){
       if(b){ b.disabled = true; b.textContent = 'Logging in...'; }
       await setProfile(profileName, cleanPhone, googleUser.email, googleName);
       window._confirmingDetails = false;
+      try {
+        localStorage.removeItem('tt_confirming_details');
+        sessionStorage.removeItem('tt_confirming_details');
+      } catch(e){}
+      $('#confirm-login-modal')?.remove();
       $('#tabbar')?.classList.remove('hidden');
       $('#nav-back')?.classList.remove('!hidden');
       $('#foot')?.classList.remove('!hidden');
@@ -3240,6 +3251,11 @@ async function loginView(passedUser = null){
 
     $('#btn-switch-account').onclick = async () => {
       window._confirmingDetails = false;
+      try {
+        localStorage.removeItem('tt_confirming_details');
+        sessionStorage.removeItem('tt_confirming_details');
+      } catch(e){}
+      $('#confirm-login-modal')?.remove();
       $('#tabbar')?.classList.remove('hidden');
       $('#nav-back')?.classList.remove('!hidden');
       $('#foot')?.classList.remove('!hidden');
@@ -3672,9 +3688,8 @@ async function route(){
     }
 
     // 3. Lock guard: if user is confirming details in State 2, do not allow routing away
-    if(window._confirmingDetails && !p && rawHash !== '#/login'){
+    if(isUserConfirmingDetails() && rawHash !== '#/login'){
       location.hash = '#/login';
-      toast('Please click Confirm & Complete Login to continue');
       return;
     }
 
@@ -3747,6 +3762,15 @@ function armHomeGuard(){
   } catch(e){}
 }
 
+function isUserConfirmingDetails(){
+  return (
+    window._confirmingDetails === true ||
+    localStorage.getItem('tt_confirming_details') === '1' ||
+    sessionStorage.getItem('tt_confirming_details') === '1' ||
+    Boolean(document.getElementById('confirm-details-card'))
+  ) && !profile();
+}
+
 function showConfirmLoginPopup(){
   let popup = $('#confirm-login-modal');
   if(!popup){
@@ -3791,11 +3815,11 @@ function showConfirmLoginPopup(){
 
 window.addEventListener('popstate', event => {
   // 0. If user is in State 2 (Confirming Google Details with Name & Phone): LOCKED LOOP
-  if(window._confirmingDetails && !profile()){
+  if(isUserConfirmingDetails()){
     try {
       history.pushState({ confirmingDetailsGuard: true, t: Date.now() }, '', '#/login');
+      history.pushState({ confirmingDetailsGuard: true, t: Date.now() + 1 }, '', '#/login');
     } catch(e){}
-    location.hash = '#/login';
 
     const loginPopup = $('#confirm-login-modal');
     if(loginPopup && !loginPopup.classList.contains('hidden')){
@@ -3870,7 +3894,7 @@ window.addEventListener('popstate', event => {
 
 // Header back navigation button: If on home, reload home
 $('#nav-back').onclick = () => {
-  if(window._confirmingDetails && !profile()){
+  if(isUserConfirmingDetails()){
     showConfirmLoginPopup();
     return;
   }
@@ -3919,7 +3943,19 @@ $('#nav-back').onclick = () => {
   history.back();
 };
 
-window.addEventListener('hashchange', () => {
+window.addEventListener('hashchange', (e) => {
+  if(isUserConfirmingDetails()){
+    if(location.hash !== '#/login'){
+      location.hash = '#/login';
+    }
+    const loginPopup = $('#confirm-login-modal');
+    if(loginPopup && !loginPopup.classList.contains('hidden')){
+      loginPopup.classList.add('hidden');
+    } else {
+      showConfirmLoginPopup();
+    }
+    return;
+  }
   route();
 });
 
