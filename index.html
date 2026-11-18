@@ -3772,7 +3772,7 @@ function isUserConfirmingDetails(){
     window._confirmingDetails === true ||
     Boolean(document.getElementById('confirm-details-card')) ||
     sessionStorage.getItem('tt_confirming_details') === '1'
-  ) && !profile();
+  );
 }
 
 function showConfirmLoginPopup(){
@@ -3780,7 +3780,8 @@ function showConfirmLoginPopup(){
   if(!popup){
     popup = document.createElement('div');
     popup.id = 'confirm-login-modal';
-    popup.className = 'fixed inset-0 z-[10002] bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 transition-opacity duration-200';
+    popup.className = 'fixed inset-0 z-[99999999] bg-slate-950/75 backdrop-blur-sm flex items-center justify-center p-4 transition-opacity duration-200';
+    popup.style.cssText = 'z-index: 99999999 !important; position: fixed !important; inset: 0 !important;';
     document.body.appendChild(popup);
   }
   popup.innerHTML = `
@@ -3824,7 +3825,14 @@ window.addEventListener('popstate', event => {
       history.pushState({ confirmingDetailsGuard: true, t: Date.now() }, '', '#/login');
     } catch(e){}
 
-    // ALWAYS show the popup on swipe back from the details page
+    const popup = $('#confirm-login-modal');
+    // If popup is already open, swiping back closes popup and returns to name & number page:
+    if(popup && !popup.classList.contains('hidden')){
+      popup.classList.add('hidden');
+      return;
+    }
+
+    // If on name & number page, swiping back opens the confirm login popup:
     showConfirmLoginPopup();
     return;
   }
@@ -3891,6 +3899,11 @@ window.addEventListener('popstate', event => {
 // Header back navigation button: If on home, reload home
 $('#nav-back').onclick = () => {
   if(isUserConfirmingDetails()){
+    const popup = $('#confirm-login-modal');
+    if(popup && !popup.classList.contains('hidden')){
+      popup.classList.add('hidden');
+      return;
+    }
     showConfirmLoginPopup();
     return;
   }
@@ -3940,13 +3953,15 @@ $('#nav-back').onclick = () => {
 };
 
 window.addEventListener('hashchange', (e) => {
-  // Only block navigation if we're actively on the confirm page (memory or DOM), not during OAuth loading
   const onConfirmPage = window._confirmingDetails === true || Boolean(document.getElementById('confirm-details-card'));
-  if(onConfirmPage && !profile()){
+  if(onConfirmPage){
     if(location.hash !== '#/login'){
       location.hash = '#/login';
     }
-    showConfirmLoginPopup();
+    const popup = $('#confirm-login-modal');
+    if(!popup || popup.classList.contains('hidden')){
+      showConfirmLoginPopup();
+    }
     return;
   }
   route();
