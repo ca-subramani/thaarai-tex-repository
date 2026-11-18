@@ -160,8 +160,8 @@ input,select,textarea{font-size:16px!important}
 <!-- Back navigation is permanently locked to Shop tab (no exit popups) -->
 
 <!-- Premium Neon Ring Counter Loader (Pure Dark Background) -->
-<div id="neon-loader" class="fixed inset-0 z-[999999] bg-[#000000] flex flex-col items-center justify-center opacity-0 pointer-events-none select-none transition-all duration-200" style="visibility:hidden">
-  <div class="relative w-44 h-44 flex items-center justify-center">
+<div id="neon-loader" class="fixed inset-0 z-[999999] bg-[#000000] flex flex-col items-center justify-center opacity-0 pointer-events-none select-none transition-all duration-200 touch-none overscroll-none" style="visibility:hidden">
+  <div class="relative w-44 h-44 flex items-center justify-center pointer-events-none">
     <!-- Ambient Radial Glow -->
     <div id="neon-loader-glow" class="absolute inset-0 rounded-full bg-gradient-to-tr from-[#064e3b]/45 via-[#047857]/30 to-[#059669]/20 blur-2xl pointer-events-none transition-all duration-300"></div>
 
@@ -379,6 +379,8 @@ function showNeonLoader(){
   const el = $('#neon-loader');
   const num = $('#neon-counter-num');
   if(!el || !num) return;
+  document.documentElement.classList.add('overflow-hidden');
+  document.body.classList.add('overflow-hidden', 'touch-none');
   applyLoaderTheme();
   if(_neonTimer) clearInterval(_neonTimer);
   _neonProgress = Math.floor(Math.random() * 8) + 12; // Start quickly around 12-20%
@@ -405,6 +407,8 @@ function hideNeonLoader(){
   num.textContent = '100';
 
   setTimeout(() => {
+    document.documentElement.classList.remove('overflow-hidden');
+    document.body.classList.remove('overflow-hidden', 'touch-none');
     el.classList.remove('opacity-100');
     el.classList.add('opacity-0', 'pointer-events-none');
     setTimeout(() => {
@@ -3505,8 +3509,9 @@ function profileHtml(pf){
 
 async function addressesHtml(){
   const L=await getAddrs(), a=addrEdit;
+  const backTarget = a ? 'javascript:window._cancelAddrEdit()' : '#/account/hub';
   return `<div class="max-w-md mx-auto space-y-4 my-2">
-    ${topbar('Shopping Address','#/account/hub')}
+    ${topbar('Shopping Address', backTarget)}
     ${a?`<div class="bg-white rounded-3xl p-5 shadow-soft border border-gray-100 space-y-3"><b class="text-xs block text-gray-900 font-extrabold">${a.id?'Edit':'Add New'} Address</b>
       ${input('a-name','Full name',`value="${esc(a.name||'')}"`)}${input('a-phone','Mobile number',`maxlength="10" value="${esc(a.phone||profile()?.phone||'')}"`)}${input('a-pin','Pincode',`maxlength="6" value="${esc(a.pincode||'')}"`)}
       <div class="grid grid-cols-2 gap-2">${input('a-city','City',`value="${esc(a.city||'')}"`)}${input('a-state','State',`value="${esc(a.state||'Tamil Nadu')}"`)}</div>
@@ -3535,6 +3540,10 @@ async function account(section,params){
   else if(section==='wishlist')body=await wishHtml();
   else body=hubHtml(pf);
   app.innerHTML=body;
+  window._cancelAddrEdit = () => {
+    addrEdit = null;
+    account(section, params);
+  };
   app.onclick=async e=>{
     const t=e.target,d=t.dataset,again=()=>account(section,params);
     if(t.id==='lgo'){
@@ -3743,6 +3752,14 @@ window.addEventListener('popstate', event => {
 
   const current = location.hash || '#/';
 
+  // Handle Address Edit cancellation on Back gesture
+  if(current.startsWith('#/account/addresses') && addrEdit){
+    try { history.pushState(null, '', location.href); } catch(e){}
+    addrEdit = null;
+    account('addresses');
+    return;
+  }
+
   // Handle Checkout Stepper back navigation (Steps 2, 3, 4, and sub-pages)
   if(window._checkoutState){
     const wasHandled = window._checkoutState.goBack();
@@ -3794,6 +3811,11 @@ $('#nav-back').onclick = () => {
   }
 
   const current = location.hash || '#/';
+  if(current.startsWith('#/account/addresses') && addrEdit){
+    addrEdit = null;
+    account('addresses');
+    return;
+  }
   if(current === '#/' || current === '' || current === '#'){
     location.href = '#/';
     window.location.reload();
