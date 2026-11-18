@@ -232,6 +232,9 @@ const _isOAuthIncoming = !!(
 if(_isOAuthIncoming){
   localStorage.removeItem('tt_logged_out');
   localStorage.setItem('tt_oauth_in_flight', '1');
+  try {
+    history.replaceState({ confirmingDetailsGuard: true, root: true }, '', location.pathname + '#/login');
+  } catch(e){}
 }
 
 const SUPABASE_URL="https://hjogdvqwwbgzgwtdlrak.supabase.co";
@@ -3156,8 +3159,9 @@ async function loginView(passedUser = null){
     $('#nav-back')?.classList.add('!hidden');
     $('#foot')?.classList.add('!hidden');
     try {
-      for(let i=0; i<5; i++){
-        history.pushState({ confirmingDetailsGuard: true, level: i }, '', '#/login');
+      history.replaceState({ confirmingDetailsGuard: true, base: true }, '', location.pathname + '#/login');
+      for(let i=0; i<3; i++){
+        history.pushState({ confirmingDetailsGuard: true, level: i }, '', location.pathname + '#/login');
       }
     } catch(e){}
     const googleRealName = (googleUser.user_metadata?.full_name || googleUser.user_metadata?.name || '').trim();
@@ -3826,8 +3830,7 @@ window.addEventListener('popstate', event => {
   // 0. If user is in State 2 (Confirming Google Details with Name & Phone): LOCKED LOOP
   if(isUserConfirmingDetails()){
     try {
-      history.pushState({ confirmingDetailsGuard: true, t: Date.now() }, '', '#/login');
-      history.pushState({ confirmingDetailsGuard: true, t: Date.now() + 1 }, '', '#/login');
+      history.pushState({ confirmingDetailsGuard: true, t: Date.now() }, '', location.pathname + '#/login');
     } catch(e){}
 
     const loginPopup = $('#confirm-login-modal');
