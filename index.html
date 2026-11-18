@@ -3770,7 +3770,8 @@ function armHomeGuard(){
 function isUserConfirmingDetails(){
   return (
     window._confirmingDetails === true ||
-    Boolean(document.getElementById('confirm-details-card'))
+    Boolean(document.getElementById('confirm-details-card')) ||
+    sessionStorage.getItem('tt_confirming_details') === '1'
   ) && !profile();
 }
 
@@ -3939,7 +3940,9 @@ $('#nav-back').onclick = () => {
 };
 
 window.addEventListener('hashchange', (e) => {
-  if(isUserConfirmingDetails()){
+  // Only block navigation if we're actively on the confirm page (memory or DOM), not during OAuth loading
+  const onConfirmPage = window._confirmingDetails === true || Boolean(document.getElementById('confirm-details-card'));
+  if(onConfirmPage && !profile()){
     if(location.hash !== '#/login'){
       location.hash = '#/login';
     }
