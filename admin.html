@@ -649,27 +649,12 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
     }
 
     let adminGuardReady=false;
-    function armAdminExitGuard(){
+    function armAdminHomeGuard(){
       try {
-        history.pushState({ adminSection: section, adminGuard: true, t: Date.now() }, '', location.href);
+        const s = { adminHomeGuard: true, t: Date.now() };
+        history.pushState(s, '', '#overview');
       } catch(e){}
     }
-
-    // Keep an unbroken stack buffer so swipe-back gesture never reaches browser history boundary
-    function keepAdminStackBuffered(){
-      try {
-        history.pushState({ adminSection: section, adminGuard: true, t: Date.now() }, '', location.href);
-      } catch(e){}
-    }
-
-    // Arm stack buffer immediately on load and touch
-    try {
-      history.pushState({ adminRoot: true, adminSection: 'overview' }, '', location.href);
-      history.pushState({ adminGuard: true, adminSection: 'overview' }, '', location.href);
-    } catch(e){}
-    window.addEventListener('touchstart', function armOnce(){
-      keepAdminStackBuffered();
-    }, {passive: true});
 
     function adminBack(){
       if(section==='orders' && selectedOrderId){
@@ -695,19 +680,14 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
         return;
       }
       // Already on base/overview: re-lock and stay on overview
-      armAdminExitGuard();
-      if(section !== 'overview') setSection('overview');
-      else render();
+      armAdminHomeGuard();
+      location.href = '#overview';
+      window.location.reload();
     }
 
-    // Unbreakable Admin Lock: Never exit admin workspace or close browser on back gesture
+    // Unbreakable Overview Lock: Identical to index.html pattern
     window.addEventListener('popstate', event => {
-      // 1. Immediately recharge history stack so repeated swipe gestures NEVER hit the history boundary
-      try {
-        history.pushState({ adminSection: section, adminGuard: true, t: Date.now() }, '', location.href);
-      } catch(e){}
-
-      // 2. If currently in deep detail view (single order, customer, product edit, category detail), pop to their parent list
+      // 1. If currently in deep detail view (single order, customer, product edit, category detail), pop to their parent list
       if(section==='orders' && selectedOrderId){
         backToOrdersList();
         return;
@@ -725,7 +705,7 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
         return;
       }
 
-      // 3. If user traversed multiple subtabs, step back through history
+      // 2. If user traversed multiple subtabs, step back through history
       if(sectionHistory.length > 1){
         sectionHistory.pop();
         const target = sectionHistory[sectionHistory.length - 1] || 'overview';
@@ -733,12 +713,20 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
         return;
       }
 
-      // 4. Traps any exit: immediately lock onto Overview and re-render without closing browser
-      if(section !== 'overview'){
-        setSection('overview');
-      } else {
-        render();
+      const current = location.hash || '#overview';
+
+      // 3. Traps back swipe / back button on Overview: ALWAYS hard reload overview like index.html
+      if(current === '#overview' || current === '#' || current === '' || current === '#/'){
+        try {
+          history.pushState({ adminHomeGuard: true }, '', '#overview');
+        } catch(e){}
+        location.href = '#overview';
+        window.location.reload();
+        return;
       }
+
+      // 4. For any other section, return to overview
+      setSection('overview');
     });
 
     async function loadAll(){
