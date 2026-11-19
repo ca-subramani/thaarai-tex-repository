@@ -3167,6 +3167,8 @@ async function loginView(passedUser = null){
     try {
       localStorage.setItem('tt_confirming_details', '1');
       sessionStorage.setItem('tt_confirming_details', '1');
+      document.documentElement.style.overscrollBehaviorX = 'none';
+      document.body.style.overscrollBehaviorX = 'none';
     } catch(e){}
     $('#tabbar')?.classList.add('hidden');
     $('#nav-back')?.classList.remove('!hidden', 'hidden');
@@ -3254,6 +3256,8 @@ async function loginView(passedUser = null){
         localStorage.removeItem('tt_confirming_details');
         sessionStorage.removeItem('tt_confirming_details');
         sessionStorage.removeItem('tt_cached_google_user');
+        document.documentElement.style.overscrollBehaviorX = '';
+        document.body.style.overscrollBehaviorX = '';
       } catch(e){}
       $('#confirm-login-modal')?.remove();
       $('#tabbar')?.classList.remove('hidden');
@@ -3280,6 +3284,8 @@ async function loginView(passedUser = null){
         localStorage.removeItem('tt_confirming_details');
         sessionStorage.removeItem('tt_confirming_details');
         sessionStorage.removeItem('tt_cached_google_user');
+        document.documentElement.style.overscrollBehaviorX = '';
+        document.body.style.overscrollBehaviorX = '';
       } catch(e){}
       $('#confirm-login-modal')?.remove();
       $('#tabbar')?.classList.remove('hidden');
@@ -3852,28 +3858,76 @@ function showConfirmLoginPopup(){
   }
 }
 
+let _lastConfirmBackTime = 0;
+function handleConfirmBackAction(){
+  if(!isUserConfirmingDetails()) return;
+  const now = Date.now();
+  if(now - _lastConfirmBackTime < 450) return;
+  _lastConfirmBackTime = now;
+
+  try {
+    history.pushState({ thaaraiConfirmLock: true, t: now }, '', '#/login');
+  } catch(e){}
+
+  if(!document.getElementById('confirm-details-card') && window._cachedGoogleUser){
+    loginView(window._cachedGoogleUser);
+  }
+
+  const popup = $('#confirm-login-modal');
+  if(popup && !popup.classList.contains('hidden') && popup.style.display !== 'none'){
+    popup.style.display = 'none';
+    popup.classList.add('hidden');
+    return;
+  }
+
+  showConfirmLoginPopup();
+}
+
+// Android touch swipe back gesture detection -> triggers back button on the website
+let _confirmTouchStartX = 0;
+let _confirmTouchStartY = 0;
+let _confirmTouchHandled = false;
+
+window.addEventListener('touchstart', (e) => {
+  if(!isUserConfirmingDetails()) return;
+  if(e.touches && e.touches.length === 1){
+    _confirmTouchStartX = e.touches[0].clientX;
+    _confirmTouchStartY = e.touches[0].clientY;
+    _confirmTouchHandled = false;
+  }
+}, { passive: true });
+
+window.addEventListener('touchmove', (e) => {
+  if(!isUserConfirmingDetails() || _confirmTouchHandled) return;
+  if(e.touches && e.touches.length === 1){
+    const deltaX = e.touches[0].clientX - _confirmTouchStartX;
+    const deltaY = Math.abs(e.touches[0].clientY - _confirmTouchStartY);
+    if(_confirmTouchStartX < 160 && deltaX > 45 && deltaX > deltaY * 1.2){
+      _confirmTouchHandled = true;
+      $('#nav-back')?.click();
+    }
+  }
+}, { passive: true });
+
+window.addEventListener('touchend', (e) => {
+  if(!isUserConfirmingDetails() || _confirmTouchHandled) return;
+  if(e.changedTouches && e.changedTouches.length === 1){
+    const deltaX = e.changedTouches[0].clientX - _confirmTouchStartX;
+    const deltaY = Math.abs(e.changedTouches[0].clientY - _confirmTouchStartY);
+    if(_confirmTouchStartX < 180 && deltaX > 40 && deltaX > deltaY){
+      _confirmTouchHandled = true;
+      $('#nav-back')?.click();
+    }
+  }
+}, { passive: true });
+
 window.addEventListener('popstate', event => {
   // 0. If user is in State 2 (Confirming Google Details with Name & Phone): LOCKED LOOP
   if(isUserConfirmingDetails()){
     try {
       history.pushState({ thaaraiConfirmLock: true, t: Date.now() }, '', '#/login');
     } catch(e){}
-
-    // If confirm-details-card got destroyed by back navigation, re-render it
-    if(!document.getElementById('confirm-details-card') && window._cachedGoogleUser){
-      loginView(window._cachedGoogleUser);
-    }
-
-    const popup = $('#confirm-login-modal');
-    // If popup is already open, swiping back closes popup and returns to name & number page:
-    if(popup && !popup.classList.contains('hidden') && popup.style.display !== 'none'){
-      popup.style.display = 'none';
-      popup.classList.add('hidden');
-      return;
-    }
-
-    // If on name & number page, swiping back opens the confirm login popup:
-    showConfirmLoginPopup();
+    $('#nav-back')?.click();
     return;
   }
   // 1. Close open modals first
@@ -3939,13 +3993,7 @@ window.addEventListener('popstate', event => {
 // Header back navigation button: If on home, reload home
 $('#nav-back').onclick = () => {
   if(isUserConfirmingDetails()){
-    const popup = $('#confirm-login-modal');
-    if(popup && !popup.classList.contains('hidden') && popup.style.display !== 'none'){
-      popup.style.display = 'none';
-      popup.classList.add('hidden');
-      return;
-    }
-    showConfirmLoginPopup();
+    handleConfirmBackAction();
     return;
   }
   const lb = $('#hd-lightbox');
