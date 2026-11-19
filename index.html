@@ -3175,10 +3175,7 @@ async function loginView(passedUser = null){
     $('#msearch')?.classList.add('!hidden');
     $('#foot')?.classList.add('!hidden');
     try {
-      // Seed pushState guards so browser popstate always fires on back swipe
-      for(let i=0; i<10; i++){
-        history.pushState({ confirmingDetailsGuard: true, level: i }, '', '#/login');
-      }
+      history.pushState({ thaaraiConfirmLock: true, t: Date.now() }, '', '#/login');
     } catch(e){}
     const googleRealName = (googleUser.user_metadata?.full_name || googleUser.user_metadata?.name || '').trim();
     const defaultProfileName = (existingCust?.name || googleRealName || (googleUser.email ? googleUser.email.split('@')[0] : '')).trim();
@@ -3268,6 +3265,9 @@ async function loginView(passedUser = null){
       localStorage.removeItem('tt_oauth_pending');
       sessionStorage.removeItem('tt_oauth_pending');
       toast('Welcome, ' + profileName.split(' ')[0] + '! ✓');
+      try {
+        history.replaceState({ thaaraiHomeGuard: true }, '', '#/');
+      } catch(e){}
       // Navigate to Home page as specifically requested
       location.hash = '#/';
       await home();
@@ -3275,9 +3275,11 @@ async function loginView(passedUser = null){
 
     $('#btn-switch-account').onclick = async () => {
       window._confirmingDetails = false;
+      window._cachedGoogleUser = null;
       try {
         localStorage.removeItem('tt_confirming_details');
         sessionStorage.removeItem('tt_confirming_details');
+        sessionStorage.removeItem('tt_cached_google_user');
       } catch(e){}
       $('#confirm-login-modal')?.remove();
       $('#tabbar')?.classList.remove('hidden');
@@ -3713,10 +3715,10 @@ async function route(){
     }
 
     // 3. STRICT Lock guard: if user is confirming details in State 2, NEVER leave this page!
-    if(window._confirmingDetails === true && !p){
+    if(isUserConfirmingDetails()){
       if(location.hash !== '#/login'){
         try {
-          history.pushState({ confirmingDetailsGuard: true, t: Date.now() }, '', '#/login');
+          history.pushState({ thaaraiConfirmLock: true, t: Date.now() }, '', '#/login');
         } catch(e){}
         location.hash = '#/login';
       }
@@ -3805,6 +3807,7 @@ function isUserConfirmingDetails(){
 }
 
 function showConfirmLoginPopup(){
+  if(!isUserConfirmingDetails()) return;
   let popup = $('#confirm-login-modal');
   if(!popup){
     popup = document.createElement('div');
@@ -3849,58 +3852,11 @@ function showConfirmLoginPopup(){
   }
 }
 
-// TOUCH SWIPE GESTURE DETECTION (Intercepts swipe back directly on screen)
-let _confirmTouchStartX = 0;
-let _confirmTouchStartY = 0;
-let _confirmTouchTriggered = false;
-
-window.addEventListener('touchstart', (e) => {
-  if(!(window._confirmingDetails === true && !profile())) return;
-  if(e.touches && e.touches.length === 1){
-    _confirmTouchStartX = e.touches[0].clientX;
-    _confirmTouchStartY = e.touches[0].clientY;
-    _confirmTouchTriggered = false;
-  }
-}, { passive: true });
-
-window.addEventListener('touchmove', (e) => {
-  if(!(window._confirmingDetails === true && !profile()) || _confirmTouchTriggered) return;
-  if(e.touches && e.touches.length === 1){
-    const deltaX = e.touches[0].clientX - _confirmTouchStartX;
-    const deltaY = Math.abs(e.touches[0].clientY - _confirmTouchStartY);
-    // User swiping back from left edge towards right:
-    if(_confirmTouchStartX < 120 && deltaX > 25 && deltaY < 80){
-      _confirmTouchTriggered = true;
-      try {
-        history.pushState({ confirmingDetailsGuard: true, t: Date.now() }, '', '#/login');
-      } catch(err){}
-      showConfirmLoginPopup();
-    }
-  }
-}, { passive: true });
-
-window.addEventListener('touchend', (e) => {
-  if(!(window._confirmingDetails === true && !profile()) || _confirmTouchTriggered) return;
-  if(e.changedTouches && e.changedTouches.length === 1){
-    const deltaX = e.changedTouches[0].clientX - _confirmTouchStartX;
-    const deltaY = Math.abs(e.changedTouches[0].clientY - _confirmTouchStartY);
-    if(_confirmTouchStartX < 140 && deltaX > 35 && deltaY < 90){
-      _confirmTouchTriggered = true;
-      try {
-        history.pushState({ confirmingDetailsGuard: true, t: Date.now() }, '', '#/login');
-      } catch(err){}
-      showConfirmLoginPopup();
-    }
-  }
-}, { passive: true });
-
 window.addEventListener('popstate', event => {
   // 0. If user is in State 2 (Confirming Google Details with Name & Phone): LOCKED LOOP
-  const confirming = window._confirmingDetails === true && !profile();
-  if(confirming){
+  if(isUserConfirmingDetails()){
     try {
-      history.pushState({ confirmingDetailsGuard: true, t: Date.now() }, '', '#/login');
-      history.pushState({ confirmingDetailsGuard: true, t: Date.now() + 1 }, '', '#/login');
+      history.pushState({ thaaraiConfirmLock: true, t: Date.now() }, '', '#/login');
     } catch(e){}
 
     // If confirm-details-card got destroyed by back navigation, re-render it
@@ -4038,11 +3994,9 @@ $('#nav-back').onclick = () => {
 };
 
 window.addEventListener('hashchange', (e) => {
-  // Only block if _confirmingDetails is actively true in memory AND confirm-details-card is in DOM
-  const activelyConfirming = window._confirmingDetails === true && !profile() && Boolean(document.getElementById('confirm-details-card'));
-  if(activelyConfirming){
+  if(isUserConfirmingDetails()){
     try {
-      history.pushState({ confirmingDetailsGuard: true, t: Date.now() }, '', '#/login');
+      history.pushState({ thaaraiConfirmLock: true, t: Date.now() }, '', '#/login');
     } catch(err){}
     if(location.hash !== '#/login'){
       location.hash = '#/login';
