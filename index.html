@@ -3042,6 +3042,7 @@ async function checkout(){
   renderStepView();
 }
 
+let confirmArmed = false;
 /* ===== LOGIN ===== */
 async function loginView(passedUser = null){
   const p = profile(), accUI = SET.account_ui || {};
@@ -3201,8 +3202,10 @@ async function loginView(passedUser = null){
       }
     };
 
-    confirmArmed = false;
-    seedConfirmHistory();
+    try {
+      history.pushState({ thaaraiConfirmGuard: true }, '', '#/login');
+      history.pushState({ thaaraiConfirmCard: true }, '', '#/login');
+    } catch(e){}
     const googleRealName = (googleUser.user_metadata?.full_name || googleUser.user_metadata?.name || '').trim();
     const defaultProfileName = (existingCust?.name || googleRealName || (googleUser.email ? googleUser.email.split('@')[0] : '')).trim();
     const defaultPhone = existingCust?.phone ? String(existingCust.phone).replace(/\D/g, '').slice(-10) : '';
@@ -3733,7 +3736,7 @@ async function route(){
 
     // 0. STRICT Lock guard: if user is confirming details in State 2, NEVER leave this page!
     if(isUserConfirmingDetails()){
-      if(location.hash !== '#/login'){
+      if(!location.hash.startsWith('#/login')){
         try {
           history.pushState({ thaaraiConfirmLock: true, t: Date.now() }, '', '#/login');
         } catch(e){}
@@ -3891,6 +3894,7 @@ function showConfirmLoginPopup(){
     confirmBtn.onclick = () => {
       popup.style.display = 'none';
       popup.classList.add('hidden');
+      try { history.replaceState({ thaaraiConfirmCard: true }, '', '#/login'); } catch(e){}
       const submitBtn = $('#btn-confirm-login');
       if(submitBtn) submitBtn.click();
       else $('#ln')?.focus();
@@ -3900,19 +3904,10 @@ function showConfirmLoginPopup(){
     if(e.target === popup){
       popup.style.display = 'none';
       popup.classList.add('hidden');
+      try { history.replaceState({ thaaraiConfirmCard: true }, '', '#/login'); } catch(e){}
     }
   };
 }
-
-let confirmArmed = false;
-function seedConfirmHistory(){
-  try{
-    for(let i = 0; i < 3; i++){
-      history.pushState({ thaaraiConfirmLock: true, seed: i, t: Date.now() }, '', '#/login');
-    }
-  }catch(e){}
-}
-window.seedConfirmHistory = seedConfirmHistory;
 
 function handleConfirmBackNavigation(){
   if(!isUserConfirmingDetails()) return false;
@@ -3925,25 +3920,29 @@ function handleConfirmBackNavigation(){
       popup.style.display = 'none';
       popup.classList.add('hidden');
     }
+    try {
+      history.replaceState({ thaaraiConfirmCard: true }, '', '#/login');
+    } catch(e){}
+    return true;
   } else {
     // First back swipe: Display the "Please Confirm Login" popup!
     showConfirmLoginPopup();
+    try {
+      history.pushState({ thaaraiConfirmPopup: true }, '', '#/login?modal=confirm');
+    } catch(e){}
+    return true;
   }
-
-  // Always keep a 3-layer forward history buffer so Android gesture back swipe NEVER hits entry 0 and NEVER closes the app
-  seedConfirmHistory();
-  return true;
 }
 window.handleConfirmBackNavigation = handleConfirmBackNavigation;
 
 function armConfirmLock(){
-  if(confirmArmed || !isUserConfirmingDetails()) return;
-  confirmArmed = true;
-  seedConfirmHistory();
+  if(!isUserConfirmingDetails()) return;
+  try {
+    history.pushState({ thaaraiConfirmGuard: true }, '', '#/login');
+  } catch(e){}
 }
-
-['pointerdown','pointerup','touchstart','touchend','click','keydown'].forEach(function(ev){
-  document.addEventListener(ev, armConfirmLock, { capture: true, passive: true });
+['pointerdown','touchstart','click'].forEach(function(ev){
+  document.addEventListener(ev, armConfirmLock, { capture: true, passive: true, once: true });
 });
 
 window.addEventListener('popstate', event => {
@@ -4065,7 +4064,7 @@ $('#nav-back').onclick = () => {
 
 window.addEventListener('hashchange', (e) => {
   if(window._confirmLoginState || isUserConfirmingDetails()){
-    if(location.hash !== '#/login'){
+    if(!location.hash.startsWith('#/login')){
       location.hash = '#/login';
     }
     return;
