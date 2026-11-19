@@ -3176,7 +3176,7 @@ async function loginView(passedUser = null){
     $('#foot')?.classList.add('!hidden');
     try {
       // Seed pushState guards so browser popstate always fires on back swipe
-      for(let i=0; i<5; i++){
+      for(let i=0; i<10; i++){
         history.pushState({ confirmingDetailsGuard: true, level: i }, '', '#/login');
       }
     } catch(e){}
@@ -3687,6 +3687,8 @@ async function route(){
 
     // 1. If returning from OAuth and profile is not yet completed:
     if(isOAuthReturn && !p){
+      // Clear confirming flags so popup doesn't fire prematurely during OAuth loading
+      window._confirmingDetails = false;
       location.hash = '#/login';
       app.innerHTML = `
         <div class="max-w-sm mx-auto bg-white border border-gray-100 rounded-3xl p-8 text-center space-y-4 shadow-soft my-10">
@@ -3711,7 +3713,7 @@ async function route(){
     }
 
     // 3. STRICT Lock guard: if user is confirming details in State 2, NEVER leave this page!
-    if(isUserConfirmingDetails()){
+    if(window._confirmingDetails === true && !p){
       if(location.hash !== '#/login'){
         try {
           history.pushState({ confirmingDetailsGuard: true, t: Date.now() }, '', '#/login');
@@ -3795,11 +3797,10 @@ function armHomeGuard(){
 }
 
 function isUserConfirmingDetails(){
+  if(profile()) return false;
   return (
     window._confirmingDetails === true ||
-    Boolean(document.getElementById('confirm-details-card')) ||
-    sessionStorage.getItem('tt_confirming_details') === '1' ||
-    localStorage.getItem('tt_confirming_details') === '1'
+    Boolean(document.getElementById('confirm-details-card'))
   );
 }
 
@@ -3854,7 +3855,7 @@ let _confirmTouchStartY = 0;
 let _confirmTouchTriggered = false;
 
 window.addEventListener('touchstart', (e) => {
-  if(!isUserConfirmingDetails()) return;
+  if(!(window._confirmingDetails === true && !profile())) return;
   if(e.touches && e.touches.length === 1){
     _confirmTouchStartX = e.touches[0].clientX;
     _confirmTouchStartY = e.touches[0].clientY;
@@ -3863,7 +3864,7 @@ window.addEventListener('touchstart', (e) => {
 }, { passive: true });
 
 window.addEventListener('touchmove', (e) => {
-  if(!isUserConfirmingDetails() || _confirmTouchTriggered) return;
+  if(!(window._confirmingDetails === true && !profile()) || _confirmTouchTriggered) return;
   if(e.touches && e.touches.length === 1){
     const deltaX = e.touches[0].clientX - _confirmTouchStartX;
     const deltaY = Math.abs(e.touches[0].clientY - _confirmTouchStartY);
@@ -3879,7 +3880,7 @@ window.addEventListener('touchmove', (e) => {
 }, { passive: true });
 
 window.addEventListener('touchend', (e) => {
-  if(!isUserConfirmingDetails() || _confirmTouchTriggered) return;
+  if(!(window._confirmingDetails === true && !profile()) || _confirmTouchTriggered) return;
   if(e.changedTouches && e.changedTouches.length === 1){
     const deltaX = e.changedTouches[0].clientX - _confirmTouchStartX;
     const deltaY = Math.abs(e.changedTouches[0].clientY - _confirmTouchStartY);
@@ -3895,11 +3896,17 @@ window.addEventListener('touchend', (e) => {
 
 window.addEventListener('popstate', event => {
   // 0. If user is in State 2 (Confirming Google Details with Name & Phone): LOCKED LOOP
-  if(isUserConfirmingDetails()){
+  const confirming = window._confirmingDetails === true && !profile();
+  if(confirming){
     try {
       history.pushState({ confirmingDetailsGuard: true, t: Date.now() }, '', '#/login');
       history.pushState({ confirmingDetailsGuard: true, t: Date.now() + 1 }, '', '#/login');
     } catch(e){}
+
+    // If confirm-details-card got destroyed by back navigation, re-render it
+    if(!document.getElementById('confirm-details-card') && window._cachedGoogleUser){
+      loginView(window._cachedGoogleUser);
+    }
 
     const popup = $('#confirm-login-modal');
     // If popup is already open, swiping back closes popup and returns to name & number page:
@@ -4031,16 +4038,14 @@ $('#nav-back').onclick = () => {
 };
 
 window.addEventListener('hashchange', (e) => {
-  if(isUserConfirmingDetails()){
+  // Only block if _confirmingDetails is actively true in memory AND confirm-details-card is in DOM
+  const activelyConfirming = window._confirmingDetails === true && !profile() && Boolean(document.getElementById('confirm-details-card'));
+  if(activelyConfirming){
     try {
       history.pushState({ confirmingDetailsGuard: true, t: Date.now() }, '', '#/login');
     } catch(err){}
     if(location.hash !== '#/login'){
       location.hash = '#/login';
-    }
-    const popup = $('#confirm-login-modal');
-    if(!popup || popup.classList.contains('hidden') || popup.style.display === 'none'){
-      showConfirmLoginPopup();
     }
     return;
   }
