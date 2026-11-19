@@ -3092,7 +3092,13 @@ async function loginView(passedUser = null){
 
   // --- STATE 1: ALREADY LOGGED IN ---
   if(p){
+    confirmArmed = false;
+    window._confirmLoginState = null;
     window._confirmingDetails = false;
+    try {
+      localStorage.removeItem('tt_confirming_details');
+      sessionStorage.removeItem('tt_confirming_details');
+    } catch(e){}
     $('#tabbar')?.classList.remove('hidden');
     $('#nav-back')?.classList.remove('!hidden');
     $('#foot')?.classList.remove('!hidden');
@@ -3191,23 +3197,12 @@ async function loginView(passedUser = null){
         }
       },
       goBack: () => {
-        if(!isUserConfirmingDetails()) return false;
-        const isOpen = window._confirmLoginState.isModalOpen();
-        if(isOpen){
-          window._confirmLoginState.hideModal();
-        } else {
-          window._confirmLoginState.showModal();
-        }
-        try {
-          history.pushState({ thaaraiConfirmLock: true, t: Date.now() }, '', '#/login');
-        } catch(e){}
-        return true;
+        return handleConfirmBackNavigation();
       }
     };
 
-    try {
-      history.pushState({ thaaraiConfirmLock: true, t: Date.now() }, '', '#/login');
-    } catch(e){}
+    confirmArmed = false;
+    lockConfirmHistory('init');
     const googleRealName = (googleUser.user_metadata?.full_name || googleUser.user_metadata?.name || '').trim();
     const defaultProfileName = (existingCust?.name || googleRealName || (googleUser.email ? googleUser.email.split('@')[0] : '')).trim();
     const defaultPhone = existingCust?.phone ? String(existingCust.phone).replace(/\D/g, '').slice(-10) : '';
@@ -3279,6 +3274,7 @@ async function loginView(passedUser = null){
       const b = $('#btn-confirm-login');
       if(b){ b.disabled = true; b.textContent = 'Logging in...'; }
       await setProfile(profileName, cleanPhone, googleUser.email, googleName);
+      confirmArmed = false;
       window._confirmLoginState = null;
       window._confirmingDetails = false;
       window._cachedGoogleUser = null;
@@ -3306,6 +3302,7 @@ async function loginView(passedUser = null){
     };
 
     $('#btn-switch-account').onclick = async () => {
+      confirmArmed = false;
       window._confirmLoginState = null;
       window._confirmingDetails = false;
       window._cachedGoogleUser = null;
@@ -3328,7 +3325,13 @@ async function loginView(passedUser = null){
   }
 
   // --- STATE 3: INITIAL SCREEN (ONLY GOOGLE LOGIN BUTTON) ---
+  confirmArmed = false;
+  window._confirmLoginState = null;
   window._confirmingDetails = false;
+  try {
+    localStorage.removeItem('tt_confirming_details');
+    sessionStorage.removeItem('tt_confirming_details');
+  } catch(e){}
   $('#tabbar')?.classList.remove('hidden');
   $('#nav-back')?.classList.remove('!hidden');
   $('#foot')?.classList.remove('!hidden');
@@ -3403,6 +3406,14 @@ async function loginView(passedUser = null){
       }
     };
   }
+
+  if(!window._confirmLoginState && !document.getElementById('confirm-details-card')){
+    try{
+      localStorage.removeItem('tt_confirming_details');
+      sessionStorage.removeItem('tt_confirming_details');
+    }catch(e){}
+  }
+  if(!isUserConfirmingDetails()) confirmArmed = false;
 }
 
 /* ===== ACCOUNT ===== */
@@ -3893,24 +3904,32 @@ function showConfirmLoginPopup(){
   };
 }
 
+let confirmArmed = false;
+function lockConfirmHistory(n){
+  try{
+    history.pushState({ thaaraiConfirmLock: true, n: n, t: Date.now() }, '', '#/login');
+  }catch(e){}
+}
+
 function handleConfirmBackNavigation(){
-  if(window._confirmLoginState){
-    return window._confirmLoginState.goBack();
-  }
   if(!isUserConfirmingDetails()) return false;
-  const popup = document.getElementById('confirm-login-modal');
-  const isPopupVisible = popup && !popup.classList.contains('hidden') && popup.style.display !== 'none';
-  if(isPopupVisible){
-    popup.style.display = 'none';
-    popup.classList.add('hidden');
-  } else {
-    showConfirmLoginPopup();
-  }
-  try {
-    history.pushState({ thaaraiConfirmLock: true, t: Date.now() }, '', '#/login');
-  } catch(e){}
+  showConfirmLoginPopup();
+  lockConfirmHistory('re');
   return true;
 }
+window.handleConfirmBackNavigation = handleConfirmBackNavigation;
+window.lockConfirmHistory = lockConfirmHistory;
+
+function armConfirmLock(){
+  if(confirmArmed || !isUserConfirmingDetails()) return;
+  confirmArmed = true;
+  lockConfirmHistory(1);
+  lockConfirmHistory(2);
+}
+
+['pointerdown','pointerup','touchstart','touchend','click','keydown'].forEach(function(ev){
+  document.addEventListener(ev, armConfirmLock, { capture: true, passive: true });
+});
 
 window.addEventListener('popstate', event => {
   // 0. Handle Confirm Login page (State 2) back navigation & Android swipe
