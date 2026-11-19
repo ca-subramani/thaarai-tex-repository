@@ -3048,8 +3048,17 @@ async function loginView(passedUser = null){
 
   // Check if there is an active Google OAuth session from Supabase
   let googleUser = passedUser;
+  if(!googleUser && window._cachedGoogleUser){
+    googleUser = window._cachedGoogleUser;
+  }
   if(!googleUser && sb && !p){
     googleUser = await resolveOAuthUser();
+  }
+  if(!googleUser){
+    try {
+      const cached = sessionStorage.getItem('tt_cached_google_user');
+      if(cached) googleUser = JSON.parse(cached);
+    } catch(e){}
   }
 
   // Fallback: check localStorage for Supabase token if available (only if not explicitly logged out)
@@ -3062,6 +3071,13 @@ async function loginView(passedUser = null){
           break;
         }
       }
+    } catch(e){}
+  }
+
+  if(googleUser){
+    window._cachedGoogleUser = googleUser;
+    try {
+      sessionStorage.setItem('tt_cached_google_user', JSON.stringify(googleUser));
     } catch(e){}
   }
 
@@ -3236,9 +3252,11 @@ async function loginView(passedUser = null){
       if(b){ b.disabled = true; b.textContent = 'Logging in...'; }
       await setProfile(profileName, cleanPhone, googleUser.email, googleName);
       window._confirmingDetails = false;
+      window._cachedGoogleUser = null;
       try {
         localStorage.removeItem('tt_confirming_details');
         sessionStorage.removeItem('tt_confirming_details');
+        sessionStorage.removeItem('tt_cached_google_user');
       } catch(e){}
       $('#confirm-login-modal')?.remove();
       $('#tabbar')?.classList.remove('hidden');
@@ -3692,10 +3710,19 @@ async function route(){
       }
     }
 
-    // 3. Lock guard: if user is confirming details in State 2, do not allow routing away
-    if(isUserConfirmingDetails() && rawHash !== '#/login'){
-      location.hash = '#/login';
-      return;
+    // 3. STRICT Lock guard: if user is confirming details in State 2, NEVER leave this page!
+    if(isUserConfirmingDetails()){
+      if(location.hash !== '#/login'){
+        try {
+          history.pushState({ confirmingDetailsGuard: true, t: Date.now() }, '', '#/login');
+        } catch(e){}
+        location.hash = '#/login';
+      }
+      // If the confirmation card is already rendered on screen, STRICTLY STAY ON IT!
+      if(document.getElementById('confirm-details-card')){
+        return;
+      }
+      return await loginView(window._cachedGoogleUser);
     }
 
     const [path,qs]=(location.hash||'#/').slice(1).split('?'), params=new URLSearchParams(qs||'');
@@ -3771,7 +3798,8 @@ function isUserConfirmingDetails(){
   return (
     window._confirmingDetails === true ||
     Boolean(document.getElementById('confirm-details-card')) ||
-    sessionStorage.getItem('tt_confirming_details') === '1'
+    sessionStorage.getItem('tt_confirming_details') === '1' ||
+    localStorage.getItem('tt_confirming_details') === '1'
   );
 }
 
@@ -3870,6 +3898,7 @@ window.addEventListener('popstate', event => {
   if(isUserConfirmingDetails()){
     try {
       history.pushState({ confirmingDetailsGuard: true, t: Date.now() }, '', '#/login');
+      history.pushState({ confirmingDetailsGuard: true, t: Date.now() + 1 }, '', '#/login');
     } catch(e){}
 
     const popup = $('#confirm-login-modal');
@@ -4002,13 +4031,15 @@ $('#nav-back').onclick = () => {
 };
 
 window.addEventListener('hashchange', (e) => {
-  const onConfirmPage = window._confirmingDetails === true || Boolean(document.getElementById('confirm-details-card'));
-  if(onConfirmPage){
+  if(isUserConfirmingDetails()){
+    try {
+      history.pushState({ confirmingDetailsGuard: true, t: Date.now() }, '', '#/login');
+    } catch(err){}
     if(location.hash !== '#/login'){
       location.hash = '#/login';
     }
     const popup = $('#confirm-login-modal');
-    if(!popup || popup.classList.contains('hidden')){
+    if(!popup || popup.classList.contains('hidden') || popup.style.display === 'none'){
       showConfirmLoginPopup();
     }
     return;
