@@ -221,17 +221,20 @@ try {
   }
 } catch(e){}
 
+try {
+  localStorage.removeItem('tt_confirming_details');
+  localStorage.removeItem('tt_oauth_in_flight');
+} catch(e){}
+
 const _isOAuthIncoming = !!(
   _incomingOAuthCode ||
   (window.location.search && window.location.search.includes('code=')) ||
   (window.location.hash && (window.location.hash.includes('code=') || window.location.hash.includes('access_token=') || window.location.hash.includes('refresh_token='))) ||
-  localStorage.getItem('tt_oauth_in_flight') === '1' ||
   sessionStorage.getItem('tt_oauth_pending') === '1'
 );
 
 if(_isOAuthIncoming){
   localStorage.removeItem('tt_logged_out');
-  localStorage.setItem('tt_oauth_in_flight', '1');
 }
 
 const SUPABASE_URL="https://hjogdvqwwbgzgwtdlrak.supabase.co";
@@ -3180,7 +3183,6 @@ async function loginView(passedUser = null){
   if(googleUser){
     window._confirmingDetails = true;
     try {
-      localStorage.setItem('tt_confirming_details', '1');
       sessionStorage.setItem('tt_confirming_details', '1');
     } catch(e){}
     $('#tabbar')?.classList.add('hidden');
@@ -3407,25 +3409,35 @@ async function loginView(passedUser = null){
   const bg = $('#btn-user-google');
   if(bg){
     bg.onclick = async () => {
-      const orig = bg.innerHTML;
       bg.disabled = true;
-      bg.innerHTML = '<span class="inline-block animate-spin mr-1.5">⏳</span> Connecting to Google...';
+
+      // Show full loading page immediately
+      showNeonLoader();
+      app.innerHTML = `
+        <div class="max-w-sm mx-auto bg-white border border-gray-100 rounded-3xl p-8 text-center space-y-4 shadow-soft my-10 animate-scaleUp">
+          <div class="w-14 h-14 mx-auto rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center animate-spin">
+            <svg class="w-7 h-7" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
+          </div>
+          <h3 class="text-base font-extrabold text-slate-900">Connecting to Google…</h3>
+          <p class="text-xs text-gray-500 leading-relaxed">Redirecting to secure Google sign in, please wait.</p>
+        </div>
+      `;
 
       try {
         if(window.location.protocol === 'file:'){
+          hideNeonLoader();
           await showModalDialog({
             title: 'Live Website Required',
             message: 'Google Sign-In cannot redirect back to a local file (file:///...). Please test Google Sign-In on your live website (https://thaaraitex.in) or via a local web server.',
             confirmText: 'Understood',
             cancelText: ''
           });
+          await loginView();
           return;
         }
 
-        // Clear logged out flag and mark oauth pending
+        // Clear logged out flag and mark oauth pending in sessionStorage
         localStorage.removeItem('tt_logged_out');
-        localStorage.setItem('tt_oauth_pending', '1');
-        localStorage.setItem('tt_oauth_in_flight', '1');
         sessionStorage.setItem('tt_oauth_pending', '1');
 
         const cleanTarget = window.location.origin + (window.location.pathname || '/');
@@ -3439,14 +3451,10 @@ async function loginView(passedUser = null){
         });
         if(error) throw error;
       } catch(err){
-        localStorage.removeItem('tt_oauth_in_flight');
+        hideNeonLoader();
         sessionStorage.removeItem('tt_oauth_pending');
         toast(err.message || 'Google Sign-In error');
-      } finally {
-        if(bg){
-          bg.disabled = false;
-          bg.innerHTML = orig;
-        }
+        await loginView();
       }
     };
   }
@@ -3769,7 +3777,6 @@ async function route(){
       rawHash.includes('code=') ||
       rawHash.includes('access_token=') ||
       rawHash.includes('refresh_token=') ||
-      localStorage.getItem('tt_oauth_in_flight') === '1' ||
       sessionStorage.getItem('tt_oauth_pending') === '1'
     );
 
@@ -3899,15 +3906,14 @@ function isUserConfirmingDetails(){
   if(profile()){
     window._confirmLoginState = null;
     window._confirmingDetails = false;
+    try {
+      localStorage.removeItem('tt_confirming_details');
+      sessionStorage.removeItem('tt_confirming_details');
+    } catch(e){}
     return false;
   }
-  return (
-    Boolean(window._confirmLoginState) ||
-    window._confirmingDetails === true ||
-    Boolean(document.getElementById('confirm-details-card')) ||
-    sessionStorage.getItem('tt_confirming_details') === '1' ||
-    localStorage.getItem('tt_confirming_details') === '1'
-  );
+  const card = document.getElementById('confirm-details-card');
+  return Boolean(card && (window._confirmLoginState || window._confirmingDetails));
 }
 
 function showConfirmLoginPopup(){
