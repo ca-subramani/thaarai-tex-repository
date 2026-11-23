@@ -3136,7 +3136,7 @@ async function loginView(passedUser = null){
     }
   }
 
-  // --- STATE 1: ALREADY LOGGED IN ---
+  // --- STATE 1: ALREADY LOGGED IN -> REDIRECT TO ACCOUNT HUB ---
   if(p){
     confirmArmed = false;
     window._confirmLoginState = null;
@@ -3148,68 +3148,9 @@ async function loginView(passedUser = null){
     $('#tabbar')?.classList.remove('hidden');
     $('#nav-back')?.classList.remove('!hidden');
     $('#foot')?.classList.remove('!hidden');
-    app.innerHTML = `
-      <div class="max-w-sm mx-auto bg-white border border-gray-100 rounded-3xl p-6 sm:p-7 space-y-4 shadow-soft my-6">
-        <div class="text-center">
-          <div class="w-14 h-14 mx-auto rounded-full bg-slate-900 text-white flex items-center justify-center shadow-soft">
-            <svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-              <circle cx="12" cy="7" r="4"/>
-            </svg>
-          </div>
-          <h2 class="font-extrabold text-base mt-3 text-slate-900">Your Profile Details</h2>
-          <p class="text-[11px] text-gray-500 mt-0.5">Manage your profile details and account.</p>
-        </div>
-
-        <div class="space-y-3">
-          ${input('ln', 'Your Full Name', `maxlength="60" placeholder="Enter your full name" value="${esc(p.name || '')}"`)}
-          <div>
-            <label class="block text-xs font-semibold text-gray-700 mb-1">Mobile Number (10 digits)</label>
-            <div class="flex items-center w-full rounded-2xl border border-gray-200 bg-white overflow-hidden focus-within:border-slate-900 focus-within:ring-1 focus-within:ring-slate-900 transition">
-              <span class="inline-flex items-center justify-center shrink-0 whitespace-nowrap min-w-[56px] px-3.5 py-3.5 text-xs font-bold text-gray-700 bg-gray-100/90 border-r border-gray-200 select-none tracking-wider">+91</span>
-              <input id="lp" type="tel" maxlength="10" inputmode="numeric" placeholder="Enter 10-digit mobile number" value="${esc(String(p.phone || '').replace(/\D/g, '').slice(-10))}" class="min-w-0 flex-1 w-full bg-transparent px-3.5 py-3.5 text-xs font-semibold text-gray-900 placeholder-gray-400 outline-none">
-            </div>
-            <p class="text-[11px] text-gray-500 mt-1.5 flex items-start gap-1.5 font-medium leading-relaxed">
-              <svg class="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-              <span>Entered mobile number is used to receive product delivery updates.</span>
-            </p>
-          </div>
-          ${p.email ? `
-            <div class="rounded-2xl bg-gray-50 p-3 text-xs border border-gray-100 flex items-center justify-between">
-              <span class="text-gray-500 font-medium">Google Account</span>
-              <span class="font-bold text-slate-800 text-[11px] truncate max-w-[190px]">${esc(p.email)}</span>
-            </div>
-          ` : ''}
-        </div>
-
-        <div class="pt-2 space-y-2.5">
-          <button id="go" class="${btn} w-full !py-3.5 text-xs font-bold shadow-soft">
-            Save Profile Details
-          </button>
-          <button id="lo" type="button" class="w-full text-rose-600 text-xs font-bold py-2 hover:underline flex items-center justify-center gap-1 transition">
-            ${ICONS.logout} Logout from this device
-          </button>
-        </div>
-      </div>
-    `;
-
-    $('#go').onclick = async () => {
-      const name = ($('#ln')?.value || '').trim();
-      const rawPhone = ($('#lp')?.value || '').trim();
-      const phone = rawPhone.replace(/\D/g, '').slice(-10);
-      if(name.length < 2) return toast('Please enter your full name');
-      if(!/^[6-9]\d{9}$/.test(phone)) return toast('Please enter a valid 10-digit mobile number');
-      await setProfile(name, phone, p.email, p.google_name);
-      toast('Profile details updated ✓');
-      location.hash = '#/account/hub';
-    };
-
-    $('#lo').onclick = async () => {
-      await clearProfile();
-      toast('Logged out successfully');
-      location.hash = '#/login';
-      await loginView();
-    };
+    setNav();
+    location.hash = '#/account/hub';
+    await account('hub');
     return;
   }
 
@@ -3868,7 +3809,14 @@ async function route(){
       else if(path==='/cart')await cartView();
       else if(path==='/checkout')await checkout();
       else if(path.startsWith('/account'))await account(path.split('/')[2]||'hub',params);
-      else if(path==='/login'){ await loginView(); }
+      else if(path==='/login'){
+        if(profile()){
+          location.hash = '#/account/hub';
+          await account('hub');
+        } else {
+          await loginView();
+        }
+      }
       else app.innerHTML='<p class="text-center py-20 text-xs text-gray-400">Page not found.</p>';
     }catch(err){console.error(err);app.innerHTML='<p class="text-center text-rose-600 py-20 text-xs">Error: '+esc(err.message||err)+'</p>';}
     finally {
