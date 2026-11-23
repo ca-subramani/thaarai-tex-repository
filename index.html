@@ -146,7 +146,7 @@ input,select,textarea{font-size:16px!important}
   <a href="#/login" data-tb="/account/hub|/account/profile|/account/addresses|/account/wishlist|/login" id="tbp" class="tb relative flex flex-col items-center gap-1 py-2 text-gray-400"><svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span>Profile</span></a>
 </nav>
 
-<div id="toast" class="fixed bottom-20 sm:bottom-6 inset-x-0 mx-auto w-fit max-w-[90vw] z-[250] pointer-events-none opacity-0 translate-y-3 scale-95 transition-all duration-300 ease-out" style="visibility:hidden">
+<div id="toast" class="fixed bottom-20 sm:bottom-6 inset-x-0 mx-auto w-fit max-w-[90vw] z-[10000000] pointer-events-none opacity-0 translate-y-3 scale-95 transition-all duration-300 ease-out" style="visibility:hidden">
   <div class="flex items-center gap-2.5 rounded-full bg-white/95 backdrop-blur-md px-5 py-3 border border-slate-200/90 shadow-[0_14px_35px_-6px_rgba(15,23,42,0.18)]">
     <div id="toast-icon">
       <svg class="toast-checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
@@ -717,11 +717,18 @@ async function clearProfile(){
   localStorage.removeItem('profile');
   localStorage.removeItem('tt_oauth_pending');
   localStorage.removeItem('tt_oauth_in_flight');
+  localStorage.removeItem('tt_confirming_details');
+  sessionStorage.removeItem('tt_confirming_details');
+  sessionStorage.removeItem('tt_cached_google_user');
   sessionStorage.removeItem('tt_oauth_pending');
   sessionStorage.removeItem('tt_pending_name');
   sessionStorage.removeItem('tt_pending_phone');
   localStorage.removeItem('tt_pending_name');
   localStorage.removeItem('tt_pending_phone');
+  window._cachedGoogleUser = null;
+  window._confirmLoginState = null;
+  window._confirmingDetails = false;
+  confirmArmed = false;
   _incomingOAuthCode = null;
   _oauthUserPromise = null;
 
@@ -3049,30 +3056,40 @@ async function loginView(passedUser = null){
 
   // Check if there is an active Google OAuth session from Supabase
   let googleUser = passedUser;
-  if(!googleUser && window._cachedGoogleUser){
-    googleUser = window._cachedGoogleUser;
-  }
-  if(!googleUser && sb && !p){
-    googleUser = await resolveOAuthUser();
-  }
-  if(!googleUser){
-    try {
-      const cached = sessionStorage.getItem('tt_cached_google_user');
-      if(cached) googleUser = JSON.parse(cached);
-    } catch(e){}
-  }
+  const isLoggedOut = localStorage.getItem('tt_logged_out') === '1';
 
-  // Fallback: check localStorage for Supabase token if available (only if not explicitly logged out)
-  if(!googleUser && !p && localStorage.getItem('tt_logged_out') !== '1'){
+  if(isLoggedOut){
+    googleUser = null;
+    window._cachedGoogleUser = null;
     try {
-      for(let key of Object.keys(localStorage)){
-        if(key.startsWith('sb-') && key.endsWith('-auth-token')){
-          const parsed = JSON.parse(localStorage.getItem(key));
-          if(parsed?.user) googleUser = parsed.user;
-          break;
-        }
-      }
+      sessionStorage.removeItem('tt_cached_google_user');
     } catch(e){}
+  } else {
+    if(!googleUser && window._cachedGoogleUser){
+      googleUser = window._cachedGoogleUser;
+    }
+    if(!googleUser && sb && !p){
+      googleUser = await resolveOAuthUser();
+    }
+    if(!googleUser){
+      try {
+        const cached = sessionStorage.getItem('tt_cached_google_user');
+        if(cached) googleUser = JSON.parse(cached);
+      } catch(e){}
+    }
+
+    // Fallback: check localStorage for Supabase token if available (only if not explicitly logged out)
+    if(!googleUser && !p){
+      try {
+        for(let key of Object.keys(localStorage)){
+          if(key.startsWith('sb-') && key.endsWith('-auth-token')){
+            const parsed = JSON.parse(localStorage.getItem(key));
+            if(parsed?.user) googleUser = parsed.user;
+            break;
+          }
+        }
+      } catch(e){}
+    }
   }
 
   if(googleUser){
@@ -3126,7 +3143,6 @@ async function loginView(passedUser = null){
       localStorage.removeItem('tt_oauth_in_flight');
       localStorage.removeItem('tt_oauth_pending');
       sessionStorage.removeItem('tt_oauth_pending');
-      toast('Welcome back, ' + profileName.split(' ')[0] + '! ✓');
       try {
         _incomingOAuthCode = null;
         const cleanUrl = window.location.origin + window.location.pathname + '#/';
@@ -3135,6 +3151,9 @@ async function loginView(passedUser = null){
       setNav();
       location.hash = '#/';
       await home();
+      setTimeout(() => {
+        toast('Welcome back, ' + profileName.split(' ')[0] + '! ✓');
+      }, 400);
       return;
     }
   }
@@ -3312,7 +3331,6 @@ async function loginView(passedUser = null){
       localStorage.removeItem('tt_oauth_in_flight');
       localStorage.removeItem('tt_oauth_pending');
       sessionStorage.removeItem('tt_oauth_pending');
-      toast('Welcome, ' + profileName.split(' ')[0] + '! ✓');
       try {
         _incomingOAuthCode = null;
         const cleanUrl = window.location.origin + window.location.pathname + '#/';
@@ -3322,6 +3340,9 @@ async function loginView(passedUser = null){
       // Navigate to Home page as specifically requested
       location.hash = '#/';
       await home();
+      setTimeout(() => {
+        toast('Welcome, ' + profileName.split(' ')[0] + '! ✓');
+      }, 400);
     };
 
     $('#btn-switch-account').onclick = async () => {
