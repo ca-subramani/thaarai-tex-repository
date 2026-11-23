@@ -3082,13 +3082,58 @@ async function loginView(passedUser = null){
     } catch(e){}
   }
 
-  // If returning customer exists in Supabase, fetch their profile details to prefill confirmation form
+  // If returning customer exists in Supabase, fetch their profile details
   let existingCust = null;
   if(googleUser && googleUser.email && !p && sb){
     try {
-      const { data } = await sb.from('customers').select('*').eq('email', googleUser.email).maybeSingle();
-      existingCust = data;
+      const { data } = await sb.from('customers').select('*').eq('email', googleUser.email).order('last_active', { ascending: false }).limit(1);
+      if(data && data.length > 0) existingCust = data[0];
+      else {
+        const { data: singleData } = await sb.from('customers').select('*').eq('email', googleUser.email).maybeSingle();
+        existingCust = singleData;
+      }
     } catch(e){}
+  }
+
+  // Also check local profile storage for existing user data matching this email
+  const localProf = store.get('profile');
+  if(!existingCust && localProf && localProf.email && googleUser && googleUser.email && localProf.email.toLowerCase() === googleUser.email.toLowerCase() && localProf.phone){
+    existingCust = localProf;
+  }
+
+  // If user data is already stored with that email, no need to ask again for name and number or confirm login popup
+  if(googleUser && googleUser.email && existingCust && existingCust.phone && !p){
+    const cleanPhone = String(existingCust.phone).replace(/\D/g, '').slice(-10);
+    if(cleanPhone.length === 10){
+      const googleRealName = (googleUser.user_metadata?.full_name || googleUser.user_metadata?.name || '').trim();
+      const profileName = (existingCust.name || googleRealName || googleUser.email.split('@')[0] || 'Customer').trim();
+      await setProfile(profileName, cleanPhone, googleUser.email, googleRealName);
+      confirmArmed = false;
+      window._confirmLoginState = null;
+      window._confirmingDetails = false;
+      window._cachedGoogleUser = null;
+      try {
+        localStorage.removeItem('tt_confirming_details');
+        sessionStorage.removeItem('tt_confirming_details');
+        sessionStorage.removeItem('tt_cached_google_user');
+      } catch(e){}
+      $('#confirm-login-modal')?.remove();
+      $('#tabbar')?.classList.remove('hidden');
+      $('#nav-back')?.classList.add('sm:hidden');
+      $('#msb')?.classList.remove('!hidden');
+      $('#msearch')?.classList.remove('!hidden');
+      $('#foot')?.classList.remove('!hidden');
+      localStorage.removeItem('tt_oauth_in_flight');
+      localStorage.removeItem('tt_oauth_pending');
+      sessionStorage.removeItem('tt_oauth_pending');
+      toast('Welcome back, ' + profileName.split(' ')[0] + '! ✓');
+      try {
+        history.replaceState({ thaaraiHomeGuard: true }, '', '#/');
+      } catch(e){}
+      location.hash = '#/';
+      await home();
+      return;
+    }
   }
 
   // --- STATE 1: ALREADY LOGGED IN ---
