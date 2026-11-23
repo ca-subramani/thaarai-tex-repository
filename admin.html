@@ -13,7 +13,7 @@
   <script>
     (function(){
       try {
-        var hasAuth = Object.keys(localStorage).some(function(k){
+        var hasAuth = localStorage.getItem('thaarai_admin_logged_in') === '1' || Object.keys(localStorage).some(function(k){
           return k.indexOf('-auth-token') !== -1 && localStorage.getItem(k);
         });
         if(hasAuth){
@@ -3511,19 +3511,44 @@ else if(editing.row.id){
     /* ===== AUTH & INITIALIZATION ===== */
     async function saveAdminSession(session){
       if(!session){
+        if(localStorage.getItem('thaarai_admin_logged_in') === '1'){
+          return true;
+        }
         document.documentElement.classList.remove('has-auth-session');
         $('#login-screen').classList.remove('hidden');
         $('#dashboard').classList.add('hidden');
         return false;
       }
-      const {data,error}=await db.auth.getUser();
-      if(error||data.user?.app_metadata?.role!=='admin'){
+
+      const user = session.user;
+      let isAdmin = (user?.app_metadata?.role === 'admin') || (user?.user_metadata?.role === 'admin') || (localStorage.getItem('thaarai_admin_logged_in') === '1');
+
+      if(!isAdmin){
+        try {
+          const {data,error}=await db.auth.getUser();
+          if(!error && (data?.user?.app_metadata?.role === 'admin' || data?.user?.user_metadata?.role === 'admin')){
+            isAdmin = true;
+          }
+        } catch(e){}
+      }
+
+      if(!isAdmin){
         await db.auth.signOut();
+        try {
+          localStorage.removeItem('thaarai_admin_logged_in');
+          localStorage.removeItem('thaarai_admin_email');
+        } catch(e){}
         document.documentElement.classList.remove('has-auth-session');
         $('#login-screen').classList.remove('hidden');
         $('#dashboard').classList.add('hidden');
         return false;
       }
+
+      // Save login cache so browser never asks to relogin after closing website
+      try {
+        localStorage.setItem('thaarai_admin_logged_in', '1');
+        if(user?.email) localStorage.setItem('thaarai_admin_email', user.email);
+      } catch(e){}
 
       const route = parseRouteFromUrl();
       if(route && sections.some(s => s[0] === route.sec)){
@@ -3558,7 +3583,7 @@ else if(editing.row.id){
       document.documentElement.classList.add('has-auth-session');
       $('#login-screen').classList.add('hidden');
       $('#dashboard').classList.remove('hidden');
-      $('#admin-email').textContent=data.user.email||'';
+      $('#admin-email').textContent=user?.email || localStorage.getItem('thaarai_admin_email') || '';
 
       const s=sections.find(x=>x[0]===section)||sections[0];
       $('#page-title').textContent=s[1];
@@ -3592,6 +3617,8 @@ else if(editing.row.id){
     $('#logout').onclick=async()=>{
       document.documentElement.classList.remove('has-auth-session');
       try {
+        localStorage.removeItem('thaarai_admin_logged_in');
+        localStorage.removeItem('thaarai_admin_email');
         localStorage.removeItem('thaarai_admin_section');
         localStorage.removeItem('thaarai_admin_order_id');
         localStorage.removeItem('thaarai_admin_product_id');
@@ -3635,18 +3662,47 @@ else if(editing.row.id){
       }
     });
 
+    // Check cached session on startup
+    try {
+      if(localStorage.getItem('thaarai_admin_logged_in') === '1'){
+        document.documentElement.classList.add('has-auth-session');
+        const em = localStorage.getItem('thaarai_admin_email');
+        if(em && $('#admin-email')) $('#admin-email').textContent = em;
+        const savedSec = localStorage.getItem('thaarai_admin_section');
+        if(savedSec && sections.some(s => s[0] === savedSec)) section = savedSec;
+        render();
+        loadAll().catch(()=>{});
+      }
+    } catch(e){}
+
+    db.auth.onAuthStateChange(async(event, session)=>{
+      if(session){
+        saveAdminSession(session);
+      } else if(event === 'SIGNED_OUT'){
+        try {
+          localStorage.removeItem('thaarai_admin_logged_in');
+          localStorage.removeItem('thaarai_admin_email');
+        } catch(e){}
+        document.documentElement.classList.remove('has-auth-session');
+        $('#login-screen').classList.remove('hidden');
+        $('#dashboard').classList.add('hidden');
+      }
+    });
+
     db.auth.getSession().then(({data})=>{
       if(data && data.session){
         saveAdminSession(data.session);
-      } else {
+      } else if(localStorage.getItem('thaarai_admin_logged_in') !== '1'){
         document.documentElement.classList.remove('has-auth-session');
         $('#login-screen').classList.remove('hidden');
         $('#dashboard').classList.add('hidden');
       }
     }).catch(()=>{
-      document.documentElement.classList.remove('has-auth-session');
-      $('#login-screen').classList.remove('hidden');
-      $('#dashboard').classList.add('hidden');
+      if(localStorage.getItem('thaarai_admin_logged_in') !== '1'){
+        document.documentElement.classList.remove('has-auth-session');
+        $('#login-screen').classList.remove('hidden');
+        $('#dashboard').classList.add('hidden');
+      }
     });
   </script>
 </body>
