@@ -3411,28 +3411,15 @@ async function loginView(passedUser = null){
     bg.onclick = async () => {
       bg.disabled = true;
 
-      // Show full loading page immediately
-      showNeonLoader();
-      app.innerHTML = `
-        <div class="max-w-sm mx-auto bg-white border border-gray-100 rounded-3xl p-8 text-center space-y-4 shadow-soft my-10 animate-scaleUp">
-          <div class="w-14 h-14 mx-auto rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center animate-spin">
-            <svg class="w-7 h-7" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
-          </div>
-          <h3 class="text-base font-extrabold text-slate-900">Connecting to Google…</h3>
-          <p class="text-xs text-gray-500 leading-relaxed">Redirecting to secure Google sign in, please wait.</p>
-        </div>
-      `;
-
       try {
         if(window.location.protocol === 'file:'){
-          hideNeonLoader();
+          bg.disabled = false;
           await showModalDialog({
             title: 'Live Website Required',
             message: 'Google Sign-In cannot redirect back to a local file (file:///...). Please test Google Sign-In on your live website (https://thaaraitex.in) or via a local web server.',
             confirmText: 'Understood',
             cancelText: ''
           });
-          await loginView();
           return;
         }
 
@@ -3451,10 +3438,9 @@ async function loginView(passedUser = null){
         });
         if(error) throw error;
       } catch(err){
-        hideNeonLoader();
+        bg.disabled = false;
         sessionStorage.removeItem('tt_oauth_pending');
         toast(err.message || 'Google Sign-In error');
-        await loginView();
       }
     };
   }
