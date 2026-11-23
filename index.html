@@ -3128,8 +3128,11 @@ async function loginView(passedUser = null){
       sessionStorage.removeItem('tt_oauth_pending');
       toast('Welcome back, ' + profileName.split(' ')[0] + '! ✓');
       try {
-        history.replaceState({ thaaraiHomeGuard: true }, '', '#/');
+        _incomingOAuthCode = null;
+        const cleanUrl = window.location.origin + window.location.pathname + '#/';
+        window.history.replaceState({ thaaraiHomeGuard: true }, '', cleanUrl);
       } catch(e){}
+      setNav();
       location.hash = '#/';
       await home();
       return;
@@ -3311,8 +3314,11 @@ async function loginView(passedUser = null){
       sessionStorage.removeItem('tt_oauth_pending');
       toast('Welcome, ' + profileName.split(' ')[0] + '! ✓');
       try {
-        history.replaceState({ thaaraiHomeGuard: true }, '', '#/');
+        _incomingOAuthCode = null;
+        const cleanUrl = window.location.origin + window.location.pathname + '#/';
+        window.history.replaceState({ thaaraiHomeGuard: true }, '', cleanUrl);
       } catch(e){}
+      setNav();
       // Navigate to Home page as specifically requested
       location.hash = '#/';
       await home();
@@ -4134,8 +4140,8 @@ if(homeTab){
 }
 
 
-// Pre-check: If returning from Google OAuth, pin hash to #/login immediately
-if(_isOAuthIncoming){
+// Pre-check: If returning from Google OAuth and user is not yet logged in, pin hash to #/login
+if(_isOAuthIncoming && !profile()){
   if(location.hash !== '#/login'){
     location.hash = '#/login';
   }
