@@ -3869,7 +3869,11 @@ function armHomeGuard(){
 }
 
 function isUserConfirmingDetails(){
-  if(profile()) return false;
+  if(profile()){
+    window._confirmLoginState = null;
+    window._confirmingDetails = false;
+    return false;
+  }
   return (
     Boolean(window._confirmLoginState) ||
     window._confirmingDetails === true ||
@@ -3981,7 +3985,7 @@ function armConfirmLock(){
 
 window.addEventListener('popstate', event => {
   // 0. Handle Confirm Login page (State 2) back navigation & Android swipe
-  if(window._confirmLoginState || isUserConfirmingDetails()){
+  if(isUserConfirmingDetails()){
     handleConfirmBackNavigation();
     return;
   }
@@ -4047,7 +4051,7 @@ window.addEventListener('popstate', event => {
 
 // Header back navigation button: If on home, reload home
 $('#nav-back').onclick = () => {
-  if(window._confirmLoginState || isUserConfirmingDetails()){
+  if(isUserConfirmingDetails()){
     handleConfirmBackNavigation();
     return;
   }
@@ -4097,7 +4101,7 @@ $('#nav-back').onclick = () => {
 };
 
 window.addEventListener('hashchange', (e) => {
-  if(window._confirmLoginState || isUserConfirmingDetails()){
+  if(isUserConfirmingDetails()){
     if(!location.hash.startsWith('#/login')){
       location.hash = '#/login';
     }
@@ -4114,6 +4118,20 @@ route = async function(){
     armHomeGuard();
   }
 };
+
+// Home tab navigation handler
+const homeTab = document.querySelector('a[data-tb="/"]');
+if(homeTab){
+  homeTab.addEventListener('click', (e) => {
+    e.preventDefault();
+    if(location.hash !== '#/' && location.hash !== '#' && location.hash !== ''){
+      location.hash = '#/';
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      home();
+    }
+  });
+}
 
 
 // Pre-check: If returning from Google OAuth, pin hash to #/login immediately
