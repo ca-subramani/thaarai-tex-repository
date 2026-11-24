@@ -3268,30 +3268,50 @@ async function loginView(passedUser = null){
     `;
 
     const nameInput = $('#ln');
+    const phoneInput = $('#lp');
     if(nameInput){
-      const focusName = () => {
+      const focusTarget = (el = nameInput, force = false) => {
+        if(!el) return;
         try {
-          nameInput.focus({ preventScroll: false });
-          nameInput.click();
-          const len = nameInput.value.length;
-          nameInput.setSelectionRange(len, len);
+          if(force && document.activeElement === el){
+            el.blur();
+          }
+          el.focus({ preventScroll: false });
+          el.click();
+          const val = el.value || '';
+          if(typeof el.setSelectionRange === 'function'){
+            el.setSelectionRange(val.length, val.length);
+          }
         } catch(e){}
       };
-      focusName();
-      requestAnimationFrame(focusName);
-      setTimeout(focusName, 50);
-      setTimeout(focusName, 150);
-      setTimeout(focusName, 300);
-      setTimeout(focusName, 600);
 
-      // Trigger virtual keyboard upon very first interaction or screen touch
-      const triggerKb = () => {
-        if(document.activeElement !== nameInput && document.activeElement !== document.getElementById('lp')){
-          focusName();
+      focusTarget(nameInput);
+      requestAnimationFrame(() => focusTarget(nameInput));
+      setTimeout(() => focusTarget(nameInput), 30);
+      setTimeout(() => focusTarget(nameInput), 100);
+      setTimeout(() => focusTarget(nameInput), 250);
+      setTimeout(() => focusTarget(nameInput), 500);
+
+      const onScreenTouch = (e) => {
+        if(e.target && (e.target.closest('button') || e.target.closest('a'))){
+          return;
         }
+        if(e.target === phoneInput){
+          focusTarget(phoneInput, true);
+          return;
+        }
+        focusTarget(nameInput, true);
       };
-      ['touchstart', 'pointerdown', 'click'].forEach(evt => {
-        window.addEventListener(evt, triggerKb, { capture: true, once: true, passive: true });
+
+      ['touchstart', 'touchend', 'pointerdown', 'click'].forEach(evt => {
+        window.addEventListener(evt, onScreenTouch, { capture: true, once: true });
+      });
+
+      nameInput.addEventListener('keydown', (e) => {
+        if(e.key === 'Enter'){
+          e.preventDefault();
+          focusTarget(phoneInput, true);
+        }
       });
     }
 
