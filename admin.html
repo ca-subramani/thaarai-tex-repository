@@ -13,6 +13,11 @@
   <script>
     (function(){
       try {
+        if(!sessionStorage.getItem('thaarai_admin_session_active')){
+          if(location.hash && location.hash !== '#overview'){
+            history.replaceState(null, '', location.pathname + location.search + '#overview');
+          }
+        }
         var hasAuth = localStorage.getItem('thaarai_admin_logged_in') === '1' || Object.keys(localStorage).some(function(k){
           return k.indexOf('-auth-token') !== -1 && localStorage.getItem(k);
         });
@@ -513,6 +518,21 @@ CREATE POLICY "Allow all for coupons" ON public.coupons FOR ALL USING (true) WIT
     let orderFilter = 'all';
     let productFilter = 'all';
     let selectedOrderId = null;
+
+    let isNewBrowserSession = false;
+    try {
+      if(!sessionStorage.getItem('thaarai_admin_session_active')){
+        isNewBrowserSession = true;
+        sessionStorage.setItem('thaarai_admin_session_active', '1');
+        localStorage.setItem('thaarai_admin_section', 'overview');
+        localStorage.removeItem('thaarai_admin_order_id');
+        localStorage.removeItem('thaarai_admin_product_id');
+        localStorage.removeItem('thaarai_admin_customer_id');
+        if(location.hash && location.hash !== '#overview'){
+          history.replaceState({adminSection:'overview'}, '', '#overview');
+        }
+      }
+    } catch(e){}
 
     const sectionHistory=['overview'];
     const sections=[
@@ -3550,23 +3570,30 @@ else if(editing.row.id){
         if(user?.email) localStorage.setItem('thaarai_admin_email', user.email);
       } catch(e){}
 
-      const route = parseRouteFromUrl();
-      if(route && sections.some(s => s[0] === route.sec)){
-        section = route.sec;
-        if(section === 'orders' && route.subId) selectedOrderId = route.subId;
-        else if(section === 'products' && route.subId) selectedProductId = route.subId;
-        else if(section === 'customers' && route.subId) selectedCustomerId = route.subId;
-        else if(section === 'storefront' && route.subId) currentStorefrontSubTab = route.subId;
+      if(isNewBrowserSession){
+        section = 'overview';
+        selectedOrderId = null;
+        selectedProductId = null;
+        selectedCustomerId = null;
       } else {
-        try {
-          const savedSec = localStorage.getItem('thaarai_admin_section');
-          if(savedSec && sections.some(s => s[0] === savedSec)){
-            section = savedSec;
-            if(section === 'orders') selectedOrderId = localStorage.getItem('thaarai_admin_order_id') || null;
-            if(section === 'products') selectedProductId = localStorage.getItem('thaarai_admin_product_id') || null;
-            if(section === 'customers') selectedCustomerId = localStorage.getItem('thaarai_admin_customer_id') || null;
-          }
-        } catch(e){}
+        const route = parseRouteFromUrl();
+        if(route && sections.some(s => s[0] === route.sec)){
+          section = route.sec;
+          if(section === 'orders' && route.subId) selectedOrderId = route.subId;
+          else if(section === 'products' && route.subId) selectedProductId = route.subId;
+          else if(section === 'customers' && route.subId) selectedCustomerId = route.subId;
+          else if(section === 'storefront' && route.subId) currentStorefrontSubTab = route.subId;
+        } else {
+          try {
+            const savedSec = localStorage.getItem('thaarai_admin_section');
+            if(savedSec && sections.some(s => s[0] === savedSec)){
+              section = savedSec;
+              if(section === 'orders') selectedOrderId = localStorage.getItem('thaarai_admin_order_id') || null;
+              if(section === 'products') selectedProductId = localStorage.getItem('thaarai_admin_product_id') || null;
+              if(section === 'customers') selectedCustomerId = localStorage.getItem('thaarai_admin_customer_id') || null;
+            }
+          } catch(e){}
+        }
       }
 
       if(!adminGuardReady){
@@ -3617,6 +3644,7 @@ else if(editing.row.id){
     $('#logout').onclick=async()=>{
       document.documentElement.classList.remove('has-auth-session');
       try {
+        sessionStorage.removeItem('thaarai_admin_session_active');
         localStorage.removeItem('thaarai_admin_logged_in');
         localStorage.removeItem('thaarai_admin_email');
         localStorage.removeItem('thaarai_admin_section');
@@ -3668,8 +3696,15 @@ else if(editing.row.id){
         document.documentElement.classList.add('has-auth-session');
         const em = localStorage.getItem('thaarai_admin_email');
         if(em && $('#admin-email')) $('#admin-email').textContent = em;
-        const savedSec = localStorage.getItem('thaarai_admin_section');
-        if(savedSec && sections.some(s => s[0] === savedSec)) section = savedSec;
+        if(isNewBrowserSession){
+          section = 'overview';
+          selectedOrderId = null;
+          selectedProductId = null;
+          selectedCustomerId = null;
+        } else {
+          const savedSec = localStorage.getItem('thaarai_admin_section');
+          if(savedSec && sections.some(s => s[0] === savedSec)) section = savedSec;
+        }
         render();
         loadAll().catch(()=>{});
       }
