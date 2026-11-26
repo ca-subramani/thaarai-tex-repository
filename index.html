@@ -3223,9 +3223,10 @@ async function loginView(passedUser = null){
       }
     };
 
+    window._confirmGuardArmed = false;
     try {
+      history.replaceState({ thaaraiConfirmRoot: true }, '', '#/login');
       history.pushState({ thaaraiConfirmGuard: true }, '', '#/login');
-      history.pushState({ thaaraiConfirmCard: true }, '', '#/login');
     } catch(e){}
     const googleRealName = (googleUser.user_metadata?.full_name || googleUser.user_metadata?.name || '').trim();
     const defaultProfileName = (existingCust?.name || googleRealName || (googleUser.email ? googleUser.email.split('@')[0] : '')).trim();
@@ -4043,13 +4044,14 @@ function handleConfirmBackNavigation(){
 window.handleConfirmBackNavigation = handleConfirmBackNavigation;
 
 function armConfirmLock(){
-  if(!isUserConfirmingDetails()) return;
+  if(!isUserConfirmingDetails() || window._confirmGuardArmed) return;
+  window._confirmGuardArmed = true;
   try {
-    history.pushState({ thaaraiConfirmGuard: true }, '', '#/login');
+    history.pushState({ thaaraiConfirmGuard: true, t: Date.now() }, '', '#/login');
   } catch(e){}
 }
-['pointerdown','touchstart','click'].forEach(function(ev){
-  document.addEventListener(ev, armConfirmLock, { capture: true, passive: true, once: true });
+['pointerdown','touchstart','keydown','input'].forEach(function(ev){
+  document.addEventListener(ev, armConfirmLock, { capture: true, passive: true });
 });
 
 window.addEventListener('popstate', event => {
