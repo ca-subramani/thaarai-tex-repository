@@ -3225,8 +3225,7 @@ async function loginView(passedUser = null){
 
     window._confirmGuardArmed = false;
     try {
-      history.replaceState({ thaaraiConfirmRoot: true }, '', '#/login');
-      history.pushState({ thaaraiConfirmGuard: true }, '', '#/login');
+      history.pushState({ thaaraiConfirmGuard: true, t: Date.now() }, '', '#/login');
     } catch(e){}
     const googleRealName = (googleUser.user_metadata?.full_name || googleUser.user_metadata?.name || '').trim();
     const defaultProfileName = (existingCust?.name || googleRealName || (googleUser.email ? googleUser.email.split('@')[0] : '')).trim();
@@ -4187,6 +4186,10 @@ route = async function(){
   await originalRoute();
   if(currentRoute === '#/' || currentRoute === '' || currentRoute === '#'){
     armHomeGuard();
+  } else if(isUserConfirmingDetails()){
+    try {
+      history.pushState({ thaaraiConfirmGuard: true, t: Date.now() }, '', '#/login');
+    } catch(e){}
   }
 };
 
