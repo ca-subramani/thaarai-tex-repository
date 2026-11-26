@@ -825,6 +825,23 @@ async function initAuth(){
     if(p && (p.phone === '9876543210' || p.phone === '9999999999' || !p.phone || !p.name)){
       localStorage.removeItem('profile');
     }
+    // If user closed the website/tab before completing Name & Number login, purge incomplete OAuth session so next login asks to relogin
+    const hasCompletedProfile = !!profile();
+    const hasActiveOAuthFlow = _isOAuthIncoming || sessionStorage.getItem('tt_oauth_pending') === '1' || sessionStorage.getItem('tt_confirming_details') === '1';
+    if(!hasCompletedProfile && !hasActiveOAuthFlow){
+      window._cachedGoogleUser = null;
+      window._confirmLoginState = null;
+      window._confirmingDetails = false;
+      localStorage.removeItem('tt_confirming_details');
+      localStorage.removeItem('tt_oauth_pending');
+      localStorage.removeItem('tt_oauth_in_flight');
+      for(let key of Object.keys(localStorage)){
+        if(key.startsWith('sb-') && (key.endsWith('-auth-token') || key.endsWith('-token-code-verifier'))){
+          localStorage.removeItem(key);
+        }
+      }
+      if(sb){ try{ await sb.auth.signOut(); }catch(e){} }
+    }
   }catch(e){}
   setNav();
   await loadUserData();
@@ -3057,110 +3074,6 @@ let confirmArmed = false;
 async function loginView(passedUser = null){
   const p = profile(), accUI = SET.account_ui || {};
 
-  // Check if there is an active Google OAuth session from Supabase
-  let googleUser = passedUser;
-  const isLoggedOut = localStorage.getItem('tt_logged_out') === '1';
-
-  if(isLoggedOut){
-    googleUser = null;
-    window._cachedGoogleUser = null;
-    try {
-      sessionStorage.removeItem('tt_cached_google_user');
-    } catch(e){}
-  } else {
-    if(!googleUser && window._cachedGoogleUser){
-      googleUser = window._cachedGoogleUser;
-    }
-    if(!googleUser && sb && !p){
-      googleUser = await resolveOAuthUser();
-    }
-    if(!googleUser){
-      try {
-        const cached = sessionStorage.getItem('tt_cached_google_user');
-        if(cached) googleUser = JSON.parse(cached);
-      } catch(e){}
-    }
-
-    // Fallback: check localStorage for Supabase token if available (only if not explicitly logged out)
-    if(!googleUser && !p){
-      try {
-        for(let key of Object.keys(localStorage)){
-          if(key.startsWith('sb-') && key.endsWith('-auth-token')){
-            const parsed = JSON.parse(localStorage.getItem(key));
-            if(parsed?.user) googleUser = parsed.user;
-            break;
-          }
-        }
-      } catch(e){}
-    }
-  }
-
-  if(googleUser){
-    window._cachedGoogleUser = googleUser;
-    try {
-      sessionStorage.setItem('tt_cached_google_user', JSON.stringify(googleUser));
-    } catch(e){}
-  }
-
-  // If returning customer exists in Supabase, fetch their profile details
-  let existingCust = null;
-  if(googleUser && googleUser.email && !p && sb){
-    try {
-      const { data } = await sb.from('customers').select('*').eq('email', googleUser.email).order('last_active', { ascending: false }).limit(1);
-      if(data && data.length > 0) existingCust = data[0];
-      else {
-        const { data: singleData } = await sb.from('customers').select('*').eq('email', googleUser.email).maybeSingle();
-        existingCust = singleData;
-      }
-    } catch(e){}
-  }
-
-  // Also check local profile storage for existing user data matching this email
-  const localProf = store.get('profile');
-  if(!existingCust && localProf && localProf.email && googleUser && googleUser.email && localProf.email.toLowerCase() === googleUser.email.toLowerCase() && localProf.phone){
-    existingCust = localProf;
-  }
-
-  // If user data is already stored with that email, no need to ask again for name and number or confirm login popup
-  if(googleUser && googleUser.email && existingCust && existingCust.phone && !p){
-    const cleanPhone = String(existingCust.phone).replace(/\D/g, '').slice(-10);
-    if(cleanPhone.length === 10){
-      const googleRealName = (googleUser.user_metadata?.full_name || googleUser.user_metadata?.name || '').trim();
-      const profileName = (existingCust.name || googleRealName || googleUser.email.split('@')[0] || 'Customer').trim();
-      await setProfile(profileName, cleanPhone, googleUser.email, googleRealName);
-      confirmArmed = false;
-      window._confirmLoginState = null;
-      window._confirmingDetails = false;
-      window._cachedGoogleUser = null;
-      try {
-        localStorage.removeItem('tt_confirming_details');
-        sessionStorage.removeItem('tt_confirming_details');
-        sessionStorage.removeItem('tt_cached_google_user');
-      } catch(e){}
-      $('#confirm-login-modal')?.remove();
-      $('#tabbar')?.classList.remove('hidden');
-      $('#nav-back')?.classList.add('sm:hidden');
-      $('#msb')?.classList.remove('!hidden');
-      $('#msearch')?.classList.remove('!hidden');
-      $('#foot')?.classList.remove('!hidden');
-      localStorage.removeItem('tt_oauth_in_flight');
-      localStorage.removeItem('tt_oauth_pending');
-      sessionStorage.removeItem('tt_oauth_pending');
-      try {
-        _incomingOAuthCode = null;
-        const cleanUrl = window.location.origin + window.location.pathname + '#/';
-        window.history.replaceState({ thaaraiHomeGuard: true }, '', cleanUrl);
-      } catch(e){}
-      setNav();
-      location.hash = '#/';
-      await home();
-      setTimeout(() => {
-        toast('Welcome back, ' + profileName.split(' ')[0] + '! ✓');
-      }, 400);
-      return;
-    }
-  }
-
   // --- STATE 1: ALREADY LOGGED IN -> REDIRECT TO ACCOUNT HUB ---
   if(p){
     confirmArmed = false;
@@ -3177,6 +3090,104 @@ async function loginView(passedUser = null){
     location.hash = '#/account/hub';
     await account('hub');
     return;
+  }
+
+  // Only resolve Google OAuth user if actively returning from OAuth or currently confirming in this tab session
+  let googleUser = passedUser;
+  const isLoggedOut = localStorage.getItem('tt_logged_out') === '1';
+  const hasActiveOAuthFlow = Boolean(
+    passedUser ||
+    _incomingOAuthCode ||
+    _isOAuthIncoming ||
+    sessionStorage.getItem('tt_oauth_pending') === '1' ||
+    sessionStorage.getItem('tt_confirming_details') === '1' ||
+    window._cachedGoogleUser
+  );
+
+  if(isLoggedOut || !hasActiveOAuthFlow){
+    googleUser = null;
+    window._cachedGoogleUser = null;
+    try {
+      sessionStorage.removeItem('tt_cached_google_user');
+      sessionStorage.removeItem('tt_confirming_details');
+    } catch(e){}
+  } else {
+    if(!googleUser && window._cachedGoogleUser){
+      googleUser = window._cachedGoogleUser;
+    }
+    if(!googleUser && sb){
+      googleUser = await resolveOAuthUser();
+    }
+    if(!googleUser){
+      try {
+        const cached = sessionStorage.getItem('tt_cached_google_user');
+        if(cached) googleUser = JSON.parse(cached);
+      } catch(e){}
+    }
+  }
+
+  if(googleUser){
+    window._cachedGoogleUser = googleUser;
+    try {
+      sessionStorage.setItem('tt_cached_google_user', JSON.stringify(googleUser));
+    } catch(e){}
+  }
+
+  // If returning customer exists in Supabase, fetch their profile details
+  let existingCust = null;
+  if(googleUser && googleUser.email && sb){
+    try {
+      const { data } = await sb.from('customers').select('*').eq('email', googleUser.email).order('last_active', { ascending: false }).limit(1);
+      if(data && data.length > 0) existingCust = data[0];
+      else {
+        const { data: singleData } = await sb.from('customers').select('*').eq('email', googleUser.email).maybeSingle();
+        existingCust = singleData;
+      }
+    } catch(e){}
+  }
+
+  // Also check local profile storage for existing user data matching this email
+  const localProf = store.get('profile');
+  if(!existingCust && localProf && localProf.email && googleUser && googleUser.email && localProf.email.toLowerCase() === googleUser.email.toLowerCase() && localProf.phone){
+    existingCust = localProf;
+  }
+
+  // Auto-login returning user if their phone is already saved
+  if(googleUser && googleUser.email && existingCust && existingCust.phone){
+    const cleanPhone = String(existingCust.phone).replace(/\D/g, '').slice(-10);
+    if(cleanPhone.length === 10){
+      const googleRealName = (googleUser.user_metadata?.full_name || googleUser.user_metadata?.name || '').trim();
+      const profileName = (existingCust.name || googleRealName || googleUser.email.split('@')[0] || 'Customer').trim();
+      await setProfile(profileName, cleanPhone, googleUser.email, googleRealName);
+      confirmArmed = false;
+      window._confirmLoginState = null;
+      window._confirmingDetails = false;
+      window._cachedGoogleUser = null;
+      try {
+        localStorage.removeItem('tt_confirming_details');
+        sessionStorage.removeItem('tt_confirming_details');
+        sessionStorage.removeItem('tt_cached_google_user');
+        localStorage.removeItem('tt_oauth_in_flight');
+        localStorage.removeItem('tt_oauth_pending');
+        sessionStorage.removeItem('tt_oauth_pending');
+        _incomingOAuthCode = null;
+        const cleanUrl = window.location.origin + window.location.pathname + '#/';
+        window.history.replaceState({ thaaraiHomeGuard: true }, '', cleanUrl);
+      } catch(e){}
+      $('#confirm-login-modal')?.remove();
+      $('#tabbar')?.classList.remove('hidden');
+      $('#nav-back')?.classList.add('sm:hidden');
+      $('#msb')?.classList.remove('!hidden');
+      $('#msearch')?.classList.remove('!hidden');
+      $('#foot')?.classList.remove('!hidden');
+      setNav();
+      location.hash = '#/';
+      await home();
+      setTimeout(() => {
+        toast('Welcome back, ' + profileName.split(' ')[0] + '! ✓');
+      }, 400);
+      return;
+    }
   }
 
   // --- STATE 2: GOOGLE SIGN-IN COMPLETE -> ASK PROFILE NAME & MOBILE NUMBER ---
@@ -3221,47 +3232,59 @@ async function loginView(passedUser = null){
     const defaultPhone = existingCust?.phone ? String(existingCust.phone).replace(/\D/g, '').slice(-10) : '';
 
     app.innerHTML = `
-      <div id="confirm-details-card" class="max-w-sm mx-auto bg-white border border-gray-100 rounded-3xl p-6 sm:p-7 space-y-4 shadow-soft my-6 relative z-10">
-        <div class="text-center">
-          <div class="w-14 h-14 mx-auto rounded-full bg-emerald-50 border border-emerald-100 text-emerald-600 flex items-center justify-center shadow-soft">
+      <div id="confirm-details-card" class="max-w-sm mx-auto bg-white border border-slate-100 rounded-3xl p-6 sm:p-7 space-y-5 shadow-soft my-6 relative z-10">
+        <div class="text-center space-y-2">
+          <div class="w-14 h-14 mx-auto rounded-2xl bg-emerald-50 border border-emerald-100 text-emerald-600 flex items-center justify-center shadow-xs">
             <svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
               <polyline points="22 4 12 14.01 9 11.01"/>
             </svg>
           </div>
-          <h2 class="font-extrabold text-base mt-3 text-slate-900">Confirm Your Details</h2>
-          <p class="text-[11px] text-gray-500 mt-0.5">Signed in as <span class="font-bold text-slate-800">${esc(googleUser.email)}</span></p>
+          <div>
+            <h2 class="font-extrabold text-lg tracking-tight text-slate-900">Complete Your Profile</h2>
+            <p class="text-[11px] text-slate-500 mt-1">Just one step left to finish signing in</p>
+          </div>
+          <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-50 border border-slate-200/80 max-w-full">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" class="w-3.5 h-3.5 shrink-0">
+            <span class="text-[11px] font-bold text-slate-700 truncate">${esc(googleUser.email)}</span>
+          </div>
         </div>
 
         <!-- Hidden Google Real Name (uneditable, not visible to user) -->
         <input type="hidden" id="google-real-name" value="${esc(googleRealName)}">
 
-        <div class="space-y-3">
+        <div class="space-y-3.5">
           <div>
-            <label class="block text-xs font-semibold text-gray-700 mb-1">Profile Name</label>
-            <input id="ln" autofocus autocomplete="name" autocorrect="off" autocapitalize="words" spellcheck="false" type="text" maxlength="60" placeholder="Enter profile name" value="${esc(defaultProfileName)}" class="w-full rounded-2xl border border-gray-200 px-3.5 py-3.5 text-xs font-semibold text-gray-900 placeholder-gray-400 outline-none focus:border-slate-900 focus:ring-1 focus:ring-slate-900 transition">
-            <p class="text-[11px] text-gray-400 mt-1 font-medium">You can customize how your name appears on your account & orders.</p>
+            <label for="ln" class="block text-xs font-bold text-slate-700 mb-1.5">Full Name</label>
+            <input id="ln" autofocus autocomplete="name" autocorrect="off" autocapitalize="words" spellcheck="false" type="text" maxlength="60" placeholder="Enter your full name" value="${esc(defaultProfileName)}" class="w-full rounded-2xl border border-slate-200 bg-slate-50/40 focus:bg-white px-4 py-3.5 text-xs font-semibold text-slate-900 placeholder-slate-400 outline-none focus:border-slate-900 focus:ring-1 focus:ring-slate-900 transition">
+            <p class="text-[10px] text-slate-400 mt-1 font-medium">Shown on your orders & delivery labels</p>
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-gray-700 mb-1">Mobile Number (10 digits)</label>
-            <div class="flex items-center w-full rounded-2xl border border-gray-200 bg-white overflow-hidden focus-within:border-slate-900 focus-within:ring-1 focus-within:ring-slate-900 transition">
-              <span class="inline-flex items-center justify-center shrink-0 whitespace-nowrap min-w-[56px] px-3.5 py-3.5 text-xs font-bold text-gray-700 bg-gray-100/90 border-r border-gray-200 select-none tracking-wider">+91</span>
-              <input id="lp" type="tel" maxlength="10" inputmode="numeric" placeholder="Enter 10-digit mobile number" value="${esc(defaultPhone)}" class="min-w-0 flex-1 w-full bg-transparent px-3.5 py-3.5 text-xs font-semibold text-gray-900 placeholder-gray-400 outline-none">
+            <label for="lp" class="block text-xs font-bold text-slate-700 mb-1.5">Mobile Number <span class="text-slate-400 font-medium">(10 digits)</span></label>
+            <div class="flex items-center w-full rounded-2xl border border-slate-200 bg-slate-50/40 focus-within:bg-white overflow-hidden focus-within:border-slate-900 focus-within:ring-1 focus-within:ring-slate-900 transition">
+              <span class="inline-flex items-center justify-center shrink-0 whitespace-nowrap min-w-[56px] px-3.5 py-3.5 text-xs font-extrabold text-slate-700 bg-slate-100 border-r border-slate-200 select-none tracking-wider">+91</span>
+              <input id="lp" type="tel" maxlength="10" inputmode="numeric" placeholder="Enter 10-digit mobile number" value="${esc(defaultPhone)}" class="min-w-0 flex-1 w-full bg-transparent px-3.5 py-3.5 text-xs font-semibold text-slate-900 placeholder-slate-400 outline-none">
             </div>
-            <p class="text-[11px] text-gray-500 mt-1.5 flex items-start gap-1.5 font-medium leading-relaxed">
+            <p class="text-[11px] text-slate-500 mt-1.5 flex items-start gap-1.5 font-medium leading-relaxed">
               <svg class="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-              <span>Entered mobile number is used to receive product delivery updates.</span>
+              <span>Used for order confirmation &amp; delivery updates.</span>
             </p>
           </div>
         </div>
 
-        <div class="pt-2 space-y-2.5">
-          <button id="btn-confirm-login" class="${btn} w-full !py-3.5 text-xs font-bold shadow-soft">
-            Confirm & Complete Login
+        <div class="pt-1 space-y-2.5">
+          <button id="btn-confirm-login" type="button" class="${btn} w-full !py-3.5 text-xs font-bold shadow-soft">
+            Confirm &amp; Complete Login
           </button>
-          <button id="btn-switch-account" type="button" class="w-full text-slate-500 hover:text-slate-800 text-xs font-medium py-1.5 transition text-center">
-            Sign in with a different Google account
+          <button id="btn-switch-account" type="button" class="w-full flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 py-3 px-4 text-xs font-bold transition active:scale-[0.98] shadow-xs">
+            <svg class="w-4 h-4 text-slate-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M16 3h5v5"/>
+              <path d="M8 21H3v-5"/>
+              <path d="M21 3l-7 7"/>
+              <path d="M3 21l7-7"/>
+            </svg>
+            <span>Sign in with a different Google account</span>
           </button>
         </div>
       </div>
@@ -3287,10 +3310,8 @@ async function loginView(passedUser = null){
 
       focusTarget(nameInput);
       requestAnimationFrame(() => focusTarget(nameInput));
-      setTimeout(() => focusTarget(nameInput), 30);
-      setTimeout(() => focusTarget(nameInput), 100);
-      setTimeout(() => focusTarget(nameInput), 250);
-      setTimeout(() => focusTarget(nameInput), 500);
+      setTimeout(() => focusTarget(nameInput), 50);
+      setTimeout(() => focusTarget(nameInput), 180);
 
       const onScreenTouch = (e) => {
         if(e.target && (e.target.closest('button') || e.target.closest('a'))){
@@ -3327,7 +3348,7 @@ async function loginView(passedUser = null){
         return;
       }
       if(!/^[6-9]\d{9}$/.test(cleanPhone)){
-        toast('Please enter your 10-digit mobile number for delivery updates');
+        toast('Please enter a valid 10-digit mobile number');
         $('#lp')?.focus();
         return;
       }
@@ -3343,6 +3364,12 @@ async function loginView(passedUser = null){
         localStorage.removeItem('tt_confirming_details');
         sessionStorage.removeItem('tt_confirming_details');
         sessionStorage.removeItem('tt_cached_google_user');
+        localStorage.removeItem('tt_oauth_in_flight');
+        localStorage.removeItem('tt_oauth_pending');
+        sessionStorage.removeItem('tt_oauth_pending');
+        _incomingOAuthCode = null;
+        const cleanUrl = window.location.origin + window.location.pathname + '#/';
+        window.history.replaceState({ thaaraiHomeGuard: true }, '', cleanUrl);
       } catch(e){}
       $('#confirm-login-modal')?.remove();
       $('#tabbar')?.classList.remove('hidden');
@@ -3350,16 +3377,7 @@ async function loginView(passedUser = null){
       $('#msb')?.classList.remove('!hidden');
       $('#msearch')?.classList.remove('!hidden');
       $('#foot')?.classList.remove('!hidden');
-      localStorage.removeItem('tt_oauth_in_flight');
-      localStorage.removeItem('tt_oauth_pending');
-      sessionStorage.removeItem('tt_oauth_pending');
-      try {
-        _incomingOAuthCode = null;
-        const cleanUrl = window.location.origin + window.location.pathname + '#/';
-        window.history.replaceState({ thaaraiHomeGuard: true }, '', cleanUrl);
-      } catch(e){}
       setNav();
-      // Navigate to Home page as specifically requested
       location.hash = '#/';
       await home();
       setTimeout(() => {
@@ -3368,6 +3386,8 @@ async function loginView(passedUser = null){
     };
 
     $('#btn-switch-account').onclick = async () => {
+      const sbBtn = $('#btn-switch-account');
+      if(sbBtn){ sbBtn.disabled = true; }
       confirmArmed = false;
       window._confirmLoginState = null;
       window._confirmingDetails = false;
@@ -3390,7 +3410,7 @@ async function loginView(passedUser = null){
     return;
   }
 
-  // --- STATE 3: INITIAL SCREEN (ONLY GOOGLE LOGIN BUTTON) ---
+  // --- STATE 3: PROFESSIONAL E-COMMERCE GOOGLE LOGIN PAGE ---
   confirmArmed = false;
   window._confirmLoginState = null;
   window._confirmingDetails = false;
@@ -3401,26 +3421,63 @@ async function loginView(passedUser = null){
   $('#tabbar')?.classList.remove('hidden');
   $('#nav-back')?.classList.remove('!hidden');
   $('#foot')?.classList.remove('!hidden');
-  app.innerHTML = `
-    <div class="max-w-sm mx-auto bg-white border border-gray-100 rounded-3xl p-6 sm:p-7 space-y-5 shadow-soft my-6">
-      <div class="text-center">
-        <div class="w-14 h-14 mx-auto rounded-full bg-slate-900 text-white flex items-center justify-center shadow-soft">
-          <svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-            <circle cx="12" cy="7" r="4"/>
-          </svg>
-        </div>
-        <h2 class="font-extrabold text-base mt-3 text-slate-900">${esc(accUI.title || 'Welcome to Thaarai Tex')}</h2>
-        <p class="text-[11px] text-gray-500 mt-1">${esc(accUI.subtitle || 'Sign in with your Google account to get started.')}</p>
-      </div>
 
-      <div class="pt-2">
-        <button id="btn-user-google" type="button" class="w-full flex items-center justify-center gap-3 rounded-2xl border border-gray-200 bg-white hover:bg-gray-50 py-3.5 text-xs font-bold text-gray-800 shadow-xs transition active:scale-[0.99]">
-          <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" class="w-5 h-5 shrink-0" loading="lazy">
-          <span>Sign in with Google</span>
-        </button>
-        <div class="pt-3 text-center">
-          <p class="text-[11px] text-gray-400 font-medium">Safe & secure one-click sign in</p>
+  const brandName = SET.brand?.name || 'Thaarai Tex';
+  app.innerHTML = `
+    <div class="max-w-sm mx-auto my-6 sm:my-10 px-1">
+      <div class="bg-white border border-slate-100 rounded-3xl p-6 sm:p-8 shadow-soft space-y-6 relative overflow-hidden">
+        <!-- Subtle Top Brand Accent -->
+        <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-slate-900 via-slate-700 to-emerald-600"></div>
+
+        <!-- Brand & Welcome Header -->
+        <div class="text-center space-y-2 pt-1">
+          <div class="w-14 h-14 mx-auto rounded-2xl bg-slate-900 text-white flex items-center justify-center shadow-soft">
+            <svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+              <line x1="3" y1="6" x2="21" y2="6"/>
+              <path d="M16 10a4 4 0 0 1-8 0"/>
+            </svg>
+          </div>
+          <p class="text-[10px] font-extrabold uppercase tracking-widest text-emerald-700">${esc(brandName)} Account</p>
+          <h2 class="font-extrabold text-xl tracking-tight text-slate-900">${esc(accUI.title || 'Welcome Back')}</h2>
+          <p class="text-xs text-slate-500 leading-relaxed">${esc(accUI.subtitle || 'Sign in to track your orders, save favourites & checkout faster.')}</p>
+        </div>
+
+        <!-- E-Commerce Perks Grid -->
+        <div class="grid grid-cols-3 gap-2 pt-1">
+          <div class="rounded-2xl bg-slate-50 border border-slate-100 p-2.5 text-center space-y-1">
+            <div class="w-7 h-7 mx-auto rounded-xl bg-white shadow-xs flex items-center justify-center text-slate-800">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            </div>
+            <p class="text-[10px] font-bold text-slate-700 leading-tight">Fast Checkout</p>
+          </div>
+          <div class="rounded-2xl bg-slate-50 border border-slate-100 p-2.5 text-center space-y-1">
+            <div class="w-7 h-7 mx-auto rounded-xl bg-white shadow-xs flex items-center justify-center text-slate-800">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+            </div>
+            <p class="text-[10px] font-bold text-slate-700 leading-tight">Order Tracking</p>
+          </div>
+          <div class="rounded-2xl bg-slate-50 border border-slate-100 p-2.5 text-center space-y-1">
+            <div class="w-7 h-7 mx-auto rounded-xl bg-white shadow-xs flex items-center justify-center text-rose-500">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+            </div>
+            <p class="text-[10px] font-bold text-slate-700 leading-tight">Saved Wishlist</p>
+          </div>
+        </div>
+
+        <!-- Primary Google Sign-In CTA -->
+        <div class="space-y-3 pt-1">
+          <button id="btn-user-google" type="button" class="w-full flex items-center justify-center gap-3 rounded-2xl border border-slate-200 bg-white hover:bg-slate-50 hover:border-slate-300 py-3.5 px-4 text-xs font-extrabold text-slate-800 shadow-sm transition active:scale-[0.98]">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" class="w-5 h-5 shrink-0" loading="lazy">
+            <span>Continue with Google</span>
+          </button>
+
+          <div class="flex items-center justify-center gap-1.5 text-[11px] text-slate-400 font-medium pt-1">
+            <svg class="w-3.5 h-3.5 text-emerald-600 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+            </svg>
+            <span>100% secure one-tap authentication</span>
+          </div>
         </div>
       </div>
     </div>
@@ -3429,11 +3486,14 @@ async function loginView(passedUser = null){
   const bg = $('#btn-user-google');
   if(bg){
     bg.onclick = async () => {
+      if(bg.disabled) return;
       bg.disabled = true;
+      bg.classList.add('opacity-70');
 
       try {
         if(window.location.protocol === 'file:'){
           bg.disabled = false;
+          bg.classList.remove('opacity-70');
           await showModalDialog({
             title: 'Live Website Required',
             message: 'Google Sign-In cannot redirect back to a local file (file:///...). Please test Google Sign-In on your live website (https://thaaraitex.in) or via a local web server.',
@@ -3443,22 +3503,29 @@ async function loginView(passedUser = null){
           return;
         }
 
-        // Clear logged out flag and mark oauth pending in sessionStorage
+        if(!sb){
+          throw new Error('Authentication service is currently unavailable. Please refresh and try again.');
+        }
+
+        // Clear logged out flag and mark active OAuth flow in sessionStorage only
         localStorage.removeItem('tt_logged_out');
         sessionStorage.setItem('tt_oauth_pending', '1');
 
         const cleanTarget = window.location.origin + (window.location.pathname || '/');
 
-        // Redirect directly to clean target URL without hash fragment
         const { error } = await sb.auth.signInWithOAuth({
           provider: 'google',
           options: {
-            redirectTo: cleanTarget
+            redirectTo: cleanTarget,
+            queryParams: {
+              prompt: 'select_account'
+            }
           }
         });
         if(error) throw error;
       } catch(err){
         bg.disabled = false;
+        bg.classList.remove('opacity-70');
         sessionStorage.removeItem('tt_oauth_pending');
         toast(err.message || 'Google Sign-In error');
       }
@@ -3823,11 +3890,10 @@ async function route(){
       return await loginView(user);
     }
 
-    // 2. If user is visiting root/home or login, has no profile, but an active Google OAuth session exists:
-    if(!p && (rawHash === '' || rawHash === '#' || rawHash === '#/' || rawHash.startsWith('#/login')) && localStorage.getItem('tt_logged_out') !== '1'){
+    // 2. Only resume Name & Number confirmation if actively confirming in this tab session on #/login
+    if(!p && rawHash.startsWith('#/login') && sessionStorage.getItem('tt_confirming_details') === '1' && localStorage.getItem('tt_logged_out') !== '1'){
       const user = await resolveOAuthUser();
       if(user && user.email){
-        location.hash = '#/login';
         return await loginView(user);
       }
     }
