@@ -825,7 +825,9 @@ async function initAuth(){
     if(p && (p.phone === '9876543210' || p.phone === '9999999999' || !p.phone || !p.name)){
       localStorage.removeItem('profile');
     }
-    // If user closed the website/tab before completing Name & Number login, purge incomplete OAuth session so next login asks to relogin
+    // If user closed the website/tab before completing Name & Number login, purge incomplete OAuth session & open at Home page
+    const isFreshOpen = !sessionStorage.getItem('tt_tab_opened');
+    sessionStorage.setItem('tt_tab_opened', '1');
     const hasCompletedProfile = !!profile();
     const hasActiveOAuthFlow = _isOAuthIncoming || sessionStorage.getItem('tt_oauth_pending') === '1' || sessionStorage.getItem('tt_confirming_details') === '1';
     if(!hasCompletedProfile && !hasActiveOAuthFlow){
@@ -835,12 +837,19 @@ async function initAuth(){
       localStorage.removeItem('tt_confirming_details');
       localStorage.removeItem('tt_oauth_pending');
       localStorage.removeItem('tt_oauth_in_flight');
+      sessionStorage.removeItem('tt_cached_google_user');
       for(let key of Object.keys(localStorage)){
         if(key.startsWith('sb-') && (key.endsWith('-auth-token') || key.endsWith('-token-code-verifier'))){
           localStorage.removeItem(key);
         }
       }
       if(sb){ try{ await sb.auth.signOut(); }catch(e){} }
+      if(isFreshOpen && location.hash && location.hash !== '#/' && location.hash !== '#'){
+        try {
+          history.replaceState(null, '', window.location.pathname + window.location.search + '#/');
+        } catch(e){}
+        location.hash = '#/';
+      }
     }
   }catch(e){}
   setNav();
@@ -3273,20 +3282,17 @@ async function loginView(passedUser = null){
           </div>
         </div>
 
-        <div class="pt-1 space-y-2.5">
+        <div class="pt-1">
           <button id="btn-confirm-login" type="button" class="${btn} w-full !py-3.5 text-xs font-bold shadow-soft">
             Confirm &amp; Complete Login
           </button>
-          <button id="btn-switch-account" type="button" class="w-full flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 py-3 px-4 text-xs font-bold transition active:scale-[0.98] shadow-xs">
-            <svg class="w-4 h-4 text-slate-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M16 3h5v5"/>
-              <path d="M8 21H3v-5"/>
-              <path d="M21 3l-7 7"/>
-              <path d="M3 21l7-7"/>
-            </svg>
-            <span>Sign in with a different Google account</span>
-          </button>
         </div>
+      </div>
+
+      <div class="max-w-sm mx-auto -mt-2 mb-6 px-1 relative z-10">
+        <button id="btn-switch-account" type="button" class="w-full flex items-center justify-center rounded-2xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 py-3.5 px-4 text-xs font-bold transition active:scale-[0.98] shadow-soft">
+          <span>Sign in with a different Google account</span>
+        </button>
       </div>
     `;
 
