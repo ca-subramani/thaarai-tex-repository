@@ -3424,13 +3424,24 @@ async function loginView(passedUser = null){
 
   const brandName = SET.brand?.name || 'Thaarai Tex';
   app.innerHTML = `
+    <style>
+      @keyframes ttAccentFlow {
+        0% { background-position: 0% 50%; }
+        100% { background-position: 300% 50%; }
+      }
+      .tt-accent-bar {
+        background: linear-gradient(90deg, #0f172a 0%, #059669 33%, #0f172a 66%, #10b981 100%);
+        background-size: 300% 100%;
+        animation: ttAccentFlow 4s linear infinite;
+      }
+    </style>
     <div class="max-w-sm mx-auto my-6 sm:my-10 px-1">
       <div class="bg-white border border-slate-100 rounded-3xl p-6 sm:p-8 shadow-soft space-y-6 relative overflow-hidden">
-        <!-- Subtle Top Brand Accent -->
-        <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-slate-900 via-slate-700 to-emerald-600"></div>
+        <!-- Animated Top Brand Accent -->
+        <div class="absolute top-0 left-0 right-0 h-1.5 tt-accent-bar"></div>
 
         <!-- Brand & Welcome Header -->
-        <div class="text-center space-y-2 pt-1">
+        <div class="text-center space-y-2 pt-2">
           <div class="w-14 h-14 mx-auto rounded-2xl bg-slate-900 text-white flex items-center justify-center shadow-soft">
             <svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
               <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
@@ -3440,29 +3451,7 @@ async function loginView(passedUser = null){
           </div>
           <p class="text-[10px] font-extrabold uppercase tracking-widest text-emerald-700">${esc(brandName)} Account</p>
           <h2 class="font-extrabold text-xl tracking-tight text-slate-900">${esc(accUI.title || 'Welcome Back')}</h2>
-          <p class="text-xs text-slate-500 leading-relaxed">${esc(accUI.subtitle || 'Sign in to track your orders, save favourites & checkout faster.')}</p>
-        </div>
-
-        <!-- E-Commerce Perks Grid -->
-        <div class="grid grid-cols-3 gap-2 pt-1">
-          <div class="rounded-2xl bg-slate-50 border border-slate-100 p-2.5 text-center space-y-1">
-            <div class="w-7 h-7 mx-auto rounded-xl bg-white shadow-xs flex items-center justify-center text-slate-800">
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-            </div>
-            <p class="text-[10px] font-bold text-slate-700 leading-tight">Fast Checkout</p>
-          </div>
-          <div class="rounded-2xl bg-slate-50 border border-slate-100 p-2.5 text-center space-y-1">
-            <div class="w-7 h-7 mx-auto rounded-xl bg-white shadow-xs flex items-center justify-center text-slate-800">
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-            </div>
-            <p class="text-[10px] font-bold text-slate-700 leading-tight">Order Tracking</p>
-          </div>
-          <div class="rounded-2xl bg-slate-50 border border-slate-100 p-2.5 text-center space-y-1">
-            <div class="w-7 h-7 mx-auto rounded-xl bg-white shadow-xs flex items-center justify-center text-rose-500">
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
-            </div>
-            <p class="text-[10px] font-bold text-slate-700 leading-tight">Saved Wishlist</p>
-          </div>
+          <p class="text-xs text-slate-500 leading-relaxed">${esc(accUI.subtitle || 'Sign in with your Google account to get started.')}</p>
         </div>
 
         <!-- Primary Google Sign-In CTA -->
@@ -4045,36 +4034,13 @@ function showConfirmLoginPopup(){
 
 function handleConfirmBackNavigation(){
   if(!isUserConfirmingDetails()) return false;
-  const popup = document.getElementById('confirm-login-modal');
-  const isOpen = Boolean(popup && !popup.classList.contains('hidden') && popup.style.display !== 'none');
-
-  if(isOpen){
-    // Second back swipe (while popup is visible): Close popup and stay on Name & Mobile Number page!
-    if(popup){
-      popup.style.display = 'none';
-      popup.classList.add('hidden');
-    }
-    try {
-      history.pushState({ thaaraiConfirmCard: true, t: Date.now() }, '', '#/login');
-    } catch(e){}
-    const inp = $('#ln');
-    if(inp){
-      try {
-        inp.focus({ preventScroll: false });
-        inp.click();
-        const len = inp.value.length;
-        inp.setSelectionRange(len, len);
-      } catch(e){}
-    }
-    return true;
-  } else {
-    // First back swipe: Display the "Please Confirm Login" popup!
-    showConfirmLoginPopup();
-    try {
-      history.pushState({ thaaraiConfirmPopup: true, t: Date.now() }, '', '#/login?modal=confirm');
-    } catch(e){}
-    return true;
-  }
+  try {
+    sessionStorage.setItem('tt_confirming_details', '1');
+    history.pushState({ thaaraiConfirmGuard: true, t: Date.now() }, '', '#/login');
+  } catch(e){}
+  location.href = '#/login';
+  window.location.reload();
+  return true;
 }
 window.handleConfirmBackNavigation = handleConfirmBackNavigation;
 
@@ -4208,7 +4174,7 @@ $('#nav-back').onclick = () => {
 window.addEventListener('hashchange', (e) => {
   if(isUserConfirmingDetails()){
     if(!location.hash.startsWith('#/login')){
-      location.hash = '#/login';
+      handleConfirmBackNavigation();
     }
     return;
   }
