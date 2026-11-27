@@ -231,6 +231,8 @@ function handleConfirmBackNavigation(){
   $('#msb')?.classList.remove('!hidden');
   $('#msearch')?.classList.remove('!hidden');
   $('#foot')?.classList.remove('!hidden');
+  document.documentElement.classList.remove('overflow-hidden', 'overscroll-none');
+  document.body.classList.remove('overflow-hidden', 'overscroll-none');
   try {
     if(window.location.search){
       history.replaceState({ thaaraiLoginPage: true }, '', window.location.pathname + '#/login');
