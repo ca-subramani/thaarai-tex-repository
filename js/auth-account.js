@@ -385,9 +385,11 @@ async function loginView(passedUser = null){
       if(bg.disabled) return;
       bg.disabled = true;
       bg.classList.add('opacity-70');
+      showNeonLoader();
 
       try {
         if(window.location.protocol === 'file:'){
+          hideNeonLoader();
           bg.disabled = false;
           bg.classList.remove('opacity-70');
           await showModalDialog({
@@ -420,6 +422,7 @@ async function loginView(passedUser = null){
         });
         if(error) throw error;
       } catch(err){
+        hideNeonLoader();
         bg.disabled = false;
         bg.classList.remove('opacity-70');
         sessionStorage.removeItem('tt_oauth_pending');
