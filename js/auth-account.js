@@ -65,10 +65,10 @@ async function loginView(passedUser = null){
   let existingCust = null;
   if(googleUser && googleUser.email && sb){
     try {
-      const { data } = await sb.from('customers').select('*').eq('email', googleUser.email).order('last_active', { ascending: false }).limit(1);
+      const { data } = await sb.from('customers').select('*').ilike('email', googleUser.email).order('last_active', { ascending: false }).limit(1);
       if(data && data.length > 0) existingCust = data[0];
       else {
-        const { data: singleData } = await sb.from('customers').select('*').eq('email', googleUser.email).maybeSingle();
+        const { data: singleData } = await sb.from('customers').select('*').ilike('email', googleUser.email).maybeSingle();
         existingCust = singleData;
       }
     } catch(e){}
@@ -109,11 +109,11 @@ async function loginView(passedUser = null){
       $('#msearch')?.classList.remove('!hidden');
       $('#foot')?.classList.remove('!hidden');
       setNav();
-      location.hash = '#/';
+      const welcomeMsg = 'Welcome back, ' + profileName.split(' ')[0] + '!';
+      try { sessionStorage.setItem('tt_welcome_toast', welcomeMsg); } catch(e){}
       await home();
-      setTimeout(() => {
-        toast('Welcome back, ' + profileName.split(' ')[0] + '! ✓');
-      }, 400);
+      hideNeonLoader();
+      toast(welcomeMsg);
       return;
     }
   }
@@ -153,7 +153,6 @@ async function loginView(passedUser = null){
 
     window._confirmGuardArmed = false;
     try {
-      history.replaceState({ thaaraiHomeGuard: true }, '', '#/');
       history.pushState({ thaaraiLoginPage: true }, '', '#/login');
       history.pushState({ thaaraiConfirmCard: true }, '', '#/login');
     } catch(e){}
@@ -361,13 +360,6 @@ async function loginView(passedUser = null){
       <div class="tt-animated-box border border-emerald-900/40 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6 relative overflow-hidden">
         <!-- Brand & Welcome Header -->
         <div class="text-center space-y-2 pt-1">
-          <div class="w-14 h-14 mx-auto rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 text-white flex items-center justify-center shadow-soft">
-            <svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
-              <line x1="3" y1="6" x2="21" y2="6"/>
-              <path d="M16 10a4 4 0 0 1-8 0"/>
-            </svg>
-          </div>
           <p class="text-[10px] font-extrabold uppercase tracking-widest text-emerald-400">${esc(brandName)} Account</p>
           <h2 class="font-extrabold text-xl tracking-tight text-white">${esc(accUI.title || 'Welcome Back')}</h2>
           <p class="text-xs text-slate-300 leading-relaxed">${esc(accUI.subtitle || 'Sign in with your Google account to get started.')}</p>
@@ -380,10 +372,7 @@ async function loginView(passedUser = null){
             <span>Continue with Google</span>
           </button>
 
-          <div class="flex items-center justify-center gap-1.5 text-[11px] text-slate-300/80 font-medium pt-1">
-            <svg class="w-3.5 h-3.5 text-emerald-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-            </svg>
+          <div class="text-center text-[11px] text-slate-300/80 font-medium pt-1">
             <span>100% secure one-tap authentication</span>
           </div>
         </div>
@@ -585,7 +574,7 @@ async function orderDetailView(orderId,pf){
       ${status==='cancelled'?'':`<div class="grid grid-cols-4 gap-1.5 text-center">${['Placed','Confirmed','Shipped','Delivered'].map((st,i)=>`<div><div class="h-1.5 rounded-full mb-1.5 ${i<=cur?'bg-slate-900':'bg-gray-200'}"></div><span class="text-[10px] font-bold ${i<=cur?'text-slate-900':'text-gray-400'}">${st}</span></div>`).join('')}</div>`}
     </div>
     <div class="bg-white rounded-3xl p-5 shadow-soft border border-gray-100 space-y-3"><h3 class="font-extrabold text-xs text-gray-900 uppercase tracking-wider">Ordered products (${items.length})</h3>
-      <div class="divide-y divide-gray-100">${items.map(i=>{const productId=i.product_id??i.id, productHref=productId!==undefined&&productId!==null?'#/p/'+encodeURIComponent(productId):'';const pCode=getProductId(i);return `<div class="py-3 flex items-center gap-3.5"><a ${productHref?`href="${productHref}"`:''} class="shrink-0 ${productHref?'cursor-pointer':''}"><img src="${esc(i.image||'https://placehold.co/100x120?text=Saree')}" alt="${esc(i.name||'Ordered saree')}" class="w-16 h-20 object-cover rounded-2xl bg-gray-50 border"></a><div class="flex-1 min-w-0"><div class="flex items-center gap-1.5 flex-wrap"><span class="font-mono text-[9px] font-black text-slate-800 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded select-all">ID: ${esc(pCode)}</span><${productHref?'a href="'+productHref+'"':'span'} class="font-bold text-xs text-gray-900 truncate block">${esc(i.name||'Saree')}</${productHref?'a':'span'}></div><p class="text-[11px] text-gray-500 mt-1">Unit price: ${inr(i.price)} · Quantity: <b class="text-gray-900 font-bold">${i.quantity||1}</b></p><b class="text-xs text-slate-900 mt-1 block">${inr(Number(i.price||0)*Number(i.quantity||1))}</b></div></div>`}).join('')}</div></div>
+      <div class="divide-y divide-gray-100">${items.map(i=>{const productId=i.product_id??i.id, productHref=productId!==undefined&&productId!==null?'#/p/'+encodeURIComponent(productId):'';return `<div class="py-3 flex items-center gap-3.5"><a ${productHref?`href="${productHref}"`:''} class="shrink-0 ${productHref?'cursor-pointer':''}"><img src="${esc(i.image||'https://placehold.co/100x120?text=Saree')}" alt="${esc(i.name||'Ordered saree')}" class="w-16 h-20 object-cover rounded-2xl bg-gray-50 border"></a><div class="flex-1 min-w-0"><div class="flex items-center gap-1.5 flex-wrap"><${productHref?'a href="'+productHref+'"':'span'} class="font-bold text-xs text-gray-900 truncate block">${esc(i.name||'Saree')}</${productHref?'a':'span'}></div><p class="text-[11px] text-gray-500 mt-1">Unit price: ${inr(i.price)} · Quantity: <b class="text-gray-900 font-bold">${i.quantity||1}</b></p><b class="text-xs text-slate-900 mt-1 block">${inr(Number(i.price||0)*Number(i.quantity||1))}</b></div></div>`}).join('')}</div></div>
 
     <!-- Complete Detailed Delivery Address -->
     <div class="bg-white rounded-3xl p-5 shadow-soft border border-gray-100 space-y-2.5 text-xs">
