@@ -183,7 +183,15 @@ input,select,textarea{font-size:16px!important}
     }
     sessionStorage.setItem('tt_splash_shown', '1');
   } catch(e) {}
+  var tc = document.querySelector('meta[name="theme-color"]');
+  var origTc = tc ? tc.getAttribute('content') : '';
+  document.documentElement.style.backgroundColor = '#000000';
+  document.body.style.backgroundColor = '#000000';
+  if(tc) tc.setAttribute('content', '#000000');
   setTimeout(function(){
+    document.documentElement.style.backgroundColor = '';
+    document.body.style.backgroundColor = '';
+    if(tc && origTc) tc.setAttribute('content', origTc);
     el.classList.add('tt-splash-hide');
     setTimeout(function(){ if(el && el.parentNode) el.parentNode.removeChild(el); }, 450);
   }, 2600);
