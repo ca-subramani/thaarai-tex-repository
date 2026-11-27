@@ -107,51 +107,40 @@ input,select,textarea{font-size:16px!important}
   visibility: hidden;
   pointer-events: none;
 }
-@keyframes ttLetterT {
+@keyframes ttMonoT1 {
   0% { opacity: 0; transform: scale(0.9); }
   100% { opacity: 1; transform: scale(1); }
 }
-@keyframes ttLetterX {
-  0%, 30% { opacity: 0; transform: scale(0.9); }
-  55%, 100% { opacity: 1; transform: scale(1); }
+@keyframes ttMonoT2 {
+  0%, 15% { opacity: 0; transform: scale(0.9); }
+  45%, 100% { opacity: 1; transform: scale(1); }
 }
-@keyframes ttMidReveal {
-  0%, 48% { max-width: 2.2em; opacity: 0; transform: scale(0.92); }
-  72%, 100% { max-width: 7.5em; opacity: 1; transform: scale(1); }
+@keyframes ttWordPart1 {
+  0%, 42% { max-width: 0.35em; opacity: 0; }
+  72%, 100% { max-width: 5.5em; opacity: 1; }
 }
-@keyframes ttSmileDraw {
-  0%, 10% { stroke-dashoffset: 190; opacity: 0; }
-  18% { opacity: 1; }
-  55%, 100% { stroke-dashoffset: 0; opacity: 1; }
+@keyframes ttWordPart2 {
+  0%, 48% { max-width: 0; opacity: 0; }
+  76%, 100% { max-width: 2.2em; opacity: 1; }
 }
-@keyframes ttArrowHead {
-  0%, 42% { stroke-dashoffset: 36; opacity: 0; }
-  58%, 100% { stroke-dashoffset: 0; opacity: 1; }
+@keyframes ttSilkThread {
+  0%, 20% { opacity: 0; transform: scaleX(0); filter: drop-shadow(0 0 0 rgba(16,185,129,0)); }
+  55% { opacity: 1; filter: drop-shadow(0 0 12px rgba(52,211,153,0.95)); }
+  85%, 100% { opacity: 1; transform: scaleX(1); filter: drop-shadow(0 0 4px rgba(16,185,129,0.5)); }
 }
-@keyframes ttSmileGlow {
-  0%, 10% { filter: drop-shadow(0 0 0 rgba(16,185,129,0)); }
-  45% { filter: drop-shadow(0 0 12px rgba(52,211,153,0.95)); }
-  75%, 100% { filter: drop-shadow(0 0 3px rgba(16,185,129,0.45)); }
-}
-.tt-sp-t { animation: ttLetterT 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
-.tt-sp-x { animation: ttLetterX 1.3s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
-.tt-sp-mid {
+.tt-sp-t1 { animation: ttMonoT1 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+.tt-sp-t2 { animation: ttMonoT2 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+.tt-sp-p1, .tt-sp-p2 {
   display: inline-block;
   overflow: hidden;
   white-space: pre;
   vertical-align: bottom;
-  animation: ttMidReveal 1.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
-.tt-sp-svg { animation: ttSmileGlow 1.8s ease-out forwards; }
-.tt-sp-arc {
-  stroke-dasharray: 190;
-  stroke-dashoffset: 190;
-  animation: ttSmileDraw 1.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-}
-.tt-sp-tip {
-  stroke-dasharray: 36;
-  stroke-dashoffset: 36;
-  animation: ttArrowHead 1.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+.tt-sp-p1 { animation: ttWordPart1 1.65s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+.tt-sp-p2 { animation: ttWordPart2 1.65s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+.tt-sp-thread {
+  transform-origin: center;
+  animation: ttSilkThread 1.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 </style>
 </head>
@@ -159,13 +148,10 @@ input,select,textarea{font-size:16px!important}
 
 <div id="tt-splash" class="fixed inset-0 z-[99999] flex items-center justify-center px-6 text-center select-none touch-none">
   <div class="inline-flex flex-col items-center">
-    <div class="inline-flex items-baseline text-white text-3xl sm:text-5xl font-extrabold tracking-tight leading-none" style="font-family:'Plus Jakarta Sans',system-ui,sans-serif">
-      <span class="tt-sp-t">T</span><span class="tt-sp-mid">haarai Te</span><span class="tt-sp-x">x</span>
-    </div>
-    <svg class="tt-sp-svg w-32 sm:w-44 h-6 -mt-0.5 overflow-visible" viewBox="0 0 180 28" fill="none">
-      <path class="tt-sp-arc" d="M 16 7 Q 90 27 162 8" stroke="#10b981" stroke-width="3.6" stroke-linecap="round"/>
-      <path class="tt-sp-tip" d="M 153 4 L 165 8 L 158 17" stroke="#10b981" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
+    <h1 class="inline-flex items-baseline text-white text-3xl sm:text-5xl font-extrabold tracking-tight leading-none" style="font-family:'Plus Jakarta Sans',system-ui,sans-serif">
+      <span class="tt-sp-t1">T</span><span class="tt-sp-p1">haarai </span><span class="tt-sp-t2">T</span><span class="tt-sp-p2">ex</span>
+    </h1>
+    <div class="tt-sp-thread w-28 sm:w-40 h-[2.5px] mt-3 rounded-full bg-gradient-to-r from-emerald-600 via-emerald-400 to-emerald-600"></div>
   </div>
 </div>
 <script>
