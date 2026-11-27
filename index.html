@@ -99,27 +99,74 @@ input,select,textarea{font-size:16px!important}
 
 /* Full-screen Brand Splash Screen */
 #tt-splash {
-  background: radial-gradient(circle at 50% 45%, #064e3b 0%, #090d16 58%, #05070c 100%);
-  transition: opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1), visibility 0.45s ease-out;
+  background: #000000;
+  transition: opacity 0.4s cubic-bezier(0.22, 1, 0.36, 1), visibility 0.4s ease-out;
 }
 #tt-splash.tt-splash-hide {
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
 }
-@keyframes ttSplashTitle {
-  0% { opacity: 0; transform: translateY(14px) scale(0.96); letter-spacing: 0.28em; }
-  100% { opacity: 1; transform: translateY(0) scale(1); letter-spacing: 0.14em; }
+@keyframes ttLetterT {
+  0% { opacity: 0; transform: scale(0.9); }
+  100% { opacity: 1; transform: scale(1); }
 }
-.tt-splash-title {
-  animation: ttSplashTitle 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+@keyframes ttLetterX {
+  0%, 30% { opacity: 0; transform: scale(0.9); }
+  55%, 100% { opacity: 1; transform: scale(1); }
+}
+@keyframes ttMidReveal {
+  0%, 48% { max-width: 2.2em; opacity: 0; transform: scale(0.92); }
+  72%, 100% { max-width: 7.5em; opacity: 1; transform: scale(1); }
+}
+@keyframes ttSmileDraw {
+  0%, 10% { stroke-dashoffset: 190; opacity: 0; }
+  18% { opacity: 1; }
+  55%, 100% { stroke-dashoffset: 0; opacity: 1; }
+}
+@keyframes ttArrowHead {
+  0%, 42% { stroke-dashoffset: 36; opacity: 0; }
+  58%, 100% { stroke-dashoffset: 0; opacity: 1; }
+}
+@keyframes ttSmileGlow {
+  0%, 10% { filter: drop-shadow(0 0 0 rgba(16,185,129,0)); }
+  45% { filter: drop-shadow(0 0 12px rgba(52,211,153,0.95)); }
+  75%, 100% { filter: drop-shadow(0 0 3px rgba(16,185,129,0.45)); }
+}
+.tt-sp-t { animation: ttLetterT 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+.tt-sp-x { animation: ttLetterX 1.3s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+.tt-sp-mid {
+  display: inline-block;
+  overflow: hidden;
+  white-space: nowrap;
+  vertical-align: bottom;
+  animation: ttMidReveal 1.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+.tt-sp-svg { animation: ttSmileGlow 1.8s ease-out forwards; }
+.tt-sp-arc {
+  stroke-dasharray: 190;
+  stroke-dashoffset: 190;
+  animation: ttSmileDraw 1.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+.tt-sp-tip {
+  stroke-dasharray: 36;
+  stroke-dashoffset: 36;
+  animation: ttArrowHead 1.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 </style>
 </head>
 <body class="text-gray-900 antialiased selection:bg-slate-900 selection:text-white">
 
 <div id="tt-splash" class="fixed inset-0 z-[99999] flex items-center justify-center px-6 text-center select-none touch-none">
-  <h1 class="tt-splash-title text-white text-2xl sm:text-4xl font-extrabold uppercase tracking-[0.14em]">THAARAI TEX</h1>
+  <div class="inline-flex flex-col items-center">
+    <div class="inline-flex items-baseline text-white text-3xl sm:text-5xl font-extrabold tracking-tight leading-none" style="font-family:'Plus Jakarta Sans',system-ui,sans-serif">
+      <span class="tt-sp-t">t</span><span class="tt-sp-mid">haarai te</span><span class="tt-sp-x">x</span>
+    </div>
+    <svg class="tt-sp-svg w-32 sm:w-44 h-6 -mt-0.5 overflow-visible" viewBox="0 0 180 28" fill="none">
+      <path class="tt-sp-arc" d="M 16 7 Q 90 27 162 8" stroke="#10b981" stroke-width="3.6" stroke-linecap="round"/>
+      <path class="tt-sp-tip" d="M 153 4 L 165 8 L 158 17" stroke="#10b981" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </div>
 </div>
 <script>
 (function(){
@@ -139,7 +186,7 @@ input,select,textarea{font-size:16px!important}
   setTimeout(function(){
     el.classList.add('tt-splash-hide');
     setTimeout(function(){ if(el && el.parentNode) el.parentNode.removeChild(el); }, 480);
-  }, 1350);
+  }, 2100);
 })();
 </script>
 
