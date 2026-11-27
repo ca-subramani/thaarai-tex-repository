@@ -175,7 +175,6 @@ async function checkout(){
                   <img src="${img(l.p)}" alt="" class="w-16 h-20 object-cover rounded-xl bg-white border border-gray-200 shrink-0 shadow-sm">
                   <div class="min-w-0 flex-1">
                     <div class="flex items-center gap-1.5 flex-wrap">
-                      <span class="font-mono text-[9px] font-black text-slate-800 bg-white border border-gray-200 px-1.5 py-0.5 rounded select-all shadow-2xs">ID: ${esc(getProductId(l.p))}</span>
                       <h3 class="font-extrabold text-xs sm:text-sm text-slate-900 truncate">${esc(l.p.name)}</h3>
                     </div>
                     <div class="flex items-center gap-2 mt-1 text-xs text-gray-500 font-medium">
@@ -733,7 +732,6 @@ async function checkout(){
                       <img src="${img(l.p)}" alt="" class="w-12 h-14 object-cover rounded-lg bg-gray-50 border border-gray-200 shrink-0">
                       <div class="min-w-0">
                         <div class="flex items-center gap-1.5">
-                          <span class="font-mono text-[9px] font-black text-slate-800 bg-gray-100 px-1 py-0.5 rounded">ID: ${esc(getProductId(l.p))}</span>
                           <p class="font-bold text-xs text-slate-900 truncate">${esc(l.p.name)}</p>
                         </div>
                         <p class="text-[11px] text-gray-500 mt-0.5 font-medium">${inr(l.p.price)} × <b>${l.qty}</b></p>
