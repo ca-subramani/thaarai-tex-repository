@@ -111,13 +111,17 @@ input,select,textarea{font-size:16px!important}
   0% { opacity: 0; transform: scale(0.9); }
   100% { opacity: 1; transform: scale(1); }
 }
-@keyframes ttLetterX {
+@keyframes ttLetterT2 {
   0%, 30% { opacity: 0; transform: scale(0.9); }
   55%, 100% { opacity: 1; transform: scale(1); }
 }
 @keyframes ttMidReveal {
-  0%, 48% { max-width: 2.2em; opacity: 0; transform: scale(0.92); }
-  72%, 100% { max-width: 7.5em; opacity: 1; transform: scale(1); }
+  0%, 48% { max-width: 2.1em; opacity: 0; transform: scale(0.92); }
+  72%, 100% { max-width: 5.5em; opacity: 1; transform: scale(1); }
+}
+@keyframes ttExReveal {
+  0%, 52% { max-width: 0; opacity: 0; transform: translateX(-4px); }
+  74%, 100% { max-width: 2.2em; opacity: 1; transform: translateX(0); }
 }
 @keyframes ttSmileDraw {
   0%, 10% { stroke-dashoffset: 190; opacity: 0; }
@@ -134,14 +138,15 @@ input,select,textarea{font-size:16px!important}
   75%, 100% { filter: drop-shadow(0 0 3px rgba(16,185,129,0.45)); }
 }
 .tt-sp-t { animation: ttLetterT 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
-.tt-sp-x { animation: ttLetterX 1.3s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
-.tt-sp-mid {
+.tt-sp-t2 { animation: ttLetterT2 1.3s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+.tt-sp-mid, .tt-sp-ex {
   display: inline-block;
   overflow: hidden;
-  white-space: nowrap;
+  white-space: pre;
   vertical-align: bottom;
-  animation: ttMidReveal 1.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
+.tt-sp-mid { animation: ttMidReveal 1.7s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+.tt-sp-ex { animation: ttExReveal 1.7s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
 .tt-sp-svg { animation: ttSmileGlow 1.8s ease-out forwards; }
 .tt-sp-arc {
   stroke-dasharray: 190;
@@ -158,14 +163,14 @@ input,select,textarea{font-size:16px!important}
 <body class="text-gray-900 antialiased selection:bg-slate-900 selection:text-white">
 
 <div id="tt-splash" class="fixed inset-0 z-[99999] flex items-center justify-center px-6 text-center select-none touch-none">
-  <div class="inline-flex flex-col items-center">
-    <div class="inline-flex items-baseline text-white text-3xl sm:text-5xl font-extrabold tracking-tight leading-none" style="font-family:'Plus Jakarta Sans',system-ui,sans-serif">
-      <span class="tt-sp-t">t</span><span class="tt-sp-mid">haarai te</span><span class="tt-sp-x">x</span>
-    </div>
-    <svg class="tt-sp-svg w-32 sm:w-44 h-6 -mt-0.5 overflow-visible" viewBox="0 0 180 28" fill="none">
-      <path class="tt-sp-arc" d="M 16 7 Q 90 27 162 8" stroke="#10b981" stroke-width="3.6" stroke-linecap="round"/>
-      <path class="tt-sp-tip" d="M 153 4 L 165 8 L 158 17" stroke="#10b981" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
+  <div class="inline-flex items-baseline text-white text-3xl sm:text-5xl font-extrabold tracking-tight leading-none pb-7" style="font-family:'Plus Jakarta Sans',system-ui,sans-serif">
+    <span class="relative inline-flex items-baseline">
+      <span class="tt-sp-t">T</span><span class="tt-sp-mid">haarai </span><span class="tt-sp-t2">T</span>
+      <svg class="tt-sp-svg absolute top-full left-1 right-1 w-[calc(100%-0.5rem)] h-6 mt-0.5 overflow-visible" viewBox="0 0 180 28" preserveAspectRatio="none" fill="none">
+        <path class="tt-sp-arc" d="M 8 5 Q 90 28 170 6" stroke="#10b981" stroke-width="3.6" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+        <path class="tt-sp-tip" d="M 161 3 L 172 6 L 166 15" stroke="#10b981" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+      </svg>
+    </span><span class="tt-sp-ex">ex</span>
   </div>
 </div>
 <script>
@@ -185,8 +190,8 @@ input,select,textarea{font-size:16px!important}
   } catch(e) {}
   setTimeout(function(){
     el.classList.add('tt-splash-hide');
-    setTimeout(function(){ if(el && el.parentNode) el.parentNode.removeChild(el); }, 480);
-  }, 2100);
+    setTimeout(function(){ if(el && el.parentNode) el.parentNode.removeChild(el); }, 450);
+  }, 2600);
 })();
 </script>
 
