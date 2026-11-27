@@ -173,7 +173,7 @@ async function home(){
     const welcomeMsg = sessionStorage.getItem('tt_welcome_toast');
     if(welcomeMsg){
       sessionStorage.removeItem('tt_welcome_toast');
-      setTimeout(() => toast(welcomeMsg), 150);
+      setTimeout(() => toast(welcomeMsg), 350);
     }
   } catch(e){}
 }
