@@ -57,6 +57,7 @@ async function route(){
     }
 
     const [path,qs]=(location.hash||'#/').slice(1).split('?'), params=new URLSearchParams(qs||'');
+    app.className = 'max-w-6xl mx-auto px-4 pt-5 pb-28 min-h-[75vh]';
     $('#tabbar').classList.toggle('hidden',path.startsWith('/p/')||path==='/checkout');
     const isHomePage = (path === '/' || path === '');
     const footEl = $('#foot');
