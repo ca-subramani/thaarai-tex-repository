@@ -344,15 +344,42 @@ async function loginView(passedUser = null){
   const brandName = SET.brand?.name || 'Thaarai Tex';
   app.innerHTML = `
     <style>
-      @keyframes ttBoxFlow {
-        0% { background-position: 0% 50%; }
-        50% { background-position: 100% 50%; }
-        100% { background-position: 0% 50%; }
+      @keyframes ttWaveA {
+        0%   { transform: translate3d(-12%, -10%, 0) rotate(0deg) scale(1); }
+        25%  { transform: translate3d(10%, -14%, 0) rotate(90deg) scale(1.08); }
+        50%  { transform: translate3d(14%, 10%, 0) rotate(180deg) scale(0.96); }
+        75%  { transform: translate3d(-8%, 14%, 0) rotate(270deg) scale(1.05); }
+        100% { transform: translate3d(-12%, -10%, 0) rotate(360deg) scale(1); }
+      }
+      @keyframes ttWaveB {
+        0%   { transform: translate3d(12%, 10%, 0) rotate(360deg) scale(1.04); }
+        25%  { transform: translate3d(-14%, 8%, 0) rotate(270deg) scale(0.95); }
+        50%  { transform: translate3d(-10%, -14%, 0) rotate(180deg) scale(1.1); }
+        75%  { transform: translate3d(14%, -8%, 0) rotate(90deg) scale(1); }
+        100% { transform: translate3d(12%, 10%, 0) rotate(0deg) scale(1.04); }
       }
       .tt-animated-box {
-        background: linear-gradient(135deg, #0f172a 0%, #047857 35%, #0f172a 65%, #059669 100%);
-        background-size: 300% 300%;
-        animation: ttBoxFlow 7s ease-in-out infinite;
+        background: #0b1220;
+      }
+      .tt-animated-box::before,
+      .tt-animated-box::after {
+        content: "";
+        position: absolute;
+        inset: -45%;
+        pointer-events: none;
+        will-change: transform;
+      }
+      .tt-animated-box::before {
+        background: radial-gradient(circle at 35% 35%, rgba(5, 150, 105, 0.55) 0%, rgba(4, 120, 87, 0.25) 38%, transparent 68%);
+        animation: ttWaveA 17s linear infinite;
+      }
+      .tt-animated-box::after {
+        background: radial-gradient(circle at 65% 65%, rgba(16, 185, 129, 0.42) 0%, rgba(6, 95, 70, 0.28) 40%, transparent 70%);
+        animation: ttWaveB 23s linear infinite;
+      }
+      .tt-animated-box > * {
+        position: relative;
+        z-index: 1;
       }
     </style>
     <div class="max-w-sm mx-auto my-6 sm:my-10 px-1">
