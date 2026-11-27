@@ -915,3 +915,4 @@ async function shop(params){
     location.hash = '#/shop';
   };
 }
+
