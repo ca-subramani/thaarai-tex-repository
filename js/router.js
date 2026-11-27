@@ -226,13 +226,15 @@ async function handleConfirmBackNavigation(){
   $('#msb')?.classList.remove('!hidden');
   $('#msearch')?.classList.remove('!hidden');
   $('#foot')?.classList.remove('!hidden');
-  try {
-    if(location.hash !== '#/login'){
-      history.pushState({ thaaraiLoginPage: true }, '', '#/login');
-    }
-  } catch(e){}
   await clearProfile();
-  await loginView();
+  try {
+    const loginUrl = window.location.origin + window.location.pathname + '#/login';
+    window.location.replace(loginUrl);
+    window.location.reload();
+  } catch(e){
+    location.hash = '#/login';
+    window.location.reload();
+  }
   return true;
 }
 window.handleConfirmBackNavigation = handleConfirmBackNavigation;
