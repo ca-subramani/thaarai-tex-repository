@@ -210,7 +210,7 @@ async function loginView(passedUser = null){
 
       <div class="fixed bottom-4 inset-x-0 mx-auto w-full max-w-sm px-4 z-20" style="padding-bottom:env(safe-area-inset-bottom,0px)">
         <button id="btn-switch-account" type="button" class="w-full flex items-center justify-center rounded-2xl border border-slate-200 bg-white/95 backdrop-blur-md hover:bg-slate-50 text-slate-700 py-3.5 px-4 text-xs font-bold transition active:scale-[0.98] shadow-soft">
-          <span>Login With Different Gmail Account</span>
+          <span>Login with different Gmail account</span>
         </button>
       </div>
     `;
