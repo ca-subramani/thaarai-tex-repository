@@ -124,10 +124,34 @@ function toast(m, isError=false){
   }, 2600);
 }
 
-/* Chrome-Style Neon Loading Line Control */
+/* Chrome-Style Neon Loading Line Control (0% -> 100% smooth fill) */
+let _neonBarTimer = null;
+let _neonHideTimer = null;
+let _neonBarPct = 0;
+
 function showNeonLoader(){
   const el = $('#neon-loader');
+  const bar = $('#neon-loader-bar');
   if(!el) return;
+  if(_neonBarTimer) clearInterval(_neonBarTimer);
+  if(_neonHideTimer) clearTimeout(_neonHideTimer);
+
+  if(bar){
+    bar.style.transition = 'none';
+    bar.style.width = '0%';
+    void bar.offsetWidth;
+    bar.style.transition = 'width 240ms cubic-bezier(0.22, 1, 0.36, 1)';
+    _neonBarPct = 18;
+    bar.style.width = _neonBarPct + '%';
+    _neonBarTimer = setInterval(() => {
+      if(_neonBarPct < 90){
+        _neonBarPct += Math.max(3, Math.round((92 - _neonBarPct) * 0.25));
+        if(_neonBarPct > 92) _neonBarPct = 92;
+        bar.style.width = _neonBarPct + '%';
+      }
+    }, 120);
+  }
+
   el.style.visibility = 'visible';
   el.classList.remove('opacity-0');
   el.classList.add('opacity-100');
@@ -135,14 +159,29 @@ function showNeonLoader(){
 
 function hideNeonLoader(){
   const el = $('#neon-loader');
+  const bar = $('#neon-loader-bar');
   if(!el) return;
-  el.classList.remove('opacity-100');
-  el.classList.add('opacity-0');
-  setTimeout(() => {
-    if(el.classList.contains('opacity-0')){
-      el.style.visibility = 'hidden';
-    }
-  }, 220);
+  if(_neonBarTimer) clearInterval(_neonBarTimer);
+  if(_neonHideTimer) clearTimeout(_neonHideTimer);
+
+  if(bar){
+    bar.style.transition = 'width 180ms ease-out';
+    bar.style.width = '100%';
+  }
+
+  _neonHideTimer = setTimeout(() => {
+    el.classList.remove('opacity-100');
+    el.classList.add('opacity-0');
+    setTimeout(() => {
+      if(el.classList.contains('opacity-0')){
+        el.style.visibility = 'hidden';
+        if(bar){
+          bar.style.transition = 'none';
+          bar.style.width = '0%';
+        }
+      }
+    }, 220);
+  }, 180);
 }
 
 /* Custom In-App Modal Dialog for Confirmations & Alerts */
