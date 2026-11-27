@@ -36,11 +36,11 @@ async function route(){
     }
 
     // 1. If returning from OAuth and profile is not yet completed:
-    if(isOAuthReturn && !p){
+    if(isOAuthReturn && !p && localStorage.getItem('tt_logged_out') !== '1'){
       // Clear confirming flags so popup doesn't fire prematurely during OAuth loading
       window._confirmingDetails = false;
       try {
-        history.replaceState({ thaaraiOAuthResolved: true }, '', '#/login');
+        history.replaceState({ thaaraiOAuthResolved: true }, '', window.location.pathname + '#/login');
       } catch(e){}
       location.hash = '#/login';
       const user = await resolveOAuthUser();
@@ -231,16 +231,28 @@ function handleConfirmBackNavigation(){
   $('#msearch')?.classList.remove('!hidden');
   $('#foot')?.classList.remove('!hidden');
   try {
-    if(location.hash !== '#/login'){
+    if(window.location.search){
+      history.replaceState({ thaaraiLoginPage: true }, '', window.location.pathname + '#/login');
+    } else if(location.hash !== '#/login'){
       history.pushState({ thaaraiLoginPage: true }, '', '#/login');
     }
   } catch(e){
     location.hash = '#/login';
   }
-  loginView();
+  loginView(null);
   return true;
 }
 window.handleConfirmBackNavigation = handleConfirmBackNavigation;
+
+window.addEventListener('pageshow', (e) => {
+  if(e.persisted && !profile()){
+    if(isUserConfirmingDetails()){
+      handleConfirmBackNavigation();
+    } else if(localStorage.getItem('tt_logged_out') === '1' && location.hash.startsWith('#/login')){
+      loginView(null);
+    }
+  }
+});
 
 function armConfirmLock(){
   if(!isUserConfirmingDetails() || window._confirmGuardArmed) return;
