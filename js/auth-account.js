@@ -108,6 +108,7 @@ async function loginView(passedUser = null){
       $('#msb')?.classList.remove('!hidden');
       $('#msearch')?.classList.remove('!hidden');
       $('#foot')?.classList.remove('!hidden');
+      document.querySelector('header a[href="#/cart"]')?.classList.remove('!hidden');
       document.documentElement.classList.remove('overflow-hidden', 'overscroll-none');
       document.body.classList.remove('overflow-hidden', 'overscroll-none', 'touch-none');
       setNav();
@@ -132,6 +133,7 @@ async function loginView(passedUser = null){
     $('#msb')?.classList.add('!hidden');
     $('#msearch')?.classList.add('!hidden');
     $('#foot')?.classList.add('!hidden');
+    document.querySelector('header a[href="#/cart"]')?.classList.add('!hidden');
     window.scrollTo(0, 0);
 
     window._confirmLoginState = {
@@ -208,7 +210,7 @@ async function loginView(passedUser = null){
 
       <div class="fixed bottom-4 inset-x-0 mx-auto w-full max-w-sm px-4 z-20" style="padding-bottom:env(safe-area-inset-bottom,0px)">
         <button id="btn-switch-account" type="button" class="w-full flex items-center justify-center rounded-2xl border border-slate-200 bg-white/95 backdrop-blur-md hover:bg-slate-50 text-slate-700 py-3.5 px-4 text-xs font-bold transition active:scale-[0.98] shadow-soft">
-          <span>Change Your Gmail Account</span>
+          <span>Login With Different Gmail Account</span>
         </button>
       </div>
     `;
@@ -280,6 +282,7 @@ async function loginView(passedUser = null){
       $('#msb')?.classList.remove('!hidden');
       $('#msearch')?.classList.remove('!hidden');
       $('#foot')?.classList.remove('!hidden');
+      document.querySelector('header a[href="#/cart"]')?.classList.remove('!hidden');
       document.documentElement.classList.remove('overflow-hidden', 'overscroll-none');
       document.body.classList.remove('overflow-hidden', 'overscroll-none', 'touch-none');
       setNav();
@@ -310,6 +313,7 @@ async function loginView(passedUser = null){
         $('#msb')?.classList.remove('!hidden');
         $('#msearch')?.classList.remove('!hidden');
         $('#foot')?.classList.remove('!hidden');
+        document.querySelector('header a[href="#/cart"]')?.classList.remove('!hidden');
         document.documentElement.classList.remove('overflow-hidden', 'overscroll-none');
         document.body.classList.remove('overflow-hidden', 'overscroll-none', 'touch-none');
         await clearProfile();
@@ -333,6 +337,7 @@ async function loginView(passedUser = null){
   $('#tabbar')?.classList.remove('hidden');
   $('#nav-back')?.classList.remove('!hidden');
   $('#foot')?.classList.remove('!hidden');
+  document.querySelector('header a[href="#/cart"]')?.classList.remove('!hidden');
   document.documentElement.classList.remove('overflow-hidden', 'overscroll-none');
   document.body.classList.remove('overflow-hidden', 'overscroll-none', 'touch-none');
 
