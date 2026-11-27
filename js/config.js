@@ -124,24 +124,20 @@ function toast(m, isError=false){
   }, 2600);
 }
 
-/* Mild Smooth Store Loader Control */
+/* Chrome-Style Neon Loading Line Control */
 function showNeonLoader(){
   const el = $('#neon-loader');
   if(!el) return;
-  document.documentElement.classList.add('overflow-hidden');
-  document.body.classList.add('overflow-hidden', 'touch-none');
   el.style.visibility = 'visible';
-  el.classList.remove('opacity-0', 'pointer-events-none');
+  el.classList.remove('opacity-0');
   el.classList.add('opacity-100');
 }
 
 function hideNeonLoader(){
   const el = $('#neon-loader');
   if(!el) return;
-  document.documentElement.classList.remove('overflow-hidden');
-  document.body.classList.remove('overflow-hidden', 'touch-none');
   el.classList.remove('opacity-100');
-  el.classList.add('opacity-0', 'pointer-events-none');
+  el.classList.add('opacity-0');
   setTimeout(() => {
     if(el.classList.contains('opacity-0')){
       el.style.visibility = 'hidden';
