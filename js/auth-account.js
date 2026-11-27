@@ -176,6 +176,11 @@ async function loginView(passedUser = null){
             <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" class="w-3.5 h-3.5 shrink-0">
             <span class="text-[11px] font-bold text-slate-700 truncate">${esc(googleUser.email)}</span>
           </div>
+          <div>
+            <button id="btn-switch-account" type="button" class="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 py-1.5 px-4 text-[11px] font-bold transition active:scale-[0.98] shadow-xs">
+              <span>Change Gmail</span>
+            </button>
+          </div>
         </div>
 
         <!-- Hidden Google Real Name (uneditable, not visible to user) -->
@@ -206,12 +211,6 @@ async function loginView(passedUser = null){
             Confirm &amp; Complete Login
           </button>
         </div>
-      </div>
-
-      <div class="fixed bottom-4 inset-x-0 mx-auto w-full max-w-sm px-4 z-20" style="padding-bottom:env(safe-area-inset-bottom,0px)">
-        <button id="btn-switch-account" type="button" class="w-full flex items-center justify-center rounded-2xl border border-slate-200 bg-white/95 backdrop-blur-md hover:bg-slate-50 text-slate-700 py-3.5 px-4 text-xs font-bold transition active:scale-[0.98] shadow-soft">
-          <span>Sign in with a different Google account</span>
-        </button>
       </div>
     `;
 
