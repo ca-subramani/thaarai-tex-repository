@@ -108,6 +108,8 @@ async function loginView(passedUser = null){
       $('#msb')?.classList.remove('!hidden');
       $('#msearch')?.classList.remove('!hidden');
       $('#foot')?.classList.remove('!hidden');
+      document.documentElement.classList.remove('overflow-hidden', 'overscroll-none');
+      document.body.classList.remove('overflow-hidden', 'overscroll-none');
       setNav();
       const welcomeMsg = 'Welcome back, ' + profileName.split(' ')[0] + '!';
       await home();
@@ -130,6 +132,9 @@ async function loginView(passedUser = null){
     $('#msb')?.classList.add('!hidden');
     $('#msearch')?.classList.add('!hidden');
     $('#foot')?.classList.add('!hidden');
+    document.documentElement.classList.add('overflow-hidden', 'overscroll-none');
+    document.body.classList.add('overflow-hidden', 'overscroll-none');
+    window.scrollTo(0, 0);
 
     window._confirmLoginState = {
       isModalOpen: () => {
@@ -203,8 +208,8 @@ async function loginView(passedUser = null){
         </div>
       </div>
 
-      <div class="max-w-sm mx-auto -mt-2 mb-6 px-1 relative z-10">
-        <button id="btn-switch-account" type="button" class="w-full flex items-center justify-center rounded-2xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 py-3.5 px-4 text-xs font-bold transition active:scale-[0.98] shadow-soft">
+      <div class="fixed bottom-4 inset-x-0 mx-auto w-full max-w-sm px-4 z-20" style="padding-bottom:env(safe-area-inset-bottom,0px)">
+        <button id="btn-switch-account" type="button" class="w-full flex items-center justify-center rounded-2xl border border-slate-200 bg-white/95 backdrop-blur-md hover:bg-slate-50 text-slate-700 py-3.5 px-4 text-xs font-bold transition active:scale-[0.98] shadow-soft">
           <span>Sign in with a different Google account</span>
         </button>
       </div>
@@ -213,14 +218,12 @@ async function loginView(passedUser = null){
     const nameInput = $('#ln');
     const phoneInput = $('#lp');
     if(nameInput){
-      const focusTarget = (el = nameInput, force = false) => {
+      const focusTarget = (el = nameInput) => {
         if(!el) return;
         try {
-          if(force && document.activeElement === el){
-            el.blur();
+          if(document.activeElement !== el){
+            el.focus({ preventScroll: true });
           }
-          el.focus({ preventScroll: false });
-          el.click();
           const val = el.value || '';
           if(typeof el.setSelectionRange === 'function'){
             el.setSelectionRange(val.length, val.length);
@@ -229,29 +232,11 @@ async function loginView(passedUser = null){
       };
 
       focusTarget(nameInput);
-      requestAnimationFrame(() => focusTarget(nameInput));
-      setTimeout(() => focusTarget(nameInput), 50);
-      setTimeout(() => focusTarget(nameInput), 180);
-
-      const onScreenTouch = (e) => {
-        if(e.target && (e.target.closest('button') || e.target.closest('a'))){
-          return;
-        }
-        if(e.target === phoneInput){
-          focusTarget(phoneInput, true);
-          return;
-        }
-        focusTarget(nameInput, true);
-      };
-
-      ['touchstart', 'touchend', 'pointerdown', 'click'].forEach(evt => {
-        window.addEventListener(evt, onScreenTouch, { capture: true, once: true });
-      });
 
       nameInput.addEventListener('keydown', (e) => {
         if(e.key === 'Enter'){
           e.preventDefault();
-          focusTarget(phoneInput, true);
+          focusTarget(phoneInput);
         }
       });
     }
@@ -297,6 +282,8 @@ async function loginView(passedUser = null){
       $('#msb')?.classList.remove('!hidden');
       $('#msearch')?.classList.remove('!hidden');
       $('#foot')?.classList.remove('!hidden');
+      document.documentElement.classList.remove('overflow-hidden', 'overscroll-none');
+      document.body.classList.remove('overflow-hidden', 'overscroll-none');
       setNav();
       await home();
       try { if(typeof armHomeGuard === 'function') armHomeGuard(); } catch(e){}
@@ -325,6 +312,8 @@ async function loginView(passedUser = null){
         $('#msb')?.classList.remove('!hidden');
         $('#msearch')?.classList.remove('!hidden');
         $('#foot')?.classList.remove('!hidden');
+        document.documentElement.classList.remove('overflow-hidden', 'overscroll-none');
+        document.body.classList.remove('overflow-hidden', 'overscroll-none');
         await clearProfile();
         location.hash = '#/login';
         await loginView();
@@ -346,6 +335,8 @@ async function loginView(passedUser = null){
   $('#tabbar')?.classList.remove('hidden');
   $('#nav-back')?.classList.remove('!hidden');
   $('#foot')?.classList.remove('!hidden');
+  document.documentElement.classList.remove('overflow-hidden', 'overscroll-none');
+  document.body.classList.remove('overflow-hidden', 'overscroll-none');
 
   const brandName = SET.brand?.name || 'Thaarai Tex';
   app.innerHTML = `
