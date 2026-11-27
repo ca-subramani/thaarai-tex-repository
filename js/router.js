@@ -131,6 +131,7 @@ document.addEventListener('click', (e) => {
 }, true);
 
 function armHomeGuard(){
+  if(IS_PREVIEW_IFRAME) return;
   try {
     const s = { thaaraiHomeGuard: true, t: Date.now() };
     history.pushState(s, '', '#/');
