@@ -238,6 +238,7 @@ function showModalDialog({ title = 'Confirm Action', message = '', confirmText =
 /* ===== CUSTOMER IDENTITY & PERSISTENT SYNC ===== */
 let OC={list:[]};
 let ofilter='all', addrEdit=null;
+const IS_PREVIEW_IFRAME = (window.self !== window.top) || location.search.includes('adminPreview=1');
 const profile=()=>{
   const p = store.get('profile');
   if(!p) return null;
@@ -245,7 +246,7 @@ const profile=()=>{
   const isNumericName = /^\d+$/.test(String(p.name || '').trim());
   if(cleanPhone === '9876543210' || cleanPhone === '9999999999' || isNumericName || !cleanPhone || !p.name){
     localStorage.removeItem('profile');
-    try { if(sb) sb.auth.signOut().then(); } catch(e){}
+    try { if(sb && !IS_PREVIEW_IFRAME) sb.auth.signOut().then(); } catch(e){}
     return null;
   }
   return p;
