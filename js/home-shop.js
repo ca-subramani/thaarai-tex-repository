@@ -18,152 +18,156 @@ const topbar=(title,back)=>`<div class="flex items-center justify-between px-1">
 const loginNeeded=msg=>`<div class="max-w-md mx-auto text-center py-14 bg-white rounded-3xl p-8 border border-gray-100 shadow-soft my-4 space-y-3"><p class="text-xs text-gray-500">${msg}</p><a href="#/login" class="${btn} inline-block !py-2.5">Sign in to your account</a></div>`;
 
 /* ===== HOME & SHOP ===== */
-let cachedTrending = null;
 async function home(){
   const heroData = SET.hero || {};
+  const featuredCats = SET.home_categories?.length ? SET.home_categories : [
+    { name: 'Sarees', subtitle: 'Exclusive Handloom', image: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=600&q=80', query: 'Sarees' },
+    { name: 'Lungies', subtitle: 'Comfort & Heritage', image: 'https://images.unsplash.com/photo-1583394838336-acd977736f90?auto=format&fit=crop&w=600&q=80', query: 'Lungies' },
+    { name: 'Soft Silk', subtitle: 'Royal & Elegant', image: 'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=600&q=80', query: 'Soft Silk' },
+    { name: 'Poonam', subtitle: 'Daily & Party Wear', image: 'https://images.unsplash.com/photo-1606760227091-3dd870d97f1d?auto=format&fit=crop&w=600&q=80', query: 'Poonam' },
+    { name: 'Pattu', subtitle: 'Traditional Grandeur', image: 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=600&q=80', query: 'Pattu' },
+    { name: 'Cotton', subtitle: 'Breathable Pure Weave', image: 'https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?auto=format&fit=crop&w=600&q=80', query: 'Cotton' }
+  ];
 
   let featured = cachedFeatured;
-  let trending = cachedTrending;
-  if ((!cachedFeatured || !cachedTrending) && sb) {
+  if (!cachedFeatured && sb) {
     try {
-      const { data } = await sb.from('products').select('*').eq('active', true).order('created_at', { ascending: false }).limit(4);
-      if (data && data.length) {
-        cachedTrending = data;
-        cachedFeatured = data[0];
-        trending = cachedTrending;
-        featured = cachedFeatured;
-      }
+      const { data } = await sb.from('products').select('*').eq('active', true).order('created_at', { ascending: false }).limit(1).maybeSingle();
+      cachedFeatured = data;
+      featured = cachedFeatured;
     } catch {}
   }
 
   const photo = heroData.image || featured?.images?.[0] || 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80';
-  const promoPhoto = SET.about?.image || trending?.[1]?.images?.[0] || photo;
-  const mainBtnLink = heroData.buttonLink || '#/shop';
-  const secBtnLink = heroData.secButtonLink || '#/shop?sort=discount';
+  const fullTitle = heroData.title || 'A legacy woven into every thread';
+  const words = fullTitle.trim().split(/\s+/);
+  const firstWord = words[0] || 'THAARAI';
+  const restTitle = words.slice(1).join(' ');
+  const mainBtnLink = heroData.buttonLink || (featured ? `#/p/${encodeURIComponent(featured.id)}` : '#/shop');
+  const secBtnLink = heroData.secButtonLink || '#/shop';
 
-  const trustBadges = (SET.trust_badges?.length ? SET.trust_badges : [
-    {title: 'Free Shipping', desc: 'On orders above ₹999'},
-    {title: 'Secure Payments', desc: '100% secure checkout'},
-    {title: 'Easy Returns', desc: 'Hassle-free returns'}
-  ]).slice(0, 3);
-  const trustIcons = [ICONS.truck, ICONS.cash, ICONS.tag];
-
-  const renderTrendingCard = p => {
-    const o = off(p);
-    return `
-      <a href="#/p/${p.id}" class="group bg-white/95 hover:bg-white rounded-2xl p-3 shadow-[0_10px_28px_rgba(30,27,75,0.18)] transition duration-300 flex flex-col justify-between border border-white/60">
-        <div class="relative aspect-square rounded-xl overflow-hidden bg-violet-50/70 mb-2.5">
-          <img loading="lazy" src="${img(p)}" alt="${esc(p.name)}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
-          <button data-w="${p.id}" aria-label="Wishlist" class="absolute top-2 right-2 bg-white/90 backdrop-blur w-7 h-7 rounded-full shadow-xs grid place-items-center text-slate-600 hover:text-rose-500 transition">${heart(wish.has(p.id))}</button>
-          ${p.stock<=0?'<div class="absolute inset-0 bg-white/80 backdrop-blur-xs grid place-items-center text-[10px] font-bold text-slate-800">Out of stock</div>':''}
-        </div>
-        <div>
-          <h3 class="font-bold text-xs text-slate-900 line-clamp-1">${esc(p.name)}</h3>
-          <div class="mt-1.5 flex items-center justify-between gap-1.5 flex-wrap">
-            <div class="flex items-baseline gap-1.5">
-              <b class="text-xs sm:text-sm font-extrabold text-slate-900">${inr(p.price)}</b>
-              ${o?`<s class="text-[10px] text-slate-400">${inr(p.mrp)}</s>`:''}
-            </div>
-            ${o?`<span class="text-[9px] font-extrabold text-white bg-violet-600 px-2 py-0.5 rounded-full uppercase">${o}% OFF</span>`:''}
-          </div>
-        </div>
-      </a>
-    `;
-  };
+  const trustBadges = SET.trust_badges?.length ? SET.trust_badges : [
+    {title: 'Free Delivery', desc: 'Direct to doorstep'},
+    {title: 'Cash on Delivery', desc: 'Pay when you receive'},
+    {title: 'Wholesale Price', desc: 'Direct weaver rates'},
+    {title: '100% Handloom', desc: 'Pure authentic quality'}
+  ];
+  const trustIcons = [ICONS.truck, ICONS.cash, ICONS.tag, ICONS.handloom];
 
   app.innerHTML=`
-  <div class="relative overflow-hidden rounded-[1.75rem] p-5 sm:p-8 lg:p-10 shadow-[0_24px_60px_rgba(76,29,149,0.22)] mb-4" style="background:radial-gradient(circle at 42% 16%, #f5f3ff 0%, #ddd6fe 28%, #7c3aed 64%, #4c1d95 100%);">
+  <!-- Black Premium Hero with Seamless Model Cutout -->
+  <section class="relative mb-8 overflow-hidden rounded-[1.75rem] bg-[#080909] text-white shadow-[0_24px_60px_rgba(8,9,9,.28)]">
+    <div class="absolute inset-0 opacity-25" style="background:radial-gradient(ellipse at 70% 50%,#5b171b 0%,transparent 50%),linear-gradient(130deg,#090a0a 15%,#171818 100%)"></div>
+    <div class="absolute -right-8 top-8 select-none text-[clamp(4.5rem,16vw,13rem)] font-black uppercase leading-none tracking-[-.08em] text-white/[.03] pointer-events-none">WEAVE</div>
+    <div class="absolute left-0 top-1/3 h-px w-full rotate-[-12deg] bg-[#e32938]/20 pointer-events-none"></div>
 
-    <!-- 1. Hero Section -->
-    <section class="relative grid items-center gap-6 lg:grid-cols-[1.15fr_0.85fr] pt-2 pb-7">
-      <div class="relative z-10 space-y-4">
-        <h1 class="text-3xl sm:text-5xl font-black tracking-tight text-slate-900 leading-[1.08]">
-          ${heroData.title ? esc(heroData.title) : 'Better Sarees.<br>A Brighter You.'}
-        </h1>
-        <p class="text-xs sm:text-sm text-slate-700 max-w-md leading-relaxed font-medium">
-          ${esc(heroData.subtitle || 'Discover handpicked authentic sarees, curated for your everyday elegance & celebrations.')}
-        </p>
-        <div class="flex flex-wrap items-center gap-3 pt-1">
-          <a href="${esc(mainBtnLink)}" class="inline-flex items-center gap-2 rounded-full bg-violet-600 hover:bg-violet-700 text-white px-6 py-3 text-xs font-extrabold shadow-lg shadow-violet-600/30 transition active:scale-[0.98]">
-            <span>${esc(heroData.button || 'Shop Now')}</span>
-            <span aria-hidden="true">→</span>
-          </a>
-          <a href="${esc(secBtnLink)}" class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-slate-800 hover:text-violet-900 transition">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
-            <span>${esc(heroData.secButton || 'Explore Deals')}</span>
-          </a>
+    <div class="relative z-10 flex flex-col justify-between p-5 sm:p-8 lg:p-10 min-h-[460px] sm:min-h-[500px]">
+      <!-- Header row inside Hero -->
+      <div class="flex items-center justify-between border-b border-white/10 pb-3.5">
+        <span class="text-[10px] font-black tracking-[.28em] text-white">THAARAI <span class="text-[#e42636]">TEX</span></span>
+        <div class="hidden items-center gap-7 text-[9px] font-bold uppercase tracking-[.28em] text-white/65 sm:flex">
+          <a href="#/" class="text-white hover:text-white">Home</a>
+          <a href="#/shop" class="hover:text-white">Sarees</a>
+          <a href="#/account/orders" class="hover:text-white">My orders</a>
         </div>
+        <span class="text-[9px] font-bold uppercase tracking-[.22em] text-[#ff3544]">${esc(heroData.badge || 'HANDLOOM · EST. WITH CARE')}</span>
       </div>
 
-      <!-- Featured Visual + Floating Offer Badge -->
-      <div class="relative flex items-center justify-center lg:justify-end">
-        <div class="relative w-full max-w-[270px] sm:max-w-[320px] aspect-[4/3] rounded-3xl overflow-hidden shadow-[0_20px_45px_rgba(46,16,101,0.3)] border border-white/40 bg-white/20 backdrop-blur-sm">
-          <img src="${esc(photo)}" alt="Featured Saree" class="w-full h-full object-cover" loading="eager">
+      <!-- Main hero content: Clean Grid without text collision -->
+      <div class="grid items-center gap-6 lg:gap-8 lg:grid-cols-[1.1fr_0.9fr] my-6">
+        <!-- Text Column -->
+        <div class="relative z-20 max-w-lg">
+          <p class="text-[9px] font-extrabold uppercase tracking-[.34em] text-[#ff3645]">${esc(heroData.eyebrow || 'THAARAI TEX · HANDLOOM EDITION')}</p>
+          <h1 class="mt-3.5 max-w-xl text-[clamp(2.3rem,5.8vw,5rem)] font-black uppercase leading-[.92] tracking-[-.05em]">
+            <span class="text-[#f52638]">${esc(firstWord)}</span>
+            ${restTitle ? `<span class="mt-1 block text-white">${esc(restTitle)}</span>` : ''}
+          </h1>
+          <p class="mt-4 max-w-md text-xs sm:text-sm leading-relaxed text-white/70">${esc(heroData.subtitle || 'Discover handpicked authentic sarees, crafted with the art and patience of master weavers.')}</p>
+          <div class="mt-6 flex flex-wrap items-center gap-3">
+            <a href="${esc(mainBtnLink)}" class="rounded-full bg-white px-6 py-3.5 text-xs font-black uppercase tracking-[.14em] text-[#111] transition hover:bg-[#f4c3c6] shadow-md">${esc(heroData.button || 'Explore the collection')}</a>
+            <a href="${esc(secBtnLink)}" class="rounded-full border border-white/35 px-6 py-3.5 text-xs font-black uppercase tracking-[.14em] text-white hover:bg-white/10 transition">${esc(heroData.secButton || 'View all sarees')}</a>
+          </div>
+          ${featured ? `<p class="mt-6 text-[10px] font-bold uppercase tracking-[.18em] text-white/50">Featured weave: <span class="text-white">${esc(featured.name)}</span> <span class="ml-2 text-[#ff3544]">${inr(featured.price)}</span></p>` : ''}
         </div>
-        <div class="absolute top-3 right-2 sm:right-0 bg-white/85 backdrop-blur-md border border-white/70 rounded-2xl px-3.5 py-2 shadow-lg flex items-center gap-2">
-          <span class="w-6 h-6 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center shrink-0">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-          </span>
-          <div class="leading-tight">
-            <p class="text-[10px] font-extrabold text-slate-900">${esc(heroData.badge || 'Up to 50% OFF')}</p>
-            <p class="text-[9px] font-semibold text-slate-500">Handloom Picks</p>
+
+        <!-- Seamless Model Cutout Column -->
+        <div class="relative flex items-center justify-center lg:justify-end">
+          <div class="relative w-full max-w-[320px] sm:max-w-[380px] h-[280px] sm:h-[350px] lg:h-[400px] flex items-center justify-center">
+            <!-- Warm backlight ambient glow -->
+            <div class="absolute inset-4 rounded-full bg-gradient-to-tr from-[#9b101a]/30 via-[#c3a875]/15 to-transparent blur-3xl pointer-events-none"></div>
+            <!-- Individual person image with smooth edge fade and zero border box -->
+            <img src="${esc(photo)}" alt="Handloom Saree Weave" class="hero-model-cutout relative z-10 max-h-full max-w-full drop-shadow-[0_20px_35px_rgba(0,0,0,0.85)]" loading="eager">
           </div>
         </div>
       </div>
-    </section>
 
-    <!-- 2. Frosted Glass Trust Strip -->
-    <section class="mb-8 rounded-2xl bg-white/15 backdrop-blur-md border border-white/25 px-4 py-3.5 shadow-sm">
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-        ${trustBadges.map((t,idx)=>`
-          <div class="flex items-center gap-3 text-white">
-            <div class="w-9 h-9 rounded-xl bg-white/15 border border-white/20 flex items-center justify-center shrink-0 text-white">
-              ${trustIcons[idx % trustIcons.length]}
-            </div>
-            <div class="min-w-0">
-              <h4 class="font-extrabold text-xs text-white truncate">${esc(t.title)}</h4>
-              <p class="text-[10px] text-violet-100/85 truncate">${esc(t.desc)}</p>
-            </div>
-          </div>
-        `).join('')}
+      <!-- Footer row inside Hero -->
+      <div class="flex items-center justify-between border-t border-white/10 pt-3 text-[8px] font-bold uppercase tracking-[.24em] text-white/45">
+        <span>Woven by hand · Made to be remembered</span>
+        <span>01 / THE HANDLOOM EDITION</span>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <!-- 3. Trending Picks (4-Column Grid) -->
-    <section class="mb-8">
-      <div class="flex items-end justify-between mb-4 px-0.5">
-        <div>
-          <h2 class="font-extrabold text-lg sm:text-xl text-white tracking-tight">Trending Picks</h2>
-          <p class="text-[11px] sm:text-xs text-violet-100/85 mt-0.5">Loved by thousands, just for you.</p>
-        </div>
-        <a href="#/shop" class="inline-flex items-center gap-1 text-xs font-bold text-white/95 hover:text-white transition">
-          <span>View All</span>
-          <span aria-hidden="true">→</span>
+  <!-- Featured Categories Grid -->
+  <section class="mb-12">
+    <div class="flex items-end justify-between mb-6 px-1">
+      <div>
+        <h2 class="font-extrabold text-xl sm:text-2xl text-gray-900 tracking-tight">Featured Categories</h2>
+        <p class="text-xs sm:text-sm text-gray-500 mt-1">Explore our finest handwoven selections</p>
+      </div>
+      <a href="#/shop" class="hidden sm:flex items-center gap-1 text-sm font-bold text-slate-900 hover:text-emerald-600 transition-colors">Shop All <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg></a>
+    </div>
+    
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-5">
+      ${featuredCats.map(c=>`
+        <a href="${c.query?.startsWith('#/') ? c.query : `#/shop?q=${encodeURIComponent(c.query||c.name)}`}" class="group relative aspect-[4/5] sm:aspect-[4/3] rounded-3xl overflow-hidden shadow-soft block bg-slate-900">
+          <img src="${c.image}" alt="${esc(c.name)}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out">
+          <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent"></div>
+          <div class="absolute bottom-0 inset-x-0 p-4 sm:p-6 text-white">
+            <h3 class="font-extrabold text-base sm:text-xl tracking-tight mb-0.5 group-hover:text-emerald-400 transition-colors">${esc(c.name)}</h3>
+            <p class="text-[10px] sm:text-xs text-gray-300 font-medium">${esc(c.subtitle||'')}</p>
+          </div>
         </a>
+      `).join('')}
+    </div>
+    <div class="mt-4 text-center sm:hidden">
+      <a href="#/shop" class="inline-flex items-center justify-center gap-2 w-full py-3.5 bg-gray-50 text-slate-900 rounded-2xl font-bold text-xs border border-gray-200">View All Shop <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg></a>
+    </div>
+  </section>
+
+  <!-- About / Brand Story Section -->
+  ${(SET.about?.text)?`
+    <section class="bg-white border border-gray-100 rounded-3xl p-6 sm:p-8 mb-8 shadow-soft grid sm:grid-cols-2 gap-8 items-center">
+      <div class="space-y-3">
+        <span class="text-[10px] font-extrabold uppercase tracking-widest text-slate-600 bg-slate-100 px-3 py-1 rounded-full">${esc(SET.about.badge || 'Authentic Weaves')}</span>
+        <h2 class="text-xl sm:text-2xl font-extrabold text-gray-900 tracking-tight">${esc(SET.about.title)}</h2>
+        <p class="text-xs sm:text-sm text-gray-600 leading-relaxed">${esc(SET.about.text)}</p>
+        <div class="pt-2"><a href="${esc(SET.about.buttonLink || '#/shop')}" class="${btn} inline-block !py-3">${esc(SET.about.button || 'Explore Collections')}</a></div>
       </div>
-
-      ${(trending && trending.length)
-        ? `<div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">${trending.map(renderTrendingCard).join('')}</div>`
-        : `<p class="text-center text-violet-100 py-8 text-xs">Loading trending sarees…</p>`
-      }
+      <div class="relative aspect-[4/3] rounded-2xl overflow-hidden bg-slate-100 shadow-inner flex items-center justify-center">
+        <div class="absolute inset-0 bg-gradient-to-br from-slate-900/10 to-slate-900/40 z-10"></div>
+        <img src="${esc(SET.about.image || 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80')}" alt="Handloom Weaving" class="w-full h-full object-cover">
+      </div>
     </section>
+  `:''}
 
-    <!-- 4. Special Offers Banner -->
-    <section class="rounded-2xl bg-gradient-to-r from-violet-300/35 via-violet-100/80 to-white/95 backdrop-blur-md border border-white/50 p-4 sm:p-6 shadow-lg flex flex-col sm:flex-row items-center justify-between gap-4">
-      <div class="flex items-center gap-4 w-full sm:w-auto">
-        <img src="${esc(promoPhoto)}" alt="Special Offers" class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover shadow-md border border-white/70 shrink-0">
-        <div>
-          <h3 class="font-extrabold text-base sm:text-lg text-slate-900 leading-tight">Special Offers<br>Just for You</h3>
-          <p class="text-[11px] text-slate-600 mt-1">Get exclusive deals and early festive access.</p>
+  <!-- Trust Badges Section -->
+  <section class="mb-4">
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      ${trustBadges.map((t,idx)=>`
+        <div class="bg-white rounded-2xl p-3.5 flex items-center gap-3 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+          <div class="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center shrink-0 text-slate-900 shadow-inner">
+            ${trustIcons[idx % trustIcons.length]}
+          </div>
+          <div class="text-left min-w-0">
+            <h4 class="font-extrabold text-[11px] sm:text-xs text-gray-900 truncate">${esc(t.title)}</h4>
+            <p class="text-[9px] sm:text-[10px] text-gray-500 truncate mt-0.5">${esc(t.desc)}</p>
+          </div>
         </div>
-      </div>
-      <a href="#/shop" class="w-full sm:w-auto text-center inline-flex items-center justify-center gap-2 rounded-full bg-white hover:bg-violet-50 text-slate-900 border border-slate-200/80 px-5 py-2.5 text-xs font-extrabold shadow-sm transition shrink-0">
-        <span>Explore Offers</span>
-        <span aria-hidden="true">→</span>
-      </a>
-    </section>
-
-  </div>
+      `).join('')}
+    </div>
+  </section>
   `;
   try {
     const welcomeMsg = sessionStorage.getItem('tt_welcome_toast');
@@ -911,4 +915,3 @@ async function shop(params){
     location.hash = '#/shop';
   };
 }
-
