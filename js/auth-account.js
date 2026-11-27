@@ -350,13 +350,13 @@ async function loginView(passedUser = null){
         100% { background-position: 0% 50%; }
       }
       .tt-animated-box {
-        background: linear-gradient(135deg, #090d16 0%, #064e3b 35%, #0f172a 65%, #065f46 100%);
+        background: linear-gradient(135deg, #0f172a 0%, #047857 35%, #0f172a 65%, #059669 100%);
         background-size: 300% 300%;
-        animation: ttBoxFlow 14s ease-in-out infinite;
+        animation: ttBoxFlow 7s ease-in-out infinite;
       }
     </style>
     <div class="max-w-sm mx-auto my-6 sm:my-10 px-1">
-      <div class="tt-animated-box border border-emerald-900/40 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6 relative overflow-hidden">
+      <div class="tt-animated-box border border-emerald-500/30 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6 relative overflow-hidden">
         <!-- Brand & Welcome Header -->
         <div class="text-center space-y-2 pt-1">
           <p class="text-[10px] font-extrabold uppercase tracking-widest text-emerald-400">${esc(brandName)} Account</p>
