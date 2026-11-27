@@ -108,12 +108,14 @@ function toast(m, isError=false){
 
   clearTimeout(el._t);
   el.style.visibility = 'visible';
-  requestAnimationFrame(()=>{
-    el.classList.remove('opacity-0', 'translate-y-3', 'scale-95');
-    el.classList.add('opacity-100', 'translate-y-0', 'scale-100');
-  });
+  el.style.opacity = '1';
+  el.style.transform = 'translateY(0) scale(1)';
+  el.classList.remove('opacity-0', 'translate-y-3', 'scale-95');
+  el.classList.add('opacity-100', 'translate-y-0', 'scale-100');
 
   el._t=setTimeout(()=>{
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(12px) scale(0.95)';
     el.classList.remove('opacity-100', 'translate-y-0', 'scale-100');
     el.classList.add('opacity-0', 'translate-y-3', 'scale-95');
     setTimeout(()=>{
