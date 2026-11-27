@@ -307,24 +307,29 @@ async function loginView(passedUser = null){
     $('#btn-switch-account').onclick = async () => {
       const sbBtn = $('#btn-switch-account');
       if(sbBtn){ sbBtn.disabled = true; }
-      confirmArmed = false;
-      window._confirmLoginState = null;
-      window._confirmingDetails = false;
-      window._cachedGoogleUser = null;
+      showNeonLoader();
       try {
-        localStorage.removeItem('tt_confirming_details');
-        sessionStorage.removeItem('tt_confirming_details');
-        sessionStorage.removeItem('tt_cached_google_user');
-      } catch(e){}
-      $('#confirm-login-modal')?.remove();
-      $('#tabbar')?.classList.remove('hidden');
-      $('#nav-back')?.classList.add('sm:hidden');
-      $('#msb')?.classList.remove('!hidden');
-      $('#msearch')?.classList.remove('!hidden');
-      $('#foot')?.classList.remove('!hidden');
-      await clearProfile();
-      location.hash = '#/login';
-      await loginView();
+        confirmArmed = false;
+        window._confirmLoginState = null;
+        window._confirmingDetails = false;
+        window._cachedGoogleUser = null;
+        try {
+          localStorage.removeItem('tt_confirming_details');
+          sessionStorage.removeItem('tt_confirming_details');
+          sessionStorage.removeItem('tt_cached_google_user');
+        } catch(e){}
+        $('#confirm-login-modal')?.remove();
+        $('#tabbar')?.classList.remove('hidden');
+        $('#nav-back')?.classList.add('sm:hidden');
+        $('#msb')?.classList.remove('!hidden');
+        $('#msearch')?.classList.remove('!hidden');
+        $('#foot')?.classList.remove('!hidden');
+        await clearProfile();
+        location.hash = '#/login';
+        await loginView();
+      } finally {
+        hideNeonLoader();
+      }
     };
     return;
   }
