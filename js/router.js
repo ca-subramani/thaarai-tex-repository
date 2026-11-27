@@ -39,17 +39,12 @@ async function route(){
     if(isOAuthReturn && !p){
       // Clear confirming flags so popup doesn't fire prematurely during OAuth loading
       window._confirmingDetails = false;
-      showNeonLoader();
       try {
         history.replaceState({ thaaraiOAuthResolved: true }, '', '#/login');
       } catch(e){}
       location.hash = '#/login';
-      try {
-        const user = await resolveOAuthUser();
-        return await loginView(user);
-      } finally {
-        hideNeonLoader();
-      }
+      const user = await resolveOAuthUser();
+      return await loginView(user);
     }
 
     // 2. Only resume Name & Number confirmation if actively confirming in this tab session on #/login
@@ -236,11 +231,13 @@ function handleConfirmBackNavigation(){
   $('#msearch')?.classList.remove('!hidden');
   $('#foot')?.classList.remove('!hidden');
   try {
-    history.replaceState(null, '', window.location.pathname + '#/login');
+    if(location.hash !== '#/login'){
+      history.pushState({ thaaraiLoginPage: true }, '', '#/login');
+    }
   } catch(e){
     location.hash = '#/login';
   }
-  window.location.reload();
+  loginView();
   return true;
 }
 window.handleConfirmBackNavigation = handleConfirmBackNavigation;
