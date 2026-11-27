@@ -109,7 +109,7 @@ async function loginView(passedUser = null){
       $('#msearch')?.classList.remove('!hidden');
       $('#foot')?.classList.remove('!hidden');
       document.documentElement.classList.remove('overflow-hidden', 'overscroll-none');
-      document.body.classList.remove('overflow-hidden', 'overscroll-none');
+      document.body.classList.remove('overflow-hidden', 'overscroll-none', 'touch-none');
       setNav();
       const welcomeMsg = 'Welcome back, ' + profileName.split(' ')[0] + '!';
       await home();
@@ -133,7 +133,7 @@ async function loginView(passedUser = null){
     $('#msearch')?.classList.add('!hidden');
     $('#foot')?.classList.add('!hidden');
     document.documentElement.classList.add('overflow-hidden', 'overscroll-none');
-    document.body.classList.add('overflow-hidden', 'overscroll-none');
+    document.body.classList.add('overflow-hidden', 'overscroll-none', 'touch-none');
     window.scrollTo(0, 0);
 
     window._confirmLoginState = {
@@ -166,7 +166,7 @@ async function loginView(passedUser = null){
     const defaultPhone = existingCust?.phone ? String(existingCust.phone).replace(/\D/g, '').slice(-10) : '';
 
     app.innerHTML = `
-      <div id="confirm-details-card" class="max-w-sm mx-auto bg-white border border-slate-100 rounded-3xl p-6 sm:p-7 space-y-5 shadow-soft my-6 relative z-10">
+      <div id="confirm-details-card" class="max-w-sm mx-auto bg-white border border-slate-100 rounded-3xl p-5 sm:p-6 space-y-4 shadow-soft my-2 relative z-10">
         <div class="text-center space-y-2">
           <div>
             <h2 class="font-extrabold text-lg tracking-tight text-slate-900">Complete Your Profile</h2>
@@ -282,7 +282,7 @@ async function loginView(passedUser = null){
       $('#msearch')?.classList.remove('!hidden');
       $('#foot')?.classList.remove('!hidden');
       document.documentElement.classList.remove('overflow-hidden', 'overscroll-none');
-      document.body.classList.remove('overflow-hidden', 'overscroll-none');
+      document.body.classList.remove('overflow-hidden', 'overscroll-none', 'touch-none');
       setNav();
       await home();
       try { if(typeof armHomeGuard === 'function') armHomeGuard(); } catch(e){}
@@ -312,7 +312,7 @@ async function loginView(passedUser = null){
         $('#msearch')?.classList.remove('!hidden');
         $('#foot')?.classList.remove('!hidden');
         document.documentElement.classList.remove('overflow-hidden', 'overscroll-none');
-        document.body.classList.remove('overflow-hidden', 'overscroll-none');
+        document.body.classList.remove('overflow-hidden', 'overscroll-none', 'touch-none');
         await clearProfile();
         location.hash = '#/login';
         await loginView();
@@ -335,7 +335,7 @@ async function loginView(passedUser = null){
   $('#nav-back')?.classList.remove('!hidden');
   $('#foot')?.classList.remove('!hidden');
   document.documentElement.classList.remove('overflow-hidden', 'overscroll-none');
-  document.body.classList.remove('overflow-hidden', 'overscroll-none');
+  document.body.classList.remove('overflow-hidden', 'overscroll-none', 'touch-none');
 
   const brandName = SET.brand?.name || 'Thaarai Tex';
   app.innerHTML = `
