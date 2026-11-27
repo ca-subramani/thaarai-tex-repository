@@ -112,21 +112,21 @@ input,select,textarea{font-size:16px!important}
   100% { opacity: 1; transform: scale(1); }
 }
 @keyframes ttMonoT2 {
-  0%, 15% { opacity: 0; transform: scale(0.9); }
-  45%, 100% { opacity: 1; transform: scale(1); }
+  0%, 10% { opacity: 0; transform: scale(0.9); }
+  100% { opacity: 1; transform: scale(1); }
 }
 @keyframes ttWordPart1 {
-  0%, 42% { max-width: 0.35em; opacity: 0; }
-  72%, 100% { max-width: 5.5em; opacity: 1; }
+  0% { max-width: 0.35em; opacity: 0; }
+  100% { max-width: 5.5em; opacity: 1; }
 }
 @keyframes ttWordPart2 {
-  0%, 48% { max-width: 0; opacity: 0; }
-  76%, 100% { max-width: 2.2em; opacity: 1; }
+  0% { max-width: 0; opacity: 0; }
+  100% { max-width: 2.2em; opacity: 1; }
 }
 @keyframes ttSilkThread {
-  0%, 20% { opacity: 0; transform: scaleX(0); filter: drop-shadow(0 0 0 rgba(16,185,129,0)); }
-  55% { opacity: 1; filter: drop-shadow(0 0 12px rgba(52,211,153,0.95)); }
-  85%, 100% { opacity: 1; transform: scaleX(1); filter: drop-shadow(0 0 4px rgba(16,185,129,0.5)); }
+  0% { opacity: 0; transform: scaleX(0); filter: drop-shadow(0 0 0 rgba(16,185,129,0)); }
+  45% { opacity: 1; filter: drop-shadow(0 0 12px rgba(52,211,153,0.95)); }
+  100% { opacity: 1; transform: scaleX(1); filter: drop-shadow(0 0 4px rgba(16,185,129,0.5)); }
 }
 .tt-sp-t1, .tt-sp-t2, .tt-sp-p1, .tt-sp-p2, .tt-sp-thread { opacity: 0; }
 .tt-sp-p1, .tt-sp-p2 {
@@ -138,11 +138,11 @@ input,select,textarea{font-size:16px!important}
 .tt-sp-p1 { max-width: 0.35em; }
 .tt-sp-p2 { max-width: 0; }
 .tt-sp-thread { transform-origin: center; transform: scaleX(0); }
-#tt-splash.tt-sp-play .tt-sp-t1 { animation: ttMonoT1 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
-#tt-splash.tt-sp-play .tt-sp-t2 { animation: ttMonoT2 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
-#tt-splash.tt-sp-play .tt-sp-p1 { animation: ttWordPart1 1.65s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
-#tt-splash.tt-sp-play .tt-sp-p2 { animation: ttWordPart2 1.65s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
-#tt-splash.tt-sp-play .tt-sp-thread { animation: ttSilkThread 1.55s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+#tt-splash.tt-sp-play .tt-sp-t1 { animation: ttMonoT1 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+#tt-splash.tt-sp-play .tt-sp-t2 { animation: ttMonoT2 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+#tt-splash.tt-sp-play .tt-sp-p1 { animation: ttWordPart1 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.5s forwards; }
+#tt-splash.tt-sp-play .tt-sp-p2 { animation: ttWordPart2 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.55s forwards; }
+#tt-splash.tt-sp-play .tt-sp-thread { animation: ttSilkThread 1.0s cubic-bezier(0.22, 1, 0.36, 1) 0.5s forwards; }
 </style>
 </head>
 <body class="text-gray-900 antialiased selection:bg-slate-900 selection:text-white">
@@ -160,10 +160,11 @@ input,select,textarea{font-size:16px!important}
   var el = document.getElementById('tt-splash');
   if(!el) return;
   var s = location.search || '', h = location.hash || '';
+  var isPreview = (window.self !== window.top) || s.indexOf('adminPreview=1') !== -1;
   var isOAuth = s.indexOf('code=') !== -1 || h.indexOf('code=') !== -1 || h.indexOf('access_token=') !== -1 || h.indexOf('refresh_token=') !== -1;
   try {
     if(!isOAuth && sessionStorage.getItem('tt_oauth_pending') === '1') isOAuth = true;
-    if(isOAuth || sessionStorage.getItem('tt_splash_shown') === '1'){
+    if(isPreview || isOAuth || sessionStorage.getItem('tt_splash_shown') === '1'){
       el.style.display = 'none';
       el.remove();
       return;
