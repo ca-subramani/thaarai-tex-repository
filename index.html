@@ -96,9 +96,52 @@ input,select,textarea{font-size:16px!important}
   box-shadow: 0 0 10px rgba(16, 185, 129, 0.75), 0 0 4px rgba(5, 150, 105, 0.5);
   will-change: width;
 }
+
+/* Full-screen Brand Splash Screen */
+#tt-splash {
+  background: radial-gradient(circle at 50% 45%, #064e3b 0%, #090d16 58%, #05070c 100%);
+  transition: opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1), visibility 0.45s ease-out;
+}
+#tt-splash.tt-splash-hide {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+@keyframes ttSplashTitle {
+  0% { opacity: 0; transform: translateY(14px) scale(0.96); letter-spacing: 0.28em; }
+  100% { opacity: 1; transform: translateY(0) scale(1); letter-spacing: 0.14em; }
+}
+.tt-splash-title {
+  animation: ttSplashTitle 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
 </style>
 </head>
 <body class="text-gray-900 antialiased selection:bg-slate-900 selection:text-white">
+
+<div id="tt-splash" class="fixed inset-0 z-[99999] flex items-center justify-center px-6 text-center select-none touch-none">
+  <h1 class="tt-splash-title text-white text-2xl sm:text-4xl font-extrabold uppercase tracking-[0.14em]">THAARAI TEX</h1>
+</div>
+<script>
+(function(){
+  var el = document.getElementById('tt-splash');
+  if(!el) return;
+  var s = location.search || '', h = location.hash || '';
+  var isOAuth = s.indexOf('code=') !== -1 || h.indexOf('code=') !== -1 || h.indexOf('access_token=') !== -1 || h.indexOf('refresh_token=') !== -1;
+  try {
+    if(!isOAuth && sessionStorage.getItem('tt_oauth_pending') === '1') isOAuth = true;
+    if(isOAuth || sessionStorage.getItem('tt_splash_shown') === '1'){
+      el.style.display = 'none';
+      el.remove();
+      return;
+    }
+    sessionStorage.setItem('tt_splash_shown', '1');
+  } catch(e) {}
+  setTimeout(function(){
+    el.classList.add('tt-splash-hide');
+    setTimeout(function(){ if(el && el.parentNode) el.parentNode.removeChild(el); }, 480);
+  }, 1350);
+})();
+</script>
 
 <header class="bg-white/95 backdrop-blur sticky top-0 z-40 border-b border-gray-100">
   <div class="max-w-6xl mx-auto px-4 py-3.5 flex items-center gap-3">
