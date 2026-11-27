@@ -459,22 +459,22 @@ async function fetchOrders(){
 }
 
 function hubHtml(pf){
-  const row=(svg,label,href,badge='')=>`<a href="${href}" class="flex items-center justify-between py-2 px-2 rounded-2xl hover:bg-gray-50 active:bg-gray-100 transition group"><div class="flex items-center gap-3"><span class="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center text-slate-800 group-hover:bg-slate-900 group-hover:text-white transition">${svg}</span><span class="font-bold text-xs text-gray-900">${label}</span></div><div class="flex items-center gap-2">${badge}${ICONS.chev}</div></a>`;
-  const s=d=>`<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
-  return `<div class="max-w-md mx-auto bg-white rounded-3xl p-3.5 shadow-soft border border-gray-100 my-1">
-    <div class="flex items-center justify-between pb-1.5"><button onclick="location.hash='#/'" aria-label="Back" class="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-700 hover:bg-gray-100">${ICONS.back}</button><h2 class="font-extrabold text-sm text-gray-900">Profile</h2><div class="w-8"></div></div>
-    <div class="flex flex-col items-center mt-1">
-      <div class="w-14 h-14 rounded-full border-2 border-slate-200 shadow-soft flex items-center justify-center bg-white"><div class="w-full h-full rounded-full bg-slate-900 flex items-center justify-center text-white text-xl font-extrabold">${esc((pf.name[0]||'C').toUpperCase())}</div></div>
-      <h3 class="text-sm font-bold text-gray-900 mt-1.5">${esc(pf.name)}</h3>
-      <p class="text-[11px] text-gray-500 font-medium mt-0.5">+91 ${esc(pf.phone)}</p>
+  const row=(svg,label,href,badge='')=>`<a href="${href}" class="flex items-center justify-between py-3 px-3 rounded-2xl hover:bg-gray-50 active:bg-gray-100 transition group"><div class="flex items-center gap-3.5"><span class="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-slate-800 group-hover:bg-slate-900 group-hover:text-white transition">${svg}</span><span class="font-bold text-sm text-gray-900">${label}</span></div><div class="flex items-center gap-2">${badge}${ICONS.chev}</div></a>`;
+  const s=d=>`<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+  return `<div class="max-w-md mx-auto bg-white rounded-3xl p-5 sm:p-6 shadow-soft border border-gray-100 min-h-[calc(100dvh-154px)] sm:min-h-0 flex flex-col">
+    <div class="flex items-center justify-between pb-2"><button onclick="location.hash='#/'" aria-label="Back" class="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-700 hover:bg-gray-100">${ICONS.back}</button><h2 class="font-extrabold text-base text-gray-900">Profile</h2><div class="w-8"></div></div>
+    <div class="flex flex-col items-center mt-2">
+      <div class="w-20 h-20 rounded-full p-1 border-2 border-slate-200 shadow-soft flex items-center justify-center bg-white"><div class="w-full h-full rounded-full bg-slate-900 flex items-center justify-center text-white text-2xl font-extrabold">${esc((pf.name[0]||'C').toUpperCase())}</div></div>
+      <h3 class="text-base font-bold text-gray-900 mt-2.5">${esc(pf.name)}</h3>
+      <p class="text-xs text-gray-500 font-medium mt-0.5">+91 ${esc(pf.phone)}</p>
     </div>
-    <div class="mt-3 space-y-0 divide-y divide-gray-50">
+    <div class="my-auto py-3 space-y-1 divide-y divide-gray-50">
       ${row(s('<path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>'),'Edit Profile','#/account/profile')}
       ${row(s('<path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>'),'Shopping Address','#/account/addresses')}
       ${row(s('<path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>'),'Wishlist','#/account/wishlist')}
       ${row(s('<path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>'),'Order History','#/account/orders')}
     </div>
-    <div class="mt-3 pt-2.5 border-t text-center"><button id="lgo" class="text-xs font-bold text-rose-500 hover:text-rose-700 flex items-center justify-center mx-auto py-1">${ICONS.logout}Logout</button></div>
+    <div class="mt-auto pt-3 border-t text-center"><button id="lgo" class="text-xs font-bold text-rose-500 hover:text-rose-700 flex items-center justify-center mx-auto py-1.5">${ICONS.logout}Logout</button></div>
   </div>`;
 }
 
@@ -663,7 +663,10 @@ async function account(section,params){
   else if(section==='profile')body=profileHtml(pf);
   else if(section==='addresses')body=await addressesHtml();
   else if(section==='wishlist')body=await wishHtml();
-  else body=hubHtml(pf);
+  else {
+    app.className = 'max-w-6xl mx-auto px-4 pt-3 pb-[76px] sm:pt-5 sm:pb-28 sm:min-h-[75vh]';
+    body = hubHtml(pf);
+  }
   app.innerHTML=body;
   window._cancelAddrEdit = () => {
     addrEdit = null;
