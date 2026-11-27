@@ -128,20 +128,21 @@ input,select,textarea{font-size:16px!important}
   55% { opacity: 1; filter: drop-shadow(0 0 12px rgba(52,211,153,0.95)); }
   85%, 100% { opacity: 1; transform: scaleX(1); filter: drop-shadow(0 0 4px rgba(16,185,129,0.5)); }
 }
-.tt-sp-t1 { animation: ttMonoT1 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
-.tt-sp-t2 { animation: ttMonoT2 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+.tt-sp-t1, .tt-sp-t2, .tt-sp-p1, .tt-sp-p2, .tt-sp-thread { opacity: 0; }
 .tt-sp-p1, .tt-sp-p2 {
   display: inline-block;
   overflow: hidden;
   white-space: pre;
   vertical-align: bottom;
 }
-.tt-sp-p1 { animation: ttWordPart1 1.65s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
-.tt-sp-p2 { animation: ttWordPart2 1.65s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
-.tt-sp-thread {
-  transform-origin: center;
-  animation: ttSilkThread 1.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-}
+.tt-sp-p1 { max-width: 0.35em; }
+.tt-sp-p2 { max-width: 0; }
+.tt-sp-thread { transform-origin: center; transform: scaleX(0); }
+#tt-splash.tt-sp-play .tt-sp-t1 { animation: ttMonoT1 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+#tt-splash.tt-sp-play .tt-sp-t2 { animation: ttMonoT2 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+#tt-splash.tt-sp-play .tt-sp-p1 { animation: ttWordPart1 1.65s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+#tt-splash.tt-sp-play .tt-sp-p2 { animation: ttWordPart2 1.65s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+#tt-splash.tt-sp-play .tt-sp-thread { animation: ttSilkThread 1.55s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
 </style>
 </head>
 <body class="text-gray-900 antialiased selection:bg-slate-900 selection:text-white">
@@ -174,13 +175,29 @@ input,select,textarea{font-size:16px!important}
   document.documentElement.style.backgroundColor = '#000000';
   document.body.style.backgroundColor = '#000000';
   if(tc) tc.setAttribute('content', '#000000');
-  setTimeout(function(){
-    document.documentElement.style.backgroundColor = '';
-    document.body.style.backgroundColor = '';
-    if(tc && origTc) tc.setAttribute('content', origTc);
-    el.classList.add('tt-splash-hide');
-    setTimeout(function(){ if(el && el.parentNode) el.parentNode.removeChild(el); }, 450);
-  }, 2600);
+  var started = false;
+  function startSplash(){
+    if(started) return;
+    started = true;
+    requestAnimationFrame(function(){
+      requestAnimationFrame(function(){
+        el.classList.add('tt-sp-play');
+        setTimeout(function(){
+          document.documentElement.style.backgroundColor = '';
+          document.body.style.backgroundColor = '';
+          if(tc && origTc) tc.setAttribute('content', origTc);
+          el.classList.add('tt-splash-hide');
+          setTimeout(function(){ if(el && el.parentNode) el.parentNode.removeChild(el); }, 450);
+        }, 2600);
+      });
+    });
+  }
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', startSplash, { once: true });
+    setTimeout(startSplash, 600);
+  } else {
+    startSplash();
+  }
 })();
 </script>
 
