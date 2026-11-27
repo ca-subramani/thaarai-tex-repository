@@ -461,7 +461,7 @@ async function fetchOrders(){
 function hubHtml(pf){
   const row=(svg,label,href,badge='')=>`<a href="${href}" class="flex items-center justify-between py-3 px-3 rounded-2xl hover:bg-gray-50 active:bg-gray-100 transition group"><div class="flex items-center gap-3.5"><span class="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-slate-800 group-hover:bg-slate-900 group-hover:text-white transition">${svg}</span><span class="font-bold text-sm text-gray-900">${label}</span></div><div class="flex items-center gap-2">${badge}${ICONS.chev}</div></a>`;
   const s=d=>`<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
-  return `<div class="max-w-md mx-auto bg-white rounded-3xl p-5 sm:p-6 shadow-soft border border-gray-100 min-h-[calc(100dvh-164px)] sm:min-h-0 flex flex-col">
+  return `<div class="max-w-md mx-auto bg-white rounded-3xl p-5 sm:p-6 shadow-soft border border-gray-100 min-h-[calc(100dvh-166px)] sm:min-h-0 flex flex-col">
     <div class="flex items-center justify-between pb-2"><button onclick="location.hash='#/'" aria-label="Back" class="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-700 hover:bg-gray-100">${ICONS.back}</button><h2 class="font-extrabold text-base text-gray-900">Profile</h2><div class="w-8"></div></div>
     <div class="flex flex-col items-center mt-2">
       <div class="w-20 h-20 rounded-full p-1 border-2 border-slate-200 shadow-soft flex items-center justify-center bg-white"><div class="w-full h-full rounded-full bg-slate-900 flex items-center justify-center text-white text-2xl font-extrabold">${esc((pf.name[0]||'C').toUpperCase())}</div></div>
@@ -664,7 +664,7 @@ async function account(section,params){
   else if(section==='addresses')body=await addressesHtml();
   else if(section==='wishlist')body=await wishHtml();
   else {
-    app.className = 'max-w-6xl mx-auto px-4 pt-3 pb-[76px] sm:pt-5 sm:pb-28 sm:min-h-[75vh]';
+    app.className = 'max-w-6xl mx-auto px-4 pt-5 pb-20 sm:pb-28 sm:min-h-[75vh]';
     document.documentElement.classList.add('overflow-hidden', 'overscroll-none');
     document.body.classList.add('overflow-hidden', 'overscroll-none', 'touch-none');
     body = hubHtml(pf);
