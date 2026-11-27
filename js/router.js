@@ -227,14 +227,26 @@ async function handleConfirmBackNavigation(){
   $('#msearch')?.classList.remove('!hidden');
   $('#foot')?.classList.remove('!hidden');
   try {
-    history.replaceState({ thaaraiHomeGuard: true }, '', '#/');
-    history.pushState({ thaaraiLoginPage: true }, '', '#/login');
+    if(location.hash !== '#/login'){
+      history.pushState({ thaaraiLoginPage: true }, '', '#/login');
+    }
   } catch(e){}
   await clearProfile();
   await loginView();
   return true;
 }
 window.handleConfirmBackNavigation = handleConfirmBackNavigation;
+
+function armConfirmLock(){
+  if(!isUserConfirmingDetails() || window._confirmGuardArmed) return;
+  window._confirmGuardArmed = true;
+  try {
+    history.pushState({ thaaraiConfirmCard: true, t: Date.now() }, '', '#/login');
+  } catch(e){}
+}
+['pointerdown','touchstart','keydown','input'].forEach(function(ev){
+  document.addEventListener(ev, armConfirmLock, { capture: true, passive: true });
+});
 
 window.addEventListener('popstate', event => {
   // 0. Handle Confirm Login page (State 2) back navigation & Android swipe
