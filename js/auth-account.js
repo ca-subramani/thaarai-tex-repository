@@ -361,13 +361,6 @@ async function loginView(passedUser = null){
       <div class="tt-animated-box border border-emerald-900/40 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6 relative overflow-hidden">
         <!-- Brand & Welcome Header -->
         <div class="text-center space-y-2 pt-1">
-          <div class="w-14 h-14 mx-auto rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 text-white flex items-center justify-center shadow-soft">
-            <svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
-              <line x1="3" y1="6" x2="21" y2="6"/>
-              <path d="M16 10a4 4 0 0 1-8 0"/>
-            </svg>
-          </div>
           <p class="text-[10px] font-extrabold uppercase tracking-widest text-emerald-400">${esc(brandName)} Account</p>
           <h2 class="font-extrabold text-xl tracking-tight text-white">${esc(accUI.title || 'Welcome Back')}</h2>
           <p class="text-xs text-slate-300 leading-relaxed">${esc(accUI.subtitle || 'Sign in with your Google account to get started.')}</p>
