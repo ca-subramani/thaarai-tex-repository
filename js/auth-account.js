@@ -65,10 +65,10 @@ async function loginView(passedUser = null){
   let existingCust = null;
   if(googleUser && googleUser.email && sb){
     try {
-      const { data } = await sb.from('customers').select('*').eq('email', googleUser.email).order('last_active', { ascending: false }).limit(1);
+      const { data } = await sb.from('customers').select('*').ilike('email', googleUser.email).order('last_active', { ascending: false }).limit(1);
       if(data && data.length > 0) existingCust = data[0];
       else {
-        const { data: singleData } = await sb.from('customers').select('*').eq('email', googleUser.email).maybeSingle();
+        const { data: singleData } = await sb.from('customers').select('*').ilike('email', googleUser.email).maybeSingle();
         existingCust = singleData;
       }
     } catch(e){}
@@ -109,11 +109,9 @@ async function loginView(passedUser = null){
       $('#msearch')?.classList.remove('!hidden');
       $('#foot')?.classList.remove('!hidden');
       setNav();
-      location.hash = '#/';
       await home();
-      setTimeout(() => {
-        toast('Welcome back, ' + profileName.split(' ')[0] + '! ✓');
-      }, 400);
+      hideNeonLoader();
+      toast('Welcome back, ' + profileName.split(' ')[0] + '! ✓');
       return;
     }
   }
@@ -390,9 +388,11 @@ async function loginView(passedUser = null){
       if(bg.disabled) return;
       bg.disabled = true;
       bg.classList.add('opacity-70');
+      showNeonLoader();
 
       try {
         if(window.location.protocol === 'file:'){
+          hideNeonLoader();
           bg.disabled = false;
           bg.classList.remove('opacity-70');
           await showModalDialog({
@@ -425,6 +425,7 @@ async function loginView(passedUser = null){
         });
         if(error) throw error;
       } catch(err){
+        hideNeonLoader();
         bg.disabled = false;
         bg.classList.remove('opacity-70');
         sessionStorage.removeItem('tt_oauth_pending');
