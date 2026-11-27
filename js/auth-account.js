@@ -110,9 +110,9 @@ async function loginView(passedUser = null){
       $('#foot')?.classList.remove('!hidden');
       setNav();
       const welcomeMsg = 'Welcome back, ' + profileName.split(' ')[0] + '!';
-      try { sessionStorage.setItem('tt_welcome_toast', welcomeMsg); } catch(e){}
       await home();
       hideNeonLoader();
+      setTimeout(() => toast(welcomeMsg), 500);
       return;
     }
   }
