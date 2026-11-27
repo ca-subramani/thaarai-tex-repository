@@ -39,21 +39,17 @@ async function route(){
     if(isOAuthReturn && !p){
       // Clear confirming flags so popup doesn't fire prematurely during OAuth loading
       window._confirmingDetails = false;
+      showNeonLoader();
       try {
         history.replaceState({ thaaraiOAuthResolved: true }, '', '#/login');
       } catch(e){}
       location.hash = '#/login';
-      app.innerHTML = `
-        <div class="max-w-sm mx-auto bg-white border border-gray-100 rounded-3xl p-8 text-center space-y-4 shadow-soft my-10">
-          <div class="w-12 h-12 mx-auto rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center animate-spin">
-            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
-          </div>
-          <p class="text-xs font-bold text-slate-800">Signing in with Google…</p>
-          <p class="text-[11px] text-gray-400">Verifying account details, please wait.</p>
-        </div>
-      `;
-      const user = await resolveOAuthUser();
-      return await loginView(user);
+      try {
+        const user = await resolveOAuthUser();
+        return await loginView(user);
+      } finally {
+        hideNeonLoader();
+      }
     }
 
     // 2. Only resume Name & Number confirmation if actively confirming in this tab session on #/login
