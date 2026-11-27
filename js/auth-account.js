@@ -109,9 +109,11 @@ async function loginView(passedUser = null){
       $('#msearch')?.classList.remove('!hidden');
       $('#foot')?.classList.remove('!hidden');
       setNav();
+      const welcomeMsg = 'Welcome back, ' + profileName.split(' ')[0] + '!';
+      try { sessionStorage.setItem('tt_welcome_toast', welcomeMsg); } catch(e){}
       await home();
       hideNeonLoader();
-      toast('Welcome back, ' + profileName.split(' ')[0] + '! ✓');
+      toast(welcomeMsg);
       return;
     }
   }
@@ -151,7 +153,6 @@ async function loginView(passedUser = null){
 
     window._confirmGuardArmed = false;
     try {
-      history.replaceState({ thaaraiHomeGuard: true }, '', '#/');
       history.pushState({ thaaraiLoginPage: true }, '', '#/login');
       history.pushState({ thaaraiConfirmCard: true }, '', '#/login');
     } catch(e){}
