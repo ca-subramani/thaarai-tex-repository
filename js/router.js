@@ -103,6 +103,7 @@ $('#msb').onclick=()=>{$('#msearch').classList.toggle('hidden');$('#q2').focus()
 $('#brand').addEventListener('click', e => {
   e.preventDefault();
   e.stopPropagation();
+  if(isUserConfirmingDetails()) return;
   if(location.hash !== '#/' && location.hash !== '#' && location.hash !== '') {
     location.hash = '#/';
   } else {
@@ -231,6 +232,7 @@ function handleConfirmBackNavigation(){
   $('#msb')?.classList.remove('!hidden');
   $('#msearch')?.classList.remove('!hidden');
   $('#foot')?.classList.remove('!hidden');
+  document.querySelector('header a[href="#/cart"]')?.classList.remove('!hidden');
   document.documentElement.classList.remove('overflow-hidden', 'overscroll-none');
   document.body.classList.remove('overflow-hidden', 'overscroll-none', 'touch-none');
   try {
