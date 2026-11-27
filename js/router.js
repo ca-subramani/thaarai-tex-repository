@@ -246,6 +246,7 @@ window.handleConfirmBackNavigation = handleConfirmBackNavigation;
 
 // If user swipes back past popstate from Name & Number page (e.g. back to Google chooser), wipe incomplete Google cache immediately
 window.addEventListener('pagehide', () => {
+  try { hideNeonLoader(); } catch(e){}
   if(!profile() && (isUserConfirmingDetails() || sessionStorage.getItem('tt_confirming_details') === '1')){
     try {
       localStorage.setItem('tt_logged_out', '1');
@@ -267,6 +268,7 @@ window.addEventListener('pagehide', () => {
 
 // When mobile browser restores page from bfcache (e.g. swiping back from Google account chooser), always show fresh Google login page
 window.addEventListener('pageshow', (e) => {
+  try { hideNeonLoader(); } catch(err){}
   if(e.persisted && !profile()){
     const bgBtn = $('#btn-user-google');
     if(bgBtn){ bgBtn.disabled = false; bgBtn.classList.remove('opacity-70'); }
