@@ -244,11 +244,41 @@ function handleConfirmBackNavigation(){
 }
 window.handleConfirmBackNavigation = handleConfirmBackNavigation;
 
+// If user swipes back past popstate from Name & Number page (e.g. back to Google chooser), wipe incomplete Google cache immediately
+window.addEventListener('pagehide', () => {
+  if(!profile() && (isUserConfirmingDetails() || sessionStorage.getItem('tt_confirming_details') === '1')){
+    try {
+      localStorage.setItem('tt_logged_out', '1');
+      localStorage.removeItem('tt_confirming_details');
+      localStorage.removeItem('tt_oauth_pending');
+      localStorage.removeItem('tt_oauth_in_flight');
+      sessionStorage.removeItem('tt_confirming_details');
+      sessionStorage.removeItem('tt_cached_google_user');
+      sessionStorage.removeItem('tt_oauth_pending');
+      for(let key of Object.keys(localStorage)){
+        if(key.startsWith('sb-') && (key.endsWith('-auth-token') || key.endsWith('-token-code-verifier'))){
+          localStorage.removeItem(key);
+        }
+      }
+      if(sb){ try{ sb.auth.signOut(); }catch(e){} }
+    } catch(e){}
+  }
+});
+
+// When mobile browser restores page from bfcache (e.g. swiping back from Google account chooser), always show fresh Google login page
 window.addEventListener('pageshow', (e) => {
   if(e.persisted && !profile()){
+    const bgBtn = $('#btn-user-google');
+    if(bgBtn){ bgBtn.disabled = false; bgBtn.classList.remove('opacity-70'); }
     if(isUserConfirmingDetails()){
       handleConfirmBackNavigation();
-    } else if(localStorage.getItem('tt_logged_out') === '1' && location.hash.startsWith('#/login')){
+    } else if(location.hash.startsWith('#/login') || sessionStorage.getItem('tt_oauth_pending') === '1' || localStorage.getItem('tt_logged_out') === '1'){
+      try {
+        localStorage.setItem('tt_logged_out', '1');
+        sessionStorage.removeItem('tt_oauth_pending');
+        sessionStorage.removeItem('tt_confirming_details');
+        sessionStorage.removeItem('tt_cached_google_user');
+      } catch(e){}
       loginView(null);
     }
   }
