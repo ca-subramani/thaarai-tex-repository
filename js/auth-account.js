@@ -111,8 +111,9 @@ async function loginView(passedUser = null){
       setNav();
       const welcomeMsg = 'Welcome back, ' + profileName.split(' ')[0] + '!';
       await home();
+      try { if(typeof armHomeGuard === 'function') armHomeGuard(); } catch(e){}
       hideNeonLoader();
-      setTimeout(() => toast(welcomeMsg), 500);
+      setTimeout(() => toast(welcomeMsg), 300);
       return;
     }
   }
@@ -297,11 +298,11 @@ async function loginView(passedUser = null){
       $('#msearch')?.classList.remove('!hidden');
       $('#foot')?.classList.remove('!hidden');
       setNav();
-      location.hash = '#/';
       await home();
+      try { if(typeof armHomeGuard === 'function') armHomeGuard(); } catch(e){}
       setTimeout(() => {
-        toast('Welcome, ' + profileName.split(' ')[0] + '! ✓');
-      }, 400);
+        toast('Welcome, ' + profileName.split(' ')[0] + '!');
+      }, 300);
     };
 
     $('#btn-switch-account').onclick = async () => {
@@ -676,11 +677,16 @@ async function account(section,params){
   };
   app.onclick=async e=>{
     const t=e.target,d=t.dataset,again=()=>account(section,params);
-    if(t.id==='lgo'){
-      await clearProfile();
-      toast('Logged out successfully');
-      location.hash = '#/login';
-      await loginView();
+    if(t.id==='lgo' || t.closest('#lgo')){
+      showNeonLoader();
+      try {
+        await clearProfile();
+        toast('Logged out successfully');
+        location.hash = '#/login';
+        await loginView();
+      } finally {
+        hideNeonLoader();
+      }
       return;
     }
     if(d.f){ofilter=d.f;again()}
