@@ -113,7 +113,10 @@ async function loginView(passedUser = null){
       try { sessionStorage.setItem('tt_welcome_toast', welcomeMsg); } catch(e){}
       await home();
       hideNeonLoader();
-      toast(welcomeMsg);
+      setTimeout(() => {
+        try { sessionStorage.removeItem('tt_welcome_toast'); } catch(e){}
+        toast(welcomeMsg);
+      }, 450);
       return;
     }
   }
@@ -386,9 +389,11 @@ async function loginView(passedUser = null){
       if(bg.disabled) return;
       bg.disabled = true;
       bg.classList.add('opacity-70');
+      showNeonLoader();
 
       try {
         if(window.location.protocol === 'file:'){
+          hideNeonLoader();
           bg.disabled = false;
           bg.classList.remove('opacity-70');
           await showModalDialog({
@@ -421,6 +426,7 @@ async function loginView(passedUser = null){
         });
         if(error) throw error;
       } catch(err){
+        hideNeonLoader();
         bg.disabled = false;
         bg.classList.remove('opacity-70');
         sessionStorage.removeItem('tt_oauth_pending');
