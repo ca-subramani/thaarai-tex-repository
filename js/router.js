@@ -205,36 +205,42 @@ function showConfirmLoginPopup(){
   };
 }
 
-async function handleConfirmBackNavigation(){
+function handleConfirmBackNavigation(){
   if(!isUserConfirmingDetails()) return false;
   confirmArmed = false;
   window._confirmLoginState = null;
   window._confirmingDetails = false;
   window._cachedGoogleUser = null;
+  _incomingOAuthCode = null;
+  _oauthUserPromise = null;
   try {
+    localStorage.setItem('tt_logged_out', '1');
+    localStorage.removeItem('profile');
     localStorage.removeItem('tt_confirming_details');
+    localStorage.removeItem('tt_oauth_pending');
+    localStorage.removeItem('tt_oauth_in_flight');
     sessionStorage.removeItem('tt_confirming_details');
     sessionStorage.removeItem('tt_cached_google_user');
     sessionStorage.removeItem('tt_oauth_pending');
-    localStorage.removeItem('tt_oauth_pending');
-    localStorage.removeItem('tt_oauth_in_flight');
-    _incomingOAuthCode = null;
+    for(let key of Object.keys(localStorage)){
+      if(key.startsWith('sb-') && (key.endsWith('-auth-token') || key.endsWith('-token-code-verifier'))){
+        localStorage.removeItem(key);
+      }
+    }
   } catch(e){}
+  if(sb){ try{ sb.auth.signOut(); }catch(e){} }
   $('#confirm-login-modal')?.remove();
   $('#tabbar')?.classList.remove('hidden');
   $('#nav-back')?.classList.add('sm:hidden');
   $('#msb')?.classList.remove('!hidden');
   $('#msearch')?.classList.remove('!hidden');
   $('#foot')?.classList.remove('!hidden');
-  await clearProfile();
   try {
-    const loginUrl = window.location.origin + window.location.pathname + '#/login';
-    window.location.replace(loginUrl);
-    window.location.reload();
+    history.replaceState(null, '', window.location.pathname + '#/login');
   } catch(e){
     location.hash = '#/login';
-    window.location.reload();
   }
+  window.location.reload();
   return true;
 }
 window.handleConfirmBackNavigation = handleConfirmBackNavigation;
