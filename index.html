@@ -92,14 +92,9 @@ input,select,textarea{font-size:16px!important}
   transition: opacity 0.22s ease-out, visibility 0.22s ease-out;
 }
 .tt-neon-bar {
-  background: linear-gradient(90deg, #090d16 0%, #059669 30%, #10b981 55%, #34d399 75%, #090d16 100%);
-  background-size: 200% 100%;
+  background: linear-gradient(90deg, #090d16 0%, #059669 45%, #10b981 80%, #34d399 100%);
   box-shadow: 0 0 10px rgba(16, 185, 129, 0.75), 0 0 4px rgba(5, 150, 105, 0.5);
-  animation: ttChromeNeon 1.25s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-}
-@keyframes ttChromeNeon {
-  0% { transform: translateX(-100%); background-position: 0% 50%; }
-  100% { transform: translateX(260%); background-position: 200% 50%; }
+  will-change: width;
 }
 </style>
 </head>
@@ -127,7 +122,7 @@ input,select,textarea{font-size:16px!important}
   <div id="msearch" class="hidden px-4 pb-3 sm:hidden"><form id="sf2"><input id="q2" placeholder="Search sarees…" class="w-full bg-[#f1f5f9] rounded-full py-2.5 px-4 outline-none text-xs"></form></div>
   <!-- Chrome-Style Black & Green Neon Loading Line Below Header -->
   <div id="neon-loader" class="absolute bottom-0 inset-x-0 h-[3px] overflow-hidden opacity-0 pointer-events-none" style="visibility:hidden">
-    <div class="tt-neon-bar h-full w-[45%] rounded-full"></div>
+    <div id="neon-loader-bar" class="tt-neon-bar h-full w-0 rounded-r-full"></div>
   </div>
 </header>
 
