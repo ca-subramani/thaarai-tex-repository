@@ -345,18 +345,18 @@ async function loginView(passedUser = null){
   app.innerHTML = `
     <style>
       @keyframes ttWaveA {
-        0%   { transform: translate3d(-12%, -10%, 0) rotate(0deg) scale(1); }
-        25%  { transform: translate3d(10%, -14%, 0) rotate(90deg) scale(1.08); }
-        50%  { transform: translate3d(14%, 10%, 0) rotate(180deg) scale(0.96); }
-        75%  { transform: translate3d(-8%, 14%, 0) rotate(270deg) scale(1.05); }
-        100% { transform: translate3d(-12%, -10%, 0) rotate(360deg) scale(1); }
+        0%   { transform: translate3d(-18%, -14%, 0) scale(1); }
+        25%  { transform: translate3d(16%, -18%, 0) scale(1.1); }
+        50%  { transform: translate3d(18%, 16%, 0) scale(0.95); }
+        75%  { transform: translate3d(-14%, 18%, 0) scale(1.06); }
+        100% { transform: translate3d(-18%, -14%, 0) scale(1); }
       }
       @keyframes ttWaveB {
-        0%   { transform: translate3d(12%, 10%, 0) rotate(360deg) scale(1.04); }
-        25%  { transform: translate3d(-14%, 8%, 0) rotate(270deg) scale(0.95); }
-        50%  { transform: translate3d(-10%, -14%, 0) rotate(180deg) scale(1.1); }
-        75%  { transform: translate3d(14%, -8%, 0) rotate(90deg) scale(1); }
-        100% { transform: translate3d(12%, 10%, 0) rotate(0deg) scale(1.04); }
+        0%   { transform: translate3d(18%, 14%, 0) scale(1.05); }
+        25%  { transform: translate3d(-18%, 12%, 0) scale(0.95); }
+        50%  { transform: translate3d(-14%, -18%, 0) scale(1.12); }
+        75%  { transform: translate3d(18%, -12%, 0) scale(1); }
+        100% { transform: translate3d(18%, 14%, 0) scale(1.05); }
       }
       .tt-animated-box {
         background: #0b1220;
@@ -365,16 +365,16 @@ async function loginView(passedUser = null){
       .tt-animated-box::after {
         content: "";
         position: absolute;
-        inset: -45%;
+        inset: -65%;
         pointer-events: none;
         will-change: transform;
       }
       .tt-animated-box::before {
-        background: radial-gradient(circle at 35% 35%, rgba(5, 150, 105, 0.55) 0%, rgba(4, 120, 87, 0.25) 38%, transparent 68%);
+        background: radial-gradient(circle at 50% 50%, rgba(5, 150, 105, 0.55) 0%, rgba(4, 120, 87, 0.24) 32%, transparent 60%);
         animation: ttWaveA 17s linear infinite;
       }
       .tt-animated-box::after {
-        background: radial-gradient(circle at 65% 65%, rgba(16, 185, 129, 0.42) 0%, rgba(6, 95, 70, 0.28) 40%, transparent 70%);
+        background: radial-gradient(circle at 50% 50%, rgba(16, 185, 129, 0.42) 0%, rgba(6, 95, 70, 0.26) 34%, transparent 62%);
         animation: ttWaveB 23s linear infinite;
       }
       .tt-animated-box > * {
