@@ -41,8 +41,9 @@ async function route(){
       window._confirmingDetails = false;
       try {
         history.replaceState({ thaaraiOAuthResolved: true }, '', window.location.pathname + '#/login');
-      } catch(e){}
-      location.hash = '#/login';
+      } catch(e){
+        location.hash = '#/login';
+      }
       const user = await resolveOAuthUser();
       return await loginView(user);
     }
