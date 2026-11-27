@@ -113,10 +113,7 @@ async function loginView(passedUser = null){
       try { sessionStorage.setItem('tt_welcome_toast', welcomeMsg); } catch(e){}
       await home();
       hideNeonLoader();
-      setTimeout(() => {
-        try { sessionStorage.removeItem('tt_welcome_toast'); } catch(e){}
-        toast(welcomeMsg);
-      }, 450);
+      toast(welcomeMsg);
       return;
     }
   }
@@ -731,4 +728,3 @@ async function account(section,params){
       await setAddrs(L);addrEdit=null;toast('Address saved ✓');again()}
   };
 }
-
