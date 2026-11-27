@@ -46,7 +46,6 @@ async function product(id){
             <div class="flex items-center justify-between gap-2">
               <div class="flex items-center gap-2 flex-wrap">
                 <span class="text-[10px] font-extrabold uppercase tracking-widest text-slate-700 bg-slate-100 px-3 py-1 rounded-full">${esc(p.fabric?p.fabric+' Saree':'Saree')}</span>
-                <span class="font-mono text-[10px] font-black text-slate-800 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full select-all">Product ID: ${esc(getProductId(p))}</span>
               </div>
               <button data-w="${p.id}" aria-label="Wishlist" class="w-9 h-9 rounded-full bg-gray-50 flex items-center justify-center hover:bg-rose-50 transition border border-gray-100">${heart(wish.has(p.id))}</button>
             </div>
